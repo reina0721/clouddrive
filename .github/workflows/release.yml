@@ -1,0 +1,66 @@
+name: Release candidate
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    name: Build signed draft release
+    if: github.repository == 'rin721/clouddrive'
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Set up Node
+        uses: actions/setup-node@1e60f620b9541dca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.11.1
+      - name: Set up pnpm
+        run: |
+          npx --yes pnpm@10.22.0 --version
+      - name: Install pinned release tools
+        run: |
+          tool_dir="$(node scripts/project-layout.mjs --field toolsRoot)"
+          mkdir -p "${tool_dir}"
+          GOBIN="${tool_dir}" go install github.com/goreleaser/goreleaser/v2@v2.17.1
+          GOBIN="${tool_dir}" go install github.com/anchore/syft/cmd/syft@v1.50.0
+          GOBIN="${tool_dir}" go install github.com/sigstore/cosign/v2/cmd/cosign@v2.6.5
+          echo "${tool_dir}" >> "${GITHUB_PATH}"
+          echo "GORELEASER_DIST=$(node scripts/project-layout.mjs --field releaseRoot)" >> "${GITHUB_ENV}"
+      - name: Verify release gates
+        run: |
+          bash scripts/verify-docs.sh
+          bash scripts/verify-webui.sh
+          bash scripts/verify-quality.sh
+      - name: Build draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: goreleaser release --clean --skip=sign
+      - name: Sign and verify checksum bundle
+        run: |
+          checksum="${GORELEASER_DIST}/checksums.txt"
+          bundle="${GORELEASER_DIST}/checksums.txt.sigstore.json"
+          cosign sign-blob --yes --bundle "${bundle}" "${checksum}"
+          cosign verify-blob \
+            --bundle "${bundle}" \
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/release.yml@${{ github.ref }}" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            "${checksum}"
+      - name: Attach verification bundle to draft
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${GITHUB_REF_NAME}" "${GORELEASER_DIST}/checksums.txt.sigstore.json" --clobber

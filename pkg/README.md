@@ -1,0 +1,65 @@
+# pkg 封装规范与能力清单
+
+`pkg` 只存放面向应用模块开放的通用底层 Capability。这里不是示例代码区，也不是第三方库转发层；每个包都必须有明确能力名、构造入口、错误语义、配置语义、资源边界和测试。
+
+本页是局部能力索引，不承担项目级开发、架构或运维 authority。业务接入流程回到 [开发指南](../docs/development/README.md)，底层装配回到 [架构说明](../docs/architecture/README.md)，运行维护回到 [交付与运维](../docs/operations/README.md)。
+
+## 封装原则
+
+- 只收纳跨业务域复用的底层能力库，不放具体业务规则、领域模型、页面逻辑或一次性 glue code。
+- 不创建 `common`、`utils`、`helpers`、`shared` 等无明确所有权的杂物包。
+- 第三方库跨越业务或稳定项目边界、承担资源生命周期、错误/安全语义或具有真实替换价值时，必须由项目自有窄契约或 Adapter 隔离，业务常用接口不得泄漏易变的第三方类型；只存在于单个 Adapter 内部的局部实现可以直接依赖合适第三方，不为表面解耦机械复制接口。
+- 扩展现有 `pkg` 自研实现前，必须按[技术选型与架构复核基线](../docs/architecture/technology-selection.md)比较标准库和成熟候选，并同时判断当前 Kernel/Generation 承载方式是否仍有收益；已有代码量和最小改动不能单独构成保留理由。
+- 完整 `pkg/<name> -> internal/kernel/app/<name> -> internal/kernel/composition` 链只治理同时跨业务复用且由进程统一选择的底层资源；只满足复用的普通库不虚构 Kernel 组件，只服务单模块的第三方留在该模块 Adapter。上层不得直接持有具体 Adapter。
+- 阻塞 I/O、后台任务、重试和资源释放必须有 `context`、超时、关闭或等待边界。
+- 错误必须保留原始原因并增加项目语义，敏感值在日志、错误和本地调试输出中必须脱敏。
+- `pkg` 不得导入 `internal`；受托管能力定义、显式组合、生命周期钩子和配置切换统一由 `internal/kernel/**` 承担。
+
+**配置职责边界**：`pkg/*` 只提供通用能力与基础默认行为（库自身最低可用默认）。属于具体应用环境、组件装配、业务场景或运行时变化的配置，由对应 `internal/kernel/app/*` 组件或使用者显式声明并注入；`kernel/app/*` 的默认配置不得整体复用 `pkg/*.DefaultConfig()`。允许引用 `pkg/*` 的基础默认常量（如缓存 `redisstore.DefaultTagPrefix`）作为组件内未声明该值时的回退默认。业务模块不得自行读取或改写 `pkg/*` 默认值/配置，应按注入的契约能力使用。
+
+## 当前能力
+
+| 能力 | 当前底层技术 | 项目边界 |
+| --- | --- | --- |
+| [`logger`](logger/README.md) | `go.uber.org/zap` | 业务依赖窄 Logger；构造方通过 Resource 独占 Sync/Close 和文件 sink；提供 noop/test logger 和审计字段。 |
+| [`httpx`](httpx/README.md) | `net/http` + `go-chi/chi/v5` + `rs/cors` + `x/time/rate` | 构造 HTTP 客户端、路由和服务端；Server 由单一 owner 预绑定、阻塞 Serve，并显式拆分 graceful Stop 与有损 ForceStop；提供 recovery、request id、access log、secure headers，以及封装 `rs/cors`/`CrossOriginProtection` 的浏览器边界、generation-local 的成熟 token bucket 与简单过载门禁。`httpx/contract` 提供代码优先的模块自有契约 DSL 与 typed Handler 适配，封装 schema/OpenAPI 渲染内部使用的第三方库。 |
+| [`i18n`](i18n/README.md) | `go-i18n/v2` + `x/text/language` + `yaml.v3` | 构造翻译器并加载本地化资源；Kernel 组合输出身份稳定、内部可换代的 Translator facade。 |
+| [`database`](database/README.md) | `gorm`、SQLite、PostgreSQL、MySQL | 提供项目自有 Schema、Repository、事务、迁移与资源契约，不暴露 GORM 类型。 |
+| [`cache`](cache/README.md) | `go-redis/v9`、`msgpack` | 以无资源 typed Client 隔离 Redis 与 wire format；Kernel 治理 disabled/Redis 后端、coordination 与连接生命周期。 |
+| [`cli`](cli/README.md) | `cobra`、`Bubble Tea`、`Lip Gloss` | 构造 CLI 应用、命令、flag 和交互式提示；TUI option 不进入业务契约。 |
+| [`storage`](storage/README.md) | 本地文件系统、AWS SDK v2 S3 兼容对象存储、文件辅助库 | 构造对象存储和本地文件工具；Kernel 只治理对象存储 Manager，公开接口不泄漏第三方类型或共享资源关闭权。 |
+| [`validation`](validation/README.md) | `go-playground/validator/v10` | 构造结构体验证器，输出项目自有字段错误。 |
+| [`fault`](fault/README.md) | 标准库 `errors` | 封装错误码、分类、可重试、取消/超时、关闭错误聚合和脱敏输出。 |
+| [`supervisor`](supervisor/README.md) | `context`、`os/signal`、`errgroup` | 监督进程级 Participant 和长期 runner，共享总 shutdown budget，并分类记录 graceful、forced、pending Participant 与 pending Task。 |
+| [`health`](health/README.md) | 标准库 | 构造健康检查 registry，提供超时、快照、liveness/readiness/startup 分类和 degraded 状态。 |
+| [`idgen`](idgen/README.md) | `google/uuid` | 构造 ID generator，提供请求和资源 ID。 |
+| [`clock`](clock/README.md) | 标准库 `time` | 构造系统时钟或固定时钟，封装时间格式边界。 |
+| [`secrets`](secrets/README.md) | 标准库 `crypto/rand`、`crypto/hmac`、`crypto/pbkdf2` | 封装敏感值、脱敏、随机 token、HMAC、KDF 和 secret source。 |
+| [`concurrency`](concurrency/README.md) | `x/sync` + 标准库 | 提供项目自有 singleflight、固定 worker pool 和 context 感知任务执行，不导出 errgroup 类型。 |
+| [`testkit`](testkit/README.md) | 标准库 + 项目包 | 提供 fake clock、临时文件、健康 fixture 和底层库测试辅助。 |
+| [`observability`](observability/README.md) | 项目自有契约 | 提供 HTTP observation、后台 `Work` span、Metrics endpoint 与低敏 diagnostics；Prometheus/OTel/OTLP 只存在于 Kernel App 实现。 |
+| [`execution`](execution/README.md) | 项目契约 + `backoff/v7`（包内）+ `fault`/`concurrency` | 提供进程内幂等、同步执行记录、命名重试策略、attempt/total budget 和低敏重试观测；第三方类型不进入业务契约，memory backend 不冒充 durable/recovery 能力。 |
+| [`schedule`](schedule/README.md) | 项目自有声明契约；`gocron/v2` 只存在于内部 Adapter | 模块声明 cron/fixedDelay、任务级并发和分布式执行策略；不暴露 scheduler、生命周期或注册权。 |
+| [`messaging`](messaging/README.md) | 项目自有 Contract/Binding/Publisher；`amqp091-go` 只存在于内部 RabbitMQ Adapter | 模块声明消息 Contract、生产/消费关系、交付预算、重要性和并发；composition 解析逻辑 Route 并治理 confirm、ack、重投、死信、恢复和 Consumer 代际，不暴露 Broker Client 或物理 topology。 |
+| [`coordination`](coordination/README.md) | 项目自有租约契约；production Adapter 复用 Cache 的 `go-redis/v9` client | 表达 acquire/renew/release、未获得、不可用与失权；不把 Redis 类型或 token 暴露给业务模块。 |
+| [`alerting`](alerting/README.md) | 标准库 `net/http`、`crypto/hmac` | 低敏安全告警事件契约与 Webhook 发送（可选 HMAC-SHA256 签名、超时/重试）；Kernel App 以异步队列/生命周期治理消费，业务只经窄 Notifier 汇报。 |
+
+## 暂缓路线
+
+以下能力属于成熟项目常见能力，但当前不阻塞底层库封装。必须等真实组件或业务场景明确后再定义契约：
+
+- 消息扩展：Kafka、NATS JetStream 等后续 Provider 与其分区、顺序、事务、Stream/Consumer Group 专属能力；当前只实现 RabbitMQ 4.3 Provider，不把未支持能力伪装为公共语义。
+- 通用业务锁：数据库锁、fencing-aware 资源写入等必须先明确一致性、租约与续期语义；当前 `coordination` 只服务统一调度执行权，不是通用 Lock API。
+- 认证授权：JWT/OIDC/password hash/RBAC，只有第一批组件包含用户身份时再进入。
+- 邮件：SMTP/API adapter、模板、重试和投递诊断。
+- 搜索：Meilisearch/Elasticsearch adapter，等待真实检索模型。
+- 特性开关：本地/远端开关、灰度规则和审计。
+- 架构扩展：基础能力依赖 DAG、业务对象图、诊断报告体系和观测采集适配。
+
+## 验收要求
+
+- `go test ./...` 必须通过。
+- `git diff --check` 必须通过。
+- 旧模块路径、旧 import、旧文档路径必须为零。
+- 公开 API 不泄漏未允许的第三方类型。
+- `pkg` 层不得反向依赖 `internal/kernel`。

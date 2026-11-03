@@ -1,0 +1,22 @@
+
+Running 15 tests using 1 worker
+
+(node:32696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\overlays.spec.ts:411:1 › Radio/Checkbox 内部 indicator 与 label 同行且无双重成形 (1.1s)
+  ok  2 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Settings switches share one pointer and keyboard press boundary (1.2s)
+  ok  3 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:56:1 › Radio indicator and card edge select the same option and arrows retain selection (1.1s)
+  ok  4 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:80:1 › Checkbox indicator works in the shared form authority and disabled option stays disabled (1.2s)
+  ok  5 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:97:3 › Settings category navigation stays reachable through continuous tasks at 320 (4.4s)
+  ok  6 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:97:3 › Settings category navigation stays reachable through continuous tasks at 390 (3.3s)
+  ok  7 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:97:3 › Settings category navigation stays reachable through continuous tasks at 430 (3.2s)
+  ok  8 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:97:3 › Settings category navigation stays reachable through continuous tasks at 768 (3.3s)
+  ok  9 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:97:3 › Settings category navigation stays reachable through continuous tasks at 1024 (3.4s)
+  ok 10 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:97:3 › Settings category navigation stays reachable through continuous tasks at 1279 (3.6s)
+  ok 11 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:130:1 › Pinned page tabs track the header; unpinned tabs scroll and persist after reload (1.5s)
+  ok 12 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:151:1 › All page tabs stay manageable on desktop and closing active restores useful focus (2.5s)
+  ok 13 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:175:1 › Settings drawer and form authority retain WCAG AA semantics in dark English (3.8s)
+  ok 14 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:207:3 › Touch settings tasks › Touch control and category entry work without hover at different scroll positions (1.6s)
+  ok 15 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:224:1 › Settings keep search context, same-category position, and native Back continuity (2.8s)
+
+  15 passed (39.0s)

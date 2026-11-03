@@ -1,0 +1,6 @@
+
+> clouddrive-frontend@0.1.0 format:check C:\rin\coder\i0721\console-web
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!

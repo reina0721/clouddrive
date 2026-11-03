@@ -1,0 +1,1 @@
+ALTER TABLE iam_api_tokens ADD COLUMN version BIGINT NOT NULL DEFAULT 1;

@@ -1,0 +1,2 @@
+beforeRelease http://127.0.0.1:4173/
+afterRelease http://127.0.0.1:4173/reference-resources

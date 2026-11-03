@@ -1,0 +1,35 @@
+schema_version: 1
+id: R090-004
+title: "前端基础技术与组件边界复核"
+question: "应继续扩展当前自研 UI 封装、整体更换组件库，还是在现有 React 栈上单轨收敛并建立项目语义模式组件？"
+research_type: technology-reassessment
+topics: ["React", "HeroUI v3", "React Aria", "Tailwind CSS 4", "TanStack Query", "component-boundaries"]
+keywords: ["mixed HeroUI versions", "UI SDK", "semantic patterns", "data grid accessibility"]
+applicable_scenarios: ["前端依赖清理", "组件体系重构", "表格与表单基础设施"]
+non_applicable_scenarios: ["与 Web UI 无关的 Go 模块", "无证据的全栈替换"]
+status: active
+summary: "推荐保留 React 19、Tailwind 4、TanStack Query、RHF/Zod，移除 HeroUI v2 主题与 Toast 混用，以 HeroUI v3/React Aria 作为可访问原语，并把项目封装聚焦在后台业务模式而非复制第三方 API。"
+evidence:
+  types: ["dependency-manifest", "source-code", "official-documentation", "accessibility-standard"]
+  primary_sources:
+    - title: "当前依赖与共享 UI 实现"
+      locator: "webui/package.json；webui/package-lock.json；webui/src/ui/index.tsx；webui/src/styles.css"
+      snapshot: "47d2d9a，2026-08-28 复核"
+    - title: "HeroUI v3 官方文档与发布说明"
+      locator: "https://heroui.com/en/docs/react/releases/v3-0-0；https://heroui.com/en/docs/react/components；https://heroui.com/en/docs/react/releases"
+      snapshot: "2026-08-28 复核，当前官方发布页列出 3.2.4"
+    - title: "WAI-ARIA Grid Pattern"
+      locator: "https://www.w3.org/WAI/ARIA/apg/patterns/grid/"
+      snapshot: "2026-08-28 复核"
+researched_at: "2026-08-28"
+verified_at: "2026-08-28"
+validity:
+  mode: snapshot
+  review_after: "2026-11-28"
+  refresh_triggers: ["HeroUI 主版本变化", "当前 UI SDK 被拆分", "组件库替换目标变化", "React 或 Tailwind 主版本变化"]
+relations:
+  extends: ["R082-001", "R086-001"]
+  related: ["R090-001", "R090-002"]
+  supersedes: []
+  superseded_by: []
+report: report.md

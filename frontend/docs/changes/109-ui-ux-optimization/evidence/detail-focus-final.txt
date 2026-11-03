@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:19072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\workbench-mobile-109.spec.ts:4:1 › Mobile workbench detail preserves identity, selection and list focus (7.3s)
+
+  1 passed (9.1s)

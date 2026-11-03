@@ -1,0 +1,39 @@
+schema_version: 1
+id: R009
+title: "HTTP 契约框架与 Huma 适配性复核"
+question: "Huma v2 能否单轨替代当前自研 HTTP contract/codec/request-validation 机制，同时保留模块 operation ownership、chi、OperationGate 和项目 Problem 契约？"
+research_type: current-project-and-external-primary-source
+topics: ["HTTP", "OpenAPI", "JSON Schema", "Huma", "chi", "authentication"]
+keywords: ["ModuleContract", "contractDispatcher", "OperationGate", "BuildDocument", "Register", "Metadata"]
+technologies: ["Huma v2", "chi", "kin-openapi", "ogen"]
+applicable_scenarios: ["HTTP-057-001", "HTTP binding", "OpenAPI generation", "request validation"]
+non_applicable_scenarios: ["HTTP Client", "GraphQL", "gRPC", "WebSocket"]
+status: active
+summary: "选择 Huma v2 作为 HTTP contract/binding 的目标框架；保留 chi、项目 OperationGate、Problem 和模块 operation ID/policy ownership。先迁移代表性 operation 验证静态生成与运行期语义，再单轨迁移并删除自研 contract/codec 与重复 kin-openapi request validation。ogen 不适合当前 code-first 边界。"
+evidence:
+  types: ["source-code", "call-site-search", "dependency-manifest", "tests", "official-source", "release-metadata", "vulnerability-database"]
+  primary_sources:
+    - title: "当前 HTTP contract、dispatcher、route binding 与模块声明"
+      locator: "pkg/httpx/contract/; internal/transport/http/routes.go; internal/composition/http_api.go; internal/module/*/binding/http/"
+      snapshot: "74db2b41fb4a37ca0efcef9618ba904ca9ad4250"
+    - title: "Huma v2.39.1 source, README and module metadata"
+      locator: "https://github.com/danielgtaylor/huma/tree/v2.39.1; https://pkg.go.dev/github.com/danielgtaylor/huma/v2@v2.39.1"
+      snapshot: "2026-08-22"
+    - title: "ogen v1.24.0 source and module metadata"
+      locator: "https://github.com/ogen-go/ogen/tree/v1.24.0"
+      snapshot: "2026-08-22"
+    - title: "OSV Go package query"
+      locator: "https://api.osv.dev/v1/query"
+      snapshot: "2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: time-sensitive
+  review_after: "2026-10-22"
+  refresh_triggers: ["Huma major/minor release", "Huma 安全公告", "OpenAPI authority 改为 spec-first", "OperationGate 或 Problem 公共契约变化"]
+relations:
+  extends: ["057-R001", "057-R002", "030-R001"]
+  related: ["057-R011"]
+  supersedes: []
+  superseded_by: []
+report: report.md

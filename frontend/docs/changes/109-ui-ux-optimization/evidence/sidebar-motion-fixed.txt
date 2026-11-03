@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:30124) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\sidebar-design.spec.ts:273:1 › Standard motion changes width monotonically and keeps header/content naturally aligned (3.7s)
+
+  1 passed (5.9s)

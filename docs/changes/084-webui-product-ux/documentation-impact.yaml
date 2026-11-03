@@ -1,0 +1,32 @@
+schema_version: 1
+change: 084-webui-product-ux
+areas:
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+    reason: 新增平台布局原语（field-grid/split-workspace/row-actions/form-panel-bounded），sdk/i18n 导出 translateMessage/translateOptional/ensureRouteLocale 供跨 namespace 文案解析；mock 会话补充真实 scope 示例；mock e2e 增加 084/084b 断言。084b：FilterBar 紧凑下拉（行内标签+原生 select）、BulkActionBar 常驻禁用态、blank-layout 头部/主区居中、data-table-toolbar 收窄、OpenAPI 测试环境 stubEnv。改动文件：webui/src/styles.css、webui/src/sdk/i18n/index.ts、webui/src/i18n.ts、webui/src/mock/host.ts、webui/src/ui/index.tsx、webui/e2e/webui-mock.spec.ts。
+  - id: module
+    decision: updated
+    documents:
+      - docs/development/application-module-development.md
+    reason: 逐页推翻低质量布局：组织三页改为取景区+详情编辑区（部门搜索树+编辑/归档、岗位名录表格+行菜单、账号两栏分配）；Menus 修复右栏截断并跨 namespace 翻译标题；OpenAPI 首访默认选中+可操作空态；权限目录描述解析修复（新增 permission.* 双语键）；Settings 开关行/单选组重构；密码表单补确认字段与分组；ApiTokens 创建表单分组。084b：登录/初始化页产品化；Accounts 角色筛选；Sessions/Accounts/Roles/ApiTokens 排序并入 FilterBar；Sessions 批量条常驻。084c：mock 数据量提升至真实规模作密度基线；DataTable rowMenuHeader 操作列可见表头；角色类型列头；审计操作列截断；API 令牌创建表单触达后必填提示与权限分组全选。084d：会话按账号过滤（对齐后端 accountId 契约）；仪表盘健康行状态单元；技术栈两列 chip 与仓库链接。084f：FilterBar trailingFields 右侧排序簇；行操作列固定宽度与主操作/「更多」chip 边界；BulkActionBar 未选择时降为次级视觉并取消 sticky 遮挡。084g：审计筛选并入列表卡；仪表盘指标快照前置与统计/指标块高度压缩；CodeText 复制按钮 chip。084h：全 24 路由严格可用性终审后修复 Select 指示器错位锚定（trigger 内 chevron）与语言单选组默认选中。084i：IAM 顶级组菜单标题缩短为「身份与权限」（locale 值 + 权威文档同步）。模块开发指南同步 FilterBar/行操作约定。改动文件：organization/navigation/openapi/iam/settings/auth 的 binding/webui/web/*。
+  - id: operations
+    decision: reviewed-no-change
+    reason: ops 自有 locale 补充两条权限描述演示键（webui.ops.permission.diagnostics/metrics），对齐权限目录描述解析契约；无运行语义、能力或配置变化。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+    reason: 新增账号批量操作契约（POST /api/v1/iam/accounts/batch-status 与 batch-archive，语义 = 逐账号复用既有安全语义/审计、失败不中止并逐条导出稳定错误码）；走 code-first 生成链同步（api/openapi.yaml 与 operation inventory）；认证/授权 Scope（iam:account:write）不变。
+  - id: startup
+    decision: reviewed-no-change
+    reason: 前端呈现与文案解析变更，无新运行组件/配置节/生命周期变化。
+  - id: configuration
+    decision: reviewed-no-change
+    reason: 无新配置节；新增键全部为模块 locale 文案键。
+  - id: docs
+    decision: updated
+    documents:
+      - docs/changes/README.md
+    reason: 084 变更记录（研究/需求/设计/任务）与变更索引记录本任务状态与结论。

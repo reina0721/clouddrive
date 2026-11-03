@@ -1,0 +1,36 @@
+schema_version: 1
+id: R001
+title: "当前通用能力、业务边界与承载架构审计"
+question: "当前代码实际使用哪些通用能力与第三方依赖，哪些自研机制需要复核，现有 Kernel/Application Generation 是否仍适合作为统一承载基础？"
+research_type: current-project
+topics: ["capability inventory", "business boundary", "composition", "lifecycle", "architecture"]
+keywords: ["pkg", "internal/kernel/app", "Application Generation", "IAM", "Organization", "Navigation", "httpx", "database", "cache", "resilience"]
+technologies: ["zap", "chi", "GORM", "kin-openapi", "go-cache", "go-redis", "jwx", "gocron", "OpenTelemetry"]
+applicable_scenarios: ["通用能力选型", "新增业务模块", "基础设施接入", "Kernel 架构调整"]
+non_applicable_scenarios: ["old-backend 历史目录", "尚无真实用例的业务方案设计"]
+status: active
+summary: "当前项目已采用多项成熟依赖，但缓存、韧性、HTTP policy、Repository/Schema、HTTP typed DSL 和配置解析包含较多自研通用机制；Application Generation 又同时重建底层资源与业务对象图，后续必须分别复核实现价值与承载架构收益。"
+evidence:
+  types: ["source-code", "dependency-manifest", "tests", "composition", "existing-research"]
+  primary_sources:
+    - title: "当前仓库源码与 go.mod"
+      locator: "go.mod; pkg/; internal/kernel/; internal/composition/; internal/module/"
+      snapshot: "ae26ace97a7d4e0478a8238a787bc03513c387bf"
+    - title: "既有 Capability composition 研究"
+      locator: "docs/research/001-go-capability-composition/README.md; docs/research/002-kernel-app-manual-composition/README.md"
+      snapshot: "2026-08-22 复核"
+    - title: "030、037、038 变更研究与验证"
+      locator: "docs/changes/030-module-owned-code-first-contract/; docs/changes/037-scheduled-task-capability/; docs/changes/038-messaging-adapter-capability/"
+      snapshot: "2026-08-22 复核"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: snapshot
+  review_after: "2026-11-22"
+  refresh_triggers: ["go.mod 或主要能力实现变化", "新增业务模块或外部基础设施", "Kernel/Generation 生命周期模型变化", "057 任一 PoC 产生相反证据"]
+relations:
+  extends: ["docs/research/001-go-capability-composition", "docs/research/002-kernel-app-manual-composition"]
+  related: ["030-R001", "030-R002", "037", "038"]
+  supersedes: []
+  superseded_by: []
+report: report.md

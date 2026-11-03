@@ -1,0 +1,46 @@
+
+Running 2 tests using 1 worker
+
+(node:31068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › apps\web\e2e\authentication.spec.ts:37:1 › Registration validates confirmation, displays success and persists only salted password digest (30.2s)
+(node:25636) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 320 (3.2s)
+
+
+  1) [chromium] › apps\web\e2e\authentication.spec.ts:37:1 › Registration validates confirmation, displays success and persists only salted password digest 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('textbox', { name: '姓名', exact: true })
+
+
+      39 | }) => {
+      40 |   await page.goto('/register');
+    > 41 |   await page.getByRole('textbox', { name: '姓名', exact: true }).fill('Auth Review');
+         |                                                                ^
+      42 |   await page.getByRole('textbox', { name: '邮箱', exact: true }).fill('review@example.test');
+      43 |   await page.getByLabel('密码', { exact: true }).fill('UniqueDemoPass2026!');
+      44 |   await page.getByLabel('确认密码', { exact: true }).fill('DifferentPassword!');
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\authentication.spec.ts:41:64
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\authentication-Registratio-3c3f5-only-salted-password-digest-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\authentication-Registratio-3c3f5-only-salted-password-digest-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\authentication-Registratio-3c3f5-only-salted-password-digest-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\authentication-Registratio-3c3f5-only-salted-password-digest-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\authentication.spec.ts:37:1 › Registration validates confirmation, displays success and persists only salted password digest 
+  1 passed (34.9s)

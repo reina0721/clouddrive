@@ -1,0 +1,41 @@
+schema_version: 1
+id: R077-001
+title: "用户与权限体系企业级能力差距评估：完整/通用/闭环/成熟度四维核实"
+question: "当前用户与权限体系（IAM+Auth+Organization+Permission Catalog+WebUI）相对企业级通用能力，在完整、通用、闭环、成熟四个维度的现状与差距；哪些差距边界内可直接补，哪些必须重新研究/产品决策后另行立项？"
+research_type: current-project
+topics: ["iam", "auth", "rbac", "security", "enterprise", "mfa", "session", "password-policy"]
+keywords: ["EnterpriseIAM", "MFA/TOTP", "OIDC/SSO", "PasswordHistory", "SessionLimit", "LoginRateLimit", "DataScope", "MultiInstance", "RoleHierarchy"]
+applicable_scenarios: ["单应用/单实例/本地账号后台的用户与权限体系完善", "企业级口令与会话治理补盲", "登录防爆破增强", "后续 MFA/OIDC/数据权限立项前的边界判定"]
+non_applicable_scenarios: ["多租户 SaaS 直接交付", "外部身份主源（OIDC/LDAP 已有组织）替换", "超大策略集/集中策略服务（OpenFGA/OPA 场景）", "将候选方向未经确认混入本批"]
+status: active
+summary: "四维评估：核心闭环完整（058/064/065/066/076 已闭环账号-角色-权限-会话-授权-审计）；企业级缺口集中在认证因素（无 MFA/TOTP）、外部身份（无 OIDC/SSO/LDAP）、口令历史/过期、会话数量上限、登录 IP 限流、多实例一致性、数据权限、多租户。推荐下一批 077 实施边界内三项：P1 口令策略增强（历史口令+过期周期，复用 076 passwordPolicy 语义）、P2 会话数量上限（单账号最大并发可配置）、P3 登录 IP 限流（对齐 http.rateLimit 语义，账号+IP 双维度）；MFA/OIDC/数据权限/多租户/授权语义增强/批量运营为候选（各自有触发条件与既有记录），不进入本批。"
+evidence:
+  types: ["source-code", "tests", "generated-artifact", "prior-research"]
+  primary_sources:
+    - title: "IAM 模块（身份/凭据/会话/口令/会话治理）"
+      locator: "internal/module/iam/{model,service,repo,binding/config,binding/http,adapter/password}"
+      snapshot: "9462bfa 验证 2026-09"
+    - title: "Auth 授权与审计（DecisionPoint/低敏审计/JWT token-scopes）"
+      locator: "internal/module/auth/**"
+      snapshot: "9462bfa 验证 2026-09"
+    - title: "授权模型与目录（Casbin/静态 Permission Catalog）"
+      locator: "internal/module/iam/{authorization,adapter/casbin,permission}; internal/permission/catalog.go"
+      snapshot: "9462bfa 验证 2026-09"
+    - title: "组织目录与数据权限边界"
+      locator: "internal/module/organization/**"
+      snapshot: "9462bfa 验证 2026-09"
+    - title: "安全与能力文档（已有候选清单与边界）"
+      locator: "docs/operations/security.md; docs/operations/runtime-capabilities.md; docs/architecture/technology-selection.md; docs/changes/{058,064,066,076}/README.md"
+      snapshot: "复核 2026-09"
+researched_at: "2026-09"
+verified_at: "2026-09"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-10"
+  refresh_triggers: ["MFA/TOTP 或外部身份立项", "授权模型变更（role hierarchy/deny/domain/ABAC）", "多实例一致性方案定型", "组织数据权限立项", "口令/会话治理配置变更"]
+relations:
+  extends: ["058/R001", "058/R003", "064/R064-001", "066/R066-001", "076/R076-001"]
+  related: ["022/R006"]
+  supersedes: []
+  superseded_by: []
+report: report.md

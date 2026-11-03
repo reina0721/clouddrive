@@ -1,0 +1,8 @@
+
+Running 3 tests using 1 worker
+
+  ✓  1 [chromium] › apps/web/e2e/api-workbench.spec.ts:75:3 › API workbench execution and state › runner and manual task runs report the same real failure (3.7s)
+  ✓  2 [chromium] › apps/web/e2e/api-workbench.spec.ts:318:3 › responsive composition and overlay accessibility at 768px (4.4s)
+  ✓  3 [chromium] › apps/web/e2e/api-workbench.spec.ts:379:1 › history restores full request configuration as a separate request without overwriting source drafts (3.9s)
+
+  3 passed (12.8s)

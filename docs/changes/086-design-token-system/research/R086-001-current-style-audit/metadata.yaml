@@ -1,0 +1,17 @@
+id: R086-001
+title: 公共框架几何稳定性与 Design Token 缺失现状
+created: 2026-08-28
+status: current
+research_questions:
+  - "公共框架在不同路由/density/主题下几何不稳定的根因"
+  - "当前是否存在唯一 Design Token 系统（primitive/semantic/component 三级）"
+  - "业务模块 CSS 的污染源与规模"
+  - "AppShell 根布局唯一渲染与 ContentViewport 分流现状"
+method: 静态审计（styles.css/theme.ts/App.tsx/AppShell.tsx/routes.tsx/shell 组件/ui 组件/7 个模块 CSS/tailwind+heroui 配置，脚本枚举裸 px/hex/!important）
+snapshot_commit: 8614e77
+summary: "styles.css 是 3363 行 token/规则混排单文件：Shell/Tabs/Sidebar 有约 105 处裸 px（如 --shell-tabs-height:42px、--shell-header-height:64px 均为裸值未由 density/size 推导）；8 处 !important；若干裸 hex（#fff/#dc2626/#16a34a 等）；data-page-width 规则无任何生产端是死规则；density 用 8 个分散选择器散点覆盖而非 token 管道；HeroUI(--heroui-*) 与宿主(--primary*) 两套语义色重复维护。AppShell 已由根布局唯一渲染，但 WorkspaceArea 内 fallback(.page-viewport) 与 mounted panel(.workspace-panel-scroll) 双 padding 复制同一段衬距；业务模块 7 份 CSS(~1241 行)普遍存在 :global 裸选择器泄漏、裸 px/hex、重复语义值。结论：建立 primitive→semantic→component 三级唯一 token；--workspace-tabs-height 等组件 token 由全局 density/size primitive 推导；AppShell 唯一 + 业务路由只渲染 ContentViewport；逐组件清扫 magic values 并删除死规则。"
+supersedes: []
+superseded_by: []
+refresh_triggers:
+  - "@heroui/theme 或 Tailwind 主版本升级"
+  - "新增业务模块引入新的页面级样式规格"

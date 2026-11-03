@@ -1,0 +1,23 @@
+schema_version: 1
+change: 062-webui-skeleton-injection
+areas:
+  - id: startup
+    decision: reviewed-no-change
+    reason: 宿主 boot 装配链（manifest → registry → Shell → route）与 revision 门禁不变；zone 懒装载复用现有 lazy import 与 RouteResourceBoundary 语义，不引入新启动阶段。
+  - id: module
+    decision: updated
+    documents:
+      - docs/development/application-module-development.md
+    reason: 增加 WebUI 骨架分区注入点接入（zone 声明、SDK zone 契约、交互原语、图标目录）与最小接入示例；模块仍是 owner，页面表现由模块校准。
+  - id: webui
+    decision: updated
+    documents:
+      - docs/development/webui.md
+      - webui/README.md
+    reason: 新增分区注入点、SDK zone capability、Manifest zones 投影、动作级权限呈现契约、交互状态链原语、图标目录与骨架进阶（页头/批量条/内容容器/页签操作/底部状态）说明；样式 authority 仍为 webui/src/styles.css。
+  - id: api
+    decision: reviewed-no-change
+    reason: api/openapi.yaml 与 operation inventory 不变；动作级权限投影只引用既有 OperationID，不新增 HTTP operation。
+  - id: operations
+    decision: reviewed-no-change
+    reason: 启动、托管、数据源环境、迁移、部署与安全边界不变；zone 与交互只属于浏览器呈现层。

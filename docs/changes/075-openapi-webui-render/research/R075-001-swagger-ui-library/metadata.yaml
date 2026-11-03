@@ -1,0 +1,48 @@
+schema_version: 1
+id: R075-001
+title: "成熟第三方 Swagger UI 库选型（React 19 / Vite / StrictMode 适配）"
+question: "WebUI 渲染 OpenAPI 契约应选择哪个成熟第三方 Swagger UI 库，并在 React 19 + Vite 7 + StrictMode 的 Admin WebUI 中如何接入？"
+research_type: external
+topics: ["Swagger UI", "OpenAPI 文档渲染", "React 19", "Vite", "StrictMode", "WebUI"]
+keywords: ["swagger-ui-react", "swagger-ui-dist", "scalar", "redoc", "rapidoc", "react peer dependency", "vite buffer externalized"]
+applicable_scenarios:
+  - "React 19 单页应用内嵌开源 Swagger UI 渲染 OpenAPI 3.0 契约"
+  - "按路由懒加载、避免影响首屏体积的文档页"
+non_applicable_scenarios:
+  - "需要独立标签页/独立 URL 的完整文档站点（应评估 swagger-ui-dist 独立部署）"
+  - "已确认要深度自定义渲染引擎的用例（scalar/redoc 的组件模型更开放）"
+status: superseded
+summary: "（已被 R075-003 取代）原结论为采用官方 swagger-ui-react（5.32.14）在页内渲染契约；用户后续要求『页内组件也使用当前 WebUI 组件』，swagger-ui-react 原生控件无法平台化，页内呈现层改为基于 @webui/sdk/ui 组件的模块内自绘只读参考页，swagger-ui-react 及其依赖/别名删除。本记录保留 swagger-ui-react 的版本/兼容/风险证据作为历史与独立站点场景参考。"
+evidence:
+  types: ["registry-metadata", "upstream-issues"]
+  primary_sources:
+    - title: "npm registry: swagger-ui-react"
+      locator: "https://www.npmjs.com/package/swagger-ui-react"
+      snapshot: "5.32.14, 2026-08-25"
+    - title: "swagger-api/swagger-ui issue #10553 (Vite buffer externalized)"
+      locator: "https://github.com/swagger-api/swagger-ui/issues/10553"
+      snapshot: "closed 2025-09-03"
+    - title: "swagger-api/swagger-ui issue #10883 (deep linking regression)"
+      locator: "https://github.com/swagger-api/swagger-ui/issues/10883"
+      snapshot: "open, 2026-05-14"
+    - title: "swagger-api/swagger-ui 官方仓库"
+      locator: "https://github.com/swagger-api/swagger-ui"
+      snapshot: "main, 2026-08-25"
+researched_at: "2026-08-25"
+verified_at: "2026-08-25"
+validity:
+  mode: snapshot
+  review_after: "2026-11-25"
+  refresh_triggers:
+    - "swagger-ui-react 发布包含 breaking 的新 major（6.x/5.0.0-beta 成稳定）"
+    - "React 20/新 StrictMode 行为与 swagger-ui-react 出现兼容回归"
+    - "Vite 升级后重现 buffer/safe-buffer 兼容告警"
+relations:
+  extends: []
+  related:
+    - R075-002
+    - R075-003
+  supersedes: []
+  superseded_by:
+    - R075-003
+report: report.md

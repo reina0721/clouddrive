@@ -1,0 +1,151 @@
+ExpectError: expect(locator).toBeVisible() failed
+
+Locator: getByRole('alertdialog', { name: '本地规则已保存' })
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "to.be.visible" with timeout 5000ms
+  - waiting for getByRole('alertdialog', { name: '本地规则已保存' })
+
+    at captureRawStack (D:\coder\i721\console-web\node_modules\.pnpm\playwright-core@1.62.1\node_modules\playwright-core\lib\coreBundle.js:9681:17)
+    at callMatcherAsStep (D:\coder\i721\console-web\node_modules\.pnpm\playwright@1.62.1\node_modules\playwright\lib\matchers\expect.js:13310:57)
+    at Object.toBeVisible (D:\coder\i721\console-web\node_modules\.pnpm\playwright@1.62.1\node_modules\playwright\lib\matchers\expect.js:13300:23)
+    at [stdin]:2:589 {
+  matcherResult: {
+    message: 'expect(locator).toBeVisible() failed\n' +
+      '\n' +
+      "Locator: getByRole('alertdialog', { name: '本地规则已保存' })\n" +
+      'Expected: visible\n' +
+      'Timeout: 5000ms\n' +
+      'Error: element(s) not found\n' +
+      '\n' +
+      'Call log:\n' +
+      '  - Expect "to.be.visible" with timeout 5000ms\n' +
+      "  - waiting for getByRole('alertdialog', { name: '本地规则已保存' })\n",
+    pass: false,
+    actual: undefined,
+    name: 'toBeVisible',
+    expected: 'visible',
+    log: [
+      '  - Expect "to.be.visible" with timeout 5000ms',
+      "  - waiting for getByRole('alertdialog', { name: '本地规则已保存' })"
+    ],
+    timeout: 5000,
+    ariaSnapshot: '- alert: 构建稳定、可治理的产品前端基座\n' +
+      '- link "跳到主要内容 / Skip to content":\n' +
+      '  - /url: "#main-content"\n' +
+      '- complementary:\n' +
+      '  - paragraph: Community\n' +
+      '  - paragraph: 统一前端基座\n' +
+      '  - navigation "主导航":\n' +
+      '    - paragraph: Universal Foundation\n' +
+      '    - list:\n' +
+      '      - listitem:\n' +
+      '        - link "总览":\n' +
+      '          - /url: /\n' +
+      '    - paragraph: 系统\n' +
+      '    - list:\n' +
+      '      - listitem:\n' +
+      '        - link "设置":\n' +
+      '          - /url: /settings\n' +
+      '      - listitem:\n' +
+      '        - link "Icon 大全":\n' +
+      '          - /url: /system-tools/icons\n' +
+      '    - paragraph: 参考资源\n' +
+      '    - list:\n' +
+      '      - listitem:\n' +
+      '        - link "参考资源":\n' +
+      '          - /url: /reference-resources\n' +
+      '    - paragraph: 开发\n' +
+      '    - list:\n' +
+      '      - listitem:\n' +
+      '        - link "基座能力":\n' +
+      '          - /url: /foundations\n' +
+      '      - listitem:\n' +
+      '        - link "Motion":\n' +
+      '          - /url: /motion\n' +
+      '      - listitem:\n' +
+      '        - button "展开或收起Page Archetypes": Page Archetypes\n' +
+      '      - listitem:\n' +
+      '        - button "展开或收起Page Patterns": Page Patterns\n' +
+      '      - listitem:\n' +
+      '        - link "状态体系":\n' +
+      '          - /url: /states\n' +
+      '      - listitem:\n' +
+      '        - button "展开或收起UI Elements": UI Elements\n' +
+      '  - text: Architecture Preview\n' +
+      '  - paragraph: React 19 · HeroUI · Tailwind CSS v4\n' +
+      '- banner:\n' +
+      '  - button "收起侧栏"\n' +
+      '  - button "按 Ctrl K 搜索"\n' +
+      '  - button "切换语言"\n' +
+      '  - button "切换主题"\n' +
+      '  - button "通知"\n' +
+      '  - button "当前用户": RI Rin 产品负责人\n' +
+      '- main:\n' +
+      '  - paragraph: Frontend Foundation\n' +
+      '  - heading "构建稳定、可治理的产品前端基座" [level=1]\n' +
+      '  - paragraph: 统一 Design System、UI Contract、Product Surface 与 Web Host，通过现有规范组合业务功能。\n' +
+      '  - link "组件规范":\n' +
+      '    - /url: /ui-elements\n' +
+      '  - link "页面模式":\n' +
+      '    - /url: /page-patterns/layout-navigation\n' +
+      '  - link "完整资源流程":\n' +
+      '    - /url: /reference-resources\n' +
+      '  - link "查看基座地图":\n' +
+      '    - /url: /foundations\n' +
+      '  - paragraph: 页面路由\n' +
+      '  - paragraph: "39"\n' +
+      '  - paragraph: 共享契约\n' +
+      '  - paragraph: 产品插件\n' +
+      '  - paragraph: "9"\n' +
+      '  - paragraph: 共享契约\n' +
+      '  - paragraph: Runtime Hosts\n' +
+      '  - paragraph: "1"\n' +
+      '  - paragraph: 共享契约\n' +
+      '  - heading "最近访问" [level=2]\n' +
+      '  - list:\n' +
+      '    - listitem:\n' +
+      '      - link "构建稳定、可治理的产品前端基座":\n' +
+      '        - /url: /\n' +
+      '    - listitem:\n' +
+      '      - link "复杂设置与审批表单":\n' +
+      '        - /url: /page-archetypes/create-edit\n' +
+      '  - heading "基础能力" [level=2]\n' +
+      '  - paragraph: 以可执行契约衡量，而不是以目录数量衡量。\n' +
+      '  - text: 4 / 4 tracked\n' +
+      '  - heading "Design System" [level=3]\n' +
+      '  - paragraph: 语义色彩、排版、间距、层级和动效由统一 Token 驱动。\n' +
+      '  - text: 就绪\n' +
+      '  - heading "UI Adapter" [level=3]\n' +
+      '  - paragraph: HeroUI 被限制在稳定的语义界面契约之后。\n' +
+      '  - text: 建设中\n' +
+      '  - heading "Host Boundary" [level=3]\n' +
+      '  - paragraph: 当前唯一 Web Host 装配 Product Surface；平台生命周期归 Host 管理。\n' +
+      '  - text: 建设中\n' +
+      '  - heading "Architecture Gates" [level=3]\n' +
+      '  - paragraph: import boundary、类型、测试和样式规则自动执行。\n' +
+      '  - text: 就绪\n' +
+      '  - heading "质量门禁" [level=2]\n' +
+      '  - paragraph: 错误依赖和样式污染会在进入页面前失败。\n' +
+      '  - list:\n' +
+      '    - listitem: 依赖边界 已启用\n' +
+      '    - listitem: HeroUI 隔离 已启用\n' +
+      '    - listitem: Token 治理 已启用\n' +
+      '    - listitem: Host 边界 已启用\n' +
+      '  - heading "最近建设轨迹" [level=2]\n' +
+      '  - paragraph: 只展示新前端基座内的真实建设范围。\n' +
+      '  - list:\n' +
+      '    - listitem: 1 Token 契约\n' +
+      '    - listitem: 2 Web Host 装配\n' +
+      '    - listitem: 3 UI Adapter 边界\n' +
+      '- region "1 个通知。":\n' +
+      '  - list:\n' +
+      '    - listitem:\n' +
+      '      - alertdialog "草稿已保存":\n' +
+      '        - alert: 草稿已保存 集中验证 Schema、Tabs、Select、Combobox、DatePicker、错误状态、禁用状态、Pending 与粘性 Footer Action。\n' +
+      '        - button "关闭"'
+  }
+}

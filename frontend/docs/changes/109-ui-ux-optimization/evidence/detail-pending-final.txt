@@ -1,0 +1,45 @@
+
+Running 2 tests using 1 worker
+
+(node:22916) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\confirm-pending-109.spec.ts:3:1 › Pending export confirmation blocks early close and duplicate submission (9.0s)
+  x  2 [chromium] › apps\web\e2e\workbench-mobile-109.spec.ts:4:1 › Mobile workbench detail preserves identity, selection and list focus (9.7s)
+
+
+  1) [chromium] › apps\web\e2e\workbench-mobile-109.spec.ts:4:1 › Mobile workbench detail preserves identity, selection and list focus
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      21 |   await expect(detail).toBeHidden();
+      22 |   await expect(row).toHaveAttribute('data-selected', 'true');
+    > 23 |   await expect
+         |               ^
+      24 |     .poll(() => row.evaluate((element) => element.contains(document.activeElement)))
+      25 |     .toBe(true);
+      26 |   await expect(row).toBeInViewport();
+        at D:\coder\i721\console-web\apps\web\e2e\workbench-mobile-109.spec.ts:23:96
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\final-detail-109\workbench-mobile-109-Mobil-7c773-ty-selection-and-list-focus-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\final-detail-109\workbench-mobile-109-Mobil-7c773-ty-selection-and-list-focus-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\final-detail-109\workbench-mobile-109-Mobil-7c773-ty-selection-and-list-focus-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\final-detail-109\workbench-mobile-109-Mobil-7c773-ty-selection-and-list-focus-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\workbench-mobile-109.spec.ts:4:1 › Mobile workbench detail preserves identity, selection and list focus
+  1 passed (21.5s)

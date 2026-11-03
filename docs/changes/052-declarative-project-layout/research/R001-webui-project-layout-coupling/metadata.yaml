@@ -1,0 +1,41 @@
+schema_version: 1
+id: R001
+title: "WebUI 与生成路径耦合审计"
+question: "根 webui、业务模块 WebUI facet 与生成 registry 的目录约定目前被哪些消费者重复写死，怎样形成单一可校验的构建期布局契约？"
+research_type: current-project
+topics: ["webui", "project-layout", "source-path", "codegen", "cross-language-config"]
+keywords: ["webui", "internal/module", "binding/webui/web", "SourcePath", "webui-registry.ts", "../../../"]
+applicable_scenarios: ["052 设计计划", "移动 WebUI 根目录", "调整模块 WebUI facet", "新增 WebUI 模块", "生成 registry"]
+non_applicable_scenarios: ["运行时远程模块", "社区 Nuxt frontend", "HTTP route 配置", "业务页面逻辑"]
+status: active
+summary: "同一 WebUI 布局在 Go、Node、TS/Vitest、Vite、package script 与质量脚本重复表达；应由构建期 layout manifest 统一声明，模块 Binding 只声明 facet 内相对资源，生成 import 必须按真实输出目录计算。"
+evidence:
+  types: ["source-code", "configuration", "tests", "project-documentation", "prior-research"]
+  primary_sources:
+    - title: "WebUI Binding 与 SourcePath owner 校验"
+      locator: "internal/webui/contract.go; internal/module/{auth,ops}/binding/webui/binding.go"
+      snapshot: "HEAD 9368cefd3ca7c8a45d21ca0798ce217ee54cffd4, verified 2026-08-21"
+    - title: "WebUI registry 生成入口"
+      locator: "cmd/app/main.go; internal/composition/webui_registry.go; internal/composition/webui_registry_test.go"
+      snapshot: "HEAD 9368cefd3ca7c8a45d21ca0798ce217ee54cffd4, verified 2026-08-21"
+    - title: "Node/TypeScript 构建与扫描配置"
+      locator: "webui/scripts/module-roots.mjs; webui/{package.json,tsconfig.json,vite.config.ts,vitest.config.ts,playwright.config.ts}"
+      snapshot: "HEAD 9368cefd3ca7c8a45d21ca0798ce217ee54cffd4, verified 2026-08-21"
+    - title: "跨平台 WebUI 质量入口"
+      locator: "scripts/Verify-WebUI.ps1; scripts/verify-webui.sh"
+      snapshot: "HEAD 9368cefd3ca7c8a45d21ca0798ce217ee54cffd4, verified 2026-08-21"
+    - title: "module-owned WebUI 既有决策"
+      locator: "docs/changes/048-full-stack-webui-modules/research/R003-module-owned-webui-sdk-boundary/report.md"
+      snapshot: "active research, rechecked 2026-08-21"
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-09-21"
+  refresh_triggers: ["WebUI 根目录变化", "模块 facet 变化", "registry 生成入口变化", "frontend 进入根质量链", "远程模块需求出现"]
+relations:
+  extends: ["048/R001", "048/R003", "050/R001"]
+  related: ["032/R001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

@@ -1,0 +1,37 @@
+schema_version: 1
+change: 066-account-permission-gap-closure
+areas:
+  - id: module
+    decision: updated
+    documents:
+      - docs/development/application-module-development.md
+      - internal/module/iam/README.md
+      - internal/module/organization/README.md
+    reason: IAM 新增账号资料更新/归档、角色资料更新/归档 HTTP 面与既有 `iam:account:write`/`iam:role:write` 权限复用；Organization 分配引入 `expectedVersion` 乐观锁与列表过滤；模块 README 同步生命周期与乐观并发边界。
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+      - docs/development/webui.md
+    reason: IAM/Organization/Navigation 管理页接入 ActionPermissions/ActionTrigger 按钮级显隐、列表过滤分页、409 差异确认 UI、分配乐观锁；宿主源码零改动，页面按模块接入四步执行。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+    reason: 新增 `iam.accounts.update`、`iam.accounts.archive`、`iam.roles.update`、`iam.roles.archive` operation 与 query 过滤/expectedVersion 参数；api/openapi.yaml 与 operation inventory 经 contract-gen 更新。
+  - id: operations
+    decision: updated
+    documents:
+      - docs/operations/security.md
+      - docs/operations/runtime-capabilities.md
+    reason: 归档账号/角色语义（登录/分配拦截、Session 撤销、owner 不变量、授权发布链路）与迁移新增列同步 security 文档；运行能力矩阵补充账号/角色生命周期、组织分配乐观锁能力行。
+  - id: startup
+    decision: reviewed-no-change
+    reason: 宿主 boot、manifest/registry 与 revision 门禁不变；ActionPermissions 经既有 Manifest 投影，页面换用既有 SDK 交互原语。
+  - id: docs
+    decision: updated
+    documents:
+      - docs/changes/066-account-permission-gap-closure/README.md
+      - docs/changes/066-account-permission-gap-closure/tasks.md
+      - docs/changes/README.md
+    reason: 变更记录（研究/需求/设计/任务）与变更索引记录本任务状态（已确认、实施完成）与结论。

@@ -1,0 +1,39 @@
+schema_version: 1
+id: R013
+title: "HTTP OpenTelemetry 标准 instrumentation 复核"
+question: "当前手工 TraceContext/server span/status attributes 是否应由官方 otelhttp 替换，如何保留 Generation lease、低基数 operation 和项目 Prometheus diagnostics？"
+research_type: current-project-and-external-primary-source
+topics: ["observability", "OpenTelemetry", "HTTP instrumentation", "trace propagation", "metrics"]
+keywords: ["telemetryAccess", "serveHTTP", "TraceContext", "otelhttp", "operation inventory", "lease"]
+technologies: ["otelhttp", "OpenTelemetry Go", "Prometheus"]
+applicable_scenarios: ["OBS-057-001", "HTTP server tracing", "trace propagation", "Application Generation"]
+non_applicable_scenarios: ["business logging", "message broker propagation", "scheduler tracing", "frontend telemetry"]
+status: active
+summary: "采用官方 otelhttp v0.70.0 替换手工 HTTP TraceContext/span/status instrumentation，并将 OTel core/sdk/exporter 对齐 v1.45.0。项目保留 Generation lease、operation inventory、低基数命名、Prometheus metrics、trace ID bridge 和 exporter lifecycle。"
+evidence:
+  types: ["source-code", "call-site-search", "tests", "dependency-manifest", "official-source", "release-metadata", "vulnerability-database"]
+  primary_sources:
+    - title: "当前 Telemetry HTTP implementation, lease and tests"
+      locator: "internal/kernel/app/observability/telemetry.go; internal/kernel/app/observability/telemetry_test.go; pkg/observability/; internal/composition/generation.go"
+      snapshot: "4ad496c2f36044f8f4a8a9273685a5666ed5c87b"
+    - title: "otelhttp v0.70.0 official source and metadata"
+      locator: "https://github.com/open-telemetry/opentelemetry-go-contrib/tree/instrumentation/net/http/otelhttp/v0.70.0/instrumentation/net/http/otelhttp; https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp@v0.70.0"
+      snapshot: "2026-08-22"
+    - title: "OpenTelemetry Go v1.45.0 modules"
+      locator: "https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.45.0"
+      snapshot: "2026-08-22"
+    - title: "OSV version-specific Go package query"
+      locator: "https://api.osv.dev/v1/query"
+      snapshot: "2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: time-sensitive
+  review_after: "2026-10-22"
+  refresh_triggers: ["OTel core/contrib release", "OTel security advisory", "Huma operation metadata shape", "Telemetry owner/reload change", "semantic conventions migration"]
+relations:
+  extends: ["057-R001", "057-R002", "057-R011"]
+  related: ["057-R009"]
+  supersedes: []
+  superseded_by: []
+report: report.md

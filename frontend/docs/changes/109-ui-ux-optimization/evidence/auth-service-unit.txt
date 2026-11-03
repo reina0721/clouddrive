@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/rin/coder/i0721/console-web/apps/web
+
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+   Start at  12:22:35
+   Duration  19.61s (transform 259ms, setup 6.63s, import 488ms, tests 94ms, environment 30.63s)
+

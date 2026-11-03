@@ -1,0 +1,48 @@
+[WebServer] (node:31352) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:27680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:32524) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:18584) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:31308) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › apps\web\e2e\authentication.spec.ts:215:1 › Large English dark mobile registration keeps password entry usable (1.5s)
+
+
+  1) [chromium] › apps\web\e2e\authentication.spec.ts:215:1 › Large English dark mobile registration keeps password entry usable 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 80
+    Received:    45.4375
+
+      238 |   await expect(password).toHaveValue('LargeMobileDemo2026!');
+      239 |   const box = await password.boundingBox();
+    > 240 |   expect(box?.width).toBeGreaterThanOrEqual(80);
+          |                      ^
+      241 |   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      242 |   const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+      243 |   expect(axe.violations).toEqual([]);
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\authentication.spec.ts:240:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\authentication-Large-Engli-d3490-keeps-password-entry-usable-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\authentication-Large-Engli-d3490-keeps-password-entry-usable-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\authentication-Large-Engli-d3490-keeps-password-entry-usable-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\authentication-Large-Engli-d3490-keeps-password-entry-usable-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\authentication.spec.ts:215:1 › Large English dark mobile registration keeps password entry usable 

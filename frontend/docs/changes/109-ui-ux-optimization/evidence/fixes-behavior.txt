@@ -1,0 +1,156 @@
+
+Running 9 tests using 1 worker
+
+(node:32808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\page-tabs.spec.ts:114:1 › 恢复上次打开的标签：重载后标签保持（默认关时清除） (6.8s)
+  ok 2 [chromium] › apps\web\e2e\search-suggestions.spec.ts:3:1 › 搜索建议默认开：键入显示匹配建议，点击应用为搜索词 (3.5s)
+  ok 3 [chromium] › apps\web\e2e\settings-routes.spec.ts:147:1 › 分类切换复用主 Shell route-enter 动效：内容区段淡入、壳静止（SET-012） (4.4s)
+  ok 4 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:191:1 › Operation example closes failure, retry and cancellation loops (7.3s)
+  ok 5 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:209:1 › Detail example validates, saves and resets its real local fields (2.0s)
+  x  6 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: compact (2.0s)
+(node:29140) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  7 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: standard (2.3s)
+(node:28428) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  8 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: comfortable (2.6s)
+(node:15488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  9 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:300:1 › Corrupt current column layout is reported and can be retried (30.3s)
+
+
+  1) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: compact
+
+    Error: actions-selection
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 320
+    Received:    360
+
+      284 |         await page.evaluate(() => document.documentElement.scrollWidth),
+      285 |         family,
+    > 286 |       ).toBeLessThanOrEqual(320);
+          |         ^
+      287 |       const search = page.getByRole('searchbox');
+      288 |       for (const field of await search.all()) {
+      289 |         const geometry = await field.evaluate((element) => {
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:286:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--babe0--English-large-text-compact-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Public-families--babe0--English-large-text-compact-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--babe0--English-large-text-compact-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Public-families--babe0--English-large-text-compact-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: standard
+
+    Error: actions-selection
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 320
+    Received:    360
+
+      284 |         await page.evaluate(() => document.documentElement.scrollWidth),
+      285 |         family,
+    > 286 |       ).toBeLessThanOrEqual(320);
+          |         ^
+      287 |       const search = page.getByRole('searchbox');
+      288 |       for (const field of await search.all()) {
+      289 |         const geometry = await field.evaluate((element) => {
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:286:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--f5ab9-English-large-text-standard-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Public-families--f5ab9-English-large-text-standard-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--f5ab9-English-large-text-standard-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Public-families--f5ab9-English-large-text-standard-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: comfortable
+
+    Error: actions-selection
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 320
+    Received:    360
+
+      284 |         await page.evaluate(() => document.documentElement.scrollWidth),
+      285 |         family,
+    > 286 |       ).toBeLessThanOrEqual(320);
+          |         ^
+      287 |       const search = page.getByRole('searchbox');
+      288 |       for (const field of await search.all()) {
+      289 |         const geometry = await field.evaluate((element) => {
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:286:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--cf1f9-lish-large-text-comfortable-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Public-families--cf1f9-lish-large-text-comfortable-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--cf1f9-lish-large-text-comfortable-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Public-families--cf1f9-lish-large-text-comfortable-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:300:1 › Corrupt current column layout is reported and can be retried
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('alert').filter({ hasText: '未能恢复列布局' }).getByRole('button')
+
+
+      319 |   await expect(page.getByRole('grid').getByRole('rowheader').first()).toBeVisible();
+      320 |   await page.evaluate(() => localStorage.removeItem('clouddrive.page-archetypes.column-layout'));
+    > 321 |   await page.getByRole('alert').filter({ hasText: '未能恢复列布局' }).getByRole('button').click();
+          |                                                                                    ^
+      322 |   await expect(page.getByText('未能恢复列布局', { exact: true })).not.toBeVisible();
+      323 | });
+      324 |
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:321:84
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Corrupt-current--eec89-reported-and-can-be-retried-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Corrupt-current--eec89-reported-and-can-be-retried-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Corrupt-current--eec89-reported-and-can-be-retried-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Corrupt-current--eec89-reported-and-can-be-retried-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: compact
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: standard
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: comfortable
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:300:1 › Corrupt current column layout is reported and can be retried
+  5 passed (1.1m)

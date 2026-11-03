@@ -1,0 +1,31 @@
+schema_version: 1
+id: R069-002
+title: "基于 HeroUI 视觉语言重新设计 Web UI 骨架与布局"
+question: "用户要求「根据新组件设计一套 Web UI 骨架和布局」（新组件的视觉张力与旧布局不匹配）。需要回答：（a）HeroUI v3 的视觉语言要素（半径/阴影/间距/语义色/暗色/密度）是什么？（b）TailAdmin 参考站骨架形态与本项目 067 骨架的差距？（c）新骨架规范应由哪些层组成（Shell/页面模板/原语组合/布局 token）？（d）模块页面按新骨架重排的改动与验证矩阵？"
+research_type: external-comparison
+topics: ["webui", "heroui", "design-system", "layout-skeleton", "tailadmin", "design-tokens", "page-template"]
+keywords: ["radius", "shadow", "space-scale", "semantic colors", "dark mode", "density", "page header", "stat row", "card grid", "table card", "form card", "toolbar", "empty state"]
+applicable_scenarios:
+  - "为 HeroUI 骨架与布局建立权威设计规范并实施"
+  - "对齐 TailAdmin 参考站形态与 HeroUI 视觉语言"
+non_applicable_scenarios:
+  - "把 Tailwind 工具类硬编码进业务模块页面（保留平台收口）"
+status: active
+summary: "HeroUI v3 视觉语言：半径 8/10/12/16 级、轻阴影 + hover 提升、间距基于 4px 标尺、语义色（primary/secondary/success/warning/danger/foreground/background/content1..4）、明暗双主题（.dark）、密度（size sm/md/lg）。TailAdmin 形态：固定侧栏 + 固定顶栏 + 内容窗口滚动；统计卡行 → 边框卡标题区 → 表格卡（header+table+pagination footer）→ 表单/设置卡。新骨架规范分四层：（1）平台布局 token 与 Tailwind 主题对齐（radius/shadow/space/semantic 映射到 @heroui/theme + --shell-*）；（2）Shell 组件由 HeroUI/RAC 拼装（Sidebar=Surface+Link+Tooltip+Avatar+Badge+Separatord 布局容器；Header=Header+Toolbar+TextField+Kbd+Avatar+Dropdown；Tabs 用 Tabs 复合；遮罩改 RAC 受控 Modal/Dialog）；（3）页面模板（PageHeader + StatGrid + SectionCard + CardTable + FormCard + Toolbar + EmptyState + Pagination + 暗色）；（4）测试/e2e 校准与截图证据。模块页面按模板重排，组件契约不改。"
+evidence:
+  types: ["source-code", "package-source", "documentation"]
+  primary_sources:
+    - title: "HeroUI 主题 token 与组件视觉"
+      locator: "@heroui/theme（dist/tokens、扩展变量 --heroui-radius/--heroui-spacing/语义色）；@heroui/styles 组件类（button--*/card--driver 等）"
+      snapshot: "2026-08-26 node_modules"
+    - title: "067 骨架 token 与页面结构"
+      locator: "webui/src/styles.css（--shell-*、--space-*、--radius-*、--shadow-*；.page-header/.page-sections/.toolbar/.card-grid/.item-card）；docs/changes/067-*/design.md"
+      snapshot: "f7ca5ca"
+    - title: "TailAdmin 参考形态"
+      locator: "https://react-demo.tailadmin.com/（公开 demo：统计卡行、标题卡、表格卡、表单卡、固定侧栏/顶栏）"
+      snapshot: "2026-08-26 公开 demo"
+researched_at: "2026-08-26"
+verified_at: "2026-08-26"
+refresh_triggers:
+  - "HeroUI 主题 API（extendTheme/dark）变化"
+  - "TailAdmin 参考布局出现新的骨架范式"

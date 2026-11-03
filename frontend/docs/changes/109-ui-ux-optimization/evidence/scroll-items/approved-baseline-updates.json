@@ -1,0 +1,198 @@
+[
+  {
+    "name": "surface-shell-compact-sibling-swap",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\navigation.spec.ts-snapshots\\surface-shell-compact-sibling-swap-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\01\\actual.png",
+    "before": "834027F1A46A0F7E1B9DF2F916819738DF29F6B311EB3582C729D65911457A3A",
+    "after": "6C421FA3232CFD153C304631987242317CDA6B99F570CD7011F253C4CFBFFE29"
+  },
+  {
+    "name": "surface-shell-compact-flyout",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\navigation.spec.ts-snapshots\\surface-shell-compact-flyout-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\02\\actual.png",
+    "before": "2CC1C8EB37999EE7BD6229BE11AADFF76486D4364B083C4497A3189B82A7E65B",
+    "after": "C9EBC2E53CF613E3041AFD8E434D0FCF6CF91646FB7C1CEFDC24604AA99CBD23"
+  },
+  {
+    "name": "ui-elements-command-open",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\overlays.spec.ts-snapshots\\ui-elements-command-open-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\03\\actual.png",
+    "before": "69E3F65E84007376F463637843EAF9069800DEEEED1BF945B66C1C9370A78441",
+    "after": "670184D7C7D2403F51336C95BAD6DD5C6AA5834FDB62B2A8DE70DBBCE408EE1C"
+  },
+  {
+    "name": "ui-elements-date-picker-open",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\overlays.spec.ts-snapshots\\ui-elements-date-picker-open-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\04\\actual.png",
+    "before": "190967CED91BFD89E2DA09F859C62B16ADABDDAE08B60D8C6DF6A5B7D7491474",
+    "after": "8220D2E5201C6795C6C8D0008A48BA12ABCD496BF409F6AFA312895E4787F598"
+  },
+  {
+    "name": "ui-elements-menu-open",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\overlays.spec.ts-snapshots\\ui-elements-menu-open-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\05\\actual.png",
+    "before": "859AF00C76CE2D1E7F04DCBC0561B013FD2A101A7630897088E14ECAA23C75E0",
+    "after": "8B515B112C2C1B4316ED2EF2A916238D873491E570CC8B904AFD966F1F44E6B7"
+  },
+  {
+    "name": "ui-elements-popover-open",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\overlays.spec.ts-snapshots\\ui-elements-popover-open-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\06\\actual.png",
+    "before": "6BD4C962B198E929AE21918E512D47FA05CE15E1545462EDC9C56D9753AE64D6",
+    "after": "AB1B3DAAAA364850933A5F0CBBE189E945B9F41C1BAD9CD784AC7192B1FDBC5D"
+  },
+  {
+    "name": "ui-elements-tooltip-open",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\overlays.spec.ts-snapshots\\ui-elements-tooltip-open-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\07\\actual.png",
+    "before": "EC5E2A75CA9017EE79323877B8556EB759167594BC720D473948039DA16F15F9",
+    "after": "17AB0FCEB8B7E139B62D27EB1F0AD575D018425FD1D3176C199462E6EEB63619"
+  },
+  {
+    "name": "ui-elements-combobox-open",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\overlays.spec.ts-snapshots\\ui-elements-combobox-open-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\08\\actual.png",
+    "before": "B951B3E32482EC3CB005F07249B7159A70475736B85025A90CCFC83FFF7004C2",
+    "after": "12B11D356FDFED93791EE57E5F0B497EEBC9006F583875E8B8137A20C9C4EEAA"
+  },
+  {
+    "name": "ui-elements-select-open",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\overlays.spec.ts-snapshots\\ui-elements-select-open-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\09\\actual.png",
+    "before": "E0842EE1AE961BAC74B2AD458FDB6E1FF8ABCCB8D8E5D835DC4D327BB26128A2",
+    "after": "A618A86790206310167CBE700E82994E1A149246E5D62703A2006A4B9EAEA990"
+  },
+  {
+    "name": "page-archetypes-overview-desktop",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\surface-foundation.spec.ts-snapshots\\page-archetypes-overview-desktop-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\10\\actual.png",
+    "before": "2C80A774BAAC6D48E1DF4A0E90CF8BE40D579FEB05B7D5758F7FDF5C9EFB0DBE",
+    "after": "634109A4B7E89BFF5ED59980715614DC8A4EF54150FEDD57EDC455399C16A44F"
+  },
+  {
+    "name": "page-patterns-collections-desktop",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\surface-foundation.spec.ts-snapshots\\page-patterns-collections-desktop-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\11\\actual.png",
+    "before": "5FC60EAF8D3A5DF37286057714F87E7A96F050113B372A02A5321BE9BFA3FB66",
+    "after": "DCB7467B3A381D3889FFC75D6940925D5CD97115AE9F0F0CA43D6E5B793C4DAD"
+  },
+  {
+    "name": "universal-motion-desktop",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\surface-foundation.spec.ts-snapshots\\universal-motion-desktop-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\12\\actual.png",
+    "before": "A5DAA5BC0D80FE3F2186518BD29555B329129CC835931A872AC1289C5E967D95",
+    "after": "B3276B5667A80447DAA8A80B2882AD5EF5B55E45CF27519A7366C90F31301F5A"
+  },
+  {
+    "name": "overview-desktop",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\overview-desktop-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\13\\actual.png",
+    "before": "DB7684D297A9DB15394F6DA8C8AE66C285A4865D845A38E831863940DAE61BAD",
+    "after": "293F5B671D66716DB4D57D24A508336BFC59F782057E5D7D570FA11692B13CD5"
+  },
+  {
+    "name": "settings-desktop",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\settings-desktop-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\14\\actual.png",
+    "before": "0F6039C0C600B4C93CD56EB167953051E18D925072B01DD04E606BDAB71A4B6B",
+    "after": "4C27B4FD311B1CF6803DEF3694C93CFCFD0951E1436AB0026338CA454470C9F6"
+  },
+  {
+    "name": "reference-multi-select",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\reference-multi-select-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\15\\actual.png",
+    "before": "C5C27F5B8C640737E50363ACFC9F6023B370F8AF18EA5CF05C4209F13E990E96",
+    "after": "10DE2E76FDE8BCC8C8666DF7D11F06EF9778307A95A67B5B8DA1E9A95610A546"
+  },
+  {
+    "name": "ui-elements-toast-compact",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-toast-compact-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\16\\actual.png",
+    "before": "D660FBFE0F02E592260CAD81A202798D65B40BA15B07A49343EA861C0FB23BB8",
+    "after": "0385DFF40B62E2C6DC470A5D89EEEF60E6EA680C3D950FE3400C983631C955DF"
+  },
+  {
+    "name": "ui-elements-family-actions-selection",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-family-actions-selection-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\17\\actual.png",
+    "before": "EFBFB2E10F79AF677CC4CE6DD06F0E0372372BAA7D5080B8627889DA452BD5CF",
+    "after": "A36C868F25EFFA21C1F3D8BA21EF4C41B3FA2AFC24B2CC3E8387D344C23F67D0"
+  },
+  {
+    "name": "ui-elements-family-feedback",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-family-feedback-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\18\\actual.png",
+    "before": "D710DE785601F2FBB68F8B747A40E27A4B52BE6FCD77F943422D600E0BC00779",
+    "after": "6ED4EB562F7D768C934530E904A121CAA29F29A0BCB97A1A99E0E86437CDD7CA"
+  },
+  {
+    "name": "ui-elements-family-forms",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-family-forms-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\19\\actual.png",
+    "before": "B68131CD6AF1CBC92CA83740994C016161CD9FF65DB295C79820B795F10BA03C",
+    "after": "1C37E55E869996DEF7218D992B0C533ABD9311BD4FDEA1E2C183917EB4577407"
+  },
+  {
+    "name": "ui-elements-family-identity-display",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-family-identity-display-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\20\\actual.png",
+    "before": "4E21BD075A96B168244CE83389BF927CA8F1158BD726F4BF01C0E151EAE8C1C7",
+    "after": "66B2F9E93F5B7D8C4DAE44686A4FF5FC9E474C30639873DCBF55BB201C10AA8D"
+  },
+  {
+    "name": "ui-elements-family-navigation",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-family-navigation-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\21\\actual.png",
+    "before": "D718EA482C99DE848B5BE4F0AFBE8FE08B9BA047FE453BB8BAC7C67D34FF8772",
+    "after": "A2B928F733693C9FA5480A91D3DF1320B079709FB021C13EEBCDB8C110AC386D"
+  },
+  {
+    "name": "ui-elements-family-overlays",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-family-overlays-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\22\\actual.png",
+    "before": "E5F1DB4C51946491E44D7A09E1965A70F59E50438D0D711B013295CE4D53B6DB",
+    "after": "5019CDD5205E99C52FA7D463BC5EF9741DC6069B3F470D880C70A5649E682E27"
+  },
+  {
+    "name": "ui-elements-family-status-async",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-family-status-async-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\23\\actual.png",
+    "before": "82085D10A2ECD267D4B6ADC674A79B64DBB1C21757E2F1A3B1BC5FCFFD662B4C",
+    "after": "D86132E7B3DD2EFED2161962F4384FAE7E287833964F3EB78B11C2F1BA68B48F"
+  },
+  {
+    "name": "ui-elements-desktop",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-desktop-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\24\\actual.png",
+    "before": "6DCCA54B48F49560B5BCDEB49E5A322E3715D22C15EA220F6C0F951FD6F4A6B7",
+    "after": "92B64D924A9ED72E3A9709EBD2BD653C232EE49EA88E47D935532A444F728CB0"
+  },
+  {
+    "name": "reference-desktop",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\reference-desktop-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\25\\actual.png",
+    "before": "909B7B0C6832454C38349CD301665E4A46FC44FFE5C63CCCA4BC35771BAE9FAA",
+    "after": "48349589514945915C448FFFA8C136AB6ECC15C730BCB52490CD613CE7EB9FCE"
+  },
+  {
+    "name": "reference-ultrawide",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\reference-ultrawide-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\26\\actual.png",
+    "before": "EF90E3D8786ADD5E2860E1719F2E8D205CFCD29386E0D872E6EBE47FE7143B66",
+    "after": "8A82EE891FCD34D938AB47671984386036BA6BBC45A98542BDD7BAD263008FA3"
+  },
+  {
+    "name": "mobile-navigation-open",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\mobile-navigation-open-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\27\\actual.png",
+    "before": "D55672A6D5E35500AA4E2F6ED05F20976CE7D92DA3904355C45E26D57CE2A614",
+    "after": "DF1854A11657EA2F00E39A807B7147C029D61087E61A3382D29829F0AC300C35"
+  },
+  {
+    "name": "ui-elements-mobile-dark-en",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-mobile-dark-en-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\scroll-items\\visual-differences\\28\\actual.png",
+    "before": "79B34355945C4C24D001A69401C17F3D107CD41452904C4CB56307EA09CB43C3",
+    "after": "30B77C41C4628525625C50E3821C8FF399D7A26E2E2F32F55DA431FADE07434C"
+  }
+]

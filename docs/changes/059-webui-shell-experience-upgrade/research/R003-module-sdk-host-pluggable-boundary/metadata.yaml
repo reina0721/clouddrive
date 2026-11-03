@@ -1,0 +1,41 @@
+schema_version: 1
+id: R003
+title: "模块、SDK 与 WebUI Host 可插拔边界"
+question: "当前业务页面、项目自有 SDK、WebUI Host、Binding/codegen 之间的真实 owner 与通信链路是什么，059 应如何升级页面体验而不破坏模块化和可插拔设计？"
+research_type: current-project
+topics: ["webui", "module-owned-page", "sdk-contract", "host-adapter", "binding", "generated-registry", "pluggability", "lazy-loading", "performance"]
+keywords: ["Binding", "SourcePath", "@webui/sdk", "webui-registry", "ManifestPage", "lint-architecture", "static plugin"]
+applicable_scenarios: ["WebUI Shell 重构", "模块页面视觉升级", "普通模块接入", "SDK 能力演进", "静态可插拔验证"]
+non_applicable_scenarios: ["运行时远程插件", "Module Federation", "独立前端发布", "业务 API 改造"]
+status: active
+summary: "当前页面已经由业务模块持有，并通过 Binding、generated lazy registry、Manifest 和 @webui/sdk/* 与 Host 装配；059 必须保留这一 A/契约/B 边界，只在模块 owner 内升级业务页面，在 Host 内升级 Shell/adapter，并把可插拔限定为当前已实现的源码与构建期静态装配，同时保持按路由 code splitting 而不引入热插拔。"
+evidence:
+  types: ["source-code", "tests", "project-docs", "generated-artifact", "project-layout"]
+  primary_sources:
+    - title: "模块拥有的 WebUI Binding 与 SDK requirement"
+      locator: "internal/module/{iam,organization,navigation,ops}/binding/webui/binding.go"
+      snapshot: "working tree verified 2026-08-22"
+    - title: "构建期 SourcePath owner 与 SDK major 校验"
+      locator: "internal/webui/contract.go"
+      snapshot: "HEAD f83a585, working tree verified 2026-08-22"
+    - title: "模块 facet 与 generated registry authority"
+      locator: ".scaffold/layout.json; webui/src/generated/webui-registry.ts"
+      snapshot: "working tree verified 2026-08-22"
+    - title: "Host lazy 装载与架构 import 门禁"
+      locator: "webui/src/App.tsx; webui/scripts/lint-architecture.mjs"
+      snapshot: "working tree verified 2026-08-22"
+    - title: "既有 module-owned WebUI/SDK 边界研究"
+      locator: "docs/changes/048-full-stack-webui-modules/research/R003-module-owned-webui-sdk-boundary/report.md"
+      snapshot: "verified 2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: working-tree-snapshot
+  review_after: "2026-09-22"
+  refresh_triggers: ["Binding 或 SourcePath 语义改变", "SDK capability major 改变", "registry generator 改变", "Host import 门禁改变", "引入运行时远程插件目标"]
+relations:
+  extends: ["048/R003", "059/R001"]
+  related: ["047", "050", "052"]
+  supersedes: []
+  superseded_by: []
+report: report.md

@@ -1,0 +1,41 @@
+schema_version: 1
+id: R002
+title: "TailAdmin 参考适配性与技术边界"
+question: "TailAdmin Vue 仓库和 React Demo 的哪些后台骨架、视觉与交互设计适合当前 React WebUI，是否需要引入 Tailwind、动画库或复制其代码与资产？"
+research_type: technology-and-reference-fit
+topics: ["TailAdmin", "React", "Vue", "Tailwind CSS", "app-shell", "motion", "license"]
+keywords: ["AdminLayout", "AppSidebar", "AppHeader", "SidebarProvider", "react-demo.tailadmin.com", "duration-300"]
+applicable_scenarios: ["后台骨架视觉参考", "响应式侧栏", "动效设计", "技术选型"]
+non_applicable_scenarios: ["复制 TailAdmin Pro", "迁移到 Vue", "引入演示业务", "品牌资产复用"]
+status: active
+summary: "TailAdmin 适合作为布局比例、状态分离、移动抽屉、公共组件层次和功能性动效的视觉参考；当前项目应保留 React 与项目自有 UI/CSS，升级 Shell、公共 UI 与当前真实页面，不引入 Tailwind 或动画运行时，也不复制源码、品牌、Pro 资产或演示数据。"
+evidence:
+  types: ["official-source", "official-repository", "browser-observation", "computed-style", "license-check"]
+  primary_sources:
+    - title: "TailAdmin Vue 官方仓库"
+      locator: "https://github.com/TailAdmin/vue-tailwind-admin-dashboard"
+      snapshot: "main, package version 2.3.0, verified 2026-08-22"
+    - title: "TailAdmin Vue layout 与 sidebar state"
+      locator: "https://github.com/TailAdmin/vue-tailwind-admin-dashboard/tree/main/src/components/layout; src/composables/useSidebar.ts"
+      snapshot: "verified 2026-08-22"
+    - title: "TailAdmin React 对应实现"
+      locator: "https://github.com/TailAdmin/free-react-tailwind-admin-dashboard/blob/main/src/layout/AppLayout.tsx; src/context/SidebarContext.tsx"
+      snapshot: "main, package version 2.3.0, verified 2026-08-22"
+    - title: "TailAdmin React 在线 Demo"
+      locator: "https://react-demo.tailadmin.com/"
+      snapshot: "2026-08-22 DOM, screenshot and computed-style observation at 720x782 and 390x844"
+    - title: "许可文件检查"
+      locator: "Vue and React repository root listings; raw main/LICENSE"
+      snapshot: "raw LICENSE returned 404 for both repositories on 2026-08-22; React README states MIT, Vue root page did not expose a license file"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: snapshot
+  review_after: "2026-09-22"
+  refresh_triggers: ["TailAdmin major layout changes", "TailAdmin license changes", "current WebUI styling stack changes", "new animation or design-system dependency proposed"]
+relations:
+  extends: ["R001"]
+  related: ["047/R001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

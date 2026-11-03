@@ -1,0 +1,37 @@
+schema_version: 1
+id: R003
+title: "动态账号角色与角色权限分配契约"
+question: "当前项目怎样支持动态权限分配，如何在 Casbin 接入后保证并发、事务、即时生效、审计和单一 authority？"
+research_type: current-project-design
+topics: ["dynamic permission assignment", "role management", "optimistic concurrency", "authorization revision", "WebUI permission matrix"]
+keywords: ["ReplaceAccountRoles", "ReplaceRolePermissions", "expectedVersion", "Permission Catalog", "policy diff", "atomic publish"]
+technologies: ["Go", "Huma v2", "GORM", "Casbin v3"]
+applicable_scenarios: ["058 动态权限分配", "账号角色管理", "角色权限矩阵", "运行时 RBAC mutation"]
+non_applicable_scenarios: ["运行时创建 PermissionKey", "动态 matcher", "URL policy", "多租户 domain", "资源级 ACL/ReBAC"]
+status: active
+summary: "当前 API 和 WebUI 已支持账号角色、角色权限的运行时集合替换，但角色权限页面使用自由文本且 mutation 没有显式 expected version。目标保留 typed IAM 表为唯一 authority，以 Catalog 选择、全量集合替换、乐观并发、事务 diff、Session 撤销、authorization revision 和完整 evaluator 原子发布形成动态分配闭环。"
+evidence:
+  types: ["source-code", "http-contract", "webui-source", "transaction-analysis"]
+  primary_sources:
+    - title: "IAM 动态关系 Service"
+      locator: "internal/module/iam/service/service.go: ReplaceAccountRoles, ReplaceRolePermissions, AccountRoleIDs, RolePermissionKeys"
+      snapshot: "f83a58534c949a636a3a1b10f31c047fdeacf4af"
+    - title: "IAM 动态关系 HTTP Contract"
+      locator: "internal/module/iam/binding/http/huma.go; api/openapi.yaml"
+      snapshot: "f83a58534c949a636a3a1b10f31c047fdeacf4af"
+    - title: "IAM 角色权限 WebUI"
+      locator: "internal/module/iam/binding/webui/web/{api.ts,RolesPage.tsx,PermissionsPage.tsx}"
+      snapshot: "f83a58534c949a636a3a1b10f31c047fdeacf4af"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: code-snapshot
+  review_after: "2026-09-22"
+  refresh_triggers: ["IAM relation API 变化", "Permission Catalog 变为数据驱动", "角色层级/多租户/资源权限需求", "并发写入或规模证据变化"]
+relations:
+  extends: ["058/R001", "058/R002"]
+  related: ["054/IAM", "053/R002"]
+  supersedes: []
+  superseded_by: []
+report: report.md
+

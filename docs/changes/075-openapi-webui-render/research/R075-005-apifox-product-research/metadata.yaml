@@ -1,0 +1,44 @@
+schema_version: 1
+id: R075-005
+title: "Apifox 产品形态与技术拆解（像素级复刻前的研究）"
+question: "用户要求 openapi 模块与 Apifox「骨架、交互、设计完全一模一样，而不是最小可用」，作为商业级 SaaS 前端搭建（左侧资源树、顶部全局搜索与工具栏、中间多标签页（项目/文档/调试）、右侧响应面板；参数表单自动构建含 JSON 输入框/文件上传/Query；JSON 响应高亮；加载动画、交互高亮、面包屑、状态码/响应时间可视化、深链）。Apifox 的公开产品形态、设计语言、交互逻辑与 OpenAPI→UI 映射理念是什么，如何在我们模块内还原？"
+research_type: external
+topics: ["Apifox 形态拆解", "设计语言", "多标签工作台", "调试交互", "OpenAPI 映射", "像素级还原"]
+keywords: ["apifox", "文档模式 调试模式", "参数表格", "响应面板", "在线调试", "深链", "design tokens"]
+applicable_scenarios:
+  - "Admin WebUI 内复刻 Apifox 式 API 管理工作台（文档 + 调试 + 模型，多标签页）"
+  - "以公开物料与产品知识为基础还原 Apifox 设计语言与交互，再以截图逐轮校准"
+non_applicable_scenarios:
+  - "复刻 Apifox 团队协作/自动化测试/Mock 服务/CI/CLI 等需要配套后端能力的商业模块（无真实后端能力，列为候选）"
+  - "导入 Apifox 私有前端实现或组件库（不开源，且与 Admin 宿主边界冲突）"
+status: superseded
+summary: "（UI 结论已被 R075-006 取代）原结论：Apifox 复刻工作台（模块内自绘观感）。用户随后否决其外壳，要求提取业务能力、融入后台设计语言（平台组件 + 标准流程）；本记录的 Apifox 业务能力清单（文档/调试双模式、参数表单、Try it out、响应面板元素、Cmd+K、深链）继续作为功能参考，UI 呈现结论由 R075-006 取代。"
+evidence:
+  types: ["official-website", "author-knowledge"]
+  primary_sources:
+    - title: "Apifox 官网（产品定位、功能清单、FAQ：文档/调试模式、导入 Swagger、在线文档在线调试）"
+      locator: "https://apifox.com/"
+      snapshot: "2026-08-25 抓取"
+    - title: "Apifox 帮助文档（快速入门：示例项目、新建接口、导入、Mock、快捷请求、在线文档）"
+      locator: "https://apifox.com/help"
+      snapshot: "2026-08-25 抓取"
+researched_at: "2026-08-25"
+verified_at: "2026-08-25"
+validity:
+  mode: snapshot
+  review_after: "2026-11-25"
+  refresh_triggers:
+    - "Apifox 体验版/新版界面可被可视化对照时，逐像素校准设计 token 与间距"
+    - "用户提供 Apifox 参照截图/录屏时按截图修订细节"
+    - "web_search 恢复后补官方技术博客/版本发布说明（组件库选型等公开信息）"
+relations:
+  extends: []
+  related:
+    - R075-002
+    - R075-004
+    - R075-006
+  supersedes:
+    - R075-004
+  superseded_by:
+    - R075-006
+report: report.md

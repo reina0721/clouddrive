@@ -1,0 +1,41 @@
+schema_version: 1
+id: R002
+title: "i18n 强制契约缺口复核"
+question: "当前 WebUI 是否已经把模块 i18n 作为可验证的强制契约，以及新增的 locale owner、翻译 hook、message ID 和硬编码文案门禁需要约束什么？"
+research_type: current-project
+topics: ["webui", "i18n", "module-binding", "contract", "architecture-test"]
+keywords: ["useWebUITranslation", "error code", "message ID", "setupErrorMessages", "locale registry", "hardcoded text"]
+applicable_scenarios: ["047 i18n 计划调整", "新增 WebUI 模块", "Auth/Ops 页面接入"]
+non_applicable_scenarios: ["后端 API 文案翻译", "无 WebUI Binding 的业务模块", "复制第三方后台源码"]
+status: active
+summary: "当前工作树已有模块 locale registry 和宿主 i18n adapter，但模块页面仍直接使用 useTranslation 并包含用户可见硬编码文案；setup 错误码映射直接返回中文文本，因此必须把 i18n 约束提升为 Binding、公开翻译 hook、message ID 和静态架构门禁组成的规范契约。"
+evidence:
+  types: ["source-code", "tests", "project-docs"]
+  primary_sources:
+    - title: "Auth Setup 页面当前实现"
+      locator: "internal/module/auth/binding/webui/web/SetupPage.tsx"
+      snapshot: "working tree, verified 2026-08-21"
+    - title: "宿主 i18n adapter 当前实现"
+      locator: "webui/src/i18n.ts"
+      snapshot: "working tree, verified 2026-08-21"
+    - title: "Auth/Ops locale Binding"
+      locator: "internal/module/auth/binding/webui/binding.go; internal/module/ops/binding/webui/binding.go"
+      snapshot: "working tree, verified 2026-08-21"
+    - title: "locale registry 生成器"
+      locator: "internal/composition/webui_registry.go"
+      snapshot: "working tree, verified 2026-08-21"
+    - title: "用户 i18n 规范调整"
+      locator: "current conversation"
+      snapshot: "2026-08-21: i18n 国际化规范契约改为业务模块必须遵守"
+validity:
+  mode: working-tree-snapshot
+  review_after: "2026-09-21"
+  refresh_triggers: ["公开翻译 API 确认或改变", "Binding.Locale 契约改变", "模块页面文案迁移完成", "新增语言或模块"]
+relations:
+  extends: ["R001"]
+  related: []
+  supersedes: []
+  superseded_by: []
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+report: report.md

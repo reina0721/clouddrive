@@ -1,0 +1,15 @@
+.codex/context.md 227ms
+docs/changes/109-ui-ux-optimization/design/README.md 29ms (unchanged)
+docs/changes/109-ui-ux-optimization/evidence/lint.json 221ms (unchanged)
+docs/changes/109-ui-ux-optimization/evidence/tailadmin-review.html 105ms (unchanged)
+docs/changes/109-ui-ux-optimization/evidence/verification.md 26ms
+docs/changes/109-ui-ux-optimization/evidence/visual-diffs-final/index.html 89ms
+docs/changes/109-ui-ux-optimization/evidence/visual-diffs-final/manifest.json 26ms (unchanged)
+docs/changes/109-ui-ux-optimization/evidence/visual-diffs/index.html 34ms (unchanged)
+docs/changes/109-ui-ux-optimization/evidence/visual-review.md 17ms (unchanged)
+docs/changes/109-ui-ux-optimization/README.md 9ms (unchanged)
+docs/changes/109-ui-ux-optimization/requirements/README.md 22ms (unchanged)
+docs/changes/109-ui-ux-optimization/research/consumers.md 16ms (unchanged)
+docs/changes/109-ui-ux-optimization/research/README.md 24ms (unchanged)
+docs/changes/109-ui-ux-optimization/tasks.md 69ms
+docs/quality-evidence.md 15ms (unchanged)

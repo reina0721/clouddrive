@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:1096) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Switch row hover surface encloses text and control with clickable horizontal inset (10.4s)
+
+  1 passed (11.3s)

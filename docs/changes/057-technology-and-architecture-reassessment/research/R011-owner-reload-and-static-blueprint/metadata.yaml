@@ -1,0 +1,35 @@
+schema_version: 1
+id: R011
+title: "Capability owner/reload 与静态 Blueprint 边界复核"
+question: "Application Generation 中哪些状态确有候选换代价值，哪些不可变声明应移出每代对象图；最小架构切片是什么？"
+research_type: current-project-architecture
+topics: ["application generation", "resource ownership", "reload", "static blueprint", "lifecycle"]
+keywords: ["applicationGeneration", "resourcePool", "PreparedGeneration", "applicationPermissionCatalog", "applicationWebUICatalog", "ModuleContract"]
+technologies: ["Go explicit composition", "net/http", "Huma v2"]
+applicable_scenarios: ["ARCH-057-001", "ARCH-057-002", "配置 reload", "应用 composition"]
+non_applicable_scenarios: ["多进程部署协调", "外部 control plane", "反射 DI", "业务数据 migration"]
+status: active
+summary: "保留 Generation 作为可换代资源、listener route、server、consumer/scheduler 与 runtime module 的事务边界；将 permission、WebUI、operation policy、HTTP contract definitions 等纯静态声明提升为启动期 applicationBlueprint。当前不把全部 Service 静态化，因为数据库租约和跨模块依赖尚无安全稳定 handle。"
+evidence:
+  types: ["source-code", "call-graph", "tests", "configuration-section-analysis", "lifecycle-analysis"]
+  primary_sources:
+    - title: "Application Generation factory, resource pools and lifecycle"
+      locator: "internal/composition/generation.go; internal/composition/generation_resources.go; internal/kernel/generation.go"
+      snapshot: "74db2b41fb4a37ca0efcef9618ba904ca9ad4250"
+    - title: "Generation reload and section tests"
+      locator: "internal/composition/generation_test.go; internal/kernel/generation_test.go"
+      snapshot: "74db2b41fb4a37ca0efcef9618ba904ca9ad4250"
+    - title: "Static catalog and contract composition"
+      locator: "internal/composition/http_contracts.go; internal/composition/webui_registry.go; internal/module/*/binding/http/contract*.go"
+      snapshot: "74db2b41fb4a37ca0efcef9618ba904ca9ad4250"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: code-snapshot
+  refresh_triggers: ["Generation composition 变化", "HTTP contract framework 迁移", "新增可热换资源", "稳定 resource handle 设计", "reload SLO 或故障证据形成"]
+relations:
+  extends: ["057-R001"]
+  related: ["057-R008", "057-R009", "057-R010"]
+  supersedes: []
+  superseded_by: []
+report: report.md

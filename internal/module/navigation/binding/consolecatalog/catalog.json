@@ -1,0 +1,542 @@
+[
+  {
+    "ID": "group:overview",
+    "ModuleID": "console",
+    "RouteID": "",
+    "TitleMessageID": "shellNavigationGroups.overview",
+    "IconID": "",
+    "DefaultParentID": "",
+    "DefaultOrder": -1,
+    "Manageable": true
+  },
+  {
+    "ID": "group:management",
+    "ModuleID": "console",
+    "RouteID": "",
+    "TitleMessageID": "shellNavigationGroups.management",
+    "IconID": "",
+    "DefaultParentID": "",
+    "DefaultOrder": 0,
+    "Manageable": true
+  },
+  {
+    "ID": "group:administration",
+    "ModuleID": "console",
+    "RouteID": "",
+    "TitleMessageID": "shellNavigationGroups.administration",
+    "IconID": "",
+    "DefaultParentID": "",
+    "DefaultOrder": 1,
+    "Manageable": true
+  },
+  {
+    "ID": "group:system",
+    "ModuleID": "console",
+    "RouteID": "",
+    "TitleMessageID": "shellNavigationGroups.system",
+    "IconID": "",
+    "DefaultParentID": "",
+    "DefaultOrder": 2,
+    "Manageable": true
+  },
+  {
+    "ID": "group:development",
+    "ModuleID": "console",
+    "RouteID": "",
+    "TitleMessageID": "shellNavigationGroups.development",
+    "IconID": "",
+    "DefaultParentID": "",
+    "DefaultOrder": 3,
+    "Manageable": true
+  },
+  {
+    "ID": "account.tokens",
+    "ModuleID": "account",
+    "RouteID": "account.tokens",
+    "TitleMessageID": "administration.tokens",
+    "IconID": "identity",
+    "DefaultParentID": "group:system",
+    "DefaultOrder": 45,
+    "Manageable": true
+  },
+  {
+    "ID": "account.security",
+    "ModuleID": "account",
+    "RouteID": "account.security",
+    "TitleMessageID": "administration.security",
+    "IconID": "identity",
+    "DefaultParentID": "group:system",
+    "DefaultOrder": 45,
+    "Manageable": true
+  },
+  {
+    "ID": "account.root",
+    "ModuleID": "account",
+    "RouteID": "account",
+    "TitleMessageID": "account.nav",
+    "IconID": "account",
+    "DefaultParentID": "group:system",
+    "DefaultOrder": -10,
+    "Manageable": true
+  },
+  {
+    "ID": "analytics.root",
+    "ModuleID": "analytics",
+    "RouteID": "analytics",
+    "TitleMessageID": "analytics.nav",
+    "IconID": "analytics",
+    "DefaultParentID": "group:overview",
+    "DefaultOrder": 10,
+    "Manageable": true
+  },
+  {
+    "ID": "api-workbench.root",
+    "ModuleID": "api-workbench",
+    "RouteID": "api-workbench",
+    "TitleMessageID": "apiWorkbench.nav.title",
+    "IconID": "api",
+    "DefaultParentID": "group:development",
+    "DefaultOrder": 45,
+    "Manageable": true
+  },
+  {
+    "ID": "audit.root",
+    "ModuleID": "audit",
+    "RouteID": "audit",
+    "TitleMessageID": "audit.nav",
+    "IconID": "audit",
+    "DefaultParentID": "group:administration",
+    "DefaultOrder": 20,
+    "Manageable": true
+  },
+  {
+    "ID": "departments.assignments",
+    "ModuleID": "departments",
+    "RouteID": "departments.assignments",
+    "TitleMessageID": "administration.assignment",
+    "IconID": "identity",
+    "DefaultParentID": "group:management",
+    "DefaultOrder": 45,
+    "Manageable": true
+  },
+  {
+    "ID": "departments.positions",
+    "ModuleID": "departments",
+    "RouteID": "departments.positions",
+    "TitleMessageID": "administration.positions",
+    "IconID": "identity",
+    "DefaultParentID": "group:management",
+    "DefaultOrder": 45,
+    "Manageable": true
+  },
+  {
+    "ID": "departments.root",
+    "ModuleID": "departments",
+    "RouteID": "departments",
+    "TitleMessageID": "departments.nav",
+    "IconID": "department",
+    "DefaultParentID": "group:administration",
+    "DefaultOrder": 41,
+    "Manageable": true
+  },
+  {
+    "ID": "dictionaries.root",
+    "ModuleID": "dictionaries",
+    "RouteID": "dictionaries",
+    "TitleMessageID": "dictionaries.nav",
+    "IconID": "dictionary",
+    "DefaultParentID": "group:administration",
+    "DefaultOrder": 42,
+    "Manageable": true
+  },
+  {
+    "ID": "foundations.root",
+    "ModuleID": "foundations",
+    "RouteID": "foundations",
+    "TitleMessageID": "foundationsNav.root",
+    "IconID": "foundations",
+    "DefaultParentID": "group:development",
+    "DefaultOrder": 50,
+    "Manageable": true
+  },
+  {
+    "ID": "menus.root",
+    "ModuleID": "menus",
+    "RouteID": "menus",
+    "TitleMessageID": "menus.nav",
+    "IconID": "menu",
+    "DefaultParentID": "group:administration",
+    "DefaultOrder": 40,
+    "Manageable": true
+  },
+  {
+    "ID": "motion.root",
+    "ModuleID": "motion",
+    "RouteID": "motion",
+    "TitleMessageID": "motionNav.root",
+    "IconID": "motion",
+    "DefaultParentID": "group:development",
+    "DefaultOrder": 60,
+    "Manageable": true
+  },
+  {
+    "ID": "notifications.root",
+    "ModuleID": "notifications",
+    "RouteID": "notifications",
+    "TitleMessageID": "notifications.nav",
+    "IconID": "notifications",
+    "DefaultParentID": "group:system",
+    "DefaultOrder": -5,
+    "Manageable": true
+  },
+  {
+    "ID": "page-archetypes.root",
+    "ModuleID": "page-archetypes",
+    "RouteID": "",
+    "TitleMessageID": "pageArchetypes.nav.root",
+    "IconID": "resource",
+    "DefaultParentID": "group:development",
+    "DefaultOrder": 20,
+    "Manageable": true
+  },
+  {
+    "ID": "page-archetypes.root.overview",
+    "ModuleID": "page-archetypes",
+    "RouteID": "page-archetypes.overview",
+    "TitleMessageID": "pageArchetypes.nav.overview",
+    "IconID": "",
+    "DefaultParentID": "page-archetypes.root",
+    "DefaultOrder": 0,
+    "Manageable": true
+  },
+  {
+    "ID": "page-archetypes.root.resource-list",
+    "ModuleID": "page-archetypes",
+    "RouteID": "page-archetypes.resource-list",
+    "TitleMessageID": "pageArchetypes.nav.resourceList",
+    "IconID": "",
+    "DefaultParentID": "page-archetypes.root",
+    "DefaultOrder": 1,
+    "Manageable": true
+  },
+  {
+    "ID": "page-archetypes.root.detail",
+    "ModuleID": "page-archetypes",
+    "RouteID": "page-archetypes.detail",
+    "TitleMessageID": "pageArchetypes.nav.detail",
+    "IconID": "",
+    "DefaultParentID": "page-archetypes.root",
+    "DefaultOrder": 2,
+    "Manageable": true
+  },
+  {
+    "ID": "page-archetypes.root.create-edit",
+    "ModuleID": "page-archetypes",
+    "RouteID": "page-archetypes.create-edit",
+    "TitleMessageID": "pageArchetypes.nav.createEdit",
+    "IconID": "",
+    "DefaultParentID": "page-archetypes.root",
+    "DefaultOrder": 3,
+    "Manageable": true
+  },
+  {
+    "ID": "page-archetypes.root.settings",
+    "ModuleID": "page-archetypes",
+    "RouteID": "page-archetypes.settings",
+    "TitleMessageID": "pageArchetypes.nav.settings",
+    "IconID": "",
+    "DefaultParentID": "page-archetypes.root",
+    "DefaultOrder": 4,
+    "Manageable": true
+  },
+  {
+    "ID": "page-archetypes.root.master-detail",
+    "ModuleID": "page-archetypes",
+    "RouteID": "page-archetypes.master-detail",
+    "TitleMessageID": "pageArchetypes.nav.masterDetail",
+    "IconID": "",
+    "DefaultParentID": "page-archetypes.root",
+    "DefaultOrder": 5,
+    "Manageable": true
+  },
+  {
+    "ID": "page-archetypes.root.operation",
+    "ModuleID": "page-archetypes",
+    "RouteID": "page-archetypes.operation",
+    "TitleMessageID": "pageArchetypes.nav.operation",
+    "IconID": "",
+    "DefaultParentID": "page-archetypes.root",
+    "DefaultOrder": 6,
+    "Manageable": true
+  },
+  {
+    "ID": "page-patterns.root",
+    "ModuleID": "page-patterns",
+    "RouteID": "",
+    "TitleMessageID": "pagePatterns.nav.root",
+    "IconID": "catalog",
+    "DefaultParentID": "group:development",
+    "DefaultOrder": 10,
+    "Manageable": true
+  },
+  {
+    "ID": "page-patterns.root.layout-navigation",
+    "ModuleID": "page-patterns",
+    "RouteID": "page-patterns.layout-navigation",
+    "TitleMessageID": "pagePatterns.nav.layoutNavigation",
+    "IconID": "",
+    "DefaultParentID": "page-patterns.root",
+    "DefaultOrder": 0,
+    "Manageable": true
+  },
+  {
+    "ID": "page-patterns.root.collections-data",
+    "ModuleID": "page-patterns",
+    "RouteID": "page-patterns.collections-data",
+    "TitleMessageID": "pagePatterns.nav.collectionsData",
+    "IconID": "",
+    "DefaultParentID": "page-patterns.root",
+    "DefaultOrder": 1,
+    "Manageable": true
+  },
+  {
+    "ID": "page-patterns.root.forms-actions",
+    "ModuleID": "page-patterns",
+    "RouteID": "page-patterns.forms-actions",
+    "TitleMessageID": "pagePatterns.nav.formsActions",
+    "IconID": "",
+    "DefaultParentID": "page-patterns.root",
+    "DefaultOrder": 2,
+    "Manageable": true
+  },
+  {
+    "ID": "page-patterns.root.states-feedback",
+    "ModuleID": "page-patterns",
+    "RouteID": "page-patterns.states-feedback",
+    "TitleMessageID": "pagePatterns.nav.statesFeedback",
+    "IconID": "",
+    "DefaultParentID": "page-patterns.root",
+    "DefaultOrder": 3,
+    "Manageable": true
+  },
+  {
+    "ID": "page-patterns.root.detail-settings",
+    "ModuleID": "page-patterns",
+    "RouteID": "page-patterns.detail-settings",
+    "TitleMessageID": "pagePatterns.nav.detailSettings",
+    "IconID": "",
+    "DefaultParentID": "page-patterns.root",
+    "DefaultOrder": 4,
+    "Manageable": true
+  },
+  {
+    "ID": "reference-resources.root",
+    "ModuleID": "reference-resources",
+    "RouteID": "reference-resources",
+    "TitleMessageID": "referenceResources.nav.root",
+    "IconID": "resource",
+    "DefaultParentID": "group:development",
+    "DefaultOrder": 30,
+    "Manageable": true
+  },
+  {
+    "ID": "roles.catalog",
+    "ModuleID": "roles",
+    "RouteID": "roles.catalog",
+    "TitleMessageID": "administration.permissions",
+    "IconID": "identity",
+    "DefaultParentID": "group:management",
+    "DefaultOrder": 45,
+    "Manageable": true
+  },
+  {
+    "ID": "roles.root",
+    "ModuleID": "roles",
+    "RouteID": "roles",
+    "TitleMessageID": "roles.nav",
+    "IconID": "roles",
+    "DefaultParentID": "group:management",
+    "DefaultOrder": 10,
+    "Manageable": true
+  },
+  {
+    "ID": "settings.root",
+    "ModuleID": "settings",
+    "RouteID": "settings",
+    "TitleMessageID": "settingsNav.root",
+    "IconID": "settings",
+    "DefaultParentID": "group:system",
+    "DefaultOrder": 0,
+    "Manageable": true
+  },
+  {
+    "ID": "states.root",
+    "ModuleID": "states",
+    "RouteID": "states",
+    "TitleMessageID": "statesNav.root",
+    "IconID": "states",
+    "DefaultParentID": "group:development",
+    "DefaultOrder": 70,
+    "Manageable": true
+  },
+  {
+    "ID": "system-settings.root",
+    "ModuleID": "system-settings",
+    "RouteID": "system-settings",
+    "TitleMessageID": "systemSettings.nav",
+    "IconID": "settings",
+    "DefaultParentID": "group:administration",
+    "DefaultOrder": 40,
+    "Manageable": true
+  },
+  {
+    "ID": "system-tools.runtime",
+    "ModuleID": "system-tools",
+    "RouteID": "system-tools.runtime",
+    "TitleMessageID": "administration.runtime",
+    "IconID": "identity",
+    "DefaultParentID": "group:administration",
+    "DefaultOrder": 45,
+    "Manageable": true
+  },
+  {
+    "ID": "system-tools.root",
+    "ModuleID": "system-tools",
+    "RouteID": "system-tools.icons",
+    "TitleMessageID": "systemTools.nav.icons",
+    "IconID": "icons",
+    "DefaultParentID": "group:development",
+    "DefaultOrder": 40,
+    "Manageable": true
+  },
+  {
+    "ID": "ui-elements.root",
+    "ModuleID": "ui-elements",
+    "RouteID": "",
+    "TitleMessageID": "uiElements.nav.root",
+    "IconID": "catalog",
+    "DefaultParentID": "group:development",
+    "DefaultOrder": 0,
+    "Manageable": true
+  },
+  {
+    "ID": "ui-elements.root.actions-selection",
+    "ModuleID": "ui-elements",
+    "RouteID": "ui-elements.actions-selection",
+    "TitleMessageID": "uiElements.nav.actionsSelection",
+    "IconID": "action",
+    "DefaultParentID": "ui-elements.root",
+    "DefaultOrder": 0,
+    "Manageable": true
+  },
+  {
+    "ID": "ui-elements.root.feedback",
+    "ModuleID": "ui-elements",
+    "RouteID": "ui-elements.feedback",
+    "TitleMessageID": "uiElements.nav.feedback",
+    "IconID": "feedback",
+    "DefaultParentID": "ui-elements.root",
+    "DefaultOrder": 1,
+    "Manageable": true
+  },
+  {
+    "ID": "ui-elements.root.status-async",
+    "ModuleID": "ui-elements",
+    "RouteID": "ui-elements.status-async",
+    "TitleMessageID": "uiElements.nav.statusAsync",
+    "IconID": "async",
+    "DefaultParentID": "ui-elements.root",
+    "DefaultOrder": 2,
+    "Manageable": true
+  },
+  {
+    "ID": "ui-elements.root.identity-display",
+    "ModuleID": "ui-elements",
+    "RouteID": "ui-elements.identity-display",
+    "TitleMessageID": "uiElements.nav.identityDisplay",
+    "IconID": "identity",
+    "DefaultParentID": "ui-elements.root",
+    "DefaultOrder": 3,
+    "Manageable": true
+  },
+  {
+    "ID": "ui-elements.root.navigation",
+    "ModuleID": "ui-elements",
+    "RouteID": "ui-elements.navigation",
+    "TitleMessageID": "uiElements.nav.navigation",
+    "IconID": "navigation",
+    "DefaultParentID": "ui-elements.root",
+    "DefaultOrder": 4,
+    "Manageable": true
+  },
+  {
+    "ID": "ui-elements.root.data",
+    "ModuleID": "ui-elements",
+    "RouteID": "ui-elements.data",
+    "TitleMessageID": "uiElements.nav.data",
+    "IconID": "data",
+    "DefaultParentID": "ui-elements.root",
+    "DefaultOrder": 5,
+    "Manageable": true
+  },
+  {
+    "ID": "ui-elements.root.surfaces",
+    "ModuleID": "ui-elements",
+    "RouteID": "ui-elements.surfaces",
+    "TitleMessageID": "uiElements.nav.surfaces",
+    "IconID": "surfaces",
+    "DefaultParentID": "ui-elements.root",
+    "DefaultOrder": 6,
+    "Manageable": true
+  },
+  {
+    "ID": "ui-elements.root.forms",
+    "ModuleID": "ui-elements",
+    "RouteID": "ui-elements.forms",
+    "TitleMessageID": "uiElements.nav.forms",
+    "IconID": "list",
+    "DefaultParentID": "ui-elements.root",
+    "DefaultOrder": 7,
+    "Manageable": true
+  },
+  {
+    "ID": "ui-elements.root.overlays",
+    "ModuleID": "ui-elements",
+    "RouteID": "ui-elements.overlays",
+    "TitleMessageID": "uiElements.nav.overlays",
+    "IconID": "overlay",
+    "DefaultParentID": "ui-elements.root",
+    "DefaultOrder": 8,
+    "Manageable": true
+  },
+  {
+    "ID": "users.administration",
+    "ModuleID": "users",
+    "RouteID": "users.administration",
+    "TitleMessageID": "administration.adminActions",
+    "IconID": "identity",
+    "DefaultParentID": "group:management",
+    "DefaultOrder": 45,
+    "Manageable": true
+  },
+  {
+    "ID": "users.root",
+    "ModuleID": "users",
+    "RouteID": "users",
+    "TitleMessageID": "users.nav",
+    "IconID": "users",
+    "DefaultParentID": "group:management",
+    "DefaultOrder": 0,
+    "Manageable": true
+  },
+  {
+    "ID": "workspace.root",
+    "ModuleID": "workspace",
+    "RouteID": "workspace",
+    "TitleMessageID": "workspace.nav",
+    "IconID": "workspace",
+    "DefaultParentID": "group:overview",
+    "DefaultOrder": 11,
+    "Manageable": true
+  }
+]

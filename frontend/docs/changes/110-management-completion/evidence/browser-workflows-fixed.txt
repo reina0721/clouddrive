@@ -1,0 +1,57 @@
+
+[WebServer] (node:33040) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:25092) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:31864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:19804) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+
+(node:17444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/9] [chromium] › apps\web\e2e\management-completion.spec.ts:7:1 › Home has only recents and never redirects to a saved draft
+[2/9] [chromium] › apps\web\e2e\management-completion.spec.ts:28:1 › Bulk status preserves protected users and reports partial results
+[3/9] [chromium] › apps\web\e2e\management-completion.spec.ts:61:1 › Role members change only the selected role and audit filters survive detail return
+[4/9] [chromium] › apps\web\e2e\management-completion.spec.ts:108:1 › Account password changes reject bad credentials then revoke sessions and require sign-in
+[5/9] [chromium] › apps\web\e2e\product-management.spec.ts:23:1 › M2–M5 user, role grants, inbox and audit form a durable management workflow
+[6/9] [chromium] › apps\web\e2e\product-management.spec.ts:110:1 › Restricted account has its own inbox/profile and no management navigation or write access
+[7/9] [chromium] › apps\web\e2e\product-workbench.spec.ts:5:1 › Product IA retains old links, search targets, page tabs and history
+[8/9] [chromium] › apps\web\e2e\product-workbench.spec.ts:41:1 › Home contains only recents while drafts and notification actions remain available in their owners
+(node:27244) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[9/9] [backend-contract] › apps\web\e2e\product-management-backend.spec.ts:4:1 › Backend M2–M6 uses proposed REST/CSRF contracts, preserves conflict drafts and synchronizes notifications
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  9 passed (2.1m)

@@ -1,0 +1,4 @@
+apps/web/next-env.d.ts
+pnpm-lock.yaml
+
+apps/web/src/generated/native-openapi.json

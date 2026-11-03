@@ -1,0 +1,1 @@
+ALTER TABLE organization_account_departments DROP COLUMN version;

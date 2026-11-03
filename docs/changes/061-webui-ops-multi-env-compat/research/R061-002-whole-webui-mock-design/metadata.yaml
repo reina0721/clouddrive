@@ -1,0 +1,44 @@
+schema_version: 1
+id: R061-002
+title: "整个 WebUI（骨架与全部数据）mock 实现与显式声明设计"
+question: "用户要求 mock 不限于 Ops 页，而是整个 WebUI 骨架与所有模块数据都实现 mock，并且必须显式声明配置（默认 server-hosted）、遵守 i18n 双语。实现全 WebUI mock 需要哪些事实基础、有哪些架构可选路径？"
+research_type: current-project
+topics: ["webui", "mock", "sdk-http", "catalog", "registry-generation", "i18n", "host-shell"]
+keywords: ["requestJSON", "manifest", "session", "catalogRevision", "webuiMockRegistry", "VITE_WEBUI_DATA_SOURCE", "双语"]
+applicable_scenarios: ["为当前仓库设计整个 WebUI 的 mock 数据层与显式环境声明", "评估 mock 数据归属（模块自有 vs 宿主集中）与生成方式"]
+non_applicable_scenarios: ["mock 数据冒充真实服务状态且不加标识", "为未来远程模块/动态插件设计 mock 市场", "改变生产环境数据通路或真实服务语义"]
+status: active
+summary: "全部 WebUI HTTP 都经 @webui/sdk/http（contracts.requestJSON/requestText）单一入口，宿主 boot 依赖 manifest+session 且强制 catalogRevision 与生成 registry 一致；registry 与清单均由 Go catalog（internal/webui.Binding/Catalog）生成，是 mock manifest 与 mock 注册表的天然单一来源。方案：显式声明 mock 时由宿主 SDK 传输层切换到 mock router；各业务模块以自有 mock source（Binding 扩展字段）贡献路由表，经生成 webuiMockRegistry 汇总；mock manifest 由 Go catalog 投影生成保证 revision 一致；宿主提供 mock session/identity 与全局“模拟环境”徽标（i18n 双语）。"
+evidence:
+  types: ["source-code", "tests", "configuration"]
+  primary_sources:
+    - title: "宿主导入面与 boot 流程"
+      locator: "webui/src/contracts/index.tsx、webui/src/api.ts、webui/src/App.tsx、webui/src/i18n.ts"
+      snapshot: "20a634c"
+    - title: "模块 HTTP 端点清单"
+      locator: "internal/module/{iam,organization,navigation,ops}/binding/webui/web/api.ts"
+      snapshot: "20a634c"
+    - title: "Catalog/Binding 契约与生成器"
+      locator: "internal/webui/contract.go、internal/composition/webui_registry.go、webui/scripts/generate.mjs、webui/src/generated/webui-registry.ts"
+      snapshot: "20a634c"
+    - title: "模块 Binding 声明示例"
+      locator: "internal/module/ops/binding/webui/binding.go、internal/composition/blueprint.go（buildApplicationWebUICatalog）"
+      snapshot: "20a634c"
+    - title: "宿主与模块 i18n 结构"
+      locator: "webui/src/i18n/locale/{zh-CN,en-US}.json、internal/module/*/binding/webui/web/locale/*.json"
+      snapshot: "20a634c"
+    - title: "SDK 能力面"
+      locator: "webui/src/sdk/{runtime,http,i18n,query,navigation,ui,feedback}/index.*、webui/vite.config.ts"
+      snapshot: "20a634c"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: snapshot
+  review_after: "2026-11-22"
+  refresh_triggers: ["WebUI Binding 契约或生成器变化", "新增/移除业务模块页面", "HTTP 端点集合变化", "宿主 boot 流程或 revision 门禁变化"]
+relations:
+  extends: []
+  related: ["R061-001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

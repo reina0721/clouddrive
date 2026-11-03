@@ -1,0 +1,55 @@
+schema_version: 1
+change: 052-declarative-project-layout
+areas:
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+      - docs/development/webui.md
+      - docs/getting-started/webui.md
+    reason: 统一说明 layout manifest、facet-relative Binding SourcePath 与 typed WebUI 开发配置。
+  - id: build
+    decision: updated
+    documents:
+      - README.md
+      - docs/repository-scope.md
+      - docs/changes/052-declarative-project-layout/README.md
+      - docs/changes/052-declarative-project-layout/tasks.md
+    reason: 记录已确认实施范围、生成物路径、工具发布路径和验证边界。
+  - id: repository
+    decision: updated
+    documents:
+      - README.md
+      - docs/changes/052-declarative-project-layout/README.md
+    reason: 新增仓库级 layout manifest 作为构建期路径 bootstrap。
+  - id: startup
+    decision: updated
+    documents:
+      - README.md
+      - docs/getting-started/local-development.md
+      - docs/getting-started/webui.md
+    reason: 应用入口与 config init 共用默认配置路径声明。
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/README.md
+      - docs/development/application-module-development.md
+      - docs/development/webui.md
+    reason: 模块 Binding SourcePath 改为所属 WebUI facet 相对路径。
+  - id: operations
+    decision: updated
+    documents:
+      - docs/operations/README.md
+      - docs/development/webui.md
+    reason: 模块 WebUI 静态扫描改为读取 manifest 声明的目录。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+    reason: API 生成器默认输出改由 layout manifest 提供。
+  - id: delivery
+    decision: updated
+    documents:
+      - docs/operations/build-and-container.md
+      - docs/operations/release.md
+    reason: 质量、CI、工具安装、release 和 container smoke 使用集中路径/端点入口。

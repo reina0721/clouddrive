@@ -1,0 +1,30 @@
+schema_version: 1
+change: 068-heroui-ui-adoption
+areas:
+  - id: startup
+    decision: reviewed-no-change
+    reason: 宿主 boot 装配链（manifest -> registry -> Shell -> route）与 revision 门禁不变；HeroUI 只作用于浏览器呈现层（如需 ToastProvider 挂在 App 根）。
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/{iam,organization,auth,navigation,ops}/binding/webui/web/*.tsx
+      - internal/module/{iam,organization,auth,navigation,ops}/binding/webui/web/*.module.css
+    reason: 业务页面类名/布局校准到 HeroUI 组件语义；模块 CSS 继续只保留专属 selector；操作 ID/权限钩子/i18n 键/aria 语义不变。
+  - id: webui
+    decision: updated
+    documents:
+      - docs/development/webui.md
+      - webui/README.md
+      - webui/package.json
+      - webui/pnpm-lock.yaml
+      - webui/src/{ui,sdk/ui,theme.ts,App.tsx,main.tsx,components/**,styles.css}.tsx/css
+      - webui/vite.config.ts
+    reason: 引入 @heroui/react/@heroui/theme/@heroui/toast 与 tailwindcss v4；SDK 原语内部改用 HeroUI 渲染（导出契约不变）；Shell 迁移；styles.css 分区重构（Tailwind 主题层承接组件视觉）；theme.ts 联动 dark class；059「不引入 Tailwind/组件库」边界由 068 取代。
+  - id: api
+    decision: reviewed-no-change
+    reason: api/openapi.yaml 与 operation inventory 不变；动作权限钩子沿用既有 OperationID。
+  - id: operations
+    decision: updated
+    documents:
+      - docs/architecture/technology-selection.md
+    reason: 记录 HeroUI 引入结论（MIT、React19 兼容、Tailwind v4 peer）与既有自研原语退役记录；构建/部署/安全边界不变。

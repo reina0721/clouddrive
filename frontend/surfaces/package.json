@@ -1,0 +1,45 @@
+{
+  "name": "@clouddrive/surface",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./shell": "./src/shell.ts",
+    "./preferences-model": "./src/preferences-model.ts",
+    "./identity": "./src/identity/index.ts",
+    "./icon-presentation": "./src/navigation-icon-presentation.tsx",
+    "./icon-components": "./src/navigation-icon-components.ts",
+    "./action-icons": "./src/action-icons.ts",
+    "./api-workbench": "./src/api-workbench/index.ts",
+    "./generated/composition": "./generated/composition/composition.ts",
+    "./generated/catalog": "./generated/catalog/catalog.ts",
+    "./plugin-routes/*": "./generated/plugin-routes/*.ts",
+    "./identity/runtime": "./src/identity/runtime.ts",
+    "./administration": "./src/administration/index.ts",
+    "./administration/runtime": "./src/administration/context.tsx"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@clouddrive/core": "workspace:*",
+    "@clouddrive/state-foundation": "workspace:*",
+    "@clouddrive/plugin-framework": "workspace:*",
+    "@clouddrive/surface-foundation": "workspace:*",
+    "@clouddrive/form-foundation": "workspace:*",
+    "@clouddrive/i18n": "workspace:*",
+    "@clouddrive/schemas": "workspace:*",
+    "@clouddrive/types": "workspace:*",
+    "@clouddrive/ui-adapter": "workspace:*",
+    "lucide-react": "^1.37.0",
+    "react": "^19.2.8",
+    "zod": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "next": "^16.3.3",
+    "react-dom": "^19.2.8",
+    "vitest": "^4.1.11"
+  }
+}

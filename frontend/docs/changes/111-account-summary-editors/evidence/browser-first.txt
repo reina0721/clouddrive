@@ -1,0 +1,173 @@
+[WebServer] (node:22732) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:2976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:15736) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:14724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 12 tests using 1 worker
+
+(node:27532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\account-editors.spec.ts:6:1 › Account is a summary and profile footer validates, saves and restores focus (4.8s)
+  ok  2 [chromium] › apps\web\e2e\account-editors.spec.ts:32:1 › Cancel, Escape and backdrop share the same discard check and keep editing restores focus (7.3s)
+  x   3 [chromium] › apps\web\e2e\account-editors.spec.ts:64:1 › Password cancel clears secrets without altering sessions and uses one dialog (9.0s)
+(node:32476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  4 [chromium] › apps\web\e2e\account-editors.spec.ts:89:1 › Overlay authority submits an associated form with Enter and can intercept closing (3.5s)
+  ok  5 [chromium] › apps\web\e2e\account-editors.spec.ts:104:3 › Account summary and both editors retain layout, focus and Axe: zh-light (23.3s)
+  ok  6 [chromium] › apps\web\e2e\account-editors.spec.ts:104:3 › Account summary and both editors retain layout, focus and Axe: en-dark (27.2s)
+  x   7 [chromium] › apps\web\e2e\management-completion.spec.ts:108:1 › Account password changes reject bad credentials then revoke sessions and require sign-in (2.4s)
+(node:33644) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   8 [chromium] › apps\web\e2e\product-management.spec.ts:23:1 › M2–M5 user, role grants, inbox and audit form a durable management workflow (37.8s)
+(node:34652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 [chromium] › apps\web\e2e\product-management.spec.ts:111:1 › Restricted account has its own inbox/profile and no management navigation or write access (14.2s)
+(node:25056) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  ok 10 [backend-contract] › apps\web\e2e\account-editors-backend.spec.ts:4:1 › Pending profile submission blocks dismiss and duplicate native submissions (4.1s)
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  ok 11 [backend-contract] › apps\web\e2e\management-completion-backend.spec.ts:38:1 › Backend account security revokes other sessions and changes password without Mock fallback (3.8s)
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  ok 12 [backend-contract] › apps\web\e2e\product-management-backend.spec.ts:4:1 › Backend M2–M6 uses proposed REST/CSRF contracts, preserves conflict drafts and synchronizes notifications (20.1s)
+
+
+  1) [chromium] › apps\web\e2e\account-editors.spec.ts:64:1 › Password cancel clears secrets without altering sessions and uses one dialog 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('button', { name: '修改密码', exact: true })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" with timeout 5000ms
+      - waiting for getByRole('button', { name: '修改密码', exact: true })
+        14 × locator resolved to <button data-rac="" tabindex="0" type="button" data-slot="button" aria-expanded="false" id="react-aria1301783346-_r_3g_" data-react-aria-pressable="true" class="button button--md button--ghost inline-flex min-h-control items-center justify-center gap-2 rounded-control px-3.5 text-sm font-semibold shadow-sm outline-none transition-colors border border-border bg-surface text-ink hover:bg-surface-muted data-[hovered=true]:bg-surface-muted data-[pressed=true]:bg-surface-muted focus-visible:ring-2 focus-vi…>修改密码</button>
+           - unexpected value "inactive"
+
+
+      78 |     .click();
+      79 |   await expect(dialog).toBeHidden();
+    > 80 |   await expect(trigger).toBeFocused();
+         |                         ^
+      81 |   await expect(page.getByText('当前会话', { exact: true })).toBeVisible();
+      82 |   await trigger.click();
+      83 |   await expect(dialog.getByLabel('当前密码', { exact: true })).toHaveValue('');
+        at D:\coder\i721\console-web\apps\web\e2e\account-editors.spec.ts:80:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\account-editors-first\account-editors-Password-c-cb2b0-essions-and-uses-one-dialog-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\account-editors-first\account-editors-Password-c-cb2b0-essions-and-uses-one-dialog-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\account-editors-first\account-editors-Password-c-cb2b0-essions-and-uses-one-dialog-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\account-editors-first\account-editors-Password-c-cb2b0-essions-and-uses-one-dialog-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\management-completion.spec.ts:108:1 › Account password changes reject bad credentials then revoke sessions and require sign-in 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('当前会话')
+    Expected: visible
+    Error: strict mode violation: getByText('当前会话') resolved to 2 elements:
+        1) <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-success-soft text-success">…</span> aka getByText('当前会话', { exact: true })
+        2) <span>退出当前会话</span> aka getByRole('button', { name: '退出当前会话' })
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByText('当前会话')
+
+
+      111 |   test.setTimeout(90000);
+      112 |   await page.goto('/account');
+    > 113 |   await expect(page.getByText('当前会话', { exact: false })).toBeVisible();
+          |                                                          ^
+      114 |   await page.getByRole('button', { name: '修改密码', exact: true }).click();
+      115 |   await page.getByLabel('当前密码', { exact: true }).fill('IncorrectPassword!');
+      116 |   await page.getByLabel('新密码', { exact: true }).fill('NewPassword2026!');
+        at D:\coder\i721\console-web\apps\web\e2e\management-completion.spec.ts:113:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\account-editors-first\management-completion-Acco-83d1c-essions-and-require-sign-in-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\account-editors-first\management-completion-Acco-83d1c-essions-and-require-sign-in-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\account-editors-first\management-completion-Acco-83d1c-essions-and-require-sign-in-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\account-editors-first\management-completion-Acco-83d1c-essions-and-require-sign-in-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › apps\web\e2e\product-management.spec.ts:23:1 › M2–M5 user, role grants, inbox and audit form a durable management workflow 
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator: getByRole('textbox', { name: '姓名', exact: true })
+    Expected: "M25 Personal profile"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveValue" with timeout 5000ms
+      - waiting for getByRole('textbox', { name: '姓名', exact: true })
+
+
+       97 |   await expect(page.getByText('个人资料已保存', { exact: true })).toBeVisible();
+       98 |   await page.reload();
+    >  99 |   await expect(page.getByRole('textbox', { name: '姓名', exact: true })).toHaveValue(
+          |                                                                        ^
+      100 |     'M25 Personal profile',
+      101 |   );
+      102 |   await page.getByRole('button', { name: '当前用户', exact: true }).click();
+        at D:\coder\i721\console-web\apps\web\e2e\product-management.spec.ts:99:72
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\account-editors-first\product-management-M2–M5-u-f8d04-durable-management-workflow-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\account-editors-first\product-management-M2–M5-u-f8d04-durable-management-workflow-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\account-editors-first\product-management-M2–M5-u-f8d04-durable-management-workflow-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\account-editors-first\product-management-M2–M5-u-f8d04-durable-management-workflow-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › apps\web\e2e\account-editors.spec.ts:64:1 › Password cancel clears secrets without altering sessions and uses one dialog 
+    [chromium] › apps\web\e2e\management-completion.spec.ts:108:1 › Account password changes reject bad credentials then revoke sessions and require sign-in 
+    [chromium] › apps\web\e2e\product-management.spec.ts:23:1 › M2–M5 user, role grants, inbox and audit form a durable management workflow 
+  9 passed (3.1m)

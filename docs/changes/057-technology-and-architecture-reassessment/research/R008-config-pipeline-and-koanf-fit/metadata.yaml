@@ -1,0 +1,36 @@
+schema_version: 1
+id: R008
+title: "配置流水线与 koanf 适配性复核"
+question: "koanf 或 Viper 能否在不削弱 strict candidate、来源冲突、稳定文件和 reload 事务语义的前提下，实质删除当前配置自研代码？"
+research_type: current-project-and-external-primary-source
+topics: ["configuration", "koanf", "Viper", "mapstructure", "fsnotify", "reload"]
+keywords: ["Loader", "Source", "Snapshot", "DefaultManager", "stableFileReader", "StrictMerge", "ErrorUnused"]
+technologies: ["koanf/v2", "Viper", "mapstructure/v2", "fsnotify", "go.yaml.in/yaml/v3"]
+applicable_scenarios: ["CONFIG-057-001", "配置来源", "严格解码", "配置热重载"]
+non_applicable_scenarios: ["远程配置中心", "Secret Manager", "业务动态参数", "分布式配置发布"]
+status: active
+summary: "保留当前项目配置流水线，不引入 koanf 或 Viper。成熟库已位于解析、解码和文件通知的正确接缝；koanf 仍需项目重写合并、冲突、稳定读取、来源、摘要、owner 和候选事务，不能形成净删除。"
+evidence:
+  types: ["source-code", "call-site-search", "dependency-manifest", "tests", "official-source", "release-metadata", "vulnerability-database"]
+  primary_sources:
+    - title: "当前配置实现、调用方和测试"
+      locator: "internal/kernel/config/; internal/kernel/coordinator.go; internal/kernel/generation.go; internal/composition/generation.go"
+      snapshot: "74db2b41fb4a37ca0efcef9618ba904ca9ad4250"
+    - title: "koanf v2.3.6 source, README and module metadata"
+      locator: "https://github.com/knadh/koanf/tree/v2.3.6; https://pkg.go.dev/github.com/knadh/koanf/v2@v2.3.6"
+      snapshot: "2026-08-22"
+    - title: "OSV Go package query"
+      locator: "https://api.osv.dev/v1/query"
+      snapshot: "2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: time-sensitive
+  review_after: "2026-11-22"
+  refresh_triggers: ["新增 Consul/Vault/S3 等配置来源", "配置吞吐或维护成本出现量化问题", "koanf major 版本或安全公告", "配置 owner/reload 语义变化"]
+relations:
+  extends: ["057-R001", "057-R002"]
+  related: ["057-R004", "019-R001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

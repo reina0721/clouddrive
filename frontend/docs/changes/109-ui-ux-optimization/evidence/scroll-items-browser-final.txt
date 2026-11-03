@@ -1,0 +1,145 @@
+
+Running 32 tests using 1 worker
+
+(node:12916) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   1 [chromium] › apps\web\e2e\motion-progressive.spec.ts:8:1 › settings keeps its shell stable and enters semantic regions inside the nested Page (6.8s)
+(node:7812) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  2 [chromium] › apps\web\e2e\motion-progressive.spec.ts:41:3 › progressive settings remains usable through long, fast and reverse scrolling at 1440 (2.4s)
+  ok  3 [chromium] › apps\web\e2e\motion-progressive.spec.ts:41:3 › progressive settings remains usable through long, fast and reverse scrolling at 390 (2.2s)
+  ok  4 [chromium] › apps\web\e2e\motion-progressive.spec.ts:41:3 › progressive settings remains usable through long, fast and reverse scrolling at 320 (2.2s)
+  ok  5 [chromium] › apps\web\e2e\motion-progressive.spec.ts:113:3 › content is immediately available with missing motion observation (1.6s)
+  ok  6 [chromium] › apps\web\e2e\motion-progressive.spec.ts:113:3 › content is immediately available with silent motion observation (1.6s)
+  ok  7 [chromium] › apps\web\e2e\motion-progressive.spec.ts:113:3 › content is immediately available with reduced motion observation (1.6s)
+  ok  8 [chromium] › apps\web\e2e\motion-progressive.spec.ts:147:1 › anchor refresh and browser return never leave reading content hidden (1.9s)
+  ok  9 [chromium] › apps\web\e2e\motion-progressive.spec.ts:169:1 › master detail swaps locally while preserving selection focus (956ms)
+  ok 10 [chromium] › apps\web\e2e\motion-progressive.spec.ts:183:1 › an invalid bookmark fragment cannot interrupt hydration or hide settings (858ms)
+  ok 11 [chromium] › apps\web\e2e\motion-progressive.spec.ts:196:3 › dark English expanded text keeps progressive regions accessible at 320 (1.6s)
+  ok 12 [chromium] › apps\web\e2e\motion-progressive.spec.ts:196:3 › dark English expanded text keeps progressive regions accessible at 2048 (2.1s)
+  ok 13 [chromium] › apps\web\e2e\scroll-reveal-items.spec.ts:15:3 › settings reveal each row independently with no animated Section ancestor at 1440 (3.0s)
+  ok 14 [chromium] › apps\web\e2e\scroll-reveal-items.spec.ts:15:3 › settings reveal each row independently with no animated Section ancestor at 390 (3.5s)
+  ok 15 [chromium] › apps\web\e2e\scroll-reveal-items.spec.ts:75:1 › first viewport items have bounded stagger and offscreen items wait for scrolling (946ms)
+  x  16 [chromium] › apps\web\e2e\scroll-reveal-items.spec.ts:97:1 › all primary routes use independent semantic reveal units and retain layout (25.9s)
+(node:26440) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 17 [chromium] › apps\web\e2e\settings-routes.spec.ts:52:3 › 外观独立页：/settings 可达且左导航 active (1.8s)
+  ok 18 [chromium] › apps\web\e2e\settings-routes.spec.ts:52:3 › 导航独立页：/settings/navigation 可达且左导航 active (1.6s)
+  ok 19 [chromium] › apps\web\e2e\settings-routes.spec.ts:52:3 › 数据展示独立页：/settings/data-display 可达且左导航 active (1.6s)
+  ok 20 [chromium] › apps\web\e2e\settings-routes.spec.ts:52:3 › 操作偏好独立页：/settings/actions 可达且左导航 active (1.8s)
+  ok 21 [chromium] › apps\web\e2e\settings-routes.spec.ts:52:3 › 语言与地区独立页：/settings/locale 可达且左导航 active (2.0s)
+  ok 22 [chromium] › apps\web\e2e\settings-routes.spec.ts:52:3 › 通知独立页：/settings/notifications 可达且左导航 active (1.6s)
+  ok 23 [chromium] › apps\web\e2e\settings-routes.spec.ts:52:3 › 可访问性独立页：/settings/accessibility 可达且左导航 active (1.4s)
+  ok 24 [chromium] › apps\web\e2e\settings-routes.spec.ts:52:3 › 快捷键独立页：/settings/shortcuts 可达且左导航 active (1.5s)
+  ok 25 [chromium] › apps\web\e2e\settings-routes.spec.ts:77:1 › 左导航含全部 8 分类（外观=根），点击可跳转 (1.4s)
+  ok 26 [chromium] › apps\web\e2e\settings-routes.spec.ts:103:1 › 内页壳持久化：切换分类不重建侧边栏，搜索输入与结果保留（SET-011） (1.5s)
+  ok 27 [chromium] › apps\web\e2e\settings-routes.spec.ts:118:1 › 侧边栏：搜索顶置 + 分组导航 + 每分类语义图标（SET-011） (1.1s)
+  ok 28 [chromium] › apps\web\e2e\settings-routes.spec.ts:147:1 › 分类切换复用主 Shell route-enter 动效：内容区段淡入、壳静止（SET-012） (3.3s)
+  x  29 [chromium] › apps\web\e2e\transition.spec.ts:111:1 › 无 Suspense 页面深入导航播放方向进入并恢复稳定 (2.5s)
+(node:25636) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 30 [chromium] › apps\web\e2e\transition.spec.ts:147:1 › Family 页面导航在拆帧场景下保持功能正确且动画不失控 (3.2s)
+  ok 31 [chromium] › apps\web\e2e\transition.spec.ts:164:1 › 减弱动态效果时方向过渡时长接近零 (2.4s)
+  ok 32 [chromium] › apps\web\e2e\transition.spec.ts:180:1 › 浏览器后退不播放方向进入并正确恢复页面 (2.2s)
+
+
+  1) [chromium] › apps\web\e2e\motion-progressive.spec.ts:8:1 › settings keeps its shell stable and enters semantic regions inside the nested Page 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "none"
+    Received: "surface-item-enter"
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      35 |       page.locator('main h1').evaluate((e) => getComputedStyle(e.closest('header')!).animationName),
+      36 |     )
+    > 37 |     .toBe('none');
+         |      ^
+      38 | });
+      39 |
+      40 | for (const width of [1440, 390, 320]) {
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\motion-progressive.spec.ts:37:6
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\motion-progressive-setting-2dd87-ions-inside-the-nested-Page-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\motion-progressive-setting-2dd87-ions-inside-the-nested-Page-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\motion-progressive-setting-2dd87-ions-inside-the-nested-Page-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\motion-progressive-setting-2dd87-ions-inside-the-nested-Page-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\scroll-reveal-items.spec.ts:97:1 › all primary routes use independent semantic reveal units and retain layout 
+
+    Error: /ui-elements/forms
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 3265
+    Received: 3349
+
+      167 |       ),
+      168 |     }));
+    > 169 |     expect(sample.height, route).toBe(before);
+          |                                  ^
+      170 |     expect(sample.overflow, route).toBe(false);
+      171 |     expect(sample.hidden, route).toBe(false);
+      172 |     expect(sample.nested, route).toBe(false);
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\scroll-reveal-items.spec.ts:169:34
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\scroll-reveal-items-all-pr-13a36-eal-units-and-retain-layout-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\scroll-reveal-items-all-pr-13a36-eal-units-and-retain-layout-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\scroll-reveal-items-all-pr-13a36-eal-units-and-retain-layout-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\scroll-reveal-items-all-pr-13a36-eal-units-and-retain-layout-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › apps\web\e2e\transition.spec.ts:111:1 › 无 Suspense 页面深入导航播放方向进入并恢复稳定 ─────────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      132 |   expect(record.sawDirectionEnter).toBe(true);
+      133 |   expect(record.animationNames).toContain('surface-enter-forward');
+    > 134 |   expect(record.sawRouteContentEnter).toBe(true);
+          |                                       ^
+      135 |   expect(record.maxDurationMs).toBeLessThanOrEqual(500);
+      136 |
+      137 |   // 转场结束后内容必须可见且无残留动画（不 opacity:0 卡死）。
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\transition.spec.ts:134:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\transition-无-Suspense-页面深入导航播放方向进入并恢复稳定-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\transition-无-Suspense-页面深入导航播放方向进入并恢复稳定-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\transition-无-Suspense-页面深入导航播放方向进入并恢复稳定-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\transition-无-Suspense-页面深入导航播放方向进入并恢复稳定-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › apps\web\e2e\motion-progressive.spec.ts:8:1 › settings keeps its shell stable and enters semantic regions inside the nested Page 
+    [chromium] › apps\web\e2e\scroll-reveal-items.spec.ts:97:1 › all primary routes use independent semantic reveal units and retain layout 
+    [chromium] › apps\web\e2e\transition.spec.ts:111:1 › 无 Suspense 页面深入导航播放方向进入并恢复稳定 ──────────────
+  29 passed (1.6m)

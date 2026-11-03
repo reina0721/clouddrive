@@ -1,0 +1,73 @@
+schema_version: 1
+id: R107-001
+title: '107 设置中心当前架构与能力缺口快照研究'
+question: '在新增独立 /settings 设置插件与配套能力（页面标签、通知中心、草稿、搜索历史、收藏/最近、工作恢复、命令/快捷键）前，当前 frontend 架构的事实基线是什么：偏好页真实行为、Shell/插件/Host 归属、生成与门禁流程、以及哪些能力已存在、哪些缺失？'
+research_type: current-state-audit
+topics:
+  [
+    'settings center',
+    'preferences',
+    'shell store',
+    'plugin navigation',
+    'host ports',
+    'page tabs',
+    'notifications',
+    'workspace restore',
+    'codegen',
+    'navigation lifecycle',
+  ]
+keywords:
+  [
+    'clouddrive.shell',
+    'system-tools.preferences',
+    'plugin.navigation.ts',
+    'createPersistStore',
+    'shouldProceedWithNavigation',
+    'SettingsLayout',
+    'navigation-groups.ts',
+    'navigation-icon.ts',
+    'codegen:plugins',
+  ]
+applicable_scenarios:
+  [
+    '107 设置中心：移除 system-tools preferences 并新建 /settings 插件、页面标签/通知/草稿/收藏/最近/工作恢复/命令快捷键的真实能力规划与实施基线',
+  ]
+non_applicable_scenarios:
+  ['后端设置同步与账号体系、跨设备同步、旧 webui/070-087 设置系列（属旧体系参考）、新 Runtime Host']
+status: active
+summary: '当前"设置"仅 system-tools 内一个偏好表单页（submit 唯一真实副作用写 Host locale；density/reduceMotion/theme 不落 store 不生效）；Shell store 为 clouddrive.shell v0 无 migrate、白名单 theme/locale/sidebarCollapsed；侧栏展开为 Active Path Anchored Accordion 纯函数、无跨导航菜单记忆；账户菜单硬编码跳 /system-tools/preferences；页面标签/通知中心/草稿/搜索历史/收藏/最近/工作恢复/命令注册/快捷键/离开确认接线均不存在；Host Navigation/Locale Port 已装配；新插件只改源文件跑 codegen，无中央登记。'
+evidence:
+  types: ['project-source', 'tests', 'official-documentation']
+  primary_sources:
+    - title: '偏好页真实副作用审计'
+      locator: 'surfaces/plugins/system-tools/routes/preferences/page.tsx；surfaces/plugins/system-tools/{plugin.ts,plugin.navigation.ts,schemas.ts,i18n.ts}'
+      snapshot: '77740c19；submit 只 changeLocale + notify；theme/density/reduceMotion 不写 store（页面注释自证）'
+    - title: 'Shell store 与 Host 装配'
+      locator: 'apps/web/src/state/use-shell-store.ts；apps/web/src/host/providers.tsx；apps/web/src/shell/app-shell.tsx；apps/web/src/shell/navigation.ts；apps/web/src/i18n/resources.ts'
+      snapshot: '77740c19；clouddrive.shell v0 无 migrate；账户菜单 L209 硬编码 href；shell.notifications 仅文案键'
+    - title: '侧栏展开状态模型'
+      locator: 'packages/surface-foundation/src/shell-navigation-accordion.ts；shell-navigation-accordion.test.ts；shell-navigation.tsx；packages/surface-foundation/AGENTS.md'
+      snapshot: '77740c19；active ancestor 恒展开不可收起；每 scope 至多 1 active+1 exploration；exploration 绑定 routeKey 瞬时、无持久化'
+    - title: '导航生命周期与离开确认缺口'
+      locator: 'apps/web/src/host/navigation-lifecycle.ts；navigation-progress.ts；route-transition.tsx；packages/form-foundation/src/index.tsx（LeaveConfirmationPort/requestFoundationFormLeave）；packages/surface-foundation/src/form-actions.tsx（requestPageLeave）'
+      snapshot: '77740c19；confirmLeave 仅契约与测试，Host/Plugin 未接线、无 beforeunload'
+    - title: '插件/生成/门禁流程'
+      locator: 'docs/plugin-framework.md；surfaces/plugins/navigation-groups.ts；surfaces/src/navigation-icon.ts；tooling/plugin-codegen/codegen.mjs；frontend/package.json（codegen:plugins/check）；docs/changes/106-plugin-schemas-access/tasks.md'
+      snapshot: '77740c19；Group Alias system/reference/development；icon vocabulary 14 项含 settings/resource；生成物带 @generated 头禁手改'
+    - title: '缺失能力核对（grep）'
+      locator: 'frontend 全仓 grep：favorite/recent/notification center/draft/search history/page tabs/command registry/shortcut/beforeunload/confirmLeave'
+      snapshot: '77740c19；除文案键与 Port 契约外均无实现'
+  researched_at: '2026-09-06'
+  verified_at: '2026-09-06'
+validity:
+  mode: revision-bounded
+  refresh_triggers:
+    [
+      'clouddrive.shell persist 配置（name/version/partialize/migrate）、navigation-lifecycle 事务层、surface shell accordion 纯函数、ui-adapter data-display（DataTable）、surfaces/plugins/navigation-groups.ts Group Alias、surfaces/src/navigation-icon.ts vocabulary、design-system schema/runtime-codegen、tooling/plugin-codegen 行为、或 Host providers/app-shell 装配变化时需定向复核对应结论',
+    ]
+relations:
+  extends: ['R098-001', 'R100-001', 'R101-001', 'R103-001', 'R105-001']
+  related: ['R107-002', 'R107-003']
+  supersedes: []
+  superseded_by: []
+report: report.md

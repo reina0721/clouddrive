@@ -1,0 +1,121 @@
+
+Running 4 tests using 1 worker
+
+(node:28192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: compact (11.6s)
+(node:30052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: standard (11.6s)
+(node:30072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: comfortable (12.0s)
+(node:25528) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:300:1 › Corrupt current column layout is reported and can be retried (3.1s)
+
+
+  1) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: compact
+
+    Error: locator.focus: Error: strict mode violation: getByRole('switch', { name: /^Expanded text/ }) resolved to 2 elements:
+        1) <input title="" tabindex="0" role="switch" type="checkbox" data-react-aria-pressable="true"/> aka locator('section').filter({ hasText: 'Display densityComfortable' }).getByLabel('Expanded textSwitch to')
+        2) <input title="" tabindex="0" role="switch" type="checkbox" data-react-aria-pressable="true"/> aka locator('#forms').getByRole('switch', { name: 'Expanded text Switch to' })
+
+    Call log:
+      - waiting for getByRole('switch', { name: /^Expanded text/ })
+
+
+      278 |       await expect(page.locator('main h1')).toBeVisible();
+      279 |       const longText = page.getByRole('switch', { name: /^Expanded text/ });
+    > 280 |       await longText.focus();
+          |                      ^
+      281 |       await page.keyboard.press('Space');
+      282 |       await expect(longText).toBeChecked();
+      283 |       expect(
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:280:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--babe0--English-large-text-compact-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Public-families--babe0--English-large-text-compact-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--babe0--English-large-text-compact-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Public-families--babe0--English-large-text-compact-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: standard
+
+    Error: locator.focus: Error: strict mode violation: getByRole('switch', { name: /^Expanded text/ }) resolved to 2 elements:
+        1) <input title="" tabindex="0" role="switch" type="checkbox" data-react-aria-pressable="true"/> aka locator('section').filter({ hasText: 'Display densityComfortable' }).getByLabel('Expanded textSwitch to')
+        2) <input title="" tabindex="0" role="switch" type="checkbox" data-react-aria-pressable="true"/> aka locator('#forms').getByRole('switch', { name: 'Expanded text Switch to' })
+
+    Call log:
+      - waiting for getByRole('switch', { name: /^Expanded text/ })
+
+
+      278 |       await expect(page.locator('main h1')).toBeVisible();
+      279 |       const longText = page.getByRole('switch', { name: /^Expanded text/ });
+    > 280 |       await longText.focus();
+          |                      ^
+      281 |       await page.keyboard.press('Space');
+      282 |       await expect(longText).toBeChecked();
+      283 |       expect(
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:280:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--f5ab9-English-large-text-standard-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Public-families--f5ab9-English-large-text-standard-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--f5ab9-English-large-text-standard-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Public-families--f5ab9-English-large-text-standard-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: comfortable
+
+    Error: locator.focus: Error: strict mode violation: getByRole('switch', { name: /^Expanded text/ }) resolved to 2 elements:
+        1) <input title="" tabindex="0" role="switch" type="checkbox" data-react-aria-pressable="true"/> aka locator('section').filter({ hasText: 'Display densityComfortable' }).getByLabel('Expanded textSwitch to')
+        2) <input title="" tabindex="0" role="switch" type="checkbox" data-react-aria-pressable="true"/> aka locator('#forms').getByRole('switch', { name: 'Expanded text Switch to' })
+
+    Call log:
+      - waiting for getByRole('switch', { name: /^Expanded text/ })
+
+
+      278 |       await expect(page.locator('main h1')).toBeVisible();
+      279 |       const longText = page.getByRole('switch', { name: /^Expanded text/ });
+    > 280 |       await longText.focus();
+          |                      ^
+      281 |       await page.keyboard.press('Space');
+      282 |       await expect(longText).toBeChecked();
+      283 |       expect(
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:280:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--cf1f9-lish-large-text-comfortable-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Public-families--cf1f9-lish-large-text-comfortable-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--cf1f9-lish-large-text-comfortable-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Public-families--cf1f9-lish-large-text-comfortable-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: compact
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: standard
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: comfortable
+  1 passed (45.6s)

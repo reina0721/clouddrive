@@ -1,0 +1,84 @@
+package cli
+
+import (
+	"fmt"
+	"reflect"
+	"strings"
+
+	"github.com/reina0721/clouddrive/internal/kernel/config"
+	pkgcli "github.com/reina0721/clouddrive/pkg/cli"
+)
+
+const (
+	configCommandName = "config"
+	initCommandName   = "init"
+	outputFlagName    = "output"
+	forceFlagName     = "force"
+	// DefaultConfigPath 是进程入口与 config init 共用的默认配置路径。
+	DefaultConfigPath = "config.yaml"
+)
+
+// ConfigCommands 返回调用 DefaultManager 的 config init 启动前命令契约。
+func ConfigCommands(manager config.DefaultManager, defaultOutputPath string) Contract {
+	return ContractFunc(func() ([]pkgcli.CommandSpec, error) {
+		if isNilDefaultManager(manager) {
+			return nil, fmt.Errorf("default configuration manager is nil")
+		}
+		if strings.TrimSpace(defaultOutputPath) == "" {
+			return nil, fmt.Errorf("default configuration path is empty")
+		}
+		return []pkgcli.CommandSpec{{
+			Name:        configCommandName,
+			Description: "管理项目配置",
+			Commands: []pkgcli.CommandSpec{{
+				Name:        initCommandName,
+				Description: "生成当前项目的默认配置文件",
+				Flags: []pkgcli.FlagSpec{
+					{
+						Name:        outputFlagName,
+						Shorthand:   "o",
+						Type:        pkgcli.FlagTypeString,
+						Default:     defaultOutputPath,
+						Description: "默认配置文件输出路径",
+					},
+					{
+						Name:        forceFlagName,
+						Shorthand:   "f",
+						Type:        pkgcli.FlagTypeBool,
+						Default:     false,
+						Description: "替换已经存在的目标文件",
+					},
+				},
+				Mode:       pkgcli.CommandModeBootstrap,
+				SideEffect: pkgcli.SideEffectFileReplace,
+				Positional: pkgcli.PositionalNone,
+				Run: func(ctx *pkgcli.Context) error {
+					result, err := manager.Generate(ctx.Context, config.GenerateRequest{
+						Path:  ctx.GetString(outputFlagName),
+						Force: ctx.GetBool(forceFlagName),
+					})
+					if err != nil {
+						return &pkgcli.ConfigError{Command: ctx.CommandPath, Stage: "generate", Cause: err}
+					}
+					if _, err := fmt.Fprintf(ctx.Stdout, "created default configuration: %s (format=%s replaced=%t sections=%s)\n", result.Path, result.Format, result.Replaced, strings.Join(result.SectionIDs, ",")); err != nil {
+						return fmt.Errorf("write config init result: %w", err)
+					}
+					return nil
+				},
+			}},
+		}}, nil
+	})
+}
+
+func isNilDefaultManager(manager config.DefaultManager) bool {
+	if manager == nil {
+		return true
+	}
+	value := reflect.ValueOf(manager)
+	switch value.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
+		return value.IsNil()
+	default:
+		return false
+	}
+}

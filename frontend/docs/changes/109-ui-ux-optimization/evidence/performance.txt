@@ -1,0 +1,5 @@
+
+> clouddrive-frontend@0.1.0 performance:check D:\coder\i721\console-web
+> node tooling/check-performance-budget.mjs
+
+Performance budget passed: initial=366187, maxRoute=/page-archetypes/resource-list:436467, union=905053, css=47107, largest=D:\coder\i721\console-web\apps\web\dist\_next\static\chunks\2cued8itecehc.js:84658, rawJs=2989809.

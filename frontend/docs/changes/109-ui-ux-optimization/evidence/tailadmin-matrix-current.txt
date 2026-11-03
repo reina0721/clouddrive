@@ -1,0 +1,10 @@
+page.goto: Timeout 45000ms exceeded.
+Call log:
+  - navigating to "https://react-demo.tailadmin.com/notifications", waiting until "domcontentloaded"
+
+    at [eval]:1:249 {
+  log: [
+    '  - navigating to "https://react-demo.tailadmin.com/notifications", waiting until "domcontentloaded"'
+  ],
+  name: 'TimeoutError'
+}

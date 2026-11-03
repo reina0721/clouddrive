@@ -1,0 +1,79 @@
+
+Running 4 tests using 1 worker
+
+(node:24340) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\confirm-bulk.spec.ts:21:1 › 批量操作前确认默认开：导出所选弹二次确认，取消不导出 (14.3s)
+  x  2 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:377:1 › Native repeated submits create one resource and allow retry after validation (7.1s)
+(node:27668) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:394:1 › Leaving during validation prevents a stale save and redirect (3.4s)
+  x  4 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:430:1 › Leaving the local form simulation cancels its pending feedback (2.1s)
+
+
+  1) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:377:1 › Native repeated submits create one resource and allow retry after validation
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('请输入 1–80 个字符的名称。', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByText('请输入 1–80 个字符的名称。', { exact: true })
+
+
+      380 |   await page.goto('/reference-resources/create');
+      381 |   await page.getByRole('button', { name: '创建', exact: true }).click();
+    > 382 |   await expect(page.getByText('请输入 1–80 个字符的名称。', { exact: true })).toBeVisible();
+          |                                                                     ^
+      383 |   await page.getByRole('textbox', { name: '名称', exact: true }).fill('并发提交回归109');
+      384 |   await page.evaluate(() => {
+      385 |     const form = document.querySelector('form');
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:382:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Native-repeated--11bf2-llow-retry-after-validation-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Native-repeated--11bf2-llow-retry-after-validation-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Native-repeated--11bf2-llow-retry-after-validation-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Native-repeated--11bf2-llow-retry-after-validation-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:430:1 › Leaving the local form simulation cancels its pending feedback
+
+    Error: page.evaluate: Error: Missing reference form
+        at eval (eval at evaluate (:311:30), <anonymous>:3:22)
+        at UtilityScript.evaluate (<anonymous>:313:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at eval (eval at evaluate (:311:30), <anonymous>:3:22)
+        at UtilityScript.evaluate (<anonymous>:313:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:432:14
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Leaving-the-loca-abeff-ancels-its-pending-feedback-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Leaving-the-loca-abeff-ancels-its-pending-feedback-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Leaving-the-loca-abeff-ancels-its-pending-feedback-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Leaving-the-loca-abeff-ancels-its-pending-feedback-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:377:1 › Native repeated submits create one resource and allow retry after validation
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:430:1 › Leaving the local form simulation cancels its pending feedback
+  2 passed (30.9s)

@@ -1,0 +1,224 @@
+- log
+- log
+- alert
+- link "跳到主要内容 / Skip to content":
+  - /url: "#main-content"
+- banner:
+  - button "打开导航":
+  - button "搜索页面与操作":
+  - button "通知":
+  - button "当前用户":
+    - generic "Rin": RI
+- main:
+  - list "面包屑导航":
+    - link "基座验证"
+    - generic: /
+    - link "数据工作台" [disabled]
+  - paragraph: Reference · Workspace
+  - heading "高密度数据工作台" [level=1]
+  - paragraph: 使用 48 条本地基准数据验证 Dashboard、筛选、Table、Master-Detail、Tabs、Drawer、Dialog 与非正常状态的协作边界。
+  - button "打开活动侧栏"
+  - button "打开确认对话框"
+  - paragraph: 总工作流
+  - paragraph: "48"
+  - paragraph: 需关注
+  - paragraph: "16"
+  - paragraph: 高风险
+  - paragraph: "16"
+  - paragraph: 筛选结果
+  - paragraph: "48"
+  - toolbar "页面工具栏":
+    - searchbox "搜索 Reference 数据"
+    - button "Close":
+    - button "搜索":
+      - generic: 搜索
+    - button "导出快照":
+      - generic: 导出快照
+  - generic: 状态
+  - button "全部 状态":
+    - generic: 全部
+  - combobox
+  - generic: 区域
+  - button "全部 区域":
+    - generic: 全部
+  - combobox
+  - generic: 表格密度
+  - button "舒适 表格密度":
+    - generic: 舒适
+  - combobox
+  - generic: 场景状态
+  - button "正常 场景状态":
+    - generic: 正常
+  - combobox
+  - region "Reference 工作流数据表":
+    - heading "工作流列表" [level=2]
+    - paragraph: 当前展示 48 条记录；数据量用于验证滚动、密度与溢出。
+    - button "列设置"
+    - generic: 已选 1 条
+    - button "导出已选":
+      - generic: 导出已选
+    - grid "Reference 工作流数据表":
+      - rowgroup:
+        - row "工作流 尺寸调整器 状态 尺寸调整器":
+          - columnheader "工作流 尺寸调整器":
+            - generic: 工作流
+            - slider "尺寸调整器 工作流": "167"
+          - columnheader "状态 尺寸调整器":
+            - generic: 状态
+            - slider "尺寸调整器 状态": "166"
+      - rowgroup:
+        - row "North Star analytics 1 REF-001" [selected]:
+          - rowheader "North Star analytics 1 REF-001":
+            - paragraph: North Star analytics 1
+            - paragraph: REF-001
+          - gridcell "健康":
+            - generic: 健康
+        - row "Creator support operations 13 REF-013":
+          - rowheader "Creator support operations 13 REF-013":
+            - paragraph: Creator support operations 13
+            - paragraph: REF-013
+          - gridcell "健康":
+            - generic: 健康
+        - row "North Star analytics 25 REF-025":
+          - rowheader "North Star analytics 25 REF-025":
+            - paragraph: North Star analytics 25
+            - paragraph: REF-025
+          - gridcell "健康":
+            - generic: 健康
+        - row "Creator support operations 37 REF-037":
+          - rowheader "Creator support operations 37 REF-037":
+            - paragraph: Creator support operations 37
+            - paragraph: REF-037
+          - gridcell "健康":
+            - generic: 健康
+        - row "Partner onboarding 2 REF-002":
+          - rowheader "Partner onboarding 2 REF-002":
+            - paragraph: Partner onboarding 2
+            - paragraph: REF-002
+          - gridcell "需关注":
+            - generic: 需关注
+        - row "Moderation quality signals 14 REF-014":
+          - rowheader "Moderation quality signals 14 REF-014":
+            - paragraph: Moderation quality signals 14
+            - paragraph: REF-014
+          - gridcell "需关注":
+            - generic: 需关注
+        - row "Partner onboarding 26 REF-026":
+          - rowheader "Partner onboarding 26 REF-026":
+            - paragraph: Partner onboarding 26
+            - paragraph: REF-026
+          - gridcell "需关注":
+            - generic: 需关注
+        - row "Moderation quality signals 38 REF-038":
+          - rowheader "Moderation quality signals 38 REF-038":
+            - paragraph: Moderation quality signals 38
+            - paragraph: REF-038
+          - gridcell "需关注":
+            - generic: 需关注
+        - row "Trust review pipeline 3 REF-003":
+          - rowheader "Trust review pipeline 3 REF-003":
+            - paragraph: Trust review pipeline 3
+            - paragraph: REF-003
+          - gridcell "已暂停":
+            - generic: 已暂停
+        - row "Billing reconciliation 15 REF-015":
+          - rowheader "Billing reconciliation 15 REF-015":
+            - paragraph: Billing reconciliation 15
+            - paragraph: REF-015
+          - gridcell "已暂停":
+            - generic: 已暂停
+        - row "Trust review pipeline 27 REF-027":
+          - rowheader "Trust review pipeline 27 REF-027":
+            - paragraph: Trust review pipeline 27
+            - paragraph: REF-027
+          - gridcell "已暂停":
+            - generic: 已暂停
+        - row "Billing reconciliation 39 REF-039":
+          - rowheader "Billing reconciliation 39 REF-039":
+            - paragraph: Billing reconciliation 39
+            - paragraph: REF-039
+          - gridcell "已暂停":
+            - generic: 已暂停
+        - row "Regional release readiness 4 REF-004":
+          - rowheader "Regional release readiness 4 REF-004":
+            - paragraph: Regional release readiness 4
+            - paragraph: REF-004
+          - gridcell "健康":
+            - generic: 健康
+        - row "Content lifecycle governance 16 REF-016":
+          - rowheader "Content lifecycle governance 16 REF-016":
+            - paragraph: Content lifecycle governance 16
+            - paragraph: REF-016
+          - gridcell "健康":
+            - generic: 健康
+        - row "Regional release readiness 28 REF-028":
+          - rowheader "Regional release readiness 28 REF-028":
+            - paragraph: Regional release readiness 28
+            - paragraph: REF-028
+          - gridcell "健康":
+            - generic: 健康
+        - row "Content lifecycle governance 40 REF-040":
+          - rowheader "Content lifecycle governance 40 REF-040":
+            - paragraph: Content lifecycle governance 40
+            - paragraph: REF-040
+          - gridcell "健康":
+            - generic: 健康
+        - row "Creator support operations 5 REF-005":
+          - rowheader "Creator support operations 5 REF-005":
+            - paragraph: Creator support operations 5
+            - paragraph: REF-005
+          - gridcell "需关注":
+            - generic: 需关注
+        - row "North Star analytics 17 REF-017":
+          - rowheader "North Star analytics 17 REF-017":
+            - paragraph: North Star analytics 17
+            - paragraph: REF-017
+          - gridcell "需关注":
+            - generic: 需关注
+        - row "Creator support operations 29 REF-029":
+          - rowheader "Creator support operations 29 REF-029":
+            - paragraph: Creator support operations 29
+            - paragraph: REF-029
+          - gridcell "需关注":
+            - generic: 需关注
+        - row "North Star analytics 41 REF-041":
+          - rowheader "North Star analytics 41 REF-041":
+            - paragraph: North Star analytics 41
+            - paragraph: REF-041
+          - gridcell "需关注":
+            - generic: 需关注
+    - navigation "Reference 列表分页":
+      - list:
+        - button "上一页" [disabled]:
+          - generic: ‹
+        - button "第 1 页": "1"
+        - button "第 2 页": "2"
+        - button "第 3 页": "3"
+        - button "下一页":
+          - generic: ›
+- button "取消"
+- dialog "North Star analytics 1" [active]:
+  - heading "North Star analytics 1" [level=2]
+  - paragraph: 详情与列表共享同一选中记录。关闭后继续浏览列表。
+  - button "关闭详情":
+    - generic: ×
+  - paragraph: REF-001
+  - heading "North Star analytics 1" [level=2]
+  - generic: 健康
+  - tablist "工作流详情":
+    - tab "摘要" [selected]:
+      - generic: 摘要
+    - tab "活动":
+      - generic: 活动
+    - tab "风险":
+      - generic: 风险
+  - tabpanel "摘要":
+    - paragraph: 本地参考数据用于验证长内容、状态组合、响应式布局和浏览器交互，不依赖后端。
+    - generic "工作流详情":
+      - term: 负责人
+      - definition:
+        - generic "Lin Chen": LC
+        - generic: Lin Chen
+        - generic: 亚太
+      - term: 更新时间
+      - definition: 2026年8月29日

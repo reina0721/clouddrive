@@ -1,0 +1,221 @@
+
+Running 13 tests using 1 worker
+
+
+
+(node:12948) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Settings switches share one pointer and keyboard press boundary
+  1) [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Settings switches share one pointer and keyboard press boundary 
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator: getByRole('switch', { name: '固定页面标签', exact: true })
+    Expected: disabled
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeDisabled" with timeout 5000ms
+      - waiting for getByRole('switch', { name: '固定页面标签', exact: true })
+
+
+      50 |   await page.keyboard.press('Space');
+      51 |   await expect(input).not.toBeChecked();
+    > 52 |   await expect(page.getByRole('switch', { name: '固定页面标签', exact: true })).toBeDisabled();
+         |                                                                           ^
+      53 |   await expect(page.getByText('先启用顶部页面标签，即可选择是否固定。')).toBeVisible();
+      54 | });
+      55 |
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\settings-ux-review.spec.ts:52:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Setting-46f43-and-keyboard-press-boundary-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-ux-review-Setting-46f43-and-keyboard-press-boundary-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Setting-46f43-and-keyboard-press-boundary-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-ux-review-Setting-46f43-and-keyboard-press-boundary-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:30000) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[2/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:56:1 › Radio indicator and card edge select the same option and arrows retain selection
+  2) [chromium] › apps\web\e2e\settings-ux-review.spec.ts:56:1 › Radio indicator and card edge select the same option and arrows retain selection 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('radiogroup', { name: '界面密度', exact: true }).locator('label').filter({ has: getByRole('radiogroup', { name: '界面密度', exact: true }).getByRole('radio', { name: '紧凑', exact: true }) }).locator('[data-slot="radio-control"]')
+
+
+      61 |   const compact = group.getByRole('radio', { name: '紧凑', exact: true });
+      62 |   const compactLabel = group.locator('label').filter({ has: compact });
+    > 63 |   await compactLabel.locator('[data-slot="radio-control"]').click();
+         |                                                             ^
+      64 |   await expect(compact).toBeChecked();
+      65 |   const comfortable = group.getByRole('radio', { name: '宽松', exact: true });
+      66 |   const card = group.locator('label').filter({ has: comfortable });
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\settings-ux-review.spec.ts:63:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Radio-i-711fd-and-arrows-retain-selection-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-ux-review-Radio-i-711fd-and-arrows-retain-selection-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Radio-i-711fd-and-arrows-retain-selection-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-ux-review-Radio-i-711fd-and-arrows-retain-selection-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:31184) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[3/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:76:1 › Checkbox indicator works in the shared form authority and disabled option stays disabled
+  3) [chromium] › apps\web\e2e\settings-ux-review.spec.ts:76:1 › Checkbox indicator works in the shared form authority and disabled option stays disabled 
+
+    Error: locator.click: Error: strict mode violation: locator('label').filter({ has: getByRole('checkbox').filter({ visible: true }).first() }).locator('[data-slot="checkbox-control"]') resolved to 2 elements:
+        1) <span data-slot="checkbox-control" class="checkbox__control mt-0.5 grid size-5 shrink-0 place-items-center rounded-control border border-border-strong bg-surface text-on-brand">…</span> aka locator('span').filter({ hasText: '✓' }).first()
+        2) <span data-slot="checkbox-control" class="checkbox__control mt-0.5 grid size-5 shrink-0 place-items-center rounded-control border border-border-strong bg-surface text-on-brand">…</span> aka locator('span').filter({ hasText: '✓' }).nth(2)
+
+    Call log:
+      - waiting for locator('label').filter({ has: getByRole('checkbox').filter({ visible: true }).first() }).locator('[data-slot="checkbox-control"]')
+
+
+      81 |   const initial = await input.isChecked();
+      82 |   const label = page.locator('label').filter({ has: input });
+    > 83 |   await label.locator('[data-slot="checkbox-control"]').click();
+         |                                                         ^
+      84 |   await expect(input).toBeChecked({ checked: !initial });
+      85 |   await input.focus();
+      86 |   await page.keyboard.press('Space');
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\settings-ux-review.spec.ts:83:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Checkbo-21b73-abled-option-stays-disabled-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-ux-review-Checkbo-21b73-abled-option-stays-disabled-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Checkbo-21b73-abled-option-stays-disabled-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-ux-review-Checkbo-21b73-abled-option-stays-disabled-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:23336) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[4/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:93:3 › Settings category navigation stays reachable through continuous tasks at 320
+[5/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:93:3 › Settings category navigation stays reachable through continuous tasks at 390
+[6/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:93:3 › Settings category navigation stays reachable through continuous tasks at 430
+  4) [chromium] › apps\web\e2e\settings-ux-review.spec.ts:93:3 › Settings category navigation stays reachable through continuous tasks at 430 
+
+    Error: expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 430
+    Received:    438
+
+      115 |     await page.keyboard.press('Escape');
+      116 |     await expect(page.getByRole('button', { name: /切换分类与搜索/ })).toBeFocused();
+    > 117 |     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+          |                                                                             ^
+      118 |       width,
+      119 |     );
+      120 |     await page.screenshot({
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\settings-ux-review.spec.ts:117:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Setting-2ca40-ugh-continuous-tasks-at-430-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-ux-review-Setting-2ca40-ugh-continuous-tasks-at-430-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Setting-2ca40-ugh-continuous-tasks-at-430-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-ux-review-Setting-2ca40-ugh-continuous-tasks-at-430-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:22316) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[7/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:93:3 › Settings category navigation stays reachable through continuous tasks at 768
+[8/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:93:3 › Settings category navigation stays reachable through continuous tasks at 1024
+[9/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:93:3 › Settings category navigation stays reachable through continuous tasks at 1279
+[10/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:126:1 › Pinned page tabs track the header; unpinned tabs scroll and persist after reload
+  5) [chromium] › apps\web\e2e\settings-ux-review.spec.ts:126:1 › Pinned page tabs track the header; unpinned tabs scroll and persist after reload 
+
+    Error: expect(locator).toBeChecked() failed
+
+    Locator: getByRole('switch', { name: '固定页面标签', exact: true })
+    Expected: checked
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeChecked" with timeout 5000ms
+      - waiting for getByRole('switch', { name: '固定页面标签', exact: true })
+
+
+      131 |   await page.getByText('顶部页面标签', { exact: true }).first().click();
+      132 |   const pinned = page.getByRole('switch', { name: '固定页面标签', exact: true });
+    > 133 |   await expect(pinned).toBeChecked();
+          |                        ^
+      134 |   const tabs = page.getByRole('navigation', { name: '页面标签' });
+      135 |   await page.evaluate(() => window.scrollTo(0, 700));
+      136 |   const pinnedBounds = await tabs.boundingBox();
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\settings-ux-review.spec.ts:133:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Pinned--85a52-ll-and-persist-after-reload-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-ux-review-Pinned--85a52-ll-and-persist-after-reload-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Pinned--85a52-ll-and-persist-after-reload-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-ux-review-Pinned--85a52-ll-and-persist-after-reload-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:31496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[11/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:147:1 › All page tabs stay manageable on desktop and closing active restores useful focus
+[12/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:171:1 › Settings drawer and form authority retain WCAG AA semantics in dark English
+[13/13] [chromium] › apps\web\e2e\settings-ux-review.spec.ts:203:3 › Touch settings tasks › Touch control and category entry work without hover at different scroll positions
+  5 failed
+    [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Settings switches share one pointer and keyboard press boundary 
+    [chromium] › apps\web\e2e\settings-ux-review.spec.ts:56:1 › Radio indicator and card edge select the same option and arrows retain selection 
+    [chromium] › apps\web\e2e\settings-ux-review.spec.ts:76:1 › Checkbox indicator works in the shared form authority and disabled option stays disabled 
+    [chromium] › apps\web\e2e\settings-ux-review.spec.ts:93:3 › Settings category navigation stays reachable through continuous tasks at 430 
+    [chromium] › apps\web\e2e\settings-ux-review.spec.ts:126:1 › Pinned page tabs track the header; unpinned tabs scroll and persist after reload 
+  8 passed (1.3m)

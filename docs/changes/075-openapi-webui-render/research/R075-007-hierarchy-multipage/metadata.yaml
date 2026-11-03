@@ -1,0 +1,51 @@
+schema_version: 1
+id: R075-007
+title: "层级分类与多页面：openapi 模块从单页堆叠改为分组多页面（沿用 GroupLayout 073）"
+question: "用户第六轮要求：『请做层级分类，不要放到一个页面上』。当前 72ba96f 实现把接口列表（搜索 + tag 筛选 + 全量 DataTable）、模型区、命令面板、详情 Drawer 全部堆在一个 /openapi 路由内；需要改为按分类（tag）组织的层级导航与独立页面，而不是一页塞下全部内容。平台路由契约是静态路径，动态详情此前用 Drawer + query 深链承载；本记录回答：平台是否有现成的『多页面 + 层级导航』承载机制（GroupLayout 073），以及层级如何映射到静态路由。"
+research_type: current-project
+topics: ["层级分类", "多页面", "GroupLayout", "静态路由契约", "SectionNav", "query 深链"]
+keywords: ["GroupLayoutID", "SectionNav", "settings.layout", "静态路径", "?tag=", "?op="]
+applicable_scenarios:
+  - "模块内部按业务层级拆分多个静态路由，共享固定页内导航（设置中心 073 已验证）"
+  - "动态分组（OpenAPI tag 来自契约快照，非编译期固定）映射为 SectionNav 动态条目 + query 选择"
+  - "详情从 Drawer 升级为独立页面（?op=&mode= 深链不变）"
+non_applicable_scenarios:
+  - "在静态路由契约中引入路径参数（validPath 拒绝 query/fragment/参数，路径只能静态）"
+  - "为每个动态 tag 生成一个路由（路由集合编译期冻结，tag 集合来自快照）"
+status: active
+summary: "平台已有 GroupLayout（073）承载『一族静态路由共享一个页内布局』：settings 8 个分区路由共用 settings.layout，SectionNav 固定页内导航 + 宿主注入内容区，切换路由布局不卸载。openapi 的 tag/模型是动态集合，可把 SectionNav 条目改为按契约快照计算，tag 选择用 query（?tag=），接口详情与模型详情沿用 ?op=&mode=、?model= 深链。层级：/openapi 总览（分类卡片）→ /openapi/tags（某分类下接口列表）→ /openapi/operation（接口文档/调试页），模型独立 /openapi/models。Drawer 承载的详情升级为页面，CommandPalette 保留但导航到页面。"
+evidence:
+  types: ["source-code"]
+  primary_sources:
+    - title: "GroupLayout 073 实现与 settings 用法"
+      locator: "internal/webui/contract.go Route.GroupLayoutID、internal/module/settings/binding/webui/binding.go、webui/src/App.tsx renderAppRoutes/ModuleGroupLayout、SettingsLayout.tsx"
+      snapshot: "2026-08-25 HEAD 72ba96f"
+    - title: "静态路由契约校验"
+      locator: "internal/webui/contract.go validPath（拒绝 query/fragment/参数）"
+      snapshot: "2026-08-25 HEAD 72ba96f"
+    - title: "openapi 模块现状（单页堆叠）"
+      locator: "internal/module/openapi/binding/webui/web/OpenAPIPage.tsx、OperationDrawer.tsx、ModelDrawer.tsx、CommandPalette.tsx"
+      snapshot: "2026-08-25 HEAD 72ba96f"
+    - title: "契约快照数据（tag 集合与分组）"
+      locator: "internal/module/openapi/binding/webui/web/openapi-data.ts groupedOperations、api/openapi.yaml"
+      snapshot: "2026-08-25 HEAD 72ba96f"
+    - title: "用户要求（075 第六轮）"
+      locator: "会话记录"
+      snapshot: "2026-08-25"
+researched_at: "2026-08-25"
+verified_at: "2026-08-25"
+validity:
+  mode: snapshot
+  review_after: "2026-11-25"
+  refresh_triggers:
+    - "路由契约支持路径参数或动态路由时重新评估（当前 validPath 仍静态）"
+    - "平台新增树形导航组件时可用更深的层级呈现替换 SectionNav 动态条目"
+relations:
+  extends:
+    - R075-006
+  related:
+    - R075-002
+    - R075-004
+  supersedes: []
+  superseded_by: []
+report: report.md

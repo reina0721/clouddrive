@@ -1,0 +1,37 @@
+schema_version: 1
+change: 078-iam-api-token-and-mfa
+areas:
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/README.md
+    reason: IAM 新增 API-Token 凭据/openapi 权限键；Auth 新增 ChainVerifier 复合认证；模块 README 同步机器访问与 MFA 选型边界。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+    reason: 新增 4 个 `iam.api-tokens.*` operation 与权限键；api/openapi.yaml 与 operation inventory 经 contract-gen 更新。
+  - id: operations
+    decision: updated
+    documents:
+      - docs/operations/security.md
+      - docs/operations/runtime-capabilities.md
+    reason: 记录 API-Token 语义（sha256 存储、明文一次、链式认证、轮换/吊销、审计）与 MFA/TOTP（登录两步/恢复码/会话标记）语义；运行能力矩阵同步机器访问与 MFA 能力行。
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+    reason: 设置中心安全页新增 MFA 与 API 令牌区块、settings mutation CSRF 头对齐；WebUI 契约快照（openapi-spec.ts）随 contract-gen 再生成。
+  - id: capability
+    decision: reviewed-no-change
+    reason: 无 pkg/kernel 能力新增；MFA 自研方案未实施（仅选型归档），不引入第三方依赖。
+  - id: startup
+    decision: reviewed-no-change
+    reason: ChainVerifier/apiTokenVerifier 走既有 composition 装配路径，不新增运行组件。
+  - id: docs
+    decision: updated
+    documents:
+      - docs/changes/078-iam-api-token-and-mfa/README.md
+      - docs/changes/078-iam-api-token-and-mfa/tasks.md
+      - docs/changes/README.md
+    reason: 变更记录（研究/需求/设计/任务）与变更索引记录本任务状态（计划待确认→实施完成）与结论。

@@ -1,0 +1,78 @@
+// Package todo 负责 Todo 模块的局部纯内存装配。
+package todo
+
+import (
+	"fmt"
+
+	"github.com/reina0721/clouddrive/internal/module"
+	configbinding "github.com/reina0721/clouddrive/internal/module/todo/binding/config"
+	todohandler "github.com/reina0721/clouddrive/internal/module/todo/handler"
+	"github.com/reina0721/clouddrive/internal/module/todo/repo"
+	"github.com/reina0721/clouddrive/internal/module/todo/service"
+	"github.com/reina0721/clouddrive/pkg/clock"
+	"github.com/reina0721/clouddrive/pkg/i18n"
+	"github.com/reina0721/clouddrive/pkg/idgen"
+)
+
+const moduleID module.ID = "todo"
+
+// Dependencies 是 Todo 模块实际使用的稳定能力。
+type Dependencies struct {
+	Database    repo.Access
+	Clock       clock.Clock
+	IDGenerator idgen.Generator
+	Config      configbinding.Config
+	Authorizer  service.Authorizer
+	Executor    service.Executor
+}
+
+// Module 是 Todo 局部装配的完成结果。
+type Module struct {
+	Service      service.UseCases
+	Contribution module.Contribution
+}
+
+// HTTPDependencies 是 Todo HTTP profile 在 core 依赖之外需要的请求边界能力。
+type HTTPDependencies struct {
+	Dependencies
+	Translator i18n.Translator
+	Actors     todohandler.ActorAccess
+}
+
+// HTTPModule 是 Todo 长期 Service profile 的完整输出。
+type HTTPModule struct {
+	Module
+	Operations todohandler.Operations
+}
+
+// New 纯内存构造 Todo Service、Adapter 与 contribution。
+func New(dependencies Dependencies) (Module, error) {
+	repository, err := repo.New(dependencies.Database)
+	if err != nil {
+		return Module{}, fmt.Errorf("compose todo repository: %w", err)
+	}
+	todoService, err := service.New(
+		repository, dependencies.Clock, dependencies.IDGenerator, dependencies.Config.Policy(), dependencies.Authorizer, dependencies.Executor,
+	)
+	if err != nil {
+		return Module{}, fmt.Errorf("compose todo service: %w", err)
+	}
+	contribution := module.Contribution{ID: moduleID}
+	if err := module.ValidateContributions(contribution); err != nil {
+		return Module{}, fmt.Errorf("validate todo contribution: %w", err)
+	}
+	return Module{Service: todoService, Contribution: contribution}, nil
+}
+
+// NewHTTP 纯内存构造 Todo core 与模块顶层 HTTP handler。
+func NewHTTP(dependencies HTTPDependencies) (HTTPModule, error) {
+	core, err := New(dependencies.Dependencies)
+	if err != nil {
+		return HTTPModule{}, err
+	}
+	handler, err := todohandler.NewHandler(core.Service, dependencies.Translator, dependencies.Actors)
+	if err != nil {
+		return HTTPModule{}, fmt.Errorf("compose todo HTTP handler: %w", err)
+	}
+	return HTTPModule{Module: core, Operations: handler}, nil
+}

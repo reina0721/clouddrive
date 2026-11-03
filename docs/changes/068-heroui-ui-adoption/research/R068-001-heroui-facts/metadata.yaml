@@ -1,0 +1,36 @@
+schema_version: 1
+id: R068-001
+title: "HeroUI 在仓库中的真实状态与当前版本事实（用户主张「已接入但未使用」）"
+question: "用户主张「Web UI 明明接入了 HeroUI 组件库，为什么却没有使用」并要求全量使用。需要回答：（a）仓库里 HeroUI 的真实接入状态是什么？（b）残留的「接入」痕迹在哪？（c）当前 HeroUI 版本、许可证、peer 依赖与主题/Toast 附加包的事实是什么？（d）与本仓库 042/059/062/067 的既有决策如何冲突？"
+research_type: current-project
+topics: ["webui", "heroui", "nextui", "component-library", "tailwind", "architecture-decision", "dependency"]
+keywords: ["@heroui/react", "@heroui/theme", "@heroui/toast", "tailwindcss", "package.json", "pnpm-lock.yaml", ".package-map.json", "059 退役", "styles.css authority"]
+applicable_scenarios:
+  - "判定 HeroUI 是否真的已在仓库接入或仅存残留痕迹"
+  - "为「全量采用 HeroUI」变更提供版本/依赖/许可证事实"
+  - "评估替换自研 UI 原语与样式 authority 的影响范围"
+non_applicable_scenarios:
+  - "把 npm registry 版本当作已安装版本"
+  - "把本地 node_modules 残留当作仓库事实"
+status: active
+summary: "HeroUI 并未「已接入未使用」：042（c08f12d）曾把 @heroui/react 加入 webui/package.json，059（b36dcc6）以「零消费者依赖」为由正式退役并移除（commit message 原文 'retire the zero-consumer HeroUI dependency'）。当前 webui/package.json、webui/pnpm-lock.yaml、node_modules/@heroui 均无 HeroUI；唯一「接入」痕迹是本地未跟踪文件 webui/node_modules/.package-map.json 中一条陈旧映射（宣称根依赖 @heroui/react@3.2.4），磁盘上 node_modules/@heroui 不存在，与 package.json/lock 不一致（npm registry 实测 @heroui/react latest 3.2.4）。当前 HeroUI v3 事实：MIT；peer 要求 react>=19（本仓库 ^19.1.1 满足）、tailwindcss>=4（本仓库未引入）、react-aria 生态；主题包 @heroui/theme 2.4.26（Tailwind 插件形态）、Toast 附加包 @heroui/toast 2.0.22。全量采用意味着重新引入 HeroUI + Tailwind v4，并替换 059/062/067 建立的自研 UI 原语（webui/src/ui/index.tsx、styles.css public UI 分区）与 Shell 组件——推翻既有「不引入 Tailwind/动画库/组件库」决策，需按门禁形成计划后确认。"
+evidence:
+  types: ["source-code", "package-registry", "configuration", "documentation", "git-history"]
+  primary_sources:
+    - title: "042 引入与 059 退役的 git 证据"
+      locator: "git log -S '@heroui' -- webui/package.json（c08f12d 引入、b36dcc6 移除）；059 change README「退役零消费者 HeroUI，不引入 Tailwind/动画库」"
+      snapshot: "b36dcc6"
+    - title: "当前依赖声明与锁文件"
+      locator: "webui/package.json（无 @heroui/*）、webui/pnpm-lock.yaml（无 heroui）"
+      snapshot: "f7ca5ca"
+    - title: "node_modules 残留"
+      locator: "webui/node_modules/.package-map.json 含 @heroui/react@3.2.4 根依赖条目；webui/node_modules/@heroui 不存在（Test-Path False）；.pnpm 无 heroui 条目"
+      snapshot: "本地运行态（未跟踪文件）"
+    - title: "npm registry 事实"
+      locator: "registry.npmjs.org/@heroui/react latest 3.2.4（MIT），peer: react>=19、tailwindcss>=4、react-aria 系列；@heroui/theme 2.4.26（MIT）；@heroui/toast 2.0.22（MIT）；@heroui/flat 404 不存在；tailwindcss latest 4.3.3"
+      snapshot: "2026-08-26 查询"
+researched_at: "2026-08-26"
+verified_at: "2026-08-26"
+refresh_triggers:
+  - "HeroUI 主版本或 peer 依赖（Tailwind 要求）变化"
+  - "用户对是否推翻「不引入 Tailwind/组件库」决策给出新结论"

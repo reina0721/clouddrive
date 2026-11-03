@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><title>后台管理完整视觉对照</title
+  ><style>
+    body {
+      font-family: system-ui;
+      margin: 24px;
+      background: #f7f7fa;
+      color: #172033;
+    }
+    .comparison {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    figure {
+      margin: 0;
+    }
+    img {
+      width: 100%;
+      border: 1px solid #ddd;
+    }
+    section {
+      margin: 32px 0;
+    }
+    figcaption {
+      font-weight: 600;
+      margin: 12px 0;
+    }
+    a {
+      color: inherit;
+    }
+    @media (max-width: 800px) {
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <h1>后台管理完整视觉对照</h1>
+  <p>
+    62 项扫描：58 通过，4
+    项视觉比较失败。用户已整批认可四项变化；全量门禁补充发现一项整页旧基线，亦已获认可。五项获批基线已更新并通过复验，阈值未变，其余基线保持原版。
+  </p>
+  <p>
+    已认可：工作台删减，新增系统管理分组及其引起的展开导航、收缩侧栏浮层定位变化。其余既有视觉比较通过原基线。
+  </p>
+  <section>
+    <h2>surface-shell-parent-navigation</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="surface-shell-parent-navigation-expected.png"
+          ><img
+            src="surface-shell-parent-navigation-expected.png"
+            alt="surface-shell-parent-navigation 原基线"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前实现</figcaption>
+        <a href="surface-shell-parent-navigation-actual.png"
+          ><img
+            src="surface-shell-parent-navigation-actual.png"
+            alt="surface-shell-parent-navigation 当前实现"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>差异</figcaption>
+        <a href="surface-shell-parent-navigation-diff.png"
+          ><img
+            src="surface-shell-parent-navigation-diff.png"
+            alt="surface-shell-parent-navigation 差异"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>surface-shell-compact-sibling-swap</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="surface-shell-compact-sibling-swap-expected.png"
+          ><img
+            src="surface-shell-compact-sibling-swap-expected.png"
+            alt="surface-shell-compact-sibling-swap 原基线"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前实现</figcaption>
+        <a href="surface-shell-compact-sibling-swap-actual.png"
+          ><img
+            src="surface-shell-compact-sibling-swap-actual.png"
+            alt="surface-shell-compact-sibling-swap 当前实现"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>差异</figcaption>
+        <a href="surface-shell-compact-sibling-swap-diff.png"
+          ><img
+            src="surface-shell-compact-sibling-swap-diff.png"
+            alt="surface-shell-compact-sibling-swap 差异"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>surface-shell-compact-flyout</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="surface-shell-compact-flyout-expected.png"
+          ><img
+            src="surface-shell-compact-flyout-expected.png"
+            alt="surface-shell-compact-flyout 原基线"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前实现</figcaption>
+        <a href="surface-shell-compact-flyout-actual.png"
+          ><img
+            src="surface-shell-compact-flyout-actual.png"
+            alt="surface-shell-compact-flyout 当前实现"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>差异</figcaption>
+        <a href="surface-shell-compact-flyout-diff.png"
+          ><img src="surface-shell-compact-flyout-diff.png" alt="surface-shell-compact-flyout 差异"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>overview-desktop</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="overview-desktop-expected.png"
+          ><img src="overview-desktop-expected.png" alt="overview-desktop 原基线"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前实现</figcaption>
+        <a href="overview-desktop-actual.png"
+          ><img src="overview-desktop-actual.png" alt="overview-desktop 当前实现"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>差异</figcaption>
+        <a href="overview-desktop-diff.png"
+          ><img src="overview-desktop-diff.png" alt="overview-desktop 差异"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>补充已确认：ui-elements-desktop</h2>
+    <p>
+      全量门禁发现该整页旧基线仍包含早期品牌与导航；当前图呈现已认可的品牌、管理入口与分组。九个
+      Family 内容区基线均通过。只申请更新这一项整页基线，阈值不变。
+    </p>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="ui-elements-desktop-expected.png"
+          ><img src="ui-elements-desktop-expected.png" alt="UI Elements 原整页基线"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前实现</figcaption>
+        <a href="ui-elements-desktop-actual.png"
+          ><img src="ui-elements-desktop-actual.png" alt="UI Elements 当前整页"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>差异</figcaption>
+        <a href="ui-elements-desktop-diff.png"
+          ><img src="ui-elements-desktop-diff.png" alt="UI Elements 整页差异"
+        /></a>
+      </figure>
+    </div>
+  </section>
+</html>

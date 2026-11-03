@@ -1,0 +1,266 @@
+[WebServer] (node:34720) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:22496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:17444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:19016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 10 tests using 1 worker
+
+(node:21572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\account-editors.spec.ts:6:1 › Account has permanent inline forms, validates, resets and saves profile with Enter (5.3s)
+  ok  2 [chromium] › apps\web\e2e\account-editors.spec.ts:36:1 › Inline profile and password each retain navigation protection and clear/reset independently (6.4s)
+  x   3 [chromium] › apps\web\e2e\account-editors.spec.ts:67:3 › Permanent account forms and session confirmation retain layout, keyboard and Axe: zh-light (4.5s)
+(node:11968) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   4 [chromium] › apps\web\e2e\account-editors.spec.ts:67:3 › Permanent account forms and session confirmation retain layout, keyboard and Axe: en-dark (17.0s)
+(node:22648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  5 [chromium] › apps\web\e2e\management-completion.spec.ts:108:1 › Account password changes reject bad credentials then revoke sessions and require sign-in (7.9s)
+  ok  6 [chromium] › apps\web\e2e\product-management.spec.ts:23:1 › M2–M5 user, role grants, inbox and audit form a durable management workflow (31.6s)
+  ok  7 [chromium] › apps\web\e2e\product-management.spec.ts:110:1 › Restricted account has its own inbox/profile and no management navigation or write access (13.6s)
+(node:20076) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  ok  8 [backend-contract] › apps\web\e2e\account-editors-backend.spec.ts:4:1 › Pending inline profile submission blocks editing and duplicate native submits (2.8s)
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  ok  9 [backend-contract] › apps\web\e2e\management-completion-backend.spec.ts:38:1 › Backend account security revokes other sessions and changes password without Mock fallback (3.9s)
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  ok 10 [backend-contract] › apps\web\e2e\product-management-backend.spec.ts:4:1 › Backend M2–M6 uses proposed REST/CSRF contracts, preserves conflict drafts and synchronizes notifications (18.5s)
+
+
+  1) [chromium] › apps\web\e2e\account-editors.spec.ts:67:3 › Permanent account forms and session confirmation retain layout, keyboard and Axe: zh-light 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 93
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#f1f2f3",
+    +               "contrastRatio": 3.87,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#6f7a8b",
+    +               "fontSize": "10.5pt (14px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 3.87 (foreground color: #6f7a8b, background color: #f1f2f3, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<section id=\"react-aria2176305069-_r_4j_\" data-placement=\"center\" data-slot=\"alert-dialog-dialog\" class=\"alert-dialog__dialog alert-dialog__dialog--md ui-overlay-surface ui-dialog-layout w-full\" data-rac=\"\" aria-labelledby=\"react-aria2176305069-_r_4o_\" role=\"alertdialog\" tabindex=\"-1\">",
+    +                 "target": Array [
+    +                   "#react-aria2176305069-_r_4j_",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 3.87 (foreground color: #6f7a8b, background color: #f1f2f3, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<p>Browser</p>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".alert-dialog__body > p",
+    +         ],
+    +       },
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#6757d0",
+    +               "contrastRatio": 4.45,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#e9e6f8",
+    +               "fontSize": "10.5pt (14px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.45 (foreground color: #e9e6f8, background color: #6757d0, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<button data-slot=\"button\" class=\"button button--md bu...\" data-rac=\"\" type=\"button\" tabindex=\"0\" data-react-aria-pres...=\"true\" id=\"react-aria2176305069...\">",
+    +                 "target": Array [
+    +                   "#react-aria2176305069-_r_4s_",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.45 (foreground color: #e9e6f8, background color: #6757d0, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<button data-slot=\"button\" class=\"button button--md bu...\" data-rac=\"\" type=\"button\" tabindex=\"0\" data-react-aria-pres...=\"true\" id=\"react-aria2176305069...\">",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           "#react-aria2176305069-_r_4s_",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      129 |           (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
+      130 |             .violations,
+    > 131 |         ).toEqual([]);
+          |           ^
+      132 |       await page.keyboard.press('Escape');
+      133 |       await expect(dialog).toBeHidden();
+      134 |       await expect(exit).toBeFocused();
+        at D:\coder\i721\console-web\apps\web\e2e\account-editors.spec.ts:131:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\account-inline-first\account-editors-Permanent--f5bce-t-keyboard-and-Axe-zh-light-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\account-inline-first\account-editors-Permanent--f5bce-t-keyboard-and-Axe-zh-light-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\account-inline-first\account-editors-Permanent--f5bce-t-keyboard-and-Axe-zh-light-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\account-inline-first\account-editors-Permanent--f5bce-t-keyboard-and-Axe-zh-light-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\account-editors.spec.ts:67:3 › Permanent account forms and session confirmation retain layout, keyboard and Axe: en-dark 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#8679dc",
+    +               "contrastRatio": 4.14,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#272147",
+    +               "fontSize": "10.5pt (14px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.14 (foreground color: #272147, background color: #8679dc, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<button data-slot=\"button\" class=\"button button--md bu...\" data-rac=\"\" type=\"button\" tabindex=\"0\" data-react-aria-pres...=\"true\" id=\"react-aria4538488241...\">",
+    +                 "target": Array [
+    +                   "#react-aria4538488241-_r_4m_",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.14 (foreground color: #272147, background color: #8679dc, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<button data-slot=\"button\" class=\"button button--md bu...\" data-rac=\"\" type=\"button\" tabindex=\"0\" data-react-aria-pres...=\"true\" id=\"react-aria4538488241...\">",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           "#react-aria4538488241-_r_4m_",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      129 |           (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
+      130 |             .violations,
+    > 131 |         ).toEqual([]);
+          |           ^
+      132 |       await page.keyboard.press('Escape');
+      133 |       await expect(dialog).toBeHidden();
+      134 |       await expect(exit).toBeFocused();
+        at D:\coder\i721\console-web\apps\web\e2e\account-editors.spec.ts:131:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\account-inline-first\account-editors-Permanent--6a743-ut-keyboard-and-Axe-en-dark-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\account-inline-first\account-editors-Permanent--6a743-ut-keyboard-and-Axe-en-dark-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\account-inline-first\account-editors-Permanent--6a743-ut-keyboard-and-Axe-en-dark-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\account-inline-first\account-editors-Permanent--6a743-ut-keyboard-and-Axe-en-dark-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › apps\web\e2e\account-editors.spec.ts:67:3 › Permanent account forms and session confirmation retain layout, keyboard and Axe: zh-light 
+    [chromium] › apps\web\e2e\account-editors.spec.ts:67:3 › Permanent account forms and session confirmation retain layout, keyboard and Axe: en-dark 
+  8 passed (2.2m)

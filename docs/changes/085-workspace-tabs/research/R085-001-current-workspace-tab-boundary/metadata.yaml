@@ -1,0 +1,72 @@
+schema_version: 1
+id: R085-001
+title: "Workspace Tabs 当前边界与可实施性"
+question: "当前 WebUI 是否仍有全局标签能力；旧 visited-route 标签为何不能直接恢复；只让独立工作上下文生成标签时，需要补齐哪些 route、宿主状态、未保存保护、持久化、可访问性与数量边界？"
+research_type: current-project
+topics:
+  - "App Shell 与 Router"
+  - "Workspace Tabs"
+  - "独立工作上下文资格"
+  - "未保存状态与关闭保护"
+  - "标签状态持久化"
+  - "WAI-ARIA Tabs"
+keywords:
+  - "085"
+  - "WorkspaceTabs"
+  - "visitedRouteIDs"
+  - "WorkspaceTabPolicy"
+  - "dirty"
+  - "localStorage"
+  - "tablist"
+applicable_scenarios:
+  - "085 requirements/design/tasks 的范围与验收"
+  - "宿主级 Workspace Tabs 的 route opt-in、生命周期与持久化设计"
+  - "083 删除全局 Tab Bar 后重新引入有真实工作上下文标签的决策依据"
+non_applicable_scenarios:
+  - "OpenAPI 模块内部接口标签的重构"
+  - "为普通菜单、列表、设置分区或 Drawer 自动生成标签"
+  - "服务端草稿保存、跨设备同步或浏览器进程外恢复未保存表单内容"
+status: active
+summary: "HEAD a60de23 的 AppShell 只有单 Outlet，083 已在 6c7bd338 删除 visited-route Tab Bar；旧实现按所有访问 route 自动增长且缺少固定、恢复、关闭其他、溢出、dirty、持久化和上限。当前 Route/ManifestRoute 无工作上下文资格字段，但残留 13 条 workspace-tab 样式规则、workspace-tabs zone 与滚动注释。085 应通过默认禁用的 typed WorkspaceTabPolicy 显式 opt-in，以 routeID/contextID 形成稳定去重键；宿主以最多 12 个 mounted panels 保住未保存内存状态，模块经窄生命周期契约报告 dirty/active，关闭与 beforeunload 统一保护；localStorage 只保存版本化、按 principal 隔离的低敏标签元数据，不保存表单草稿、凭据、任意 query 或 dirty。WAI-ARIA APG 支持 tablist/tab/tabpanel、roving focus、方向键、Home/End、Delete 和上下文菜单语义。"
+evidence:
+  types:
+    - source-code
+    - documentation
+    - git-history
+    - official-standard
+  primary_sources:
+    - title: "当前 AppShell、route contract 与宿主运行时"
+      locator: "webui/src/components/AppShell.tsx、webui/src/App.tsx、webui/src/contracts/index.tsx、webui/src/sdk/runtime/index.tsx、internal/webui/contract.go"
+      snapshot: "HEAD a60de23986313700e2c35638ca4e1b697eb9a685，2026-08-28 复核"
+    - title: "083 Workspace Tab Bar 删除提交及删除前实现"
+      locator: "git commit 6c7bd338560f8b2b1795ce1bed9ed324ffeb1cfe"
+      snapshot: "2026-08-27；删除前 WorkspaceTabs.tsx 与 AppShell visitedRouteIDs 状态"
+    - title: "083 方案与样式布局研究"
+      locator: "docs/changes/083-production-fullstack-reactor/requirements.md、design.md、research/R083-001-proposal-vs-082/、research/R083-002-style-layout-baseline/"
+      snapshot: "083 已实施完成记录；本研究只复用历史决策与旧实现定位，并以当前代码复核"
+    - title: "WAI-ARIA Authoring Practices Guide - Tabs Pattern"
+      locator: "https://www.w3.org/WAI/ARIA/apg/patterns/tabs/"
+      snapshot: "2026-08-28 复核"
+    - title: "WHATWG HTML Living Standard - Web storage"
+      locator: "https://html.spec.whatwg.org/multipage/webstorage.html"
+      snapshot: "2026-08-28 复核"
+researched_at: "2026-08-28"
+verified_at: "2026-08-28"
+validity:
+  mode: snapshot
+  review_after: "2026-09-28"
+  refresh_triggers:
+    - "AppShell、App.tsx 路由装配或 ManifestRoute 契约变化"
+    - "workspace-tab 样式或 workspace-tabs zone 被清理、重建或新增消费方"
+    - "出现新的详情/编辑/文档型独立工作上下文 route"
+    - "React Router、HeroUI 或 RAC 版本发生主版本变化"
+    - "用户要求跨设备同步或恢复未保存草稿内容"
+relations:
+  extends:
+    - "R083-001"
+    - "R083-002"
+  related:
+    - "R075-009"
+  supersedes: []
+  superseded_by: []
+report: report.md

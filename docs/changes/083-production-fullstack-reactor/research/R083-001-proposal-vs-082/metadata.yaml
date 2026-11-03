@@ -1,0 +1,82 @@
+schema_version: 1
+id: R083-001
+title: "新方案 vs 082 已实施现状差异分析"
+question: "Production-grade 全栈产品重构新方案（temp-new-changes.md 1-12/11b/11c/11d）每项要求在 082 已实施现状下是已满足、部分满足、未满足还是与已确认决策冲突；冲突点（推倒 App Shell、移除 Tab Bar、Backend Freeze、组件栈单轨）应如何裁决；可落地范围分几档。"
+research_type: current-project
+topics:
+  - "方案与实施差异"
+  - "App Shell 骨架"
+  - "样式权威与样式污染"
+  - "后端能力补足"
+  - "页面模板与产品化 Feature"
+keywords:
+  - "083"
+  - "082"
+  - "AppShell"
+  - "WorkspaceTabs"
+  - "Tab Bar"
+  - ":global 样式污染"
+  - "100vh 布局骨架"
+  - "Backend Freeze"
+  - "server-side sort"
+  - "HeroUI 单轨"
+applicable_scenarios:
+  - "083 requirements/design/tasks 的范围裁剪与任务切片"
+  - "推倒 App Shell / 移除 Tab Bar / 后端补足的决策依据"
+  - "样式权威重建（lint 扩展 + 模块 CSS 迁移）与布局骨架重写的目标基线"
+  - "页面产品化（完整 Feature 拆解、页面模板、Settings、视觉校准）的逐项输入"
+  - "083 与 082 已确认决策（DEC-082-001..006）的关系判定"
+non_applicable_scenarios:
+  - "后端 operation 清单的重新枚举（沿用 R002 55 operation/23 权限键）"
+  - "逐页视觉还原与像素级设计基准（属于 R083-003/设计阶段）"
+  - "实现层面的具体代码改动（本档案只给影响文件域与建议动作）"
+status: active
+summary: "新方案 1-12 节与 082 现状对齐后：方法论/红线/平台语义组件/页面模式大部分已满足或部分满足；真实未满足集中在 11b 样式污染（137 处 :global 泄漏、lint 不查）、11c 布局骨架（100vh/居中 max-width/侧栏不可独立滚动/footer/Tab Bar/宽度档未接线）、产品化 Feature 拆解与页面模板（Saved Views/MetricCard/CommandPalette/状态全集/Settings 宽度）以及后端 sort/detail 等能力补足；四个裁决点给出明确裁决：App Shell 组件结构保留仅重写骨架样式层、移除全局 Tab Bar 变更 DEC-082-001、Backend 补足变更「不扩展后端」决策、组件栈确认继续 HeroUI/RAC/Tailwind 单轨并仅列成熟技术候选。"
+evidence:
+  types:
+    - source-code
+    - documentation
+    - tests
+  primary_sources:
+    - title: "083 新方案（Production-grade 全栈产品重构）"
+      locator: "docs/changes/temp-new-changes.md"
+      snapshot: "commit 5a3def3（研究时仓库 HEAD 为 08d5130，内容未变）"
+    - title: "后台产品设计风格基准（Design Baseline）"
+      locator: "docs/changes/admin-design-baseline.md"
+      snapshot: "commit 5a3def3"
+    - title: "082 变更记录（README/requirements/tasks/design/documentation-impact）"
+      locator: "docs/changes/082-webui-architecture-rebuild/"
+      snapshot: "082 已确认并实施完成（2026-08-27）"
+    - title: "082 研究档案 R001（WebUI 现状审计）、R002（后端能力清单）、R003（方案差异分析）"
+      locator: "docs/changes/082-webui-architecture-rebuild/research/"
+      snapshot: "commit c3a23c0 快照"
+    - title: "宿主 Shell 与样式代码"
+      locator: "webui/src/components/AppShell.tsx、webui/src/components/shell/WorkspaceTabs.tsx、webui/src/components/shell/AppHeader.tsx、webui/src/components/shell/AppSidebar.tsx、webui/src/styles.css、webui/src/theme.ts、webui/src/sdk/query/unified.ts、webui/scripts/lint-architecture.mjs"
+      snapshot: "HEAD 08d5130 实测"
+    - title: "平台语义组件"
+      locator: "webui/src/ui/index.tsx"
+      snapshot: "HEAD 08d5130 实测（876 行，60 项导出）"
+    - title: "模块页面与样式"
+      locator: "internal/module/{iam,ops,settings,organization,navigation,auth,openapi}/binding/webui/web/*.tsx 与 *.module.css"
+      snapshot: "HEAD 08d5130 实测（:global 137 处、FilterBar/URL 状态/DetailDrawer/TreeView 等页面采用）"
+researched_at: "2026-08-27"
+verified_at: "2026-08-27"
+validity:
+  mode: snapshot
+  review_after: "2026-09-27"
+  refresh_triggers:
+    - "082 剩余任务（UserDetail 迁移细节、Query 统一层页面接入、Command 入口、三层 QA、文档同步）落地导致页面/样式基线变化"
+    - "新方案或设计基线文本修订"
+    - "后端 operation 清单变更（oasdiff breaking 基线更新）"
+    - "任何新增后端能力（本档案 §6 建议项的立项与实现）"
+relations:
+  extends: []
+  related:
+    - "R083-002"
+    - "R083-003"
+    - "R001"
+    - "R002"
+    - "R003"
+  supersedes: []
+  superseded_by: []
+report: report.md

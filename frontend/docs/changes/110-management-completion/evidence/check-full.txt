@@ -1,0 +1,230 @@
+
+> clouddrive-frontend@0.1.0 check D:\coder\i721\console-web
+> pnpm foundation:check && pnpm architecture:check && pnpm dependency:check && pnpm codegen:plugins:check && pnpm codegen:design:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm performance:check && pnpm test:browser && pnpm format:check && pnpm docs:check
+
+
+> clouddrive-frontend@0.1.0 foundation:check D:\coder\i721\console-web
+> node tooling/check-foundation-fixtures.mjs && node tooling/check-foundation-governance.mjs && node tooling/check-tailwind-sources.mjs
+
+Foundation fixtures passed: 14 cases.
+Tailwind source coverage fixtures passed: 8 cases.
+Foundation governance passed for 12 workspaces and 11 contract owners.
+Tailwind source coverage passed: entry + 2 @source roots cover all TSX-bearing workspaces.
+
+> clouddrive-frontend@0.1.0 architecture:check D:\coder\i721\console-web
+> node tooling/check-boundaries-fixtures.mjs && node tooling/check-boundaries.mjs
+
+Boundary fixtures passed: 18 cases.
+Architecture checks passed for 670 source files.
+
+> clouddrive-frontend@0.1.0 dependency:check D:\coder\i721\console-web
+> node tooling/check-dependencies.mjs
+
+Dependency governance passed for 26 governed dependencies.
+
+> clouddrive-frontend@0.1.0 codegen:plugins:check D:\coder\i721\console-web
+> node tooling/plugin-codegen/codegen.mjs --check
+
+Plugin codegen is fresh.
+
+> clouddrive-frontend@0.1.0 codegen:design:check D:\coder\i721\console-web
+> node tooling/runtime-codegen/codegen.mjs --check
+
+[runtime-codegen] fresh packages/design-system/src/tokens.css
+[runtime-codegen] fresh packages/design-system/src/motion.css
+[runtime-codegen] 全部 Artifact fresh。
+
+> clouddrive-frontend@0.1.0 lint D:\coder\i721\console-web
+> eslint . --max-warnings 0
+
+
+> clouddrive-frontend@0.1.0 typecheck D:\coder\i721\console-web
+> pnpm -r --if-present typecheck
+
+Scope: 12 of 13 workspace projects
+packages/types typecheck$ tsc --noEmit
+packages/i18n typecheck$ tsc --noEmit
+packages/schemas typecheck$ tsc --noEmit
+packages/state-foundation typecheck$ tsc --noEmit
+packages/types typecheck: Done
+packages/i18n typecheck: Done
+packages/state-foundation typecheck: Done
+packages/schemas typecheck: Done
+packages/core typecheck$ tsc --noEmit
+packages/form-foundation typecheck$ tsc --noEmit
+packages/ui-adapter typecheck$ tsc --noEmit
+packages/core typecheck: Done
+packages/form-foundation typecheck: Done
+packages/ui-adapter typecheck: Done
+packages/surface-foundation typecheck$ tsc --noEmit
+packages/plugin-framework typecheck$ tsc --noEmit
+packages/plugin-framework typecheck: Done
+packages/surface-foundation typecheck: Done
+surfaces typecheck$ tsc --noEmit
+surfaces typecheck: Done
+apps/web typecheck$ next typegen && tsc --noEmit
+apps/web typecheck: Generating route types...
+apps/web typecheck: ✓ Types generated successfully
+apps/web typecheck: Done
+
+> clouddrive-frontend@0.1.0 test D:\coder\i721\console-web
+> pnpm -r --if-present test
+
+Scope: 12 of 13 workspace projects
+packages/i18n test$ vitest run
+packages/schemas test$ vitest run
+packages/state-foundation test$ vitest run
+packages/state-foundation test:  RUN  v4.1.11 D:/coder/i721/console-web/packages/state-foundation
+packages/schemas test:  RUN  v4.1.11 D:/coder/i721/console-web/packages/schemas
+packages/i18n test:  RUN  v4.1.11 D:/coder/i721/console-web/packages/i18n
+packages/i18n test:  Test Files  1 passed (1)
+packages/i18n test:       Tests  3 passed (3)
+packages/i18n test:    Start at  14:48:28
+packages/i18n test:    Duration  1.09s (transform 184ms, setup 0ms, import 411ms, tests 88ms, environment 0ms)
+packages/i18n test: Done
+packages/schemas test:  Test Files  7 passed (7)
+packages/schemas test:       Tests  50 passed (50)
+packages/schemas test:    Start at  14:48:28
+packages/schemas test:    Duration  3.01s (transform 1.76s, setup 0ms, import 3.34s, tests 3.08s, environment 2ms)
+packages/schemas test: Done
+packages/state-foundation test:  Test Files  8 passed (8)
+packages/state-foundation test:       Tests  39 passed (39)
+packages/state-foundation test:    Start at  14:48:28
+packages/state-foundation test:    Duration  3.33s (transform 834ms, setup 0ms, import 2.06s, tests 421ms, environment 9.20s)
+packages/state-foundation test: Done
+packages/core test$ vitest run
+packages/form-foundation test$ vitest run
+packages/form-foundation test:  RUN  v4.1.11 D:/coder/i721/console-web/packages/form-foundation
+packages/core test:  RUN  v4.1.11 D:/coder/i721/console-web/packages/core
+packages/core test:  Test Files  2 passed (2)
+packages/core test:       Tests  16 passed (16)
+packages/core test:    Start at  14:48:32
+packages/core test:    Duration  457ms (transform 100ms, setup 0ms, import 239ms, tests 34ms, environment 0ms)
+packages/core test: Done
+packages/form-foundation test:  Test Files  1 passed (1)
+packages/form-foundation test:       Tests  2 passed (2)
+packages/form-foundation test:    Start at  14:48:32
+packages/form-foundation test:    Duration  2.47s (transform 63ms, setup 0ms, import 448ms, tests 94ms, environment 1.59s)
+packages/form-foundation test: Done
+packages/surface-foundation test$ vitest run
+packages/plugin-framework test$ vitest run
+packages/surface-foundation test:  RUN  v4.1.11 D:/coder/i721/console-web/packages/surface-foundation
+packages/plugin-framework test:  RUN  v4.1.11 D:/coder/i721/console-web/packages/plugin-framework
+packages/plugin-framework test:  Test Files  5 passed (5)
+packages/plugin-framework test:       Tests  40 passed (40)
+packages/plugin-framework test:    Start at  14:48:35
+packages/plugin-framework test:    Duration  3.10s (transform 544ms, setup 0ms, import 2.22s, tests 579ms, environment 5.77s)
+packages/plugin-framework test: Done
+packages/surface-foundation test:  Test Files  4 passed (4)
+packages/surface-foundation test:       Tests  45 passed (45)
+packages/surface-foundation test:    Start at  14:48:35
+packages/surface-foundation test:    Duration  4.17s (transform 460ms, setup 0ms, import 2.86s, tests 1.08s, environment 3.78s)
+packages/surface-foundation test: Done
+surfaces test$ vitest run
+surfaces test:  RUN  v4.1.11 D:/coder/i721/console-web/surfaces
+surfaces test:  Test Files  8 passed (8)
+surfaces test:       Tests  56 passed (56)
+surfaces test:    Start at  14:48:40
+surfaces test:    Duration  2.61s (transform 1.03s, setup 0ms, import 3.00s, tests 198ms, environment 3.49s)
+surfaces test: Done
+apps/web test$ vitest run --config vitest.config.ts
+apps/web test:  RUN  v4.1.11 D:/coder/i721/console-web/apps/web
+apps/web test:  Test Files  32 passed (32)
+apps/web test:       Tests  187 passed (187)
+apps/web test:    Start at  14:48:44
+apps/web test:    Duration  18.17s (transform 5.97s, setup 23.64s, import 34.91s, tests 14.97s, environment 103.37s)
+apps/web test: Done
+
+> clouddrive-frontend@0.1.0 build D:\coder\i721\console-web
+> pnpm codegen:plugins && pnpm -r --if-present build
+
+
+> clouddrive-frontend@0.1.0 codegen:plugins D:\coder\i721\console-web
+> node tooling/plugin-codegen/codegen.mjs
+
+Plugin codegen generated: 15 plugins, 53 routes.
+Scope: 12 of 13 workspace projects
+apps/web build$ next build
+apps/web build: ▲ Next.js 16.3.3 (Turbopack)
+apps/web build: ✓ Running next.config.ts took 72ms
+apps/web build:   Creating an optimized production build ...
+apps/web build: ✓ Compiled successfully in 10.2s
+apps/web build:   Running TypeScript ...
+apps/web build:   Finished TypeScript in 16.4s ...
+apps/web build:   Collecting page data using 15 workers ...
+apps/web build:   Generating static pages using 15 workers (0/60) ...
+apps/web build:   Generating static pages using 15 workers (15/60) 
+apps/web build:   Generating static pages using 15 workers (30/60) 
+apps/web build:   Generating static pages using 15 workers (45/60) 
+apps/web build: ✓ Generating static pages using 15 workers (60/60) in 1856ms
+apps/web build:   Finalizing page optimization ...
+apps/web build: Route (app)
+apps/web build: ┌ ○ /
+apps/web build: ├ ○ /_not-found
+apps/web build: ├ ○ /account
+apps/web build: ├ ○ /audit-logs
+apps/web build: ├ ○ /audit-logs/detail
+apps/web build: ├ ○ /foundations
+apps/web build: ├ ○ /login
+apps/web build: ├ ○ /motion
+apps/web build: ├ ○ /notifications
+apps/web build: ├ ○ /notifications/detail
+apps/web build: ├ ○ /page-archetypes/create-edit
+apps/web build: ├ ○ /page-archetypes/detail
+apps/web build: ├ ○ /page-archetypes/master-detail
+apps/web build: ├ ○ /page-archetypes/operation
+apps/web build: ├ ○ /page-archetypes/overview
+apps/web build: ├ ○ /page-archetypes/resource-list
+apps/web build: ├ ○ /page-archetypes/settings
+apps/web build: ├ ○ /page-patterns/collections-data
+apps/web build: ├ ○ /page-patterns/detail-settings
+apps/web build: ├ ○ /page-patterns/forms-actions
+apps/web build: ├ ○ /page-patterns/layout-navigation
+apps/web build: ├ ○ /page-patterns/states-feedback
+apps/web build: ├ ○ /reference-resources
+apps/web build: ├ ○ /reference-resources/create
+apps/web build: ├ ○ /reference-resources/detail
+apps/web build: ├ ○ /reference-resources/edit
+apps/web build: ├ ○ /register
+apps/web build: ├ ○ /roles
+apps/web build: ├ ○ /roles/create
+apps/web build: ├ ○ /roles/detail
+apps/web build: ├ ○ /roles/edit
+apps/web build: ├ ○ /roles/permissions
+apps/web build: ├ ○ /session-expired
+apps/web build: ├ ○ /settings
+apps/web build: ├ ○ /settings/accessibility
+apps/web build: ├ ○ /settings/actions
+apps/web build: ├ ○ /settings/data-display
+apps/web build: ├ ○ /settings/locale
+apps/web build: ├ ○ /settings/navigation
+apps/web build: ├ ○ /settings/notifications
+apps/web build: ├ ○ /settings/shortcuts
+apps/web build: ├ ○ /states
+apps/web build: ├ ○ /system-settings
+apps/web build: ├ ○ /system-tools/icons
+apps/web build: ├ ○ /ui-elements
+apps/web build: ├ ○ /ui-elements/actions-selection
+apps/web build: ├ ○ /ui-elements/data
+apps/web build: ├ ○ /ui-elements/feedback
+apps/web build: ├ ○ /ui-elements/forms
+apps/web build: ├ ○ /ui-elements/identity-display
+apps/web build: ├ ○ /ui-elements/navigation
+apps/web build: ├ ○ /ui-elements/overlays
+apps/web build: ├ ○ /ui-elements/status-async
+apps/web build: ├ ○ /ui-elements/surfaces
+apps/web build: ├ ○ /users
+apps/web build: ├ ○ /users/create
+apps/web build: ├ ○ /users/detail
+apps/web build: ├ ○ /users/edit
+apps/web build: └ ○ /welcome
+apps/web build: ○  (Static)  prerendered as static content
+apps/web build: Done
+
+> clouddrive-frontend@0.1.0 performance:check D:\coder\i721\console-web
+> node tooling/check-performance-budget.mjs
+
+Performance budget failed: initial=371293, maxRoute=/audit-logs:493912, union=1217416, css=48426, largest=D:\coder\i721\console-web\apps\web\dist\_next\static\chunks\3ssrbocxvm8yd.js:84658.
+- maxRouteJsGzipBytes: 493912 > 440320
+ ELIFECYCLE  Command failed with exit code 1.
+ ELIFECYCLE  Command failed with exit code 1.

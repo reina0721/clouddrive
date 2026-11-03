@@ -1,0 +1,17 @@
+schema_version: 1
+change: 058-casbin-rbac-integration
+areas:
+  - id: startup
+    decision: reviewed-no-change
+    reason: 根 Generation 瘦身与 identity-access 子装配只属于运行时装配实现，未改变启动/首次使用文档叙述。
+  - id: module
+    decision: updated
+    documents:
+      - docs/development/application-module-development.md
+    reason: 模块权限接入说明更新为 Casbin evaluator 单轨、DecisionPoint 消费与禁止第二套授权判断。
+  - id: webui
+    decision: reviewed-no-change
+    reason: IAM WebUI 权限矩阵与角色 checklist 属于既有管理页面结构优化，权威 WebUI 文档无叙述变化。
+  - id: api
+    decision: reviewed-no-change
+    reason: api/openapi.yaml 由 contract-gen 生成；动态分配契约结构变化不改变 API 文档的权威叙述。

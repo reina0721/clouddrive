@@ -1,0 +1,324 @@
+# clouddrive 全量配置示例。
+#
+# 本文件是带注释的字段参考，不是第二套启动权威。
+# 首次本地启动推荐：
+#   go run ./cmd/app config init
+#   go run ./cmd/app db migrate up
+#   go run ./cmd/app
+#
+# 如果手工复制本文件为 config.yaml，仍需先执行 db migrate up 再启动 Service。
+# 详细关系见 docs/configuration/README.md 与 docs/getting-started/local-development.md。
+#
+# 环境变量使用 APP_ 前缀，并以双下划线分隔嵌套字段。
+# 例如 APP_DATABASE__DRIVER、APP_DATABASE__DSN、APP_LOGGER__LEVEL。
+
+logger:
+  # 运行环境：development（开发）或 production（生产）。
+  environment: development
+  # environment: production
+
+  # 最低日志级别：debug、info、warn 或 error。删除本项时 development 默认 debug、production 默认 info；切换 production 时建议显式使用 info。
+  level: debug
+  # level: info
+  # level: warn
+  # level: error
+
+  # encoding 默认由 environment 推导：development 使用 console，production 使用 json。
+  # 只有需要覆盖环境默认值时才取消注释并保留一个选项。
+  # encoding: console
+  # encoding: json
+
+  # 普通日志输出目标；可使用 stdout 或文件路径。
+  outputPaths:
+    - stdout
+    # - ./logs/app.log
+
+  # Logger 内部错误输出目标；可使用 stderr 或文件路径。
+  errorOutputPaths:
+    - stderr
+    # - ./logs/app-error.log
+
+  # addCaller 默认由 environment 推导，当前 development 和 production 均为 true。
+  # addCaller: true
+  # addCaller: false
+
+  # addStacktrace 默认由 environment 推导：development 为 false，production 为 true。
+  # addStacktrace: false
+  # addStacktrace: true
+
+database:
+  # GORM 由 internal/kernel/app/database 在代码中明确选择；配置不切换底层实现。
+  # Driver 选择数据库协议：sqlite、postgres 或 mysql。
+  driver: sqlite
+  # driver: postgres
+  # driver: mysql
+
+  # SQLite 默认路径可直接用于本地启动；目录和文件权限、foreign keys、busy timeout 与 WAL 由包内治理。
+  dsn: .data/app.db
+
+  # PostgreSQL/MySQL 的 DSN 不应写入配置文件，改用环境变量，例如：
+  # PostgreSQL:
+  #   $env:APP_DATABASE__DSN = 'postgres://<user>:<password>@localhost:5432/<database>?sslmode=disable'
+  # MySQL:
+  #   $env:APP_DATABASE__DSN = '<user>:<password>@tcp(localhost:3306)/<database>?parseTime=true'
+
+  pool:
+    # 最大打开连接数；0 使用 database 包默认值，负数非法。
+    maxOpenConns: 25
+    # 最大空闲连接数；0 使用 database 包默认值，负数非法。
+    maxIdleConns: 5
+    # 单连接最大生命周期；0 使用 database 包默认值，负数非法。
+    connMaxLifetime: 30m0s
+    # 空闲连接最大保留时间；0 使用 database 包默认值，负数非法。
+    connMaxIdleTime: 5m0s
+
+  # 构造和就绪检查的超时时间；0 使用 database 包默认值，负数非法。
+  pingTimeout: 5s
+
+# Migration 只由 `go run ./cmd/app db migrate status|up` 使用；修改后需显式重新执行命令。
+migration:
+  lockTimeout: 15s
+  operationTimeout: 2m0s
+
+cache:
+  # 默认显式禁用，因此本地启动不依赖 Redis。启用后只允许 redis。
+  # typed Client 不持有 L1 或 goroutine；Redis backend 与 tag namespace 由完整
+  # Application Generation 复用或重建，旧请求排空后再释放旧连接 owner。
+  driver: disabled
+  # driver: redis
+
+  redis:
+    address: 127.0.0.1:6379
+    username: ""
+    # 密码不要写入配置文件，使用 APP_CACHE__REDIS__PASSWORD。
+    password: ""
+    database: 0
+    dialTimeout: 5s
+    readTimeout: 3s
+    writeTimeout: 3s
+    # 0 使用 go-redis 默认连接池计算；负数非法。
+    poolSize: 0
+    minIdleConns: 0
+    tagPrefix: "cache:tag:"
+    pingTimeout: 5s
+
+i18n:
+  # 未配置默认语言时使用 kernel/app/i18n 组件集中声明的默认语言 zh-CN。
+  defaultLanguage: zh-CN
+  # 消息文件目录统一为 ./locales，路径相对进程工作目录，支持 JSON、YAML 和 YML。
+  # 业务模块自有的 i18n 语言资源（如 Todo)经 i18n binding 声明并在此聚合。
+  # 新增或修改语言内容在对应业务模块 binding/i18n 或全局 ./locales 下维护。
+  messageFiles:
+    - internal/module/todo/binding/i18n/locales/messages.zh-CN.yaml
+    - locales/messages.zh-CN.yaml
+    # - locales/messages.en.json
+  # 缺失翻译策略：error 或 use-id。
+  missingBehavior: error
+  # missingBehavior: use-id
+
+storage:
+  # 默认使用受控本地目录；也可选择 disabled、s3、minio、local+s3 或 local+minio。
+  driver: local
+  local:
+    basePath: .data/storage
+    publicUrl: ""
+
+  s3:
+    # provider 可选 s3 或 r2。
+    provider: s3
+    endpoint: ""
+    region: us-east-1
+    bucket: ""
+    # 凭据不要写入配置文件，使用 APP_STORAGE__S3__ACCESSKEYID 和
+    # APP_STORAGE__S3__SECRETACCESSKEY。
+    accessKeyId: ""
+    secretAccessKey: ""
+    usePathStyle: false
+    publicBaseUrl: ""
+
+  minio:
+    provider: minio
+    endpoint: ""
+    region: us-east-1
+    bucket: ""
+    # 使用 APP_STORAGE__MINIO__ACCESSKEYID 和 APP_STORAGE__MINIO__SECRETACCESSKEY。
+    accessKeyId: ""
+    secretAccessKey: ""
+    usePathStyle: true
+    publicBaseUrl: ""
+
+todo:
+  # 标题按 Unicode 字符数校验，不能只包含空白。
+  titleMaxRunes: 120
+  # list 未显式指定 limit 时使用的数量。
+  defaultListLimit: 20
+  # list 单次查询允许的最大数量。
+  maxListLimit: 100
+
+execution:
+  # 后台任务执行能力（幂等 / 重试 / 同步执行记录）；当前 memory backend 仅进程内可见。
+  driver: memory
+  policies:
+    # 按模块命名策略：业务模块以 Execution.PolicyName 引用，实现模块间策略隔离。
+    # Todo「完成」用例使用 "todo"。
+    todo:
+      retryMaxAttempts: 3
+      retryInitialDelayMs: 50
+      retryMaxDelayMs: 500
+      retryJitterFactor: 0.2
+      retryAttemptTimeoutMs: 2000
+      retryTotalTimeoutMs: 7000
+
+scheduler:
+  # 调度默认关闭；只有模块通过 Contribution.Schedules 声明的任务才会被统一装配。
+  enabled: false
+  # cron 未单独声明时区时使用此 IANA 时区。
+  timezone: UTC
+  # 当前 Application Generation 内所有任务共享的并发上限。
+  maxConcurrency: 32
+  shutdownTimeout: 30s
+  # occurrence 的幂等占用与完成去重窗口。
+  occurrenceRetention: 24h0m0s
+  coordination:
+    # namespace + application identity + Task ID 组成 Redis 协调键；日志不输出原始 token。
+    namespace: clouddrive:scheduler
+    leaseTTL: 30s
+    # renewInterval 必须至少留下两个续租安全窗口，即 renewInterval * 3 <= leaseTTL。
+    renewInterval: 10s
+    acquireTimeout: 2s
+    retryMin: 500ms
+    retryMax: 10s
+  # 这里只能覆盖代码已经声明的稳定 Task ID；未知 ID 会让候选 Generation 失败。
+  # tasks:
+  #   billing.reconcile:
+  #     enabled: true
+  #     unavailablePolicy: pause
+
+messaging:
+  # 默认关闭；业务模块只能通过 Contribution.Messages 声明 Contract/Binding。
+  enabled: false
+  publishConfirmTimeout: 5s
+  handoffTimeout: 30s
+  shutdownTimeout: 30s
+  recovery:
+    connectTimeout: 3s
+    initialBackoff: 500ms
+    maxBackoff: 30s
+  # 启用时由命名 providers 与逻辑 routes 显式映射；URI 通过环境配置注入，不写入示例。
+  providers: {}
+  routes: {}
+
+# Cookie 会话默认开启；development-anonymous 仅用于显式隔离测试。
+auth:
+  mode: session
+  anonymousSubject: development-loopback
+  anonymousScopes: [management:read, todos:read, todos:write]
+  jwt:
+    issuer: ""
+    audience: ""
+    jwksURL: ""
+    algorithms: [RS256]
+    scopesClaim: scope
+    requestTimeout: 5s
+    refreshInterval: 15m0s
+    refreshTimeout: 5s
+    leeway: 30s
+    maxResponseBodyBytes: 1048576
+
+# 本地身份、凭据与会话由 IAM 独立拥有；setupToken 应通过 APP_IAM__LOCAL__SETUPTOKEN 注入。
+iam:
+  local:
+    setupToken: ""
+    idleTimeout: 30m0s
+    absoluteTimeout: 12h0m0s
+    maxFailedAttempts: 5
+    lockDuration: 15m0s
+    # 密码强度策略（创建/重置/修改密码时生效，不重验存量哈希）；默认 15/128、
+    # 不要求复杂度，与既有行为一致；requireComplexity 开启时要求大写+小写+数字。
+    # historySize 启用后禁止复用最近 N 次口令；maxPasswordAge 启用后口令超过
+    # 期限登录进入受限改密（两者默认关闭）。
+    passwordPolicy:
+      minLength: 15
+      maxLength: 128
+      requireComplexity: false
+      historySize: 0
+      maxPasswordAge: 0s
+    # 单账号最大并发 active 会话；0=不限。启用后新登录在达到上限时主动吊销
+    # 最旧 active 会话（会话总数保持上限）。
+    maxSessionsPerAccount: 0
+    # API 令牌（080）：单账号最大未吊销令牌数（0=不限，默认 5）与未指定过期
+    # 时间时的默认有效期（0=永不过期）。
+    apiTokenMaxPerAccount: 5
+    apiTokenDefaultTTL: 0s
+
+http:
+  # HTTP listener 在进程 ready 前同步绑定；端口占用会使启动失败。
+  addr: 127.0.0.1:8080
+  readHeaderTimeout: 5s
+  readTimeout: 15s
+  writeTimeout: 30s
+  idleTimeout: 1m0s
+  maxHeaderBytes: 1048576
+  # 单个业务请求的 application deadline，不替代 socket timeout。
+  requestTimeout: 10s
+  maxRequestBodyBytes: 1048576
+  # 单进程并发上限；超出返回 503 和受控 Retry-After。
+  maxInFlight: 128
+  # 默认不信任 X-Forwarded-For；只有直连 peer 命中 CIDR 时才采用转发地址。
+  trustedProxyCIDRs: []
+  rateLimit:
+    # local 是当前 Generation 私有的进程级 load shedding；disabled 只关闭速率门禁。
+    # 100/200 是脚手架起点，不是生产容量结论，部署时应按 SLO 与网关能力校准。
+    mode: local
+    requestsPerSecond: 100
+    burst: 200
+    # routes 是按路径前缀覆盖全局速率的可选规则（登录/初始化等端点施加更严限流，
+    # 与账号级锁定构成「IP+账号」双维度）；默认空即不启用。命中路径使用独立
+    # token bucket，未命中继续使用全局规则。
+    routes: []
+  cors:
+    # 本地 WebUI 只允许固定 Vite HTTPS Origin；生产配置应替换为真实部署 Origin。
+    allowedOrigins: [http://localhost:4173, http://127.0.0.1:4173]
+    allowedMethods: [GET, POST, PATCH, OPTIONS]
+    allowedHeaders: [Authorization, Content-Type, X-Request-ID]
+
+# 安全告警（079）：webhook 通道，默认关闭；启用时 URL 必须 HTTPS 或 loopback HTTP。
+# signingKey 用于 HMAC-SHA256 签名；URL 与密钥属配置秘密，不进入日志与审计。
+# 事件：账号锁定/连续认证失败/MFA 连续失败/敏感权限写操作（归档、关系替换、API 令牌）。
+alerting:
+  enabled: false
+  webhookUrl: ""
+  signingKey: ""
+  timeout: 5s
+  retries: 1
+  retryDelay: 1s
+  queueSize: 256
+
+# management 使用独立 listener；Next 通过受保护的同源 facade 读取运行状态。
+# 不在公网直接开放 management 端口；未命中的子路径保持 JSON 404。
+management:
+  addr: 127.0.0.1:9090
+  readHeaderTimeout: 2s
+  readTimeout: 3s
+  writeTimeout: 3s
+  idleTimeout: 15s
+  requestTimeout: 2s
+  maxHeaderBytes: 16384
+  maxRequestBodyBytes: 4096
+  maxInFlight: 16
+  # disabled、public 或 protected；diagnostics 始终要求 management:read。
+  metricsAccess: public
+
+observability:
+  serviceName: clouddrive
+  tracing:
+    enabled: false
+    endpoint: ""
+    insecure: false
+    sampleRatio: 0.1
+    queueSize: 2048
+    batchSize: 256
+    batchTimeout: 5s
+    exportTimeout: 3s
+    shutdownTimeout: 5s
+

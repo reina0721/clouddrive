@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+.vite/
+.next/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# temp
+tmp
+tmp/
+
+# config
+.env

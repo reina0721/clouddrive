@@ -1,0 +1,27 @@
+{
+  "client": 267,
+  "focus": "没有访问权限",
+  "left": 839,
+  "list": {
+    "bottom": 461,
+    "height": 63,
+    "left": 54,
+    "right": 321,
+    "top": 398,
+    "width": 267,
+    "x": 54,
+    "y": 398
+  },
+  "scroll": 1110,
+  "selected": "没有访问权限",
+  "selectedRect": {
+    "bottom": 442,
+    "height": 40,
+    "left": 213,
+    "right": 321,
+    "top": 402,
+    "width": 108,
+    "x": 213,
+    "y": 402
+  }
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "name": "ui-elements-menu-open",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\overlays.spec.ts-snapshots\\ui-elements-menu-open-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\account-menu\\visual-differences\\01\\actual.png",
+    "before": "8B515B112C2C1B4316ED2EF2A916238D873491E570CC8B904AFD966F1F44E6B7",
+    "after": "D2CF9DFAB9E91C3DBD474BB08C4440B5E398892A5C15335C88F8CD96A49BBD60"
+  },
+  {
+    "name": "ui-elements-popover-open",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\overlays.spec.ts-snapshots\\ui-elements-popover-open-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\account-menu\\visual-differences\\02\\actual.png",
+    "before": "AB1B3DAAAA364850933A5F0CBBE189E945B9F41C1BAD9CD784AC7192B1FDBC5D",
+    "after": "EDC3A8BD774C32B43DC4C8BF55E42BD4515BD13D6C817484217C946C108106BF"
+  },
+  {
+    "name": "ui-elements-tooltip-open",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\overlays.spec.ts-snapshots\\ui-elements-tooltip-open-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\account-menu\\visual-differences\\03\\actual.png",
+    "before": "17AB0FCEB8B7E139B62D27EB1F0AD575D018425FD1D3176C199462E6EEB63619",
+    "after": "5E5FDEF5CED3EF6E8CECF15E9A13282F4DA18B717F6EE7A392327570BE5B5F98"
+  },
+  {
+    "name": "ui-elements-family-overlays",
+    "target": "C:\\rin\\coder\\i0721\\console-web\\apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-family-overlays-chromium-win32.png",
+    "source": "C:\\rin\\coder\\i0721\\console-web\\docs\\changes\\109-ui-ux-optimization\\evidence\\account-menu\\visual-differences\\04\\actual.png",
+    "before": "5019CDD5205E99C52FA7D463BC5EF9741DC6069B3F470D880C70A5649E682E27",
+    "after": "2957F0F8AFB766B4E9D75B105012395620060D6B0D3CD6ECE40686C3DE4FF0A1"
+  }
+]

@@ -1,0 +1,40 @@
+BEFORE
+- alert
+- link "跳到主要内容 / Skip to content":
+  - /url: "#main-content"
+- main:
+  - link "C Community":
+    - /url: /welcome
+    - generic: C
+    - generic: Community
+  - button "切换语言":
+  - button "切换主题":
+  - heading "页面不存在" [level=3]
+  - paragraph: 当前地址没有对应页面，请返回工作台选择有效入口。
+  - button "进入工作台":
+    - generic: 进入工作台
+  - complementary:
+    - paragraph: 开发演示模式
+    - paragraph: 这是本地模拟认证，可注册演示账户。请勿使用真实密码。
+    - paragraph: 演示邮箱：demo@community.test
+    - paragraph: 演示密码：CommunityDemo2026!
+AFTER
+- alert
+- link "跳到主要内容 / Skip to content":
+  - /url: "#main-content"
+- main:
+  - link "C Community":
+    - /url: /welcome
+    - generic: C
+    - generic: Community
+  - button "Switch language" [active]:
+  - button "Switch theme":
+  - heading "Page not found" [level=3]
+  - paragraph: This address has no matching page. Return to the workspace to choose an available destination.
+  - button "Open workspace":
+    - generic: Open workspace
+  - complementary:
+    - paragraph: Development demo mode
+    - paragraph: This is local simulated authentication. You can create a demo account. Do not use a real password.
+    - paragraph: "Demo email: demo@community.test"
+    - paragraph: "Demo password: CommunityDemo2026!"

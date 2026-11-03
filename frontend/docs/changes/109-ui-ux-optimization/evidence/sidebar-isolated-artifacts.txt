@@ -1,0 +1,27 @@
+[WebServer] (node:14832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:31400) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:19216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:35512) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 12 tests using 1 worker
+
+(node:19512) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\sidebar-browser-zoom.spec.ts:14:3 › Native Chromium page zoom 125% preserves navigation access (5.1s)
+  ok  2 [chromium] › apps\web\e2e\sidebar-browser-zoom.spec.ts:14:3 › Native Chromium page zoom 200% preserves navigation access (6.3s)
+  ok  3 [chromium] › apps\web\e2e\sidebar-design.spec.ts:11:1 › Compact rail uses coherent geometry, current route, named groups and focus/hover hints (8.2s)
+  ok  4 [chromium] › apps\web\e2e\sidebar-design.spec.ts:54:1 › Hover bridge, click pin, second click close and keyboard focus survive pointer departure (6.5s)
+  ok  5 [chromium] › apps\web\e2e\sidebar-design.spec.ts:98:1 › Mode round trip retains exploration and closes old portal; expanded layout remains intact (2.9s)
+  ok  6 [chromium] › apps\web\e2e\sidebar-design.spec.ts:122:1 › Compact rail stays usable at 1024/1440/2560, dark English, short height and text zoom (11.1s)
+  ok  7 [chromium] › apps\web\e2e\sidebar-design.spec.ts:199:1 › Mobile Drawer remains expanded, traps focus and restores desktop collapse preference (12.5s)
+  ok  8 [chromium] › apps\web\e2e\sidebar-design.spec.ts:242:3 › Touch desktop rail › Tap opens a full submenu and selecting a child navigates and dismisses it (3.6s)
+  ok  9 [chromium] › apps\web\e2e\sidebar-design.spec.ts:255:1 › Reduced motion and repeated mode changes keep header and content in their grid column (4.1s)
+  ok 10 [chromium] › apps\web\e2e\sidebar-design.spec.ts:277:1 › Icon navigation hint and flyout use the same primitives in the Overlay authority (3.5s)
+  ok 11 [chromium] › apps\web\e2e\sidebar-design.spec.ts:302:1 › Compact tooltip link preserves the Host leave confirmation before navigation (4.7s)
+  ok 12 [chromium] › apps\web\e2e\sidebar-design.spec.ts:321:1 › Standard motion changes width monotonically and keeps header/content naturally aligned (3.9s)
+
+  12 passed (1.9m)

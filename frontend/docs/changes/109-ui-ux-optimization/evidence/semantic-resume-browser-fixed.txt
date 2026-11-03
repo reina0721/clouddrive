@@ -1,0 +1,85 @@
+
+Running 10 tests using 1 worker
+
+(node:33632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\accessibility-effects.spec.ts:18:1 › 增强焦点轮廓：开启写入 data-enhance-focus 且焦点环 Token 加强 (2.7s)
+  ok  2 [chromium] › apps\web\e2e\accessibility-effects.spec.ts:31:1 › 增强交互区域尺寸：开启写入 data-enhance-target 且控件 spacing 放大 (2.0s)
+  ok  3 [chromium] › apps\web\e2e\accessibility-effects.spec.ts:42:1 › 跟随系统辅助设置：开启写入 data-follow-system 并同步系统对比度 (3.8s)
+  ok  4 [chromium] › apps\web\e2e\settings-semantic.spec.ts:5:3 › Comparison choices adapt to their container and retain long labels at 1440 (2.7s)
+  ok  5 [chromium] › apps\web\e2e\settings-semantic.spec.ts:5:3 › Comparison choices adapt to their container and retain long labels at 320 (2.5s)
+  ok  6 [chromium] › apps\web\e2e\settings-semantic.spec.ts:49:1 › System contrast responds independently of the assistive-settings toggle (4.7s)
+  ok  7 [chromium] › apps\web\e2e\settings-semantic.spec.ts:82:1 › Mobile category navigation honors scroll preference after drawer focus restoration (4.4s)
+  x   8 [chromium] › apps\web\e2e\settings-semantic.spec.ts:121:3 › Semantic appearance choices preserve preview, selection and persistence at 1440 (1.5s)
+(node:1892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   9 [chromium] › apps\web\e2e\settings-semantic.spec.ts:121:3 › Semantic appearance choices preserve preview, selection and persistence at 390 (1.6s)
+(node:25216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 10 [chromium] › apps\web\e2e\settings-semantic.spec.ts:121:3 › Semantic appearance choices preserve preview, selection and persistence at 320 (4.7s)
+
+
+  1) [chromium] › apps\web\e2e\settings-semantic.spec.ts:121:3 › Semantic appearance choices preserve preview, selection and persistence at 1440 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 4
+    Received: 0
+
+      137 |           elements.map((element) => getComputedStyle(element).backgroundColor),
+      138 |         );
+    > 139 |       expect(new Set(swatches).size).toBe(4);
+          |                                      ^
+      140 |       const blue = accent
+      141 |         .locator('label')
+      142 |         .filter({ has: page.getByRole('radio', { name: '蓝色', exact: true }) });
+        at D:\coder\i721\console-web\apps\web\e2e\settings-semantic.spec.ts:139:38
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-semantic-Semantic-fe74c-ion-and-persistence-at-1440-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-semantic-Semantic-fe74c-ion-and-persistence-at-1440-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-semantic-Semantic-fe74c-ion-and-persistence-at-1440-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-semantic-Semantic-fe74c-ion-and-persistence-at-1440-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\settings-semantic.spec.ts:121:3 › Semantic appearance choices preserve preview, selection and persistence at 390 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 4
+    Received: 0
+
+      137 |           elements.map((element) => getComputedStyle(element).backgroundColor),
+      138 |         );
+    > 139 |       expect(new Set(swatches).size).toBe(4);
+          |                                      ^
+      140 |       const blue = accent
+      141 |         .locator('label')
+      142 |         .filter({ has: page.getByRole('radio', { name: '蓝色', exact: true }) });
+        at D:\coder\i721\console-web\apps\web\e2e\settings-semantic.spec.ts:139:38
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-semantic-Semantic-db559-tion-and-persistence-at-390-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-semantic-Semantic-db559-tion-and-persistence-at-390-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-semantic-Semantic-db559-tion-and-persistence-at-390-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-semantic-Semantic-db559-tion-and-persistence-at-390-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › apps\web\e2e\settings-semantic.spec.ts:121:3 › Semantic appearance choices preserve preview, selection and persistence at 1440 
+    [chromium] › apps\web\e2e\settings-semantic.spec.ts:121:3 › Semantic appearance choices preserve preview, selection and persistence at 390 
+  8 passed (37.9s)

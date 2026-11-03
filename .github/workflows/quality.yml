@@ -1,0 +1,163 @@
+name: Quality
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Windows quality gates
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Run quality gates
+        shell: pwsh
+        run: ./scripts/Verify-Quality.ps1
+
+  linux:
+    name: Linux quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Run quality gates
+        run: bash scripts/verify-quality.sh
+      - name: Run bounded fuzz gate
+        run: go test ./internal/kernel/config -run '^$' -fuzz '^FuzzJSONObject$' -fuzztime 15s
+
+  webui-windows:
+    name: Windows frontend quality gates
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Node
+        uses: actions/setup-node@1e60f620b9541dca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.11.1
+      - name: Set up pnpm
+        shell: pwsh
+        run: |
+          npx --yes pnpm@10.22.0 --version
+      - name: Run frontend quality gates
+        shell: pwsh
+        run: ./scripts/Verify-WebUI.ps1
+
+  webui-linux:
+    name: Linux frontend quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Node
+        uses: actions/setup-node@1e60f620b9541dca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.11.1
+      - name: Set up pnpm
+        run: |
+          npx --yes pnpm@10.22.0 --version
+      - name: Run frontend quality gates
+        run: bash scripts/verify-webui.sh
+
+  docs-windows:
+    name: Windows documentation quality gates
+    runs-on: windows-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Run documentation quality gates
+        shell: pwsh
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: ./scripts/Verify-Docs.ps1 -BaseRef $env:BASE_REF
+
+  docs-linux:
+    name: Linux documentation quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Run documentation quality gates
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: bash scripts/verify-docs.sh "$BASE_REF"
+
+  openapi-breaking:
+    name: OpenAPI breaking gate
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Compare OpenAPI authority with merge base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p tmp/openapi
+          git show "${BASE_SHA}:api/openapi.yaml" > tmp/openapi/base.yaml
+          go tool oasdiff breaking tmp/openapi/base.yaml api/openapi.yaml --fail-on ERR
+
+  security:
+    name: Security gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Install pinned scanners
+        run: |
+          tool_dir="$(node scripts/project-layout.mjs --field toolsRoot)"
+          mkdir -p "${tool_dir}"
+          GOBIN="${tool_dir}" go install golang.org/x/vuln/cmd/govulncheck@v1.3.0
+          GOBIN="${tool_dir}" go install github.com/securego/gosec/v2/cmd/gosec@v2.28.0
+          GOBIN="${tool_dir}" go install github.com/zricethezav/gitleaks/v8@v8.28.0
+          echo "${tool_dir}" >> "${GITHUB_PATH}"
+      - name: Reachable vulnerability scan
+        run: govulncheck ./...
+      - name: Go security scan
+        run: gosec -exclude-generated ./...
+      - name: Secret scan
+        run: gitleaks git --config .gitleaks.toml --redact --no-banner --verbose .
+      - name: Tracked artifact allowlist
+        run: bash scripts/verify-artifacts.sh

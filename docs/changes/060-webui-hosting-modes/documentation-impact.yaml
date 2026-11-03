@@ -1,0 +1,62 @@
+schema_version: 1
+change: 060-webui-hosting-modes
+areas:
+  - id: startup
+    decision: updated
+    documents:
+      - README.md
+      - docs/getting-started/webui.md
+      - docs/getting-started/first-use.md
+    reason: 默认进入模式 B（Go 服务托管）；本地启动章节改为双模式说明，webui 指南保留模式 A（Vite）并新增模式 B 路径与 Secure Cookie loopback/TLS 约束。
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+      - docs/development/webui.md
+      - scripts/Verify-WebUI.ps1
+      - scripts/verify-webui.sh
+    reason: 新增托管前构建脚本（build-webui.mjs/.sh）、webui build CLI 与脚本语法检查；开发文档补充产物装配流程与布局一致性说明。
+  - id: module
+    decision: reviewed-no-change
+    reason: 本变更不修改 Go Manifest、WebUI Binding、业务模块 owner、operation 路由或权限模型；registry 生成链原样复用。
+  - id: configuration
+    decision: updated
+    documents:
+      - config.example.yaml  # 隐含于根配置参考（docs/configuration/README.md 表内新增 webui 节）
+      - docs/configuration/README.md
+    reason: 新增 webui.hosting 配置节（enabled/dir/buildScript/buildRuntime/buildTimeout）与 ownership 表条目；strict 解析与缺失节回退语义说明。
+  - id: api
+    decision: reviewed-no-change
+    reason: api/openapi.yaml 由 contract-gen 生成，060 不改业务 API 契约；AcceptJSON 收窄以回归测试证明 API 404/406 语义不变。
+  - id: operations
+    decision: updated
+    documents:
+      - docs/operations/build-and-container.md
+      - docs/operations/release.md
+      - docs/operations/runtime-capabilities.md
+      - docs/repository-scope.md
+      - Dockerfile
+      - .goreleaser.yaml
+      - scripts/container-smoke.sh
+    reason: Docker 新增 webui 构建 stage 并复制 dist，release 归档包含 webui/dist，container-smoke 增加模式 B 断言；repository-scope 移除“Docker/release 未托管 webui/dist”的当前结论并更新验证边界。
+  - id: security
+    decision: reviewed-no-change
+    reason: 不改变 CORS 白名单取值、Origin/CSRF/Session Cookie 安全语义；托管模式依赖同源比较与 loopback/TLS 文档约束，新增测试只验证既有语义不回归。
+  - id: delivery
+    decision: updated
+    documents:
+      - docs/operations/build-and-container.md
+      - docs/operations/release.md
+      - Dockerfile
+      - .goreleaser.yaml
+      - scripts/container-smoke.sh
+      - scripts/Verify-Quality.ps1
+      - scripts/verify-quality.sh
+      - scripts/Verify-WebUI.ps1
+      - scripts/verify-webui.sh
+    reason: 交付链在镜像构建期装配 webui/dist、归档纳入 webui/dist、container-smoke 增加模式 B 断言；质量链新增 layout --check-webui 与构建脚本语法检查。
+  - id: capability
+    decision: updated
+    documents:
+      - docs/operations/runtime-capabilities.md
+    reason: pkg/httpx 的 JSON Accept 门禁从宿主整体链收窄到 API 分组（http.Handler 形态 AcceptJSONHandler），API 404/406 语义以回归测试证明不变；WebUI 托管组件 internal/webuihost 与 webui 配置节进入运行能力矩阵。

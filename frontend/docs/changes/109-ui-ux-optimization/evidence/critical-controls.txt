@@ -1,0 +1,46 @@
+
+Running 2 tests using 1 worker
+
+
+
+(node:31660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/2] [chromium] › apps\web\e2e\ui-ux-109.spec.ts:91:1 › Short dialogs keep actions reachable at 256 and 400 pixels
+[2/2] [chromium] › apps\web\e2e\ui-ux-109.spec.ts:109:1 › Column resizing preserves pointer and keyboard widths through reload
+  1) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:109:1 › Column resizing preserves pointer and keyboard widths through reload
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      119 |   await page.keyboard.press('ArrowRight');
+      120 |   await page.keyboard.press('Enter');
+    > 121 |   await expect.poll(async () => Number(await range.getAttribute('aria-valuenow'))).toBeGreaterThan(before);
+          |                                                                                    ^
+      122 |   const box = await handle.boundingBox();
+      123 |   if (!box) throw new Error('Missing resizer hit area');
+      124 |   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:121:84
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Column-resizing--e7e62-board-widths-through-reload-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Column-resizing--e7e62-board-widths-through-reload-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Column-resizing--e7e62-board-widths-through-reload-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Column-resizing--e7e62-board-widths-through-reload-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  1 failed
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:109:1 › Column resizing preserves pointer and keyboard widths through reload
+  1 passed (26.7s)

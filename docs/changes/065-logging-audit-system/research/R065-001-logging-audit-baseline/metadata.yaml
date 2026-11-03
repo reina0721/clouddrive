@@ -1,0 +1,38 @@
+schema_version: 1
+id: R065-001
+title: "日志与审计体系当前能力、缺口与进阶候选方向"
+question: "当前日志体系（pkg/logger + 运行事件）与审计体系（064 已实施的 Auth 授权决策审计）的真实能力边界是什么；用户要求深度研究并新增『日志与审计体系等业务模块』方案时，哪些能力是真实缺口、哪些是无收益扩界；业务模块（IAM/Organization/Navigation）的写操作是否有可审计路径，进阶应落在哪些模块边界内？"
+research_type: current-project
+topics: ["logging", "audit", "observability", "operation-audit", "log-query", "business-module"]
+keywords: ["pkg/logger", "AuditSink", "AuditEvent", "auth_audit_events", "操作审计", "审计查询", "业务写操作", "log query"]
+applicable_scenarios: ["日志与审计体系进阶设计", "业务操作审计（activity/operation audit）", "审计查询增强", "日志规范与审计规范统一", "审计保留/导出边界"]
+non_applicable_scenarios: ["外部日志平台（Loki/ELK/Splunk）", "OTLP Logs", "日志轮转方案", "分布式 tracing 后端", "SIEM/异地审计聚合"]
+status: active
+summary: "日志体系已闭环（pkg/logger + 041 治理 + HTTP/Auth/migration/scheduler/messaging 事件），但只有 sink 写入、无查询 API；审计体系在 064 已落地 Auth 授权决策审计（auth_audit_events + 查询 + WebUI），但仅覆盖授权决策，业务写操作（IAM 账号/角色/权限、Organization 部门/岗位/分配、Navigation 菜单策略变更）没有任何操作审计痕迹；既有 024/R005 决策为审计收口 Auth。进阶候选：业务操作审计（借 port 注入同一低敏审计面）、审计规范 authority、查询增强；日志自建查询属无收益扩界，外部日志平台保持非目标。"
+evidence:
+  types: ["source-code", "tests", "prior-research", "generated-artifact", "project-docs"]
+  primary_sources:
+    - title: "pkg/logger 与日志规范"
+      locator: "pkg/logger/{logger.go,config.go,README.md}; docs/development/logging.md; 028/R001; 041/R001"
+      snapshot: "753f2b7 验证 2026-08-24"
+    - title: "Auth 审计实现（064）"
+      locator: "internal/module/auth/{model,service,adapter/audit/storage,repo,binding/http,binding/migration}"
+      snapshot: "753f2b7（064 完成提交）验证 2026-08-24"
+    - title: "业务写操作服务层现状"
+      locator: "internal/module/{iam,organization,navigation}/service"
+      snapshot: "753f2b7 验证 2026-08-24"
+    - title: "既有判定档案"
+      locator: "024/R002,R005; 057/R013; 041/R001; 064/R064-001"
+      snapshot: "复核 2026-08-24"
+researched_at: "2026-08-24"
+verified_at: "2026-08-24"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-09-24"
+  refresh_triggers: ["Logger 契约或 sink 模型变化", "审计模型/表结构变化", "新增独立 audit 业务模块目标", "业务写操作接入审计", "引入日志查询/外部日志平台目标", "webui 审计呈现变化"]
+relations:
+  extends: ["028/R001", "041/R001", "057/R013", "064/R064-001"]
+  related: ["022/R006", "024/R002", "024/R005"]
+  supersedes: []
+  superseded_by: []
+report: report.md

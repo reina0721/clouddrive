@@ -1,0 +1,45 @@
+schema_version: 1
+id: R007
+title: "重试、执行恢复与 HTTP Client 策略边界复核"
+question: "当前自研 resilience、HTTP 隐式重试和 execution 恢复状态机是否应由成熟库替换；哪些状态实际没有真实资源或 failure domain 支撑？"
+research_type: current-project-and-external-primary-source
+topics: ["retry", "HTTP client", "execution", "circuit breaker", "recovery", "idempotency"]
+keywords: ["pkg/resilience", "pkg/httpx", "pkg/execution", "cenkalti/backoff/v7", "failsafe-go", "sony/gobreaker/v2", "Retry-After", "idempotent"]
+technologies: ["net/http", "github.com/cenkalti/backoff/v7", "github.com/failsafe-go/failsafe-go", "github.com/sony/gobreaker/v2"]
+applicable_scenarios: ["RESIL-057-001", "Execution 有界重试", "HTTP 出站重试边界", "Execution backend 恢复治理"]
+non_applicable_scenarios: ["RabbitMQ broker redelivery", "Scheduler lease coordination", "配置文件稳定读取", "分布式工作流", "网关级重试"]
+status: active
+summary: "采用成熟且窄的 cenkalti/backoff/v7 承担 Execution 退避与重试循环，项目拥有命名 profile、幂等、错误分类、attempt/total budget 和观测；删除无消费者的自研 breaker、HTTP 通用隐式重试，以及没有真实外部主存储支撑的 RecoveringStore/AsyncRecorder。failsafe-go 活跃但 pre-v1 且范围过宽，gobreaker/v2 成熟但当前没有真实 failure domain，均不在本轮引入。"
+evidence:
+  types: ["source-code", "call-site-search", "dependency-manifest", "tests", "official-source", "official-release", "standard", "vulnerability-database"]
+  primary_sources:
+    - title: "当前 resilience、HTTP client、execution、composition 与真实消费者"
+      locator: "pkg/resilience; pkg/httpx; pkg/execution; internal/kernel/app/execution; internal/composition; internal/kernel/app/schedule; internal/kernel/app/messaging"
+      snapshot: "1e9fd58bc49e67c8eb1eadca53cdeb22ca8bd884"
+    - title: "cenkalti/backoff v7 release、source 与 changelog"
+      locator: "https://github.com/cenkalti/backoff/releases/tag/v7.0.0; https://github.com/cenkalti/backoff/blob/v7.0.0/CHANGELOG.md"
+      snapshot: "v7.0.0, 2026-06-30"
+    - title: "failsafe-go release、versioning 与 policy composition"
+      locator: "https://github.com/failsafe-go/failsafe-go/releases/tag/v0.9.7; https://github.com/failsafe-go/failsafe-go/blob/v0.9.7/VERSIONING.md; https://failsafe-go.dev/policies/"
+      snapshot: "v0.9.7, 2026-08-16"
+    - title: "sony/gobreaker v2 source 与 package metadata"
+      locator: "https://github.com/sony/gobreaker/blob/v2.4.0/gobreaker.go; https://pkg.go.dev/github.com/sony/gobreaker/v2@v2.4.0"
+      snapshot: "v2.4.0, 2026-01-01"
+    - title: "HTTP idempotency 与 Retry-After 标准"
+      locator: "https://www.rfc-editor.org/rfc/rfc9110.html"
+      snapshot: "RFC 9110, verified 2026-08-22"
+    - title: "Go module proxy、OSV 与当前 module graph"
+      locator: "go list -m -json <candidate>@latest; https://api.osv.dev/v1/query; go mod why -m github.com/cenkalti/backoff/v5"
+      snapshot: "2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: time-sensitive
+  review_after: "2026-09-22"
+  refresh_triggers: ["candidate release or security advisory changes", "a real outbound HTTP downstream appears", "a durable Execution Store is selected", "a circuit breaker failure domain is identified", "Execution public contract or delivery retry ownership changes"]
+relations:
+  extends: ["057-R001", "057-R002", "035-R002", "038-R003"]
+  related: ["035", "036", "037", "038", "041"]
+  supersedes: []
+  superseded_by: []
+report: report.md

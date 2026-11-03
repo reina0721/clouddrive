@@ -1,0 +1,89 @@
+
+Running 12 tests using 1 worker
+
+(node:30896) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\authentication.spec.ts:12:1 › Anonymous deep link preserves destination; login restores identity; logout protects content (3.0s)
+  ok  2 [chromium] › apps\web\e2e\authentication.spec.ts:37:1 › Registration validates confirmation, displays success and persists only salted password digest (2.7s)
+  ok  3 [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 320 (3.4s)
+  ok  4 [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 390 (3.4s)
+  ok  5 [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 768 (3.4s)
+  ok  6 [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 1440 (3.5s)
+  ok  7 [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 2048 (3.5s)
+  ok  8 [chromium] › apps\web\e2e\authentication.spec.ts:87:1 › Invalid credentials keep the form usable and reject external return targets (1.4s)
+  ok  9 [chromium] › apps\web\e2e\authentication.spec.ts:100:1 › Session expiry removes protected content and returns to the expired-session form (3.8s)
+  ok 10 [chromium] › apps\web\e2e\authentication.spec.ts:118:1 › Logout synchronizes other tabs and clears private records while retaining device preferences (5.3s)
+  x  11 [chromium] › apps\web\e2e\authentication.spec.ts:143:3 › English dark authentication respects reduced motion at 320 (30.1s)
+(node:30452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  12 [chromium] › apps\web\e2e\authentication.spec.ts:143:3 › English dark authentication respects reduced motion at 1440 (30.3s)
+
+
+  1) [chromium] › apps\web\e2e\authentication.spec.ts:143:3 › English dark authentication respects reduced motion at 320 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Toggle theme', exact: true })
+
+
+      147 |     await page.getByRole('button', { name: '切换语言', exact: true }).click();
+      148 |     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    > 149 |     await page.getByRole('button', { name: 'Toggle theme', exact: true }).click();
+          |                                                                           ^
+      150 |     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+      151 |     await expect(
+      152 |       page.getByRole('heading', { name: 'Create your account', exact: true }),
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\authentication.spec.ts:149:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\authentication-English-dar-8941a-pects-reduced-motion-at-320-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\authentication-English-dar-8941a-pects-reduced-motion-at-320-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\authentication-English-dar-8941a-pects-reduced-motion-at-320-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\authentication-English-dar-8941a-pects-reduced-motion-at-320-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\authentication.spec.ts:143:3 › English dark authentication respects reduced motion at 1440 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Toggle theme', exact: true })
+
+
+      147 |   test(`English dark authentication respects reduced motion at ${width}`, async ({ page }) => {
+      148 |     await page.setViewportSize({ width, height: 844 });
+    > 149 |     await page.emulateMedia({ reducedMotion: 'reduce' });
+          |                                                          ^
+      150 |     await page.goto('/register');
+      151 |     await page.getByRole('button', { name: '切换语言', exact: true }).click();
+      152 |     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\authentication.spec.ts:149:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\authentication-English-dar-8febc-ects-reduced-motion-at-1440-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\authentication-English-dar-8febc-ects-reduced-motion-at-1440-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\authentication-English-dar-8febc-ects-reduced-motion-at-1440-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\authentication-English-dar-8febc-ects-reduced-motion-at-1440-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › apps\web\e2e\authentication.spec.ts:143:3 › English dark authentication respects reduced motion at 320 
+    [chromium] › apps\web\e2e\authentication.spec.ts:143:3 › English dark authentication respects reduced motion at 1440 
+  10 passed (1.6m)

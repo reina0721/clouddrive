@@ -1,0 +1,36 @@
+schema_version: 1
+change: 079-security-alerting
+areas:
+  - id: capability
+    decision: updated
+    documents:
+      - docs/operations/runtime-capabilities.md
+    reason: 新增 pkg/alerting 能力（安全告警 Webhook 通知）；运行能力矩阵同步安全告警能力行。
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/README.md
+    reason: Auth/IAM 增加安全事件汇报窄 port 接驳与 alerting 配置；模块 README 同步告警边界。
+  - id: configuration
+    decision: updated
+    documents:
+      - docs/configuration/README.md
+    reason: 新增 alerting 配置节（enabled/webhookUrl/signingKey/timeout/retry/合并窗口）；config init 模板与示例同步。
+  - id: operations
+    decision: updated
+    documents:
+      - docs/operations/security.md
+    reason: 记录安全告警语义（低敏事件、Webhook 签名、失败降级、与审计并存）与动态风险控制设计归档结论。
+  - id: api
+    decision: reviewed-no-change
+    reason: 告警无新增 HTTP operation（事件在既有认证/写操作边界消费），api/openapi.yaml 不变。
+  - id: startup
+    decision: reviewed-no-change
+    reason: WebhookNotifier 走既有 composition 装配路径，不新增运行组件；告警发送在业务边界内同步完成。
+  - id: docs
+    decision: updated
+    documents:
+      - docs/changes/079-security-alerting/README.md
+      - docs/changes/079-security-alerting/tasks.md
+      - docs/changes/README.md
+    reason: 变更记录（研究/需求/设计/任务）与变更索引记录本任务状态（计划待确认→实施完成）与结论。

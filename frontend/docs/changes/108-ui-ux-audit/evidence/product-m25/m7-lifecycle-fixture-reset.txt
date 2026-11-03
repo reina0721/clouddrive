@@ -1,0 +1,10 @@
+locator.press: Timeout 15000ms exceeded.
+Call log:
+  - waiting for getByRole('checkbox', { name: 'M7 role lifecycle', exact: true })
+
+    at C:\Users\xiaol\AppData\Local\Temp\m7-lifecycle-browser-audit.cjs:31:74 {
+  log: [
+    "  - waiting for getByRole('checkbox', { name: 'M7 role lifecycle', exact: true })"
+  ],
+  name: 'TimeoutError'
+}

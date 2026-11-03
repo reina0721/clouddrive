@@ -1,0 +1,38 @@
+schema_version: 1
+id: R001
+title: "WebUI Origin 拒绝根因"
+question: "为什么 WebUI setup 经 Vite 代理后返回 cors_origin_denied，单独配置 CORS 是否足够？"
+research_type: current-project
+topics: ["webui", "cors", "origin", "csrf", "vite", "setup-token"]
+keywords: ["cors_origin_denied", "origin_rejected", "allowedOrigins", "sameOrigin", "localhost:5173"]
+applicable_scenarios: ["WebUI 本地 setup/login/logout", "Vite HTTPS 代理", "Cookie Session Origin 校验"]
+non_applicable_scenarios: ["生产反向代理部署", "开放任意跨域", "Bearer API CORS 放宽"]
+status: active
+summary: "浏览器 Origin 为 https://localhost:5173，而 HTTP CORS allowlist 为空，请求在 Auth 前被拒绝；即使只加入 CORS allowlist，Auth 当前仍只接受后端自身 origin，因此需要共享显式可信 Origin 语义。"
+evidence:
+  types: ["user-screenshot", "runtime-config", "source-code", "test"]
+  primary_sources:
+    - title: "用户运行截图"
+      locator: "attached screenshot"
+      snapshot: "2026-08-21: https://localhost:5173/setup displays cors_origin_denied; token value intentionally not recorded"
+    - title: "本地 HTTP 配置"
+      locator: "config.yaml:http.cors.allowedOrigins"
+      snapshot: "2026-08-21: empty list"
+    - title: "全局 CORS middleware"
+      locator: "pkg/httpx/production_middleware.go:CORS"
+      snapshot: "2026-08-21: every non-empty Origin must be present in allowlist"
+    - title: "WebUI Auth Origin 校验"
+      locator: "internal/module/auth/webuiauth/http.go:sameOrigin"
+      snapshot: "2026-08-21: accepts only request TLS scheme plus request Host"
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+validity:
+  mode: snapshot
+  review_after: "2026-11-21"
+  refresh_triggers: ["CORS middleware changes", "WebUI Auth Origin policy changes", "Vite proxy or port changes", "production WebUI deployment introduced"]
+relations:
+  extends: ["044"]
+  related: ["043"]
+  supersedes: []
+  superseded_by: []
+report: report.md

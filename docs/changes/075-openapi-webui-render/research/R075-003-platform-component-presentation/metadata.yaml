@@ -1,0 +1,47 @@
+schema_version: 1
+id: R075-003
+title: "API 文档页内呈现层改用平台组件的决策复核"
+question: "用户要求 API 页面『页内组件也要使用当前 WebUI 组件』——第三方 Swagger UI 的原生控件无法平台化，呈现层应如何调整，成本与边界是什么？"
+research_type: current-project
+topics: ["OpenAPI 渲染", "WebUI 组件", "呈现层选型", "自研边界"]
+keywords: ["swagger-ui-react 替换", "DataTable", "PageSection", "平台组件自绘", "单轨"]
+applicable_scenarios:
+  - "Admin WebUI 内需要与宿主视觉/组件完全一致的 API 契约参考页"
+  - "只读契约浏览（分组合并、参数/响应/schema 结构化展示）"
+non_applicable_scenarios:
+  - "需要完整 API 调试执行器、交互式请求构建/导入导出等 Swagger UI 全量能力的场景（构建成本高，当前无真实用例）"
+  - "独立部署文档站点（swagger-ui-dist 仍是更合适选项）"
+status: superseded
+summary: "（已被 R075-004 取代）原结论：页内用 @webui/sdk/ui 组件自绘只读契约参考页；用户后续要求升级为 Apifox 风格『可测试、完整』的 API 工作台（操作树 + 详情 + 执行 + 响应、模型视图），R075-004 取代本记录；平台组件呈现要求与生成快照链继续有效。"
+evidence:
+  types: ["source-code"]
+  primary_sources:
+    - title: "@webui/sdk/ui 组件清单（PageHeader/PageSection/Surface/DataTable/StatusPill/SelectField/InlineAlert/EmptyState 等）"
+      locator: "webui/src/ui/index.tsx"
+      snapshot: "2026-08-25 HEAD 55ee70f"
+    - title: "075 已提交实现（swagger-ui-react 页内渲染）"
+      locator: "internal/module/openapi/binding/webui/web/OpenAPIPage.tsx"
+      snapshot: "2026-08-25 commit 55ee70f"
+    - title: "用户要求（075 追加）"
+      locator: "会话记录"
+      snapshot: "2026-08-25"
+researched_at: "2026-08-25"
+verified_at: "2026-08-25"
+validity:
+  mode: snapshot
+  review_after: "2026-11-25"
+  refresh_triggers:
+    - "平台提供新的语义组件（如 HTTP method 徽标）后应收敛模块内自绘细节"
+    - "出现可完全平台化的成熟 OpenAPI 呈现组件（组件模型开放到可注入平台组件）"
+    - "出现真实『API 调试执行器』用例时重新评估 try-it-out 范围"
+relations:
+  extends: []
+  related:
+    - R075-001
+    - R075-002
+    - R075-004
+  supersedes:
+    - R075-001
+  superseded_by:
+    - R075-004
+report: report.md

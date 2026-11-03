@@ -1,0 +1,270 @@
+{
+  "contracts": {
+    "@clouddrive/core": {
+      "layer": "universal",
+      "owner": "pure frontend semantics",
+      "maturity": "stable",
+      "exports": ["."],
+      "authorityRoutes": ["/foundations"],
+      "evidence": ["packages/core/src/navigation.test.ts", "packages/core/src/table.test.ts"]
+    },
+    "@clouddrive/config": {
+      "layer": "universal",
+      "owner": "global configuration",
+      "maturity": "experimental",
+      "exports": [".", "./node"],
+      "authorityRoutes": ["/foundations"],
+      "evidence": [
+        "packages/config/src/index.ts",
+        "packages/config/src/node/index.ts",
+        "packages/config/src/config.test.ts",
+        "docs/config-foundation.md"
+      ]
+    },
+    "@clouddrive/design-system": {
+      "layer": "universal",
+      "owner": "semantic token and motion primitives",
+      "maturity": "stable",
+      "exports": ["./tokens.css", "./motion.css"],
+      "authorityRoutes": ["/motion", "/ui-elements"],
+      "evidence": [
+        "packages/design-system/src/tokens.css",
+        "packages/design-system/src/motion.css",
+        "apps/web/e2e/ui-ux-109.spec.ts",
+        "docs/changes/109-ui-ux-optimization/README.md"
+      ]
+    },
+    "@clouddrive/form-foundation": {
+      "layer": "universal",
+      "owner": "form lifecycle and field bridge",
+      "maturity": "stable",
+      "exports": ["."],
+      "authorityRoutes": ["/ui-elements/forms"],
+      "evidence": [
+        "packages/form-foundation/src/index.test.tsx",
+        "apps/web/e2e/ui-ux-109.spec.ts",
+        "docs/changes/109-ui-ux-optimization/tasks.md"
+      ]
+    },
+    "@clouddrive/i18n": {
+      "layer": "universal",
+      "owner": "locale runtime and formatting",
+      "maturity": "stable",
+      "exports": ["."],
+      "authorityRoutes": ["/foundations"],
+      "evidence": ["packages/i18n/src/index.test.tsx", "apps/web/e2e/authentication.spec.ts"]
+    },
+    "@clouddrive/schemas": {
+      "layer": "universal",
+      "owner": "schema contract and authority runtime primitives",
+      "maturity": "stable",
+      "exports": [".", "./runtime"],
+      "authorityRoutes": ["/foundations"],
+      "evidence": [
+        "packages/schemas/src/index.test.ts",
+        "packages/schemas/src/runtime/patch.test.ts",
+        "packages/schemas/src/runtime/protocol-validate.test.ts",
+        "packages/schemas/src/runtime/generator-token-regions.test.ts",
+        "packages/schemas/src/runtime/generator-motion-language.test.ts",
+        "packages/schemas/src/runtime/runtime-integration.test.ts"
+      ]
+    },
+    "@clouddrive/types": {
+      "layer": "universal",
+      "owner": "stable cross-workspace types",
+      "maturity": "stable",
+      "exports": ["."],
+      "authorityRoutes": ["/foundations"],
+      "evidence": ["packages/types/src/index.ts"]
+    },
+    "@clouddrive/ui-adapter": {
+      "layer": "universal",
+      "owner": "product-neutral UI contracts",
+      "maturity": "stable",
+      "exports": [
+        "./styles.css",
+        "./action",
+        "./accessibility",
+        "./async-region",
+        "./busy-indicator",
+        "./card",
+        "./charts",
+        "./command-menu",
+        "./content-swap-transition",
+        "./data-display",
+        "./date-picker-field",
+        "./description-list",
+        "./disclosure",
+        "./feedback",
+        "./feedback-context",
+        "./feedback-provider",
+        "./feedback-presence",
+        "./form-field",
+        "./form-error-summary",
+        "./icon-action",
+        "./identity",
+        "./menu-button",
+        "./navigation",
+        "./navigation-flyout",
+        "./overlays",
+        "./overlay-trigger",
+        "./panel",
+        "./progress-meter",
+        "./ready-image",
+        "./search-box",
+        "./skeleton",
+        "./state-surface",
+        "./status-pill",
+        "./step-navigation",
+        "./tree",
+        "./toggle-group",
+        "./container-layout"
+      ],
+      "authorityRoutes": ["/ui-elements", "/motion"],
+      "evidence": [
+        "apps/web/src/test/ui-element-foundations.test.tsx",
+        "apps/web/src/test/ui-element-actions.test.tsx",
+        "apps/web/src/test/password-field.test.tsx",
+        "apps/web/e2e/authentication.spec.ts",
+        "apps/web/e2e/surface-foundation.spec.ts",
+        "apps/web/e2e/overlays.spec.ts",
+        "apps/web/e2e/account-menu.spec.ts",
+        "apps/web/e2e/sidebar-design.spec.ts",
+        "apps/web/e2e/settings-ux-review.spec.ts",
+        "apps/web/e2e/settings-product-review.spec.ts",
+        "apps/web/e2e/data-display.spec.ts",
+        "apps/web/e2e/analytics-workspace.spec.ts",
+        "apps/web/e2e/ui-ux-109.spec.ts",
+        "docs/changes/109-ui-ux-optimization/README.md",
+        "apps/web/e2e/management-completion.spec.ts",
+        "apps/web/src/test/date-picker-contract.test.tsx",
+        "apps/web/src/test/container-layout.test.tsx",
+        "apps/web/e2e/api-workbench.spec.ts"
+      ]
+    },
+    "@clouddrive/state-foundation": {
+      "layer": "universal",
+      "owner": "product state mechanics (store creation, persistence, storage, hydration)",
+      "maturity": "experimental",
+      "exports": [".", "./react", "./testing"],
+      "authorityRoutes": ["/settings", "/foundations"],
+      "evidence": [
+        "packages/state-foundation/src/framework.test.ts",
+        "packages/state-foundation/src/hydration/lifecycle.test.ts",
+        "packages/state-foundation/src/storage/indexed-db.test.ts"
+      ]
+    },
+    "@clouddrive/surface-foundation": {
+      "layer": "surface",
+      "owner": "product surface UX patterns and shell presentation",
+      "maturity": "stable",
+      "exports": [
+        "./styles.css",
+        "./layout",
+        "./shell-navigation",
+        "./collection",
+        "./collection-tools",
+        "./detail-settings",
+        "./form-actions",
+        "./states-operations",
+        "./motion-policy-context",
+        "./viewport-reveal",
+        "./periodic-refresh",
+        "./use-periodic-refresh"
+      ],
+      "authorityRoutes": ["/page-patterns", "/page-archetypes", "/motion", "/ui-elements/data"],
+      "evidence": [
+        "packages/surface-foundation/src/contracts.test.tsx",
+        "packages/surface-foundation/src/collection-tools.test.tsx",
+        "packages/surface-foundation/src/data-table-productivity.test.tsx",
+        "packages/core/src/table.test.ts",
+        "apps/web/e2e/table-productivity.spec.ts",
+        "apps/web/e2e/settings-ux-review.spec.ts",
+        "apps/web/e2e/settings-product-review.spec.ts",
+        "apps/web/e2e/design-contract.spec.ts",
+        "apps/web/e2e/ui-ux-109.spec.ts",
+        "docs/changes/109-ui-ux-optimization/README.md",
+        "apps/web/src/test/motion-reveal.test.tsx",
+        "apps/web/e2e/motion-progressive.spec.ts",
+        "apps/web/e2e/scroll-reveal-items.spec.ts",
+        "apps/web/e2e/sidebar-design.spec.ts",
+        "apps/web/e2e/sidebar-browser-zoom.spec.ts"
+      ]
+    },
+    "@clouddrive/plugin-framework": {
+      "layer": "surface",
+      "kind": "framework",
+      "owner": "plugin contract, registry, route target and host capability",
+      "maturity": "experimental",
+      "exports": [
+        ".",
+        "./navigation",
+        "./plugin",
+        "./preferences",
+        "./workspace",
+        "./workbench",
+        "./notifications",
+        "./commands",
+        "./navigation-admin",
+        "./leave-confirm",
+        "./schemas",
+        "./schemas/runtime",
+        "./target"
+      ],
+      "authorityRoutes": ["/reference-resources"],
+      "evidence": [
+        "packages/plugin-framework/src/framework.test.ts",
+        "packages/plugin-framework/src/plugin.test.tsx",
+        "packages/plugin-framework/src/schemas.test.ts",
+        "packages/plugin-framework/src/schemas-runtime.test.ts",
+        "apps/web/e2e/ui-ux-109.spec.ts",
+        "docs/changes/109-ui-ux-optimization/README.md"
+      ]
+    },
+    "@clouddrive/surface": {
+      "layer": "surface",
+      "kind": "surface",
+      "owner": "surface shell, composition and private plugin workspace",
+      "maturity": "experimental",
+      "exports": [
+        "./shell",
+        "./preferences-model",
+        "./identity",
+        "./icon-presentation",
+        "./icon-components",
+        "./action-icons",
+        "./api-workbench",
+        "./generated/catalog",
+        "./generated/composition",
+        "./plugin-routes/*",
+        "./identity/runtime",
+        "./administration",
+        "./administration/runtime"
+      ],
+      "authorityRoutes": [
+        "/reference-resources",
+        "/api-workbench",
+        "/users",
+        "/account",
+        "/roles",
+        "/roles/permissions",
+        "/notifications",
+        "/audit-logs"
+      ],
+      "evidence": [
+        "surfaces/src/shell.test.ts",
+        "surfaces/src/preferences-model.test.ts",
+        "surfaces/src/identity/model.test.ts",
+        "apps/web/src/test/identity-contract.test.ts",
+        "docs/changes/108-ui-ux-audit/product-implementation.md",
+        "apps/web/src/test/account-security.test.ts",
+        "apps/web/e2e/management-completion.spec.ts",
+        "apps/web/e2e/management-completion-backend.spec.ts",
+        "docs/changes/110-management-completion/README.md",
+        "surfaces/plugins/api-workbench/src/model/workbench-ux.test.ts",
+        "apps/web/e2e/api-workbench.spec.ts",
+        "surfaces/src/api-workbench/README.md"
+      ]
+    }
+  }
+}

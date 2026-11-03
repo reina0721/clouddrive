@@ -1,0 +1,36 @@
+schema_version: 1
+change: 082-webui-architecture-rebuild
+areas:
+  - id: webui
+    decision: planned
+    documents:
+      - docs/development/webui.md
+      - webui/README.md
+    reason: 计划新增平台语义组件与 token（DataTable 增强/FilterBar/FormField/状态反馈体系/CodeText/TreeView/LogTable/DetailDrawer/PermissionMatrix/font-control-info-success token）、列表页 URL 状态同步、Command Search 入口常驻、Skeleton 分级、Query/Mutation 统一层契约、Backend 错误分类呈现与前端 Adapter/view-model 层；页面模式迁移（Accounts/User/Role/Permission/Audit/Org/Navigation/Ops/Sessions/Tokens）；IA 菜单归位与 Sidebar Group Label。实施后需同步 WebUI 开发指南样式 authority 附录、语义组件规范与 Query/Mutation 使用契约、webui/README。
+  - id: startup
+    decision: reviewed-no-change
+    reason: 全部改动为前端呈现与页面模式，无新运行组件/配置节/生命周期变化；认证授权 fail closed 语义不变。
+  - id: api
+    decision: reviewed-no-change
+    reason: 不改变 Backend Contract；页面↔operation 映射复用既有 55 operation/23 权限键；无新 operation。
+  - id: module
+    decision: planned
+    documents:
+      - internal/module/iam/binding/webui/web/*
+      - internal/module/auth/binding/webui/web/*
+      - internal/module/ops/binding/webui/web/*
+      - internal/module/organization/binding/webui/web/*
+      - internal/module/navigation/binding/webui/web/*
+    reason: IAM/Auth/Ops/Organization/Navigation 模块页面按 REQ-082-012..022 迁移为 Drawer/Tree/LogTable/Session/Token 等模式（全部使用真实后端数据）；菜单归位仅调整 Navigation.ParentID 声明；模块 web/api.ts 收敛 Adapter/view-model 层。
+  - id: configuration
+    decision: reviewed-no-change
+    reason: 无新配置节；页面宽度档/控制尺寸档为前端 token。
+  - id: docs
+    decision: planned
+    documents:
+      - docs/changes/082-webui-architecture-rebuild/README.md
+      - docs/changes/082-webui-architecture-rebuild/requirements.md
+      - docs/changes/082-webui-architecture-rebuild/design.md
+      - docs/changes/082-webui-architecture-rebuild/tasks.md
+      - docs/changes/README.md
+    reason: 082 变更记录（研究/需求/设计/任务）与变更索引记录本任务状态（计划待确认→实施完成）与结论。

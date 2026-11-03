@@ -1,0 +1,38 @@
+schema_version: 1
+id: R001
+title: "当前账号、Auth 与装配边界"
+question: "当前本地 WebUI 账号、Session、授权、HTTP、migration、菜单和 WebUI 装配已实现什么，完整账号组织权限业务模块必须闭合哪些结构缺口？"
+research_type: current-project
+topics: ["account", "auth", "authorization", "session", "migration", "http-contract", "webui", "organization", "menu"]
+keywords: ["webui_users", "webui_sessions", "Scopes", "operationPolicies", "applicationHTTPModules", "applicationWebUIModules", "account"]
+applicable_scenarios: ["053 账号权限模块", "本地多账号管理", "Core RBAC", "WebUI Session operation", "Auth 与 Account 分责"]
+non_applicable_scenarios: ["OIDC/SSO", "MFA", "多租户", "外部 IAM", "old-backend"]
+status: superseded
+summary: "当前已有本地密码、单账号 setup/login、服务端 Session、CSRF/Origin、精确 scope 授权和静态 WebUI 菜单，但没有用户/角色/部门/岗位/菜单策略管理；账号表属于 Auth 运行代码却落在 Todo migration，HTTP dispatcher 仍只有 Todo，完整 Account 必须先完成 owner、认证 profile 与多模块装配收口。"
+evidence:
+  types: ["source-code", "tests", "migration", "project-documentation", "prior-research"]
+  primary_sources:
+    - title: "当前 Auth 模块与本地 WebUI 认证"
+      locator: "internal/module/auth/{module.go,model/model.go,service/service.go,webuiauth/service.go,webuiauth/http.go}"
+      snapshot: "HEAD a935a68879cfc0042268bf23393a582ac78a25c8, verified 2026-08-21"
+    - title: "当前 HTTP 与 WebUI composition"
+      locator: "internal/composition/{generation.go,http_api.go,http_contracts.go,service.go,webui_http.go,webui_registry.go}"
+      snapshot: "HEAD a935a68879cfc0042268bf23393a582ac78a25c8, verified 2026-08-21"
+    - title: "当前 migration 与 Database Repository"
+      locator: "internal/composition/migration.go; internal/module/{migration,todo/binding/migration}; pkg/database/{repository.go,query.go}; pkg/database/migrate"
+      snapshot: "HEAD a935a68879cfc0042268bf23393a582ac78a25c8, verified 2026-08-21"
+    - title: "完整 Account 的既有边界决策"
+      locator: "docs/changes/048-full-stack-webui-modules/{requirements.md,design.md,tasks.md}; docs/development/application-module-development.md"
+      snapshot: "current authority and completed 048 record, rechecked 2026-08-21"
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-09-21"
+  refresh_triggers: ["Auth model or WebUI Session changes", "新增 HTTP 业务模块", "migration catalog changes", "WebUI Catalog/SDK public contract changes", "组织或菜单范围变化", "048 decision is superseded"]
+relations:
+  extends: ["042/R001", "048/R001", "048/R003"]
+  related: ["017/R001", "025/R001", "034/R001", "046/R001", "052/R002"]
+  supersedes: []
+  superseded_by: ["053/R005"]
+report: report.md

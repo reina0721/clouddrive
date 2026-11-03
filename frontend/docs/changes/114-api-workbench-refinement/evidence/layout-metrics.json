@@ -1,0 +1,105 @@
+[
+  {
+    "width": 1920,
+    "height": 1080,
+    "scroll": 1920,
+    "layout": "expanded",
+    "aside": [
+      {
+        "name": null,
+        "x": 0,
+        "w": 264,
+        "sw": 263,
+        "cw": 263
+      },
+      {
+        "name": "项目与接口",
+        "x": 373,
+        "w": 223,
+        "sw": 223,
+        "cw": 223
+      }
+    ],
+    "navItems": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "scroll": 1440,
+    "layout": "expanded",
+    "aside": [
+      {
+        "name": null,
+        "x": 0,
+        "w": 264,
+        "sw": 263,
+        "cw": 263
+      }
+    ],
+    "navItems": []
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "scroll": 1280,
+    "layout": "expanded",
+    "aside": [
+      {
+        "name": null,
+        "x": 0,
+        "w": 264,
+        "sw": 263,
+        "cw": 263
+      }
+    ],
+    "navItems": []
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "scroll": 1024,
+    "layout": "compact",
+    "aside": [
+      {
+        "name": null,
+        "x": 0,
+        "w": 264,
+        "sw": 263,
+        "cw": 263
+      }
+    ],
+    "navItems": []
+  },
+  {
+    "width": 768,
+    "height": 900,
+    "scroll": 768,
+    "layout": "compact",
+    "aside": [
+      {
+        "name": null,
+        "x": 0,
+        "w": 0,
+        "sw": 0,
+        "cw": 0
+      }
+    ],
+    "navItems": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "scroll": 390,
+    "layout": "compact",
+    "aside": [
+      {
+        "name": null,
+        "x": 0,
+        "w": 0,
+        "sw": 0,
+        "cw": 0
+      }
+    ],
+    "navItems": []
+  }
+]

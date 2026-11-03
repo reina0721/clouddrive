@@ -1,0 +1,20 @@
+[WebServer] (node:19836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:30852) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:15264) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:34524) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\navigation.spec.ts:147:1 › Shell NavigationViewport 隐藏原生 scrollbar 且保留滚动能力 (3.9s)
+  ok 2 [chromium] › apps\web\e2e\new-page-open-mode.spec.ts:11:1 › 新页面打开方式默认当前页：点击链接同页导航 (3.2s)
+  ok 3 [chromium] › apps\web\e2e\new-page-open-mode.spec.ts:19:1 › 新页面打开方式=浏览器新标签页：声明允许入口在新标签打开 (5.0s)
+  ok 4 [chromium] › apps\web\e2e\scroll-to-top.spec.ts:17:1 › 跳转后自动滚顶默认开：长页滚下后导航到设置 → 回到顶部 (4.9s)
+  ok 5 [chromium] › apps\web\e2e\scroll-to-top.spec.ts:33:1 › 关闭 跳转后自动滚顶：长页滚下后导航保持滚动位置 (6.7s)
+  ok 6 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:276:1 › Sticky consumers resolve actual chrome height across live tabs and viewport changes (17.1s)
+  ok 7 [chromium] › apps\web\e2e\sidebar-design.spec.ts:11:1 › Compact rail uses coherent geometry, current route, named groups and focus/hover hints (7.0s)
+
+  7 passed (1.4m)

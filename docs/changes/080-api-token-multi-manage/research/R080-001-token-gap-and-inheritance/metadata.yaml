@@ -1,0 +1,38 @@
+schema_version: 1
+id: R080-001
+title: "API-Token 多令牌管理与权限知情创建：现状差距核实、权限继承语义、状态机与契约"
+question: "任务提示词（080 立项输入）与现有 iam.api-tokens 实现的逐项差距是什么；权限知情创建（scope 受限于创建者有效权限）、令牌状态机/迁移、数量上限与 TTL 默认、契约变更如何落在既有模块边界内？"
+research_type: current-project
+topics: ["iam", "api-token", "least-privilege", "token-lifecycle", "webui"]
+keywords: ["ApiToken", "LeastPrivilege", "TokenInheritance", "DisabledState", "TTL", "StatusFilter"]
+applicable_scenarios: ["多令牌自助管理", "令牌权限受限于创建者有效权限（防提权）", "令牌状态机与过期/禁用治理", "settings WebUI 升级"]
+non_applicable_scenarios: ["资源级（zone/app）作用域（Cloudflare 式）", "跨账号委派/管理员代建", "使用配额/强制轮换策略"]
+status: active
+summary: "差距核实：现有 CreateApiToken 仅校验 scope 存在于 Catalog（越权路径真实存在）；无 disabled 状态/数量上限/TTL 默认；列表无状态过滤；WebUI 已有 078 基础区块需升级而非新建。权限知情创建实现路径：创建时用 authorization.ProjectPermissions(ctx, accountID, currentRevision, restricted) 实时投影创建者有效权限并服务端校验 scopes ⊆ 其权限（未知 404、越权 403）；受限（MustChangePassword）账号禁止管理令牌；授权按令牌自身 scope 生效、与创建者后续变化解耦。状态机：新增 disabled_at/description 列（migration 000008），派生 active/disabled/expired/revoked；ResolveApiToken 对 disabled 拒绝；数量上限按未吊销令牌数（默认 5 可配、0=不限）；TTL 默认配置。契约：PATCH 元数据、disable/enable 端点、列表 status 过滤，权限键复用 iam:api-token:read/write；审计与敏感写告警扩展。"
+evidence:
+  types: ["source-code", "tests", "generated-artifact", "prior-research"]
+  primary_sources:
+    - title: "IAM API-Token 现状（创建/列表/轮换/解析）"
+      locator: "internal/module/iam/service/service.go（1945/1982/2009/2045）；repo/repository.go；binding/http"
+      snapshot: "baacb08 验证 2026-09"
+    - title: "授权投影能力（创建者有效权限来源）"
+      locator: "internal/module/iam/authorization/runtime.go（ProjectPermissions）"
+      snapshot: "baacb08 验证 2026-09"
+    - title: "WebUI 现状（078 基础区块）与配置惯例"
+      locator: "internal/module/settings/binding/webui/web/SecurityPage.tsx；internal/module/iam/binding/config/config.go（maxSessionsPerAccount 语义）"
+      snapshot: "baacb08 验证 2026-09"
+    - title: "平台参考与前置设计"
+      locator: "R078-001；docs/changes/079-security-alerting/（敏感写告警）"
+      snapshot: "复核 2026-09"
+researched_at: "2026-09"
+verified_at: "2026-09"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-10"
+  refresh_triggers: ["token-scopes 授权语义变化", "授权投影（ProjectPermissions）接口变化", "iam_api_tokens schema 演进", "资源级作用域立项"]
+relations:
+  extends: ["078/R078-001", "079/R079-001", "058/R001"]
+  related: ["066/R066-001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

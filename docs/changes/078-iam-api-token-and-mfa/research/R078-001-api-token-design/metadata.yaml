@@ -1,0 +1,38 @@
+schema_version: 1
+id: R078-001
+title: "API-Token 闭环设计：凭据模型、认证链、管理面、权限键与审计"
+question: "在既有 IAM+Auth 边界内，机器访问 API-Token 能力如何设计（凭据模型、认证来源、管理面 HTTP、权限与审计），新增权限键是否必要？"
+research_type: current-project
+topics: ["iam", "auth", "api-token", "machine-access", "token-scopes"]
+keywords: ["APIToken", "MachineAccess", "ChainVerifier", "TokenScopes", "Rotate", "Revoke", "新增权限键"]
+applicable_scenarios: ["机器到服务/CI/CD/脚本访问", "与外部 JWT 并存的复合认证链", "API-Token 管理面（发放/轮换/吊销）"]
+non_applicable_scenarios: ["替代 IAM Session 会话语义", "承载数据权限/ABAC（scope 仍为精确键）", "把明文 secret 持久化或多次返回"]
+status: active
+summary: "设计闭环：新增 iam_api_tokens 表（sha256 存储高熵 secret，明文仅创建/轮换返回一次），Auth 以 ChainVerifier（JWT→API-Token）复合接入既有 Bearer 认证路径，token-scopes Principal 直达既有授权与审计，无需改动授权语义；管理面 4 个 operation 复用 webuiSession+CSRF；新增 iam:api-token:read/write 权限键成为该能力授权域的必要扩展（R077-002 已预告）；创建/轮换/吊销走低敏操作审计。工作量 M，落在既有边界内。"
+evidence:
+  types: ["source-code", "tests", "prior-research"]
+  primary_sources:
+    - title: "IAM 凭据/会话模型与服务"
+      locator: "internal/module/iam/{repo/repository.go,service/service.go,binding/http}"
+      snapshot: "edc8151 验证 2026-09"
+    - title: "Auth Bearer 认证链与 token-scopes Principal"
+      locator: "internal/module/auth/{model/model.go,middleware/http.go,service/service.go,adapter/jwt}"
+      snapshot: "edc8151 验证 2026-09"
+    - title: "composition 装配与既有适配先例"
+      locator: "internal/composition/identity_access.go"
+      snapshot: "edc8151 验证 2026-09"
+    - title: "可行性判定（R077-002）"
+      locator: "docs/changes/077-iam-security-enterprise-gaps/research/R077-002-enterprise-capabilities-feasibility/report.md"
+      snapshot: "复核 2026-09"
+researched_at: "2026-09"
+verified_at: "2026-09"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-10"
+  refresh_triggers: ["Auth Bearer 认证链结构变化", "token-scopes Principal 语义变化", "IAM 凭据表迁移", "新增权限键决策变化"]
+relations:
+  extends: ["R077-002", "054/R001", "058/R001"]
+  related: ["022/R006"]
+  supersedes: []
+  superseded_by: []
+report: report.md

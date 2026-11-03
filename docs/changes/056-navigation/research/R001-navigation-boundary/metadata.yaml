@@ -1,0 +1,32 @@
+schema_version: 1
+id: R001
+title: "静态菜单与运行期策略边界"
+question: "Navigation 如何管理菜单策略，同时保持模块静态页面所有权、generated registry 和 RolePermission 单一授权 authority？"
+research_type: current-project
+topics: ["navigation", "webui", "menu-policy", "revision", "authorization"]
+keywords: ["NavigationID", "CatalogRevision", "NavigationRevision", "role_menu", "Manifest"]
+applicable_scenarios: ["056 Navigation", "菜单管理", "Manifest policy"]
+non_applicable_scenarios: ["动态页面", "CMS", "remote module", "多租户菜单"]
+status: active
+summary: "静态 Binding 继续拥有页面和菜单定义，Navigation 只拥有已注册 ID 的 enabled/parent/order 策略；CatalogRevision 与 NavigationRevision 分离，RolePermission 仍是唯一授权存储。"
+evidence:
+  types: ["source-code", "tests", "prior-research", "user-decision"]
+  primary_sources:
+    - title: "当前 WebUI Catalog/Manifest/Registry"
+      locator: "internal/webui/contract.go; internal/composition/{http_contracts.go,webui_http.go,webui_registry.go}; webui/src"
+      snapshot: "based on 055 completion commit e4e279c4e3ecd84588f7976b2bb8bae203844278; verified 2026-08-22"
+    - title: "053 菜单与三模块边界研究"
+      locator: "docs/changes/053-admin-module-foundation/research/{R003-organization-menu-boundary,R005-mainstream-admin-module-boundary}"
+      snapshot: "current research evidence, 2026-08-21"
+researched_at: "2026-08-21"
+verified_at: "2026-08-22"
+validity:
+  mode: dependency-bound
+  review_after: "053 and 054 completion"
+  refresh_triggers: ["WebUI Catalog changes", "dynamic page requested", "role_menu requested", "runtime cache requested"]
+relations:
+  extends: ["053/R003", "053/R005"]
+  related: ["054/R001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

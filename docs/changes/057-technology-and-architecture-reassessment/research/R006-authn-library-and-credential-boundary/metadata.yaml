@@ -1,0 +1,48 @@
+schema_version: 1
+id: R006
+title: "认证库与凭据校验边界复核"
+question: "当前 JWT/JWK 与 Argon2id 实现是否应迁移到新的第三方库；怎样同时满足成熟主流、资源安全、取消语义和凭据演进要求？"
+research_type: current-project-and-external-primary-source
+topics: ["authentication", "JWT", "JWK", "password hashing", "Argon2id", "credential migration"]
+keywords: ["jwx/v3", "jwx/v4", "x/crypto/argon2", "PHC", "NeedsRehash", "context cancellation", "CredentialVerifier"]
+technologies: ["github.com/lestrrat-go/jwx/v3", "github.com/lestrrat-go/jwx/v4", "golang.org/x/crypto/argon2", "github.com/alexedwards/argon2id", "github.com/matthewhartstonge/argon2"]
+applicable_scenarios: ["AUTHN-057-001", "Bearer JWT/JWK 校验", "本地密码哈希与渐进重哈希"]
+non_applicable_scenarios: ["OIDC 登录流程", "外部身份提供商 discovery", "授权策略引擎", "MFA", "API key"]
+status: active
+summary: "保留成熟且活跃维护的 jwx/v3 与 Go 官方 x/crypto/argon2，不迁移到仍要求 GOEXPERIMENT=jsonv2 的 jwx/v4，也不引入维护或资源边界不足的高层 Argon2 Wrapper。项目只拥有窄认证契约、JWK 生命周期、安全校验、受限 PHC 格式策略和 NeedsRehash，不自行实现 JOSE 或密码学算法。"
+evidence:
+  types: ["source-code", "call-site-search", "dependency-manifest", "tests", "official-maintainer-guidance", "official-source", "standard", "security-guidance", "vulnerability-database"]
+  primary_sources:
+    - title: "当前 Auth 与 IAM credential 实现、composition 和测试"
+      locator: "internal/module/auth; internal/module/iam/adapter/password; internal/module/iam/service; go.mod"
+      snapshot: "92dace194f4d2e38e46214f36cc87f36c6122fc1"
+    - title: "JWX support status and v4 announcement"
+      locator: "https://github.com/lestrrat-go/jwx/discussions/1079; https://github.com/lestrrat-go/jwx/discussions/2040"
+      snapshot: "2026-08-22"
+    - title: "JWX v4 README and extension architecture"
+      locator: "https://github.com/lestrrat-go/jwx/blob/develop/v4/README.md"
+      snapshot: "2026-08-22"
+    - title: "Go official Argon2 package"
+      locator: "https://pkg.go.dev/golang.org/x/crypto/argon2"
+      snapshot: "2026-08-22"
+    - title: "OWASP Password Storage Cheat Sheet and RFC 9106"
+      locator: "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html; https://www.rfc-editor.org/rfc/rfc9106.html"
+      snapshot: "2026-08-22"
+    - title: "Argon2 wrapper source and release metadata"
+      locator: "https://github.com/alexedwards/argon2id; https://github.com/matthewhartstonge/argon2"
+      snapshot: "2026-08-22"
+    - title: "OSV API and project govulncheck"
+      locator: "https://api.osv.dev/v1/query; govulncheck -show verbose ./internal/module/auth/... ./internal/module/iam/..."
+      snapshot: "2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: time-sensitive
+  review_after: "2026-09-22"
+  refresh_triggers: ["jwx support policy or v3/v4 release change", "encoding/json/v2 leaves experiment", "x/crypto or candidate security advisory", "OIDC requirement appears", "credential storage format changes", "Auth/IAM contract or lifecycle changes"]
+relations:
+  extends: ["057-R001", "057-R002"]
+  related: ["030", "054"]
+  supersedes: []
+  superseded_by: []
+report: report.md

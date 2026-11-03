@@ -1,0 +1,117 @@
+- button "Open Next.js Dev Tools":
+- alert
+- link "跳到主要内容 / Skip to content":
+  - /url: "#main-content"
+- complementary:
+  - generic: C
+  - navigation "主导航":
+    - list "Universal Foundation":
+      - link "总览":
+        - /url: /
+    - list "系统":
+      - link "设置":
+        - /url: /settings
+      - link "Icon 大全":
+        - /url: /system-tools/icons
+    - list "参考资源":
+      - link "参考资源":
+        - /url: /reference-resources
+    - list "开发":
+      - link "基座能力":
+        - /url: /foundations
+      - link "Motion":
+        - /url: /motion
+      - button "Page Archetypes":
+      - button "Page Patterns":
+      - link "状态体系":
+        - /url: /states
+      - button "UI Elements":
+- banner:
+  - button "展开侧栏":
+  - button "按 Ctrl K 搜索"
+  - button "切换语言":
+  - button "切换主题":
+  - button "通知":
+  - button "当前用户":
+    - generic "Rin": RI
+    - generic: Rin
+- main:
+  - list "面包屑导航":
+    - link "基座验证"
+    - generic: /
+    - link "数据工作台" [disabled]
+  - paragraph: Reference · Workspace
+  - heading "高密度数据工作台" [level=1]
+  - paragraph: 使用 48 条本地基准数据验证 Dashboard、筛选、Table、Master-Detail、Tabs、Drawer、Dialog 与非正常状态的协作边界。
+  - button "打开活动侧栏"
+  - button "打开确认对话框"
+  - paragraph: 总工作流
+  - paragraph: "48"
+  - paragraph: 需关注
+  - paragraph: "16"
+  - paragraph: 高风险
+  - paragraph: "16"
+  - paragraph: 筛选结果
+  - paragraph: "0"
+  - toolbar "页面工具栏":
+    - searchbox "搜索 Reference 数据": M0-NO-MATCH-20261012
+    - button "Close":
+    - button "搜索" [active]:
+      - generic: 搜索
+    - button "清除筛选":
+      - generic: 清除筛选
+    - button "导出快照":
+      - generic: 导出快照
+  - generic: 状态
+  - button "需关注 状态":
+    - generic: 需关注
+  - combobox
+  - generic: 区域
+  - button "全部 区域":
+    - generic: 全部
+  - combobox
+  - generic: 表格密度
+  - button "舒适 表格密度":
+    - generic: 舒适
+  - combobox
+  - generic: 场景状态
+  - button "正常 场景状态":
+    - generic: 正常
+  - combobox
+  - region "Reference 工作流数据表":
+    - heading "工作流列表" [level=2]
+    - paragraph: 当前展示 0 条记录；数据量用于验证滚动、密度与溢出。
+    - button "列设置"
+    - grid "Reference 工作流数据表":
+      - rowgroup:
+        - row "工作流 尺寸调整器 负责人 尺寸调整器 状态 尺寸调整器 区域 尺寸调整器 完成度 尺寸调整器 更新时间 尺寸调整器":
+          - columnheader "工作流 尺寸调整器":
+            - generic: 工作流
+            - slider "尺寸调整器 工作流": "140"
+          - columnheader "负责人 尺寸调整器":
+            - generic: 负责人
+            - slider "尺寸调整器 负责人": "139"
+          - columnheader "状态 尺寸调整器":
+            - generic: 状态
+            - slider "尺寸调整器 状态": "140"
+          - columnheader "区域 尺寸调整器":
+            - generic: 区域
+            - slider "尺寸调整器 区域": "140"
+          - columnheader "完成度 尺寸调整器":
+            - generic: 完成度
+            - slider "尺寸调整器 完成度": "139"
+          - columnheader "更新时间 尺寸调整器":
+            - text: 更新时间
+            - slider "尺寸调整器 更新时间": "140"
+      - rowgroup:
+        - row "筛选条件没有结果；清除筛选即可恢复完整基准数据集。":
+          - rowheader "筛选条件没有结果；清除筛选即可恢复完整基准数据集。":
+            - generic: 筛选条件没有结果；清除筛选即可恢复完整基准数据集。
+    - navigation "Reference 列表分页":
+      - list:
+        - button "上一页" [disabled]:
+          - generic: ‹
+        - button "第 1 页": "1"
+        - button "下一页" [disabled]:
+          - generic: ›
+    - complementary

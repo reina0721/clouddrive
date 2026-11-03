@@ -1,0 +1,76 @@
+schema_version: 1
+id: R097-001
+title: '三层 Motion 模型与异步内容切换（AsyncRegion）契约参数'
+question: '现有 frontend 架构应如何把动效治理升级为 Policy + Recipe + Semantic Component 三层，并落地 Async Content Transition（Loading→Skeleton→crossfade→Ready）以解决"数据 Ready 但内容突然出现"？其消费方与契约参数是什么？'
+research_type: current-state-audit-and-contract-design
+topics:
+  [
+    'frontend',
+    'motion governance',
+    'async content transition',
+    'motion recipe',
+    'motion policy',
+    'motion region',
+  ]
+keywords:
+  [
+    'AsyncRegion',
+    'screen transition',
+    'viewport reveal',
+    'content.enter recipe',
+    'sceneMode',
+    'presence lifecycle',
+  ]
+applicable_scenarios:
+  [
+    'frontend Motion 治理体系化、异步内容切换组件、页面 Region 级 Reveal 的未来决策、开发期 Motion Inspector 规划',
+  ]
+non_applicable_scenarios:
+  [
+    '为异步状态建立 LoadingAnimationContainer 万能容器',
+    '每个 UI Element/表格行套 Viewport 动画',
+    '视口 presence 滚动重播动画（后台场景）',
+    '业务页面直接选择 fade/slide 等实现型动画契约',
+  ]
+status: active
+summary: '异步内容"突然出现"源于两个独立维度：数据是否 Ready 与是否进入视口。解决它的正确组件是 AsyncRegion（语义组件，消费方=reference page 的 sceneMode 状态机），而非 ViewportReveal。治理体系升级为三层：Recipe 属于组件实现、Feature 只选 Semantic Component、两层 Policy（用户环境+开发期 Override）解析成最终 Motion。'
+evidence:
+  types: ['project-source', 'previous-change-record', 'installed-package-manifest']
+  primary_sources:
+    - title: 'reference 页面 sceneMode 状态机'
+      locator: 'frontend/apps/web/src/app/reference/page.tsx'
+      snapshot: '86697e24，SceneMode = ready/loading/empty/partial-error/offline/permission；当前为整块条件渲染、无切换过渡'
+    - title: 'reference e2e 断言'
+      locator: 'frontend/apps/web/e2e/reference.spec.ts'
+      snapshot: '86697e24，sceneMode 切换文案（部分指标不可用/离线快照可用）、grid 可见性、aria-sort 等断言'
+    - title: 'ui-adapter 现有异步原语'
+      locator: 'frontend/packages/ui-adapter/src/{skeleton.tsx,state-surface.tsx,busy-indicator.tsx}'
+      snapshot: '86697e24，Skeleton animate-pulse、StateSurface ProductState 全状态、BusyIndicator motion-reduce'
+    - title: 'ui-adapter 导出机制'
+      locator: 'frontend/packages/ui-adapter/package.json'
+      snapshot: '86697e24，子路径 exports（./skeleton、./state-surface 等）'
+    - title: 'Motion Foundation 现状（096 落地）'
+      locator: 'frontend/packages/design-system/src/{tokens.css,motion.css}；docs/motion-foundation.md；frontend/AGENTS.md §4.2'
+      snapshot: '86697e24，用途语义 Token（control/feedback/page）、--motion-distance-page=3.75rem、配方单文件+登记表、reduced-motion 单一实现'
+    - title: '096 登记的触发条件'
+      locator: 'frontend/docs/changes/096-motion-foundation/tasks.md FUTURE-096-003'
+      snapshot: '86697e24，AsyncContentTransition 触发条件：reference sceneMode/真实数据页迁移'
+  researched_at: '2026-09-12'
+  verified_at: '2026-09-12'
+validity:
+  mode: version-and-date-bounded
+  review_after: '2026-11-12'
+  refresh_triggers:
+    [
+      '出现真实网络数据页（AsyncRegion 需要重验 interrupted 与 error 语义）',
+      '出现 below-fold 长内容页（ViewportReveal/InView 触发条件）',
+      '出现 ≥2 个 Motion 类别组件（Motion Inspector 触发条件）',
+      'HeroUI/React Aria 新增 Disclosure/Presence 能力',
+      '第二 Runtime Host 出现（共享层下沉评估）',
+    ]
+relations:
+  extends: ['R096-001']
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

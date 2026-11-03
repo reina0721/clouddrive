@@ -1,0 +1,37 @@
+before {
+  shell: {
+    homeTarget: '/',
+    scrollToTopOnNavigate: true,
+    breadcrumbs: true,
+    pageTabsEnabled: true,
+    restoreLastTabs: true,
+    tabCloseBehavior: 'recent',
+    newPageOpenMode: 'current',
+    sidebarBehavior: 'remember',
+    menuMemory: false,
+    rememberRecents: true,
+    showRecents: true,
+    autoRestoreWorkspace: false
+  },
+  tabs: '{"state":{"tabs":[{"pathname":"/settings/navigation","title":"导航","href":"/settings/navigation","activatedAt":1791426083303},{"pathname":"/reference-resources","title":"参考资源","href":"/reference-resources","activatedAt":1791426083625},{"pathname":"/settings","title":"外观","href":"/settings","activatedAt":1791426084008}]},"version":2}'
+}
+after {
+  shell: {
+    homeTarget: '/',
+    scrollToTopOnNavigate: true,
+    breadcrumbs: true,
+    pageTabsEnabled: true,
+    restoreLastTabs: true,
+    tabCloseBehavior: 'recent',
+    newPageOpenMode: 'current',
+    sidebarBehavior: 'remember',
+    menuMemory: false,
+    rememberRecents: true,
+    showRecents: true,
+    autoRestoreWorkspace: false
+  },
+  tabs: '{"state":{"tabs":[{"pathname":"/settings/navigation","title":"导航","href":"/settings/navigation","activatedAt":1791426083303},{"pathname":"/reference-resources","title":"参考资源","href":"/reference-resources","activatedAt":1791426083625},{"pathname":"/settings","title":"外观","href":"/settings","activatedAt":1791426085282}]},"version":2}'
+}
+导航
+参考资源
+外观

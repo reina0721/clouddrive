@@ -1,0 +1,38 @@
+schema_version: 1
+id: R099-001
+title: 'Admin Shell 父级菜单与 Compact Hover Flyout 根因审计'
+question: '为什么活跃父级无法收拢、点击父级会导航到默认子级，以及 Compact Sidebar Hover 会重复触发？'
+research_type: current-state-audit
+topics: ['admin shell', 'sidebar navigation', 'disclosure', 'popover hover']
+keywords: ['AdminShellNavigation', 'ExpandedNode', 'NavigationFlyout', 'expandedIds']
+applicable_scenarios: ['099 Admin Shell 父级菜单视觉与交互修复']
+non_applicable_scenarios: ['业务路由重构、后端菜单、权限计算、移动端导航结构重做']
+status: active
+summary: '活跃祖先被硬编码为永久展开，父级标题被错误建模为默认子路由 Link，Compact Flyout 又把 hover、focus 与强制焦点转移混为同一开关；需要恢复单行 Disclosure Trigger，并建立显式用户展开覆盖和稳定的指针所有权。'
+evidence:
+  types: ['user-screenshot', 'project-source', 'playwright-test', 'git-history']
+  primary_sources:
+    - title: '用户提供的五张 Shell 截图'
+      locator: '本任务附件图 1～5'
+      snapshot: '图 1～2 显示独立方形 Toggle；图 3～4 显示整行父级菜单与内联 Chevron；图 5 显示 Compact Flyout Hover 反复出现'
+    - title: '当前 Admin Shell Navigation'
+      locator: 'packages/admin-foundation/src/shell-navigation.tsx'
+      snapshot: '484dfe00：expanded = active || expandedIds.has(id)，父级标题使用 defaultHref Link，右侧另放 IconAction'
+    - title: '当前 Hover Flyout'
+      locator: 'packages/ui-adapter/src/navigation-flyout.tsx'
+      snapshot: '484dfe00：mouse enter/leave、focus、Popover onOpenChange 和打开后强制 focus 同时改变同一个 open 状态'
+    - title: '当前 E2E 契约'
+      locator: 'apps/admin-web/e2e/navigation.spec.ts'
+      snapshot: '当前测试反而要求点击 UI Elements 父级跳到默认子级，未覆盖活跃父级收拢和 Hover 单次挂载'
+  researched_at: '2026-09-01'
+  verified_at: '2026-09-01'
+validity:
+  mode: revision-bounded
+  refresh_triggers:
+    ['shell-navigation、navigation-flyout、NavigationNode 或 Admin Router Port 发生相关变更']
+relations:
+  extends: ['R098-001']
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

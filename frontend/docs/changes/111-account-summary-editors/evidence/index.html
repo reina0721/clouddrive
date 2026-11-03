@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>个人账户常驻表单验收预览</title>
+  <style>
+    body {
+      font-family: system-ui;
+      margin: 24px;
+      color: #172033;
+      background: #f7f7fa;
+    }
+    section {
+      margin: 28px 0;
+    }
+    img {
+      width: 100%;
+      border: 1px solid #ddd;
+    }
+    figure {
+      margin: 0;
+    }
+    a {
+      color: inherit;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+    figcaption {
+      font-weight: 600;
+      margin: 12px 0;
+    }
+    @media (max-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <h1>个人账户：常驻表单与轻量内联操作</h1>
+  <p>
+    按最终确认方案：个人资料、账户安全、有效登录会话三个轻边框区段。资料重置／保存资料，密码清空／修改密码；操作行紧随字段，无
+    Sticky、Fixed、独立背景或浮层阴影。
+  </p>
+  <p>资料与密码直接在页面编辑。只保留未保存离开与会话撤销确认。当前没有申请更新视觉基线。</p>
+  <section>
+    <h2>原问题</h2>
+    <p>用户提供的原截图含圈选标注，尺寸与当前验收截图不同，用于说明操作栏的层级问题。</p>
+    <a href="before-user.png"><img src="before-user.png" alt="原两条厚重操作栏" /></a>
+  </section>
+  <section>
+    <h2>桌面实测</h2>
+    <div class="grid">
+      <figure>
+        <figcaption>中文浅色 · 1440</figcaption>
+        <a href="account-inline-zh-light-1440.png"
+          ><img src="account-inline-zh-light-1440.png" alt="中文浅色账户页"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>英文深色 · 1440</figcaption>
+        <a href="account-inline-en-dark-1440.png"
+          ><img src="account-inline-en-dark-1440.png" alt="英文深色账户页"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>手机实测</h2>
+    <div class="grid">
+      <figure>
+        <figcaption>中文浅色 · 320</figcaption>
+        <a href="account-inline-zh-light-320.png"
+          ><img src="account-inline-zh-light-320.png" alt="320 中文账户页"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>英文深色 · 320</figcaption>
+        <a href="account-inline-en-dark-320.png"
+          ><img src="account-inline-en-dark-320.png" alt="320 英文账户页"
+        /></a>
+      </figure>
+    </div>
+  </section>
+</html>

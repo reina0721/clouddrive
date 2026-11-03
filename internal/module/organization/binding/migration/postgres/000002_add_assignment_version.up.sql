@@ -1,0 +1,1 @@
+ALTER TABLE organization_account_departments ADD COLUMN version BIGINT NOT NULL DEFAULT 1;

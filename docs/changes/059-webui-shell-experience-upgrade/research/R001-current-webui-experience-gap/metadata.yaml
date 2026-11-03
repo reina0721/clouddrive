@@ -1,0 +1,42 @@
+schema_version: 1
+id: R001
+title: "当前 WebUI 骨架与交互缺口"
+question: "当前 WebUI 已实现哪些后台宿主能力，哪些视觉、动效、loading skeleton、响应式和可维护性缺口导致其仍呈现为临时原型？"
+research_type: current-project
+topics: ["webui", "app-shell", "interaction", "motion", "skeleton", "responsive", "visual-regression"]
+keywords: ["AppShell", "RouteSearch", "ThemeDrawer", "styles.css", "PageLoading", "reduceMotion", "workspace tabs"]
+applicable_scenarios: ["WebUI 宿主重构", "后台骨架升级", "公共交互完善", "视觉回归"]
+non_applicable_scenarios: ["业务 API 改造", "权限模型变更", "新增业务模块", "生产静态托管"]
+status: active
+summary: "当前宿主功能骨架已经存在，但 Shell 状态集中、平台样式单文件压缩、部分 overlay/菜单无完整动效、loading 几何不稳定且系统减少动效偏好未接入，适合在保留现有边界的前提下做单轨体验重构。"
+evidence:
+  types: ["source-code", "tests", "visual-artifacts", "project-docs", "git-metadata"]
+  primary_sources:
+    - title: "当前宿主与路由装配"
+      locator: "webui/src/App.tsx; webui/src/components/AppShell.tsx"
+      snapshot: "HEAD f83a585, working tree verified 2026-08-22"
+    - title: "当前主题、overlay 与公共 UI"
+      locator: "webui/src/theme.ts; webui/src/components/{RouteSearch,ThemeDrawer}.tsx; webui/src/ui/index.tsx"
+      snapshot: "HEAD f83a585, working tree verified 2026-08-22"
+    - title: "当前平台样式"
+      locator: "webui/src/styles.css"
+      snapshot: "28485 bytes, about 329 rule blocks, 13 transitions, 2 animations and 2 keyframes; verified 2026-08-22"
+    - title: "当前浏览器验收与视觉产物"
+      locator: "webui/e2e/webui.spec.ts; webui/test-results/**/dashboard-*.png; webui/test-results/**/auth-login-*.png"
+      snapshot: "artifacts last written 2026-08-22; relevant source last changed at 7b73ea3"
+    - title: "既有 WebUI 边界研究"
+      locator: "docs/changes/047-admin-webui-productization; docs/changes/048-full-stack-webui-modules/research/R003-module-owned-webui-sdk-boundary/report.md"
+      snapshot: "verified 2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: working-tree-snapshot
+  review_after: "2026-09-22"
+  refresh_triggers: ["AppShell 或平台样式改变", "WebUI SDK 公共组件改变", "Manifest/navigation 契约改变", "前端技术栈主版本改变", "新的视觉验收产物生成"]
+relations:
+  extends: ["047", "048"]
+  related: ["050", "052"]
+  supersedes: []
+  superseded_by: []
+report: report.md
+

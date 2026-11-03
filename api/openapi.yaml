@@ -1,0 +1,4100 @@
+components:
+  schemas:
+    AccountDetailResponse:
+      additionalProperties: false
+      properties:
+        account:
+          $ref: "#/components/schemas/AccountResponse"
+        activeApiTokenCount:
+          format: int64
+          type: integer
+        activeSessionCount:
+          format: int64
+          type: integer
+        authorizationRevision:
+          format: int64
+          minimum: 0
+          type: integer
+        createdAt:
+          format: date-time
+          type: string
+        roles:
+          items:
+            $ref: "#/components/schemas/RoleResponse"
+          nullable: true
+          type: array
+        totalSessionCount:
+          format: int64
+          type: integer
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - account
+        - roles
+        - authorizationRevision
+        - activeSessionCount
+        - totalSessionCount
+        - activeApiTokenCount
+        - createdAt
+        - updatedAt
+      type: object
+    AccountResponse:
+      additionalProperties: false
+      properties:
+        archived:
+          type: boolean
+        bio:
+          type: string
+        birthDate:
+          type: string
+        displayName:
+          type: string
+        id:
+          type: string
+        mustChangePassword:
+          type: boolean
+        nickname:
+          type: string
+        securityRevision:
+          format: int64
+          minimum: 0
+          type: integer
+        status:
+          enum:
+            - active
+            - disabled
+          type: string
+        username:
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - id
+        - username
+        - displayName
+        - nickname
+        - bio
+        - birthDate
+        - status
+        - archived
+        - mustChangePassword
+        - securityRevision
+        - version
+      type: object
+    AccountRolesResponse:
+      additionalProperties: false
+      properties:
+        accountId:
+          type: string
+        accountVersion:
+          format: int64
+          minimum: 0
+          type: integer
+        authorizationRevision:
+          format: int64
+          minimum: 0
+          type: integer
+        roleIds:
+          items:
+            type: string
+          nullable: true
+          type: array
+      required:
+        - accountId
+        - accountVersion
+        - authorizationRevision
+        - roleIds
+      type: object
+    ApiTokenBatchRevokeInputBody:
+      additionalProperties: false
+      properties:
+        tokenIds:
+          items:
+            maxLength: 100
+            minLength: 1
+            type: string
+          nullable: true
+          type: array
+      required:
+        - tokenIds
+      type: object
+    ApiTokenCreateInputBody:
+      additionalProperties: false
+      properties:
+        description:
+          maxLength: 1024
+          type: string
+        expiresAt:
+          format: date-time
+          type: string
+        name:
+          maxLength: 128
+          minLength: 1
+          type: string
+        scopes:
+          items:
+            type: string
+          nullable: true
+          type: array
+      required:
+        - name
+        - description
+        - scopes
+      type: object
+    ApiTokenIssuedResponse:
+      additionalProperties: false
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        description:
+          type: string
+        disabledAt:
+          format: date-time
+          type: string
+        expiresAt:
+          format: date-time
+          type: string
+        id:
+          type: string
+        lastUsedAt:
+          format: date-time
+          type: string
+        name:
+          type: string
+        revokedAt:
+          format: date-time
+          type: string
+        scopes:
+          items:
+            type: string
+          nullable: true
+          type: array
+        secret:
+          type: string
+        status:
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - version
+        - id
+        - name
+        - scopes
+        - createdAt
+        - status
+        - secret
+      type: object
+    ApiTokenResponse:
+      additionalProperties: false
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        description:
+          type: string
+        disabledAt:
+          format: date-time
+          type: string
+        expiresAt:
+          format: date-time
+          type: string
+        id:
+          type: string
+        lastUsedAt:
+          format: date-time
+          type: string
+        name:
+          type: string
+        revokedAt:
+          format: date-time
+          type: string
+        scopes:
+          items:
+            type: string
+          nullable: true
+          type: array
+        status:
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - version
+        - id
+        - name
+        - scopes
+        - createdAt
+        - status
+      type: object
+    ApiTokenUpdateInputBody:
+      additionalProperties: false
+      properties:
+        description:
+          maxLength: 1024
+          type: string
+        expiresAt:
+          format: date-time
+          type: string
+        name:
+          maxLength: 128
+          minLength: 1
+          type: string
+        neverExpires:
+          type: boolean
+      required:
+        - name
+        - description
+      type: object
+    Assignment:
+      additionalProperties: false
+      properties:
+        accountId:
+          type: string
+        departmentId:
+          type: string
+        positionIds:
+          items:
+            type: string
+          nullable: true
+          type: array
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - accountId
+        - positionIds
+        - version
+      type: object
+    AssignmentResponse:
+      additionalProperties: false
+      properties:
+        added:
+          format: int64
+          type: integer
+        authorizationRevision:
+          format: int64
+          minimum: 0
+          type: integer
+        entityId:
+          type: string
+        entityVersion:
+          format: int64
+          minimum: 0
+          type: integer
+        removed:
+          format: int64
+          type: integer
+      required:
+        - entityId
+        - entityVersion
+        - authorizationRevision
+        - added
+        - removed
+      type: object
+    AuditEventListResponse:
+      additionalProperties: false
+      properties:
+        hasMore:
+          type: boolean
+        items:
+          items:
+            $ref: "#/components/schemas/AuditEventViewResponse"
+          nullable: true
+          type: array
+        limit:
+          format: int64
+          type: integer
+        nextCursor:
+          type: string
+        total:
+          format: int64
+          type: integer
+      required:
+        - items
+        - limit
+        - total
+        - hasMore
+      type: object
+    AuditEventViewResponse:
+      additionalProperties: false
+      properties:
+        action:
+          type: string
+        actorKind:
+          type: string
+        correlationId:
+          type: string
+        decision:
+          type: string
+        eventId:
+          format: int64
+          minimum: 0
+          type: integer
+        occurredAt:
+          format: date-time
+          type: string
+        operation:
+          type: string
+        outcome:
+          type: string
+        resourceHash:
+          type: string
+        resourceType:
+          type: string
+        subjectHash:
+          type: string
+      required:
+        - eventId
+        - decision
+        - outcome
+        - occurredAt
+      type: object
+    BatchAccountInputBody:
+      additionalProperties: false
+      properties:
+        accountIds:
+          items:
+            type: string
+          maxItems: 100
+          minItems: 1
+          nullable: true
+          type: array
+        status:
+          enum:
+            - active
+            - disabled
+          type: string
+      required:
+        - accountIds
+        - status
+      type: object
+    BatchItemFailure:
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        resourceId:
+          type: string
+        retryable:
+          type: boolean
+      required:
+        - resourceId
+        - code
+        - message
+        - retryable
+      type: object
+    BatchItemSuccess:
+      additionalProperties: false
+      properties:
+        resourceId:
+          type: string
+      required:
+        - resourceId
+      type: object
+    BatchResultOutput:
+      additionalProperties: false
+      properties:
+        correlationId:
+          type: string
+        failed:
+          items:
+            $ref: "#/components/schemas/BatchItemFailure"
+          nullable: true
+          type: array
+        processedCount:
+          format: int64
+          type: integer
+        requestedCount:
+          format: int64
+          type: integer
+        succeeded:
+          items:
+            $ref: "#/components/schemas/BatchItemSuccess"
+          nullable: true
+          type: array
+      required:
+        - requestedCount
+        - processedCount
+        - succeeded
+        - failed
+      type: object
+    ChangePasswordInputBody:
+      additionalProperties: false
+      properties:
+        currentPassword:
+          maxLength: 128
+          minLength: 1
+          type: string
+        newPassword:
+          maxLength: 128
+          minLength: 1
+          type: string
+      required:
+        - currentPassword
+        - newPassword
+      type: object
+    CreateAccountInputBody:
+      additionalProperties: false
+      properties:
+        displayName:
+          maxLength: 128
+          minLength: 1
+          type: string
+        password:
+          maxLength: 128
+          minLength: 1
+          type: string
+        username:
+          maxLength: 254
+          minLength: 3
+          type: string
+      required:
+        - username
+        - displayName
+        - password
+      type: object
+    CreateDepartmentRequest:
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+        leader:
+          type: string
+        name:
+          type: string
+        parentId:
+          type: string
+        remark:
+          type: string
+      required:
+        - leader
+        - remark
+        - code
+        - name
+      type: object
+    CreatePositionRequest:
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+      required:
+        - code
+        - name
+      type: object
+    CreateRoleInputBody:
+      additionalProperties: false
+      properties:
+        code:
+          maxLength: 64
+          minLength: 2
+          type: string
+        description:
+          maxLength: 1024
+          type: string
+        name:
+          maxLength: 128
+          minLength: 1
+          type: string
+      required:
+        - code
+        - name
+        - description
+      type: object
+    CreateTodoRequest:
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+      required:
+        - title
+      type: object
+    Department:
+      additionalProperties: false
+      properties:
+        active:
+          type: boolean
+        archived:
+          type: boolean
+        code:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        id:
+          type: string
+        leader:
+          type: string
+        memberCount:
+          format: int64
+          type: integer
+        name:
+          type: string
+        parentId:
+          type: string
+        remark:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - leader
+        - remark
+        - memberCount
+        - id
+        - code
+        - name
+        - active
+        - archived
+        - version
+        - createdAt
+        - updatedAt
+      type: object
+    DepartmentList:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/Department"
+          nullable: true
+          type: array
+        limit:
+          format: int64
+          type: integer
+        offset:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+      required:
+        - items
+        - offset
+        - limit
+        - total
+      type: object
+    DepartmentNode:
+      additionalProperties: false
+      properties:
+        active:
+          type: boolean
+        archived:
+          type: boolean
+        children:
+          items:
+            $ref: "#/components/schemas/DepartmentNode"
+          nullable: true
+          type: array
+        code:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        id:
+          type: string
+        leader:
+          type: string
+        memberCount:
+          format: int64
+          type: integer
+        name:
+          type: string
+        parentId:
+          type: string
+        remark:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - children
+        - leader
+        - remark
+        - memberCount
+        - id
+        - code
+        - name
+        - active
+        - archived
+        - version
+        - createdAt
+        - updatedAt
+      type: object
+    ErrorModel:
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+        detail:
+          type: string
+        instance:
+          type: string
+        status:
+          format: int64
+          type: integer
+        title:
+          type: string
+        type:
+          type: string
+        violations:
+          items:
+            $ref: "#/components/schemas/Violation"
+          nullable: true
+          type: array
+      required:
+        - type
+        - title
+        - status
+        - code
+      type: object
+    IdentityResponse:
+      additionalProperties: false
+      properties:
+        accountId:
+          type: string
+        bio:
+          type: string
+        birthDate:
+          type: string
+        displayName:
+          type: string
+        mustChangePassword:
+          type: boolean
+        nickname:
+          type: string
+        permissions:
+          items:
+            type: string
+          nullable: true
+          type: array
+        securityRevision:
+          format: int64
+          minimum: 0
+          type: integer
+        username:
+          type: string
+      required:
+        - accountId
+        - username
+        - displayName
+        - nickname
+        - bio
+        - birthDate
+        - permissions
+        - mustChangePassword
+        - securityRevision
+      type: object
+    ListResponseAccountResponse:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/AccountResponse"
+          nullable: true
+          type: array
+        limit:
+          format: int64
+          type: integer
+        offset:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+      required:
+        - items
+        - offset
+        - limit
+        - total
+      type: object
+    ListResponseApiTokenResponse:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/ApiTokenResponse"
+          nullable: true
+          type: array
+        limit:
+          format: int64
+          type: integer
+        offset:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+      required:
+        - items
+        - offset
+        - limit
+        - total
+      type: object
+    ListResponseRoleResponse:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/RoleResponse"
+          nullable: true
+          type: array
+        limit:
+          format: int64
+          type: integer
+        offset:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+      required:
+        - items
+        - offset
+        - limit
+        - total
+      type: object
+    ListResponseSessionInfoResponse:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/SessionInfoResponse"
+          nullable: true
+          type: array
+        limit:
+          format: int64
+          type: integer
+        offset:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+      required:
+        - items
+        - offset
+        - limit
+        - total
+      type: object
+    LoginInputBody:
+      additionalProperties: false
+      properties:
+        password:
+          maxLength: 128
+          minLength: 1
+          type: string
+        username:
+          maxLength: 254
+          minLength: 3
+          type: string
+      required:
+        - username
+        - password
+      type: object
+    LoginResultBody:
+      additionalProperties: false
+      properties:
+        absoluteExpiresAt:
+          format: date-time
+          type: string
+        challengeId:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        csrfToken:
+          type: string
+        identity:
+          $ref: "#/components/schemas/IdentityResponse"
+        idleExpiresAt:
+          format: date-time
+          type: string
+        mfaRequired:
+          type: boolean
+      type: object
+    Menu:
+      additionalProperties: false
+      properties:
+        defaultOrder:
+          format: int64
+          type: integer
+        defaultParentId:
+          type: string
+        enabled:
+          type: boolean
+        iconId:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+        moduleId:
+          type: string
+        order:
+          format: int64
+          type: integer
+        orderOverridden:
+          type: boolean
+        overridden:
+          type: boolean
+        parentId:
+          type: string
+        parentOverridden:
+          type: boolean
+        permission:
+          type: string
+        routeId:
+          type: string
+        titleMessageId:
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - label
+        - permission
+        - id
+        - moduleId
+        - routeId
+        - titleMessageId
+        - iconId
+        - defaultParentId
+        - defaultOrder
+        - enabled
+        - parentId
+        - order
+        - version
+        - overridden
+        - parentOverridden
+        - orderOverridden
+      type: object
+    MenuList:
+      additionalProperties: false
+      properties:
+        catalogRevision:
+          type: string
+        items:
+          items:
+            $ref: "#/components/schemas/Menu"
+          nullable: true
+          type: array
+        navigationRevision:
+          type: string
+      required:
+        - items
+        - catalogRevision
+        - navigationRevision
+      type: object
+    MfaCodeInputBody:
+      additionalProperties: false
+      properties:
+        code:
+          maxLength: 64
+          minLength: 4
+          type: string
+      required:
+        - code
+      type: object
+    MfaConfirmResponse:
+      additionalProperties: false
+      properties:
+        recoveryCodes:
+          items:
+            type: string
+          nullable: true
+          type: array
+      required:
+        - recoveryCodes
+      type: object
+    MfaEnrollResponse:
+      additionalProperties: false
+      properties:
+        secret:
+          type: string
+        uri:
+          type: string
+      required:
+        - secret
+        - uri
+      type: object
+    MfaStatusResponse:
+      additionalProperties: false
+      properties:
+        registered:
+          type: boolean
+      required:
+        - registered
+      type: object
+    MfaVerifyInputBody:
+      additionalProperties: false
+      properties:
+        challengeId:
+          maxLength: 128
+          minLength: 1
+          type: string
+        code:
+          maxLength: 64
+          minLength: 4
+          type: string
+      required:
+        - challengeId
+        - code
+      type: object
+    NotificationsStruct:
+      additionalProperties: false
+      properties:
+        dailySummary:
+          type: boolean
+        emailDigest:
+          type: boolean
+        inApp:
+          type: boolean
+        showSummaries:
+          type: boolean
+      type: object
+    PasswordInputBody:
+      additionalProperties: false
+      properties:
+        password:
+          maxLength: 128
+          minLength: 1
+          type: string
+      required:
+        - password
+      type: object
+    PermissionKeysInputBody:
+      additionalProperties: false
+      properties:
+        expectedRoleVersion:
+          format: int64
+          minimum: 0
+          type: integer
+        permissionKeys:
+          items:
+            type: string
+          nullable: true
+          type: array
+      required:
+        - expectedRoleVersion
+        - permissionKeys
+      type: object
+    PermissionResponse:
+      additionalProperties: false
+      properties:
+        descriptionMessageId:
+          type: string
+        key:
+          type: string
+        ownerModuleId:
+          type: string
+        risk:
+          enum:
+            - standard
+            - elevated
+            - critical
+          type: string
+      required:
+        - key
+        - ownerModuleId
+        - descriptionMessageId
+        - risk
+      type: object
+    Position:
+      additionalProperties: false
+      properties:
+        active:
+          type: boolean
+        archived:
+          type: boolean
+        code:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - id
+        - code
+        - name
+        - active
+        - archived
+        - version
+        - createdAt
+        - updatedAt
+      type: object
+    PositionList:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/Position"
+          nullable: true
+          type: array
+        limit:
+          format: int64
+          type: integer
+        offset:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+      required:
+        - items
+        - offset
+        - limit
+        - total
+      type: object
+    PreferencesNotificationsResponse:
+      additionalProperties: false
+      properties:
+        dailySummary:
+          type: boolean
+        emailDigest:
+          type: boolean
+        inApp:
+          type: boolean
+        showSummaries:
+          type: boolean
+      required:
+        - emailDigest
+        - inApp
+        - showSummaries
+        - dailySummary
+      type: object
+    PreferencesResponse:
+      additionalProperties: false
+      properties:
+        density:
+          enum:
+            - comfortable
+            - compact
+          type: string
+        language:
+          type: string
+        notifications:
+          $ref: "#/components/schemas/PreferencesNotificationsResponse"
+        reduceMotion:
+          type: boolean
+        themeMode:
+          enum:
+            - system
+            - light
+            - dark
+          type: string
+        themePreset:
+          enum:
+            - blue
+            - cyan
+            - green
+            - violet
+            - orange
+          type: string
+        timeZone:
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - version
+        - language
+        - themeMode
+        - themePreset
+        - density
+        - reduceMotion
+        - notifications
+      type: object
+    ProfileResponse:
+      additionalProperties: false
+      properties:
+        bio:
+          type: string
+        birthDate:
+          type: string
+        nickname:
+          type: string
+        username:
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - username
+        - nickname
+        - bio
+        - birthDate
+        - version
+      type: object
+    ReplaceAssignmentRequest:
+      additionalProperties: false
+      properties:
+        departmentId:
+          type: string
+        expectedVersion:
+          format: int64
+          minimum: 0
+          type: integer
+        positionIds:
+          items:
+            type: string
+          nullable: true
+          type: array
+      required:
+        - expectedVersion
+        - positionIds
+      type: object
+    Revision:
+      additionalProperties: false
+      properties:
+        catalogRevision:
+          type: string
+        navigationRevision:
+          type: string
+      required:
+        - catalogRevision
+        - navigationRevision
+      type: object
+    RoleDetailResponse:
+      additionalProperties: false
+      properties:
+        assignedAccountCount:
+          format: int64
+          type: integer
+        authorizationRevision:
+          format: int64
+          minimum: 0
+          type: integer
+        createdAt:
+          format: date-time
+          type: string
+        criticalPermissionCount:
+          format: int64
+          type: integer
+        elevatedPermissionCount:
+          format: int64
+          type: integer
+        ownerModuleCount:
+          format: int64
+          type: integer
+        permissions:
+          items:
+            $ref: "#/components/schemas/PermissionResponse"
+          nullable: true
+          type: array
+        role:
+          $ref: "#/components/schemas/RoleResponse"
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - role
+        - permissions
+        - authorizationRevision
+        - assignedAccountCount
+        - ownerModuleCount
+        - elevatedPermissionCount
+        - criticalPermissionCount
+        - createdAt
+        - updatedAt
+      type: object
+    RoleIDsInputBody:
+      additionalProperties: false
+      properties:
+        expectedAccountVersion:
+          format: int64
+          minimum: 0
+          type: integer
+        roleIds:
+          items:
+            type: string
+          nullable: true
+          type: array
+      required:
+        - expectedAccountVersion
+        - roleIds
+      type: object
+    RolePermissionsResponse:
+      additionalProperties: false
+      properties:
+        authorizationRevision:
+          format: int64
+          minimum: 0
+          type: integer
+        permissionKeys:
+          items:
+            type: string
+          nullable: true
+          type: array
+        roleId:
+          type: string
+        roleVersion:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - roleId
+        - roleVersion
+        - authorizationRevision
+        - permissionKeys
+      type: object
+    RoleResponse:
+      additionalProperties: false
+      properties:
+        active:
+          type: boolean
+        archived:
+          type: boolean
+        code:
+          type: string
+        description:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        system:
+          type: boolean
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - id
+        - code
+        - name
+        - description
+        - active
+        - archived
+        - system
+        - version
+      type: object
+    SelfArchiveBeginOutputBody:
+      additionalProperties: false
+      properties:
+        confirmationId:
+          type: string
+      required:
+        - confirmationId
+      type: object
+    SelfArchiveInputBody:
+      additionalProperties: false
+      properties:
+        confirmationId:
+          type: string
+      required:
+        - confirmationId
+      type: object
+    SessionInfoResponse:
+      additionalProperties: false
+      properties:
+        absoluteExpiresAt:
+          format: date-time
+          type: string
+        accountId:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        idHash:
+          type: string
+        idleExpiresAt:
+          format: date-time
+          type: string
+        lastSeenAt:
+          format: date-time
+          type: string
+        revokedAt:
+          format: date-time
+          type: string
+      required:
+        - idHash
+        - accountId
+        - createdAt
+        - lastSeenAt
+        - idleExpiresAt
+        - absoluteExpiresAt
+      type: object
+    SessionResponse:
+      additionalProperties: false
+      properties:
+        absoluteExpiresAt:
+          format: date-time
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        csrfToken:
+          type: string
+        identity:
+          $ref: "#/components/schemas/IdentityResponse"
+        idleExpiresAt:
+          format: date-time
+          type: string
+      required:
+        - identity
+      type: object
+    SessionRevokeInputBody:
+      additionalProperties: false
+      properties:
+        idHashes:
+          items:
+            type: string
+          nullable: true
+          type: array
+      required:
+        - idHashes
+      type: object
+    SetupInputBody:
+      additionalProperties: false
+      properties:
+        displayName:
+          maxLength: 128
+          minLength: 1
+          type: string
+        password:
+          maxLength: 128
+          minLength: 1
+          type: string
+        setupToken:
+          maxLength: 512
+          minLength: 1
+          type: string
+        username:
+          maxLength: 254
+          minLength: 3
+          type: string
+      required:
+        - setupToken
+        - username
+        - displayName
+        - password
+      type: object
+    StatusInputBody:
+      additionalProperties: false
+      properties:
+        status:
+          enum:
+            - active
+            - disabled
+          type: string
+      required:
+        - status
+      type: object
+    Todo:
+      additionalProperties: false
+      properties:
+        completedAt:
+          format: date-time
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        id:
+          type: string
+        status:
+          type: string
+        title:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - id
+        - title
+        - status
+        - createdAt
+        - updatedAt
+      type: object
+    TodoList:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/Todo"
+          nullable: true
+          type: array
+        limit:
+          format: int64
+          type: integer
+        offset:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+      required:
+        - items
+        - offset
+        - limit
+        - total
+      type: object
+    UpdateAccountInputBody:
+      additionalProperties: false
+      properties:
+        displayName:
+          maxLength: 128
+          minLength: 1
+          type: string
+        expectedAccountVersion:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - expectedAccountVersion
+        - displayName
+      type: object
+    UpdateDepartmentRequest:
+      additionalProperties: false
+      properties:
+        active:
+          type: boolean
+        archived:
+          type: boolean
+        clearParent:
+          type: boolean
+        leader:
+          type: string
+        name:
+          type: string
+        parentId:
+          type: string
+        remark:
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - version
+      type: object
+    UpdateMenuRequest:
+      additionalProperties: false
+      properties:
+        enabled:
+          type: boolean
+        label:
+          type: string
+        orderOverride:
+          format: int64
+          type: integer
+        parentOverride:
+          type: string
+        permission:
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - label
+        - permission
+        - enabled
+        - version
+      type: object
+    UpdatePositionRequest:
+      additionalProperties: false
+      properties:
+        active:
+          type: boolean
+        archived:
+          type: boolean
+        name:
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - version
+      type: object
+    UpdatePreferencesInputBody:
+      additionalProperties: false
+      properties:
+        density:
+          enum:
+            - comfortable
+            - compact
+          type: string
+        language:
+          enum:
+            - zh-CN
+            - en-US
+          type: string
+        notifications:
+          $ref: "#/components/schemas/NotificationsStruct"
+        reduceMotion:
+          type: boolean
+        themeMode:
+          enum:
+            - system
+            - light
+            - dark
+          type: string
+        themePreset:
+          enum:
+            - blue
+            - cyan
+            - green
+            - violet
+            - orange
+          type: string
+        timeZone:
+          maxLength: 64
+          type: string
+        version:
+          format: int64
+          minimum: 0
+          type: integer
+      type: object
+    UpdateRoleInputBody:
+      additionalProperties: false
+      properties:
+        description:
+          maxLength: 1024
+          type: string
+        expectedRoleVersion:
+          format: int64
+          minimum: 0
+          type: integer
+        name:
+          maxLength: 128
+          minLength: 1
+          type: string
+      required:
+        - expectedRoleVersion
+        - name
+        - description
+      type: object
+    UpdateSelfProfileInputBody:
+      additionalProperties: false
+      properties:
+        bio:
+          maxLength: 2048
+          type: string
+        birthDate:
+          maxLength: 16
+          type: string
+        expectedVersion:
+          format: int64
+          minimum: 0
+          type: integer
+        nickname:
+          maxLength: 64
+          type: string
+      required:
+        - expectedVersion
+        - nickname
+        - bio
+        - birthDate
+      type: object
+    Violation:
+      additionalProperties: false
+      properties:
+        field:
+          type: string
+        reason:
+          type: string
+      required:
+        - field
+        - reason
+      type: object
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+    webuiSession:
+      in: cookie
+      name: go_scaffold_session
+      type: apiKey
+info:
+  description: 当前模板的公开 HTTP 契约。所有失败使用 RFC 9457 Problem Details；operation 的认证与授权由项目 gate 统一执行。
+  title: clouddrive HTTP API
+  version: 1.0.0-rc.1
+openapi: 3.0.3
+paths:
+  /api/v1/auth/audit:
+    get:
+      operationId: auth.audit.list
+      parameters:
+        - explode: false
+          in: query
+          name: cursor
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 20
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: correlationId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: operation
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: action
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: outcome
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: actorKind
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: subjectHash
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: resourceType
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: since
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: until
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditEventListResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Auth
+  /api/v1/auth/audit/{eventId}:
+    get:
+      operationId: auth.audit.read
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int64
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditEventViewResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Auth
+  /api/v1/iam/accounts:
+    get:
+      operationId: iam.accounts.list
+      parameters:
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 20
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: query
+          schema:
+            maxLength: 128
+            type: string
+        - explode: false
+          in: query
+          name: status
+          schema:
+            enum:
+              - active
+              - disabled
+            type: string
+        - explode: false
+          in: query
+          name: archived
+          schema:
+            type: boolean
+        - explode: false
+          in: query
+          name: roleId
+          schema:
+            maxLength: 36
+            type: string
+        - explode: false
+          in: query
+          name: sort
+          schema:
+            maxLength: 32
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponseAccountResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+    post:
+      operationId: iam.accounts.create
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountInputBody"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+          description: Created
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/accounts/batch-archive:
+    post:
+      operationId: iam.accounts.archive.batch
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 128
+            minLength: 1
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchAccountInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchResultOutput"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/accounts/batch-status:
+    post:
+      operationId: iam.accounts.status.batch
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 128
+            minLength: 1
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchAccountInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchResultOutput"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/accounts/{id}:
+    get:
+      operationId: iam.accounts.read
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountDetailResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+    patch:
+      operationId: iam.accounts.update
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAccountInputBody"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/accounts/{id}/archive:
+    post:
+      operationId: iam.accounts.archive
+      parameters:
+        - in: header
+          name: If-Match
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/accounts/{id}/password-reset:
+    post:
+      operationId: iam.accounts.password.reset
+      parameters:
+        - in: header
+          name: If-Match
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordInputBody"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/accounts/{id}/roles:
+    get:
+      operationId: iam.accounts.roles.read
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountRolesResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+    put:
+      operationId: iam.accounts.roles.replace
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleIDsInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssignmentResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/accounts/{id}/status:
+    patch:
+      operationId: iam.accounts.status
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StatusInputBody"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/api-tokens:
+    get:
+      operationId: iam.api-tokens.list
+      parameters:
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 20
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: status
+          schema:
+            enum:
+              - active
+              - disabled
+              - expired
+              - revoked
+              - all
+            type: string
+        - explode: false
+          in: query
+          name: sort
+          schema:
+            maxLength: 32
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponseApiTokenResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+    post:
+      operationId: iam.api-tokens.create
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApiTokenCreateInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiTokenIssuedResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/api-tokens/batch-revoke:
+    post:
+      operationId: iam.api-tokens.revoke.batch
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 128
+            minLength: 1
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApiTokenBatchRevokeInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchResultOutput"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/api-tokens/{id}:
+    patch:
+      operationId: iam.api-tokens.update
+      parameters:
+        - in: header
+          name: If-Match
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApiTokenUpdateInputBody"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/api-tokens/{id}/disable:
+    post:
+      operationId: iam.api-tokens.disable
+      parameters:
+        - in: header
+          name: If-Match
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/api-tokens/{id}/enable:
+    post:
+      operationId: iam.api-tokens.enable
+      parameters:
+        - in: header
+          name: If-Match
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/api-tokens/{id}/revoke:
+    post:
+      operationId: iam.api-tokens.revoke
+      parameters:
+        - in: header
+          name: If-Match
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/api-tokens/{id}/rotate:
+    post:
+      operationId: iam.api-tokens.rotate
+      parameters:
+        - in: header
+          name: If-Match
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiTokenIssuedResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/login:
+    post:
+      operationId: iam.login
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResultBody"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            Set-Cookie:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security: []
+      tags:
+        - IAM
+  /api/v1/iam/login/mfa-verify:
+    post:
+      operationId: iam.login.mfa-verify
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MfaVerifyInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            Set-Cookie:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security: []
+      tags:
+        - IAM
+  /api/v1/iam/logout:
+    post:
+      operationId: iam.logout
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/permissions:
+    get:
+      operationId: iam.permissions.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/PermissionResponse"
+                nullable: true
+                type: array
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/permissions/roles:
+    get:
+      operationId: iam.permissions.roles.list
+      parameters:
+        - explode: false
+          in: query
+          name: key
+          schema:
+            maxLength: 128
+            minLength: 1
+            type: string
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 20
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponseRoleResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/roles:
+    get:
+      operationId: iam.roles.list
+      parameters:
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 20
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: query
+          schema:
+            maxLength: 128
+            type: string
+        - explode: false
+          in: query
+          name: sort
+          schema:
+            maxLength: 32
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponseRoleResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+    post:
+      operationId: iam.roles.create
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoleInputBody"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoleResponse"
+          description: Created
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/roles/{id}:
+    get:
+      operationId: iam.roles.read
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoleDetailResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+    patch:
+      operationId: iam.roles.update
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRoleInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoleResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/roles/{id}/accounts:
+    get:
+      operationId: iam.roles.accounts.list
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 20
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponseAccountResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/roles/{id}/archive:
+    post:
+      operationId: iam.roles.archive
+      parameters:
+        - in: header
+          name: If-Match
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/roles/{id}/permissions:
+    get:
+      operationId: iam.roles.permissions.read
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolePermissionsResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+    put:
+      operationId: iam.roles.permissions.replace
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PermissionKeysInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssignmentResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/self/archive:
+    post:
+      operationId: iam.self.archive
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SelfArchiveBeginOutputBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/self/archive/confirm:
+    post:
+      operationId: iam.self.archive.confirm
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SelfArchiveInputBody"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/self/mfa:
+    get:
+      operationId: iam.self.mfa.status
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MfaStatusResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+    post:
+      operationId: iam.self.mfa.begin
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MfaEnrollResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/self/mfa/confirm:
+    post:
+      operationId: iam.self.mfa.confirm
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MfaCodeInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MfaConfirmResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/self/mfa/disable:
+    post:
+      operationId: iam.self.mfa.disable
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MfaCodeInputBody"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/self/password:
+    post:
+      operationId: iam.self.password.change
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordInputBody"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/self/preferences:
+    get:
+      operationId: iam.self.preferences.read
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreferencesResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+    patch:
+      operationId: iam.self.preferences.write
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePreferencesInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreferencesResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/self/profile:
+    patch:
+      operationId: iam.self.profile.update
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSelfProfileInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/session:
+    get:
+      operationId: iam.session.read
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            Set-Cookie:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/sessions:
+    get:
+      operationId: iam.sessions.list
+      parameters:
+        - explode: false
+          in: query
+          name: accountId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 20
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: status
+          schema:
+            enum:
+              - all
+              - active
+              - revoked
+            type: string
+        - explode: false
+          in: query
+          name: sort
+          schema:
+            maxLength: 32
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponseSessionInfoResponse"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/sessions/revoke:
+    post:
+      operationId: iam.sessions.revoke
+      parameters:
+        - explode: false
+          in: query
+          name: accountId
+          schema:
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionRevokeInputBody"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - IAM
+  /api/v1/iam/setup:
+    post:
+      operationId: iam.setup
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupInputBody"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+          description: Created
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            Set-Cookie:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security: []
+      tags:
+        - IAM
+  /api/v1/navigation/menus:
+    get:
+      operationId: navigation.menus.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuList"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Navigation
+  /api/v1/navigation/menus/{id}:
+    put:
+      operationId: navigation.menus.update
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            minLength: 1
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMenuRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Revision"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Navigation
+  /api/v1/organization/accounts/{id}/assignment:
+    get:
+      operationId: organization.assignments.get
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 1
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Organization
+    put:
+      operationId: organization.assignments.replace
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 1
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplaceAssignmentRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Organization
+  /api/v1/organization/departments:
+    get:
+      operationId: organization.departments.list
+      parameters:
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: activeOnly
+          schema:
+            type: boolean
+        - explode: false
+          in: query
+          name: query
+          schema:
+            maxLength: 128
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DepartmentList"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Organization
+    post:
+      operationId: organization.departments.create
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDepartmentRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+          description: Created
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Organization
+  /api/v1/organization/departments/tree:
+    get:
+      operationId: organization.departments.tree
+      parameters:
+        - explode: false
+          in: query
+          name: activeOnly
+          schema:
+            type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/DepartmentNode"
+                nullable: true
+                type: array
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Organization
+  /api/v1/organization/departments/{id}:
+    patch:
+      operationId: organization.departments.update
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 1
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDepartmentRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Organization
+  /api/v1/organization/positions:
+    get:
+      operationId: organization.positions.list
+      parameters:
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: activeOnly
+          schema:
+            type: boolean
+        - explode: false
+          in: query
+          name: query
+          schema:
+            maxLength: 128
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PositionList"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Organization
+    post:
+      operationId: organization.positions.create
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePositionRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Position"
+          description: Created
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Organization
+  /api/v1/organization/positions/{id}:
+    patch:
+      operationId: organization.positions.update
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 1
+            type: string
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePositionRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Position"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Organization
+  /api/v1/todos:
+    get:
+      operationId: listTodos
+      parameters:
+        - explode: false
+          in: query
+          name: status
+          schema:
+            enum:
+              - pending
+              - completed
+            type: string
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            format: int64
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoList"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - bearerAuth: []
+      tags:
+        - Todo
+    post:
+      operationId: createTodo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTodoRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+          description: Created
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - bearerAuth: []
+      tags:
+        - Todo
+  /api/v1/todos/{id}:
+    get:
+      operationId: getTodo
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 1
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - bearerAuth: []
+      tags:
+        - Todo
+  /api/v1/todos/{id}/complete:
+    patch:
+      operationId: completeTodo
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 1
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - bearerAuth: []
+      tags:
+        - Todo

@@ -1,0 +1,131 @@
+
+Running 16 tests using 1 worker
+
+(node:26292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   1 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Sticky consumers resolve actual chrome height across live tabs and viewport changes (30.3s)
+(node:12436) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  2 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:91:1 › Split detail shares the dynamic sticky contract without settings-specific offsets (1.1s)
+  ok  3 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:116:1 › Settings switches share one pointer and keyboard press boundary (1.4s)
+  ok  4 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:133:1 › Radio indicator and card edge select the same option and arrows retain selection (1.3s)
+  ok  5 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:157:1 › Checkbox indicator works in the shared form authority and disabled option stays disabled (1.7s)
+  ok  6 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:174:3 › Settings category navigation stays reachable through continuous tasks at 320 (3.5s)
+  ok  7 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:174:3 › Settings category navigation stays reachable through continuous tasks at 390 (3.4s)
+  ok  8 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:174:3 › Settings category navigation stays reachable through continuous tasks at 430 (3.4s)
+  ok  9 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:174:3 › Settings category navigation stays reachable through continuous tasks at 768 (3.6s)
+  ok 10 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:174:3 › Settings category navigation stays reachable through continuous tasks at 1024 (3.7s)
+  ok 11 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:174:3 › Settings category navigation stays reachable through continuous tasks at 1279 (3.7s)
+  ok 12 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:207:1 › Pinned page tabs track the header; unpinned tabs scroll and persist after reload (1.6s)
+  ok 13 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:228:1 › All page tabs stay manageable on desktop and closing active restores useful focus (3.3s)
+  ok 14 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:252:1 › Settings drawer and form authority retain WCAG AA semantics in dark English (3.9s)
+  ok 15 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:284:3 › Touch settings tasks › Touch control and category entry work without hover at different scroll positions (1.8s)
+  ok 16 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:301:1 › Settings keep search context, same-category position, and native Back continuity (3.0s)
+
+
+  1) [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Sticky consumers resolve actual chrome height across live tabs and viewport changes 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.uncheck: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('switch', { name: '固定页面标签', exact: true })
+        - locator resolved to <input checked title="" tabindex="0" role="switch" type="checkbox" aria-label="固定页面标签" aria-describedby="_r_19_" data-react-aria-pressable="true"/>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <span class="min-w-0 flex-1">…</span> intercepts pointer events
+      - retrying click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <div class="px-5 py-5 sm:px-6">…</div> intercepts pointer events
+      - retrying click action
+        - waiting 20ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <span class="min-w-0 flex-1">…</span> intercepts pointer events
+      2 × retrying click action
+          - waiting 100ms
+          - waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      13 × retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <div class="px-5 py-5 sm:px-6">…</div> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <span class="min-w-0 flex-1">…</span> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <div class="px-5 py-5 sm:px-6">…</div> intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <span class="min-w-0 flex-1">…</span> intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+
+
+      50 |         await enabled.check();
+      51 |         await pinned.check();
+    > 52 |       } else if (state === 'unpinned') await pinned.uncheck();
+         |                                                     ^
+      53 |       else await enabled.uncheck();
+      54 |       await expect
+      55 |         .poll(() =>
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\settings-ux-review.spec.ts:52:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Sticky--d4ca0-e-tabs-and-viewport-changes-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-ux-review-Sticky--d4ca0-e-tabs-and-viewport-changes-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Sticky--d4ca0-e-tabs-and-viewport-changes-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-ux-review-Sticky--d4ca0-e-tabs-and-viewport-changes-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Sticky consumers resolve actual chrome height across live tabs and viewport changes 
+  15 passed (1.2m)

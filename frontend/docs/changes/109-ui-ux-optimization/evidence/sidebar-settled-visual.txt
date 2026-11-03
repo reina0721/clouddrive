@@ -1,0 +1,325 @@
+[WebServer] (node:10420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:31508) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:34420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:21604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 15 tests using 1 worker
+
+(node:32540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\overlays.spec.ts:687:1 › DatePicker 与 Command 展开面支持键盘及无障碍扫描 (7.0s)
+  x   2 [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger (6.3s)
+(node:16020) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  3 [chromium] › apps\web\e2e\visual.spec.ts:28:1 › 桌面 UI Elements Family 保持基础组件权威面稳定 (2.5s)
+(node:4824) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  4 [chromium] › apps\web\e2e\overlays.spec.ts:687:1 › DatePicker 与 Command 展开面支持键盘及无障碍扫描 (7.1s)
+  x   5 [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger (6.8s)
+(node:33568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  6 [chromium] › apps\web\e2e\visual.spec.ts:28:1 › 桌面 UI Elements Family 保持基础组件权威面稳定 (3.7s)
+(node:23908) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  7 [chromium] › apps\web\e2e\overlays.spec.ts:687:1 › DatePicker 与 Command 展开面支持键盘及无障碍扫描 (6.9s)
+  x   8 [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger (6.1s)
+(node:22300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 [chromium] › apps\web\e2e\visual.spec.ts:28:1 › 桌面 UI Elements Family 保持基础组件权威面稳定 (2.7s)
+(node:34380) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 10 [chromium] › apps\web\e2e\overlays.spec.ts:687:1 › DatePicker 与 Command 展开面支持键盘及无障碍扫描 (6.8s)
+  x  11 [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger (6.3s)
+(node:15320) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 12 [chromium] › apps\web\e2e\visual.spec.ts:28:1 › 桌面 UI Elements Family 保持基础组件权威面稳定 (2.6s)
+(node:32320) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 13 [chromium] › apps\web\e2e\overlays.spec.ts:687:1 › DatePicker 与 Command 展开面支持键盘及无障碍扫描 (6.9s)
+  x  14 [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger (5.8s)
+(node:26600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 15 [chromium] › apps\web\e2e\visual.spec.ts:28:1 › 桌面 UI Elements Family 保持基础组件权威面稳定 (3.6s)
+
+
+  1) [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger ──
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      10352 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-dialog-open.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-dialog-open.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 10352 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 10352 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      725 |   await expect(dialog.locator(':focus')).toHaveCount(1);
+      726 |   await waitForVisualReadiness(page);
+    > 727 |   await expect.soft(page).toHaveScreenshot('ui-elements-dialog-open.png');
+          |                           ^
+      728 |   await page.keyboard.press('Escape');
+      729 |   await expect(dialogTrigger).toBeFocused();
+      730 |
+        at D:\coder\i721\console-web\apps\web\e2e\overlays.spec.ts:727:27
+
+    attachment #1: ui-elements-dialog-open (image/png) ─────────────────────────────────────────────
+    Expected: apps\web\e2e\overlays.spec.ts-snapshots\ui-elements-dialog-open-chromium-win32.png
+    Received: test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium\ui-elements-dialog-open-actual.png
+    Diff:     test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium\ui-elements-dialog-open-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger ──
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      10352 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-dialog-open.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-dialog-open.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 10352 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 10352 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      725 |   await expect(dialog.locator(':focus')).toHaveCount(1);
+      726 |   await waitForVisualReadiness(page);
+    > 727 |   await expect.soft(page).toHaveScreenshot('ui-elements-dialog-open.png');
+          |                           ^
+      728 |   await page.keyboard.press('Escape');
+      729 |   await expect(dialogTrigger).toBeFocused();
+      730 |
+        at D:\coder\i721\console-web\apps\web\e2e\overlays.spec.ts:727:27
+
+    attachment #1: ui-elements-dialog-open (image/png) ─────────────────────────────────────────────
+    Expected: apps\web\e2e\overlays.spec.ts-snapshots\ui-elements-dialog-open-chromium-win32.png
+    Received: test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat1\ui-elements-dialog-open-actual.png
+    Diff:     test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat1\ui-elements-dialog-open-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat1\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger ──
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      10352 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-dialog-open.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-dialog-open.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 10352 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 10352 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      725 |   await expect(dialog.locator(':focus')).toHaveCount(1);
+      726 |   await waitForVisualReadiness(page);
+    > 727 |   await expect.soft(page).toHaveScreenshot('ui-elements-dialog-open.png');
+          |                           ^
+      728 |   await page.keyboard.press('Escape');
+      729 |   await expect(dialogTrigger).toBeFocused();
+      730 |
+        at D:\coder\i721\console-web\apps\web\e2e\overlays.spec.ts:727:27
+
+    attachment #1: ui-elements-dialog-open (image/png) ─────────────────────────────────────────────
+    Expected: apps\web\e2e\overlays.spec.ts-snapshots\ui-elements-dialog-open-chromium-win32.png
+    Received: test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat2\ui-elements-dialog-open-actual.png
+    Diff:     test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat2\ui-elements-dialog-open-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat2\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat2\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat2\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat2\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger ──
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      10352 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-dialog-open.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-dialog-open.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 10352 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 10352 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      725 |   await expect(dialog.locator(':focus')).toHaveCount(1);
+      726 |   await waitForVisualReadiness(page);
+    > 727 |   await expect.soft(page).toHaveScreenshot('ui-elements-dialog-open.png');
+          |                           ^
+      728 |   await page.keyboard.press('Escape');
+      729 |   await expect(dialogTrigger).toBeFocused();
+      730 |
+        at D:\coder\i721\console-web\apps\web\e2e\overlays.spec.ts:727:27
+
+    attachment #1: ui-elements-dialog-open (image/png) ─────────────────────────────────────────────
+    Expected: apps\web\e2e\overlays.spec.ts-snapshots\ui-elements-dialog-open-chromium-win32.png
+    Received: test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat3\ui-elements-dialog-open-actual.png
+    Diff:     test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat3\ui-elements-dialog-open-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat3\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat3\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat3\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat3\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger ──
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      10388 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-dialog-open.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-dialog-open.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 10388 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 10388 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      725 |   await expect(dialog.locator(':focus')).toHaveCount(1);
+      726 |   await waitForVisualReadiness(page);
+    > 727 |   await expect.soft(page).toHaveScreenshot('ui-elements-dialog-open.png');
+          |                           ^
+      728 |   await page.keyboard.press('Escape');
+      729 |   await expect(dialogTrigger).toBeFocused();
+      730 |
+        at D:\coder\i721\console-web\apps\web\e2e\overlays.spec.ts:727:27
+
+    attachment #1: ui-elements-dialog-open (image/png) ─────────────────────────────────────────────
+    Expected: apps\web\e2e\overlays.spec.ts-snapshots\ui-elements-dialog-open-chromium-win32.png
+    Received: test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat4\ui-elements-dialog-open-actual.png
+    Diff:     test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat4\ui-elements-dialog-open-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat4\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat4\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat4\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-settled-visual\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat4\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5 failed
+    [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger ───
+    [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger ───
+    [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger ───
+    [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger ───
+    [chromium] › apps\web\e2e\overlays.spec.ts:718:1 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger ───
+  10 passed (2.2m)

@@ -1,0 +1,37 @@
+schema_version: 1
+change: 077-iam-security-enterprise-gaps
+areas:
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/README.md
+    reason: IAM 模块新增口令历史/过期、会话上限与登录限流配置与语义；模块 README 同步口令治理与会话治理边界。
+  - id: configuration
+    decision: updated
+    documents:
+      - docs/configuration/README.md
+    reason: 新增 iam.local.passwordPolicy.historySize/maxPasswordAge、iam.local.maxSessionsPerAccount 与 http.rateLimit.routes（登录/初始化路径限流）配置语义；config init 模板与示例同步。
+  - id: capability
+    decision: updated
+    documents:
+      - docs/operations/runtime-capabilities.md
+    reason: http.rateLimit 扩展按路径规则的能力归属 pkg/httpx；运行能力矩阵同步口令治理/会话治理/登录限流能力行。
+  - id: api
+    decision: reviewed-no-change
+    reason: 新增行为（历史复用 409、会话超限 429、登录限流 429）沿用既有 stable error code，不新增 HTTP operation；如 openapi 输入契约受影响则随 contract-gen 更新并以 api area 复核。
+  - id: operations
+    decision: updated
+    documents:
+      - docs/operations/security.md
+      - docs/operations/runtime-capabilities.md
+    reason: 记录口令历史/过期、会话数量上限、登录 IP 限流语义与低敏审计边界；运行能力矩阵同步新增口令治理/会话治理/登录防爆破能力行。
+  - id: startup
+    decision: reviewed-no-change
+    reason: 登录限流挂在既有 gate/middleware 装配路径，不新增运行组件（进程级 token bucket 与 http.rateLimit local 模式同构）。
+  - id: docs
+    decision: updated
+    documents:
+      - docs/changes/077-iam-security-enterprise-gaps/README.md
+      - docs/changes/077-iam-security-enterprise-gaps/tasks.md
+      - docs/changes/README.md
+    reason: 变更记录（研究/需求/设计/任务）与变更索引记录本任务状态（计划待确认→实施完成）与结论。

@@ -1,0 +1,25 @@
+
+> clouddrive-frontend@0.1.0 build C:\rin\coder\i0721\console-web
+> pnpm codegen:plugins && pnpm -r --if-present build
+
+
+> clouddrive-frontend@0.1.0 codegen:plugins C:\rin\coder\i0721\console-web
+> node tooling/plugin-codegen/codegen.mjs
+
+Plugin codegen generated: 9 plugins, 38 routes.
+Scope: 12 of 13 workspace projects
+apps/web build$ next build
+apps/web build: ▲ Next.js 16.3.3 (Turbopack)
+apps/web build: ✓ Running next.config.ts took 30ms
+apps/web build:   Creating an optimized production build ...
+apps/web build: ✓ Compiled successfully in 2.6s
+apps/web build:   Running TypeScript ...
+apps/web build: src/auth/provider.tsx(9,3): error TS2322: Type '({ label }: Readonly<{ label: string; }>) => Element' is not assignable to type '(loadingProps: DynamicOptionsLoadingProps) => ReactNode'.
+apps/web build:   Types of parameters '__0' and 'loadingProps' are incompatible.
+apps/web build:     Property 'label' is missing in type 'DynamicOptionsLoadingProps' but required in type 'Readonly<{ label: string; }>'.
+apps/web build: Failed to type check.
+apps/web build: Failed
+C:\rin\coder\i0721\console-web\apps\web:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @clouddrive/web@0.1.0 build: `next build`
+Exit status 1
+ ELIFECYCLE  Command failed with exit code 1.

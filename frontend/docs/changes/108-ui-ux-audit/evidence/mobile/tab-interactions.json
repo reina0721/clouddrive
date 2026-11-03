@@ -1,0 +1,482 @@
+[
+  {
+    "client": 267,
+    "direction": "row",
+    "label": "内容视图 Tabs",
+    "left": 0,
+    "orientation": "horizontal",
+    "panel": [
+      {
+        "label": "react-aria5076180164-_r_1f_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1j_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1n_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1r_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1v_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_23_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      }
+    ],
+    "rect": {
+      "bottom": 446,
+      "height": 48,
+      "left": 54,
+      "right": 321,
+      "top": 398,
+      "width": 267,
+      "x": 54,
+      "y": 398
+    },
+    "route": "/ui-elements/navigation",
+    "scroll": 267,
+    "selected": "客户",
+    "selectedRect": {
+      "bottom": 442,
+      "height": 40,
+      "left": 226,
+      "right": 280,
+      "top": 402,
+      "width": 54,
+      "x": 226,
+      "y": 402
+    }
+  },
+  {
+    "client": 267,
+    "direction": "row",
+    "label": "内容视图 Tabs",
+    "left": 0,
+    "orientation": "horizontal",
+    "panel": [
+      {
+        "label": "react-aria5076180164-_r_1f_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1j_-tab-activity",
+        "text": "当前筛选条件下没有 UI Element。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1n_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1r_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1v_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_23_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      }
+    ],
+    "rect": {
+      "bottom": 446,
+      "height": 48,
+      "left": 54,
+      "right": 321,
+      "top": 398,
+      "width": 267,
+      "x": 54,
+      "y": 398
+    },
+    "route": "/ui-elements/navigation",
+    "scroll": 267,
+    "selected": "空状态",
+    "selectedRect": {
+      "bottom": 442,
+      "height": 40,
+      "left": 114,
+      "right": 180,
+      "top": 402,
+      "width": 66,
+      "x": 114,
+      "y": 402
+    }
+  },
+  {
+    "client": 267,
+    "direction": "row",
+    "label": "内容视图 Tabs",
+    "left": 0,
+    "orientation": "horizontal",
+    "panel": [
+      {
+        "label": "react-aria5076180164-_r_1f_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1j_-tab-activity",
+        "text": "当前筛选条件下没有 UI Element。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1n_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1r_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1v_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_23_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      }
+    ],
+    "rect": {
+      "bottom": 446,
+      "height": 48,
+      "left": 54,
+      "right": 321,
+      "top": 398,
+      "width": 267,
+      "x": 54,
+      "y": 398
+    },
+    "route": "/ui-elements/navigation",
+    "scroll": 267,
+    "selected": "客户",
+    "selectedRect": {
+      "bottom": 442,
+      "height": 40,
+      "left": 214,
+      "right": 288,
+      "top": 402,
+      "width": 74,
+      "x": 214,
+      "y": 402
+    }
+  },
+  {
+    "client": 267,
+    "direction": "row",
+    "label": "内容视图 Tabs",
+    "left": 0,
+    "orientation": "horizontal",
+    "panel": [
+      {
+        "label": "react-aria5076180164-_r_1f_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1j_-tab-activity",
+        "text": "当前筛选条件下没有 UI Element。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1n_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1r_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1v_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_23_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      }
+    ],
+    "rect": {
+      "bottom": 446,
+      "height": 48,
+      "left": 54,
+      "right": 321,
+      "top": 398,
+      "width": 267,
+      "x": 54,
+      "y": 398
+    },
+    "route": "/ui-elements/navigation",
+    "scroll": 267,
+    "selected": "客户4",
+    "selectedRect": {
+      "bottom": 442,
+      "height": 40,
+      "left": 210.8125,
+      "right": 296.21875,
+      "top": 402,
+      "width": 85.40625,
+      "x": 210.8125,
+      "y": 402
+    }
+  },
+  {
+    "client": 233,
+    "direction": "column",
+    "label": "内容视图 Tabs",
+    "left": 0,
+    "orientation": "vertical",
+    "panel": [
+      {
+        "label": "react-aria5076180164-_r_1f_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1j_-tab-activity",
+        "text": "当前筛选条件下没有 UI Element。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1n_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1r_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1v_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_23_-tab-overview",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      }
+    ],
+    "rect": {
+      "bottom": 446,
+      "height": 180,
+      "left": 71,
+      "right": 304,
+      "top": 266,
+      "width": 233,
+      "x": 71,
+      "y": 266
+    },
+    "route": "/ui-elements/navigation",
+    "scroll": 233,
+    "selected": "客户",
+    "selectedRect": {
+      "bottom": 442,
+      "height": 40,
+      "left": 147.5,
+      "right": 227.5,
+      "top": 402,
+      "width": 80,
+      "x": 147.5,
+      "y": 402
+    }
+  },
+  {
+    "client": 225,
+    "direction": "row",
+    "label": "内容视图 Tabs",
+    "left": 0,
+    "orientation": "horizontal",
+    "panel": [
+      {
+        "label": "react-aria5076180164-_r_1f_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1j_-tab-activity",
+        "text": "当前筛选条件下没有 UI Element。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1n_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1r_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_1v_-tab-customers",
+        "text": "这是用于验证正常内容节奏的短说明。"
+      },
+      {
+        "label": "react-aria5076180164-_r_23_-tab-activity",
+        "text": "当前筛选条件下没有 UI Element。"
+      }
+    ],
+    "rect": {
+      "bottom": 445,
+      "height": 47,
+      "left": 75,
+      "right": 300,
+      "top": 398,
+      "width": 225,
+      "x": 75,
+      "y": 398
+    },
+    "route": "/ui-elements/navigation",
+    "scroll": 225,
+    "selected": "空状态",
+    "selectedRect": {
+      "bottom": 442,
+      "height": 40,
+      "left": 135,
+      "right": 201,
+      "top": 402,
+      "width": 66,
+      "x": 135,
+      "y": 402
+    }
+  },
+  {
+    "client": 267,
+    "direction": "row",
+    "label": "产品状态预览",
+    "left": 839,
+    "orientation": "horizontal",
+    "panel": [
+      {
+        "label": "react-aria9980694927-_r_19_-tab-permission-denied",
+        "text": "没有访问权限不泄露受保护内容，同时给出申请权限路径。"
+      }
+    ],
+    "rect": {
+      "bottom": 461,
+      "height": 63,
+      "left": 54,
+      "right": 321,
+      "top": 398,
+      "width": 267,
+      "x": 54,
+      "y": 398
+    },
+    "route": "/ui-elements/status-async",
+    "scroll": 1110,
+    "selected": "没有访问权限",
+    "selectedRect": {
+      "bottom": 442,
+      "height": 40,
+      "left": 213,
+      "right": 321,
+      "top": 402,
+      "width": 108,
+      "x": 213,
+      "y": 402
+    }
+  },
+  {
+    "client": 267,
+    "direction": "row",
+    "label": "状态组合 Tabs",
+    "left": 0,
+    "orientation": "horizontal",
+    "panel": [
+      {
+        "label": "react-aria6936832227-_r_1a_-tab-warning",
+        "text": "部分能力受到限制说明影响范围，健康路径不会被误记为错误。"
+      }
+    ],
+    "rect": {
+      "bottom": 530,
+      "height": 47,
+      "left": 54,
+      "right": 321,
+      "top": 483,
+      "width": 267,
+      "x": 54,
+      "y": 483
+    },
+    "route": "/ui-elements/surfaces",
+    "scroll": 267,
+    "selected": "警告",
+    "selectedRect": {
+      "bottom": 527,
+      "height": 40,
+      "left": 184,
+      "right": 236,
+      "top": 487,
+      "width": 52,
+      "x": 184,
+      "y": 487
+    }
+  },
+  {
+    "client": 301,
+    "direction": "row",
+    "label": "配置步骤",
+    "left": 0,
+    "orientation": "horizontal",
+    "panel": [
+      {
+        "label": "react-aria1181394651-_r_f_-tab-review",
+        "text": "组合边界完整表单没有直接依赖 HeroUI、Host Runtime 或后端实现。"
+      }
+    ],
+    "rect": {
+      "bottom": 445,
+      "height": 47,
+      "left": 37,
+      "right": 338,
+      "top": 398,
+      "width": 301,
+      "x": 37,
+      "y": 398
+    },
+    "route": "/page-archetypes/create-edit",
+    "scroll": 301,
+    "selected": "复核",
+    "selectedRect": {
+      "bottom": 442,
+      "height": 40,
+      "left": 223,
+      "right": 275,
+      "top": 402,
+      "width": 52,
+      "x": 223,
+      "y": 402
+    }
+  },
+  {
+    "client": 301,
+    "direction": "row",
+    "label": "工作流详情",
+    "left": 0,
+    "orientation": "horizontal",
+    "panel": [
+      {
+        "label": "react-aria3748140257-_r_2p_-tab-risk",
+        "text": "高风险状态只作用于当前详情，不改变全局 Panel 或 Status 默认样式。"
+      }
+    ],
+    "rect": {
+      "bottom": 699,
+      "height": 47,
+      "left": 37,
+      "right": 338,
+      "top": 652,
+      "width": 301,
+      "x": 37,
+      "y": 652
+    },
+    "route": "/page-archetypes/resource-list",
+    "scroll": 301,
+    "selected": "风险",
+    "selectedRect": {
+      "bottom": 696,
+      "height": 40,
+      "left": 153,
+      "right": 205,
+      "top": 656,
+      "width": 52,
+      "x": 153,
+      "y": 656
+    }
+  }
+]

@@ -1,0 +1,13 @@
+
+> @clouddrive/web@0.1.0 test C:\rin\coder\i0721\console-web\apps\web
+> vitest run --config vitest.config.ts "src/test/motion-reveal.test.tsx"
+
+
+ RUN  v4.1.11 C:/rin/coder/i0721/console-web/apps/web
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  08:39:58
+   Duration  20.33s (transform 99ms, setup 4.92s, import 225ms, tests 165ms, environment 14.44s)
+

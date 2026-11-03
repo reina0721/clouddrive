@@ -1,0 +1,30 @@
+schema_version: 1
+id: R073-001
+title: "全局菜单改为两级：顶级「设置」，移除管理中心宿主分组层"
+question: "用户要求：将「管理中心」改为「设置」，全局菜单只存在两级（顶级设置 + 分区子项），不要三级。当前（070/072）层级为 host.center（管理中心）→ settings.center（设置）→ 五子项（profile/account/security/appearance/notifications）＝三级。需要回答：(a) 当前三级链在 composition/settings binding/locale/测试/e2e 中的落点；(b) 改为两级的最小改动（settings.center 顶级、host.center 不再装配、locale 键清理、断言更新）。"
+research_type: current-project
+topics: ["webui", "menu-hierarchy", "settings", "host-navigation", "two-level"]
+keywords: ["host.center", "settings.center", "Management center", "settings", "两级菜单"]
+applicable_scenarios:
+  - "全局菜单收敛为两级（设置 → 五分区）"
+  - "宿主分组 host.center 不再装配（HostNavigation 能力保留）"
+non_applicable_scenarios:
+  - "页内 SectionNav 8 分区不受影响（页内形态，非全局菜单层级）"
+status: active
+summary: "当前（072，提交 7f888a4）：composition applicationWebUIHostNavigation() 装配 host.center（Management center，落地 settings.profile）；settings binding settings.center ParentID=host.center，下设五子项；host locale 键 webui.host.navigation.center.title（en/zh）；webui_registry_test 断言 host.center→settings.center 边；e2e 070 断言侧栏 'Management center'+'Settings'+Account security、059 用 Expand submenu first()。改为两级：settings.center 去掉 ParentID（顶级组，title 已是 'Settings'）；composition 不再装配 host.center（HostNavigation 契约能力保留在 internal/webui 供未来宿主分组使用）；删除 host.center locale 键；更新 registry 测试边（settings.center 顶级）与 e2e 断言（侧栏顶级 'Settings'，不再出现 'Management center'）；059 之 first() 保持（侧栏组：ops.dashboard + settings.center）。页内 SectionNav 两级内分区不变。"
+evidence:
+  types: ["source-code", "tests", "documentation"]
+  primary_sources:
+    - title: "composition host.center 装配"
+      locator: "internal/composition/http_contracts.go（applicationWebUIHostNavigation）"
+      snapshot: "7f888a4"
+    - title: "settings binding 父链"
+      locator: "internal/module/settings/binding/webui/binding.go（settings.center ParentID=host.center + 五子项）"
+      snapshot: "7f888a4"
+    - title: "测试与 e2e 断言"
+      locator: "internal/composition/webui_registry_test.go（host.center 边）、webui/e2e/webui.spec.ts（070 断言 Management center；059 Expand submenu first()）"
+      snapshot: "7f888a4"
+researched_at: "2026-08-26"
+verified_at: "2026-08-26"
+refresh_triggers:
+  - "菜单层级结构再次变化"

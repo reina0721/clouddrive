@@ -1,0 +1,45 @@
+schema_version: 1
+id: R005
+title: "HTTP 入口速率与过载保护边界复核"
+question: "当前 HTTP token bucket、并发门禁、配置和 Generation 生命周期的真实语义是什么；哪些通用算法应替换，哪些简单项目策略应保留？"
+research_type: current-project-and-external-primary-source
+topics: ["HTTP", "rate limiting", "load shedding", "overload", "configuration", "generation lifecycle"]
+keywords: ["RateLimiter", "OverloadLimiter", "x/time/rate", "x/sync/semaphore", "429", "503", "Retry-After", "Application Generation"]
+technologies: ["golang.org/x/time/rate", "golang.org/x/sync/semaphore", "net/http", "chi"]
+applicable_scenarios: ["LIMIT-057-001", "HTTP 入口保护", "单进程 load shedding", "限流配置"]
+non_applicable_scenarios: ["按用户或租户计费配额", "登录防爆破", "跨副本一致限流", "网关或 CDN 防护", "出站重试和熔断"]
+status: active
+summary: "当前自研 token bucket 应由 x/time/rate v0.15.0 替换，但项目继续拥有 fail-fast HTTP 语义。现有 channel semaphore 精确表达非阻塞 503 且无需机械换库。限流保持 generation-local、单进程入口保护，并以显式 local/disabled 模式消除 0/0 实际回落默认值的配置歧义。"
+evidence:
+  types: ["source-code", "call-site-search", "dependency-manifest", "git-history", "tests", "official-package-doc", "standard", "vulnerability-database"]
+  primary_sources:
+    - title: "当前 HTTP 中间件、配置、composition 与 Generation"
+      locator: "pkg/httpx/production_middleware.go; pkg/httpx/builder.go; pkg/httpx/defaults.go; internal/kernel/composition/http.go; internal/composition/service.go; internal/composition/generation.go; config.example.yaml"
+      snapshot: "89e3d9a1866c4f0c8e032bc8f4b77ad238392564"
+    - title: "当前限流与过载测试"
+      locator: "pkg/httpx/production_middleware_test.go; internal/composition/service_test.go"
+      snapshot: "89e3d9a1866c4f0c8e032bc8f4b77ad238392564"
+    - title: "Go official x/time/rate documentation and module metadata"
+      locator: "https://pkg.go.dev/golang.org/x/time/rate@v0.15.0; go list -m -json golang.org/x/time@latest"
+      snapshot: "2026-08-22"
+    - title: "Go official x/sync/semaphore documentation"
+      locator: "https://pkg.go.dev/golang.org/x/sync/semaphore@v0.22.0"
+      snapshot: "2026-08-22"
+    - title: "RFC 6585 section 4"
+      locator: "https://www.rfc-editor.org/rfc/rfc6585.html#section-4"
+      snapshot: "2026-08-22"
+    - title: "Go vulnerability database module index"
+      locator: "https://vuln.go.dev/index/modules.json"
+      snapshot: "2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: time-sensitive
+  review_after: "2026-09-22"
+  refresh_triggers: ["x/time 或 x/sync 新版本", "相关安全公告", "新增主体或路由维度 quota", "部署副本模型变化", "HTTP 配置或 Generation 生命周期变化", "真实负载/SLO 数据形成"]
+relations:
+  extends: ["057-R001", "057-R002", "019-R001"]
+  related: ["022-R001", "024", "049"]
+  supersedes: []
+  superseded_by: []
+report: report.md

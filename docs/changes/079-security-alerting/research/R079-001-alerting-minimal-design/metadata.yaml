@@ -1,0 +1,35 @@
+schema_version: 1
+id: R079-001
+title: "安全告警最小版：事件源、规则集、通知 port、webhook 与配置"
+question: "在既有低敏审计与业务边界上，安全告警最小版如何落地——事件源与规则、通知窄 port 与 provider、配置、失败语义与归属层？"
+research_type: current-project
+topics: ["iam", "auth", "alerting", "webhook", "security-operations"]
+keywords: ["Alerting", "Webhook", "AccountLocked", "MFARFailed", "PrivilegeChange", "低敏载荷"]
+applicable_scenarios: ["单实例自托管的安全运营基线告警", "与 078 MFA/077 限流事件联动", "Webhook 到企业 IM/监控系统"]
+non_applicable_scenarios: ["异地/新设备告警（需 IP/设备采集，R079-002）", "多通道/告警升级/抑制编排", "以告警替代审计系统"]
+status: active
+summary: "最小版落地路径：新增 pkg/alerting（project 自有普通库：低敏 Event、Notifier、WebhookNotifier（标准库 HTTP + 可选 HMAC 签名、短超时、失败低敏降级不阻断业务））；事件由 IAM/Auth 在业务边界按真实语义汇报（账号锁定、MFA 连续失败、连续认证失败、敏感写操作），不做通用规则引擎；配置含 webhook URL/signingKey/开关/合并窗口（URL 与密钥为配置秘密不落日志）；全部默认关闭、存量不变；异地/新设备告警依赖 IP/设备采集，归 R079-002 风险控制。工作量 M。"
+evidence:
+  types: ["source-code", "tests", "prior-research"]
+  primary_sources:
+    - title: "IAM 审计与事件边界（锁定/MFA/敏感写操作）"
+      locator: "internal/module/iam/service/service.go（auditOperation/Login/VerifyMFAChallenge）"
+      snapshot: "6ae9e12 验证 2026-09"
+    - title: "Auth 认证审计"
+      locator: "internal/module/auth/service/service.go（Record/RecordAuthenticationFailure）"
+      snapshot: "6ae9e12 验证 2026-09"
+    - title: "候选判定与审计低敏规范"
+      locator: "docs/changes/077-iam-security-enterprise-gaps/research/R077-002/…; docs/development/logging.md; docs/operations/security.md"
+      snapshot: "复核 2026-09"
+researched_at: "2026-09"
+verified_at: "2026-09"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-10"
+  refresh_triggers: ["告警通道/规则编排立项", "动态风险控制（IP/设备采集）立项", "审计低敏字段域变化（IP 入审计）"]
+relations:
+  extends: ["R077-002", "065/R065-001", "078/R078-002"]
+  related: ["R079-002"]
+  supersedes: []
+  superseded_by: []
+report: report.md

@@ -1,0 +1,218 @@
+[
+  {
+    "class": "toggle-button-group toggle-button-group--horizontal inline-flex max-w-full rounded-panel border border-border bg-surface-muted p-1",
+    "client": 504,
+    "left": 0,
+    "overflow": "visible",
+    "rect": {
+      "bottom": 449,
+      "height": 54,
+      "left": 37,
+      "right": 542.75,
+      "top": 395,
+      "width": 505.75,
+      "x": 37,
+      "y": 395
+    },
+    "scroll": 504,
+    "tag": "DIV"
+  },
+  {
+    "class": "grid gap-2",
+    "client": 506,
+    "left": 0,
+    "overflow": "visible",
+    "rect": {
+      "bottom": 449,
+      "height": 82,
+      "left": 37,
+      "right": 542.75,
+      "top": 367,
+      "width": 505.75,
+      "x": 37,
+      "y": 367
+    },
+    "scroll": 506,
+    "tag": "DIV"
+  },
+  {
+    "class": "grid gap-4 p-5",
+    "client": 341,
+    "left": 0,
+    "overflow": "visible",
+    "rect": {
+      "bottom": 561,
+      "height": 214,
+      "left": 17,
+      "right": 358,
+      "top": 347,
+      "width": 341,
+      "x": 17,
+      "y": 347
+    },
+    "scroll": 526,
+    "tag": "DIV"
+  },
+  {
+    "class": "",
+    "client": 341,
+    "left": 0,
+    "overflow": "visible",
+    "rect": {
+      "bottom": 561,
+      "height": 214,
+      "left": 17,
+      "right": 358,
+      "top": 347,
+      "width": 341,
+      "x": 17,
+      "y": 347
+    },
+    "scroll": 526,
+    "tag": "DIV"
+  },
+  {
+    "class": "rounded-panel border shadow-panel border-border bg-surface surface-route-region overflow-hidden",
+    "client": 341,
+    "left": 0,
+    "overflow": "hidden",
+    "rect": {
+      "bottom": 562,
+      "height": 325,
+      "left": 16,
+      "right": 359,
+      "top": 237,
+      "width": 343,
+      "x": 16,
+      "y": 237
+    },
+    "scroll": 526,
+    "tag": "SECTION"
+  },
+  {
+    "class": "surface-page-stack",
+    "client": 343,
+    "left": 0,
+    "overflow": "visible",
+    "rect": {
+      "bottom": 1563,
+      "height": 1510,
+      "left": 16,
+      "right": 359,
+      "top": 53,
+      "width": 343,
+      "x": 16,
+      "y": 53
+    },
+    "scroll": 343,
+    "tag": "DIV"
+  },
+  {
+    "class": "surface-route-content min-w-0",
+    "client": 343,
+    "left": 0,
+    "overflow": "visible",
+    "rect": {
+      "bottom": 1563,
+      "height": 1510,
+      "left": 16,
+      "right": 359,
+      "top": 53,
+      "width": 343,
+      "x": 16,
+      "y": 53
+    },
+    "scroll": 343,
+    "tag": "DIV"
+  },
+  {
+    "class": "mx-auto max-w-screen-2xl p-4 sm:p-6 xl:p-8",
+    "client": 375,
+    "left": 0,
+    "overflow": "visible",
+    "rect": {
+      "bottom": 1579,
+      "height": 1542,
+      "left": 0,
+      "right": 375,
+      "top": 37,
+      "width": 375,
+      "x": 0,
+      "y": 37
+    },
+    "scroll": 375,
+    "tag": "MAIN"
+  },
+  {
+    "class": "min-w-0",
+    "client": 375,
+    "left": 0,
+    "overflow": "visible",
+    "rect": {
+      "bottom": 1579,
+      "height": 1622,
+      "left": 0,
+      "right": 375,
+      "top": -43,
+      "width": 375,
+      "x": 0,
+      "y": -43
+    },
+    "scroll": 375,
+    "tag": "DIV"
+  },
+  {
+    "class": "surface-shell-grid min-h-screen bg-canvas text-ink",
+    "client": 375,
+    "left": 0,
+    "overflow": "visible",
+    "rect": {
+      "bottom": 1579,
+      "height": 1622,
+      "left": 0,
+      "right": 375,
+      "top": -43,
+      "width": 375,
+      "x": 0,
+      "y": -43
+    },
+    "scroll": 375,
+    "tag": "DIV"
+  },
+  {
+    "class": "",
+    "client": 375,
+    "left": 0,
+    "overflow": "visible",
+    "rect": {
+      "bottom": 1579,
+      "height": 1622,
+      "left": 0,
+      "right": 375,
+      "top": -43,
+      "width": 375,
+      "x": 0,
+      "y": -43
+    },
+    "scroll": 375,
+    "tag": "BODY"
+  },
+  {
+    "class": "",
+    "client": 375,
+    "left": 0,
+    "overflow": "visible",
+    "rect": {
+      "bottom": 1579,
+      "height": 1622,
+      "left": 0,
+      "right": 375,
+      "top": -43,
+      "width": 375,
+      "x": 0,
+      "y": -43
+    },
+    "scroll": 375,
+    "tag": "HTML"
+  }
+]

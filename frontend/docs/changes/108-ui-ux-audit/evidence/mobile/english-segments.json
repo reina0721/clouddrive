@@ -1,0 +1,47 @@
+[
+  {
+    "children": [
+      {
+        "right": 143.140625,
+        "text": "Grid",
+        "x": 59
+      },
+      {
+        "right": 221.65625,
+        "text": "List",
+        "x": 143.140625
+      },
+      {
+        "right": 333.609375,
+        "text": "Unavailable",
+        "x": 221.65625
+      }
+    ],
+    "client": 283,
+    "overflow": "visible",
+    "right": 338.609375,
+    "scroll": 283,
+    "wrap": "nowrap",
+    "x": 54
+  },
+  {
+    "children": [
+      {
+        "right": 222.0625,
+        "text": "Responsibility layer",
+        "x": 59
+      },
+      {
+        "right": 295.765625,
+        "text": "Status",
+        "x": 226.0625
+      }
+    ],
+    "client": 245,
+    "overflow": "visible",
+    "right": 300.765625,
+    "scroll": 245,
+    "wrap": "nowrap",
+    "x": 54
+  }
+]

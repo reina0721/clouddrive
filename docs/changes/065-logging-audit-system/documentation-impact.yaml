@@ -1,0 +1,33 @@
+schema_version: 1
+change: 065-logging-audit-system
+areas:
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+    reason: 审计页增设 action/resourceType/outcome 筛选并承载业务写操作审计事件（065），属于 WebUI 模块页面增强；webui 局部 README 需同步审计页说明与操作审计呈现，宿主源码零改动。
+  - id: module
+    decision: updated
+    documents:
+      - docs/development/application-module-development.md
+    reason: IAM/Organization/Navigation 写操作接入业务操作审计（模块自有窄 OperationAuditWriter port + composition 唯一连接点）；模块开发指南的 Service port 接入说明补充 065 实例与低敏/事务解耦语义。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+    reason: "审计查询新增可选过滤参数（action、resourceType、outcome、actorKind）；openapi 与 operation inventory 随 contract-gen 更新。业务操作审计不新增公共 HTTP operation（复用既有 iam/organization/navigation 写操作契约）。"
+  - id: operations
+    decision: updated
+    documents:
+      - docs/operations/security.md
+      - docs/operations/runtime-capabilities.md
+    reason: 业务操作审计的写入语义、成功/失败与低敏边界同步 security 文档；运行能力矩阵的「可查询审计」行补充操作审计来源与查询过滤能力。
+  - id: startup
+    decision: reviewed-no-change
+    reason: 宿主 boot、manifest/registry 与 revision 门禁不变；操作审计写入复用既有 Auth 审计 Sink 与 WebUI 页面链路。
+  - id: docs
+    decision: updated
+    documents:
+      - docs/changes/065-logging-audit-system/README.md
+      - docs/changes/README.md
+    reason: 变更记录（研究/需求/设计/任务）与变更索引需记录本任务状态与结论。

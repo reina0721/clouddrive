@@ -1,0 +1,2 @@
+DROP TABLE iam_password_history;
+ALTER TABLE iam_local_credentials DROP COLUMN password_changed_at;

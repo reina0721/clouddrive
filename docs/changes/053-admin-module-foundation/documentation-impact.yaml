@@ -1,0 +1,39 @@
+schema_version: 1
+change: 053-admin-module-foundation
+areas:
+  - id: repository
+    decision: updated
+    documents:
+      - README.md
+    reason: 说明 053 后 Admin 宿主可验证范围，以及 054 IAM 前账号持久化尚未落地的阶段边界。
+  - id: startup
+    decision: updated
+    documents:
+      - README.md
+      - docs/getting-started/first-use.md
+    reason: composition 改为显式聚合多 HTTP Module 与多 Migration Set，首次验收必须反映 fresh database 边界。
+  - id: webui
+    decision: updated
+    documents:
+      - README.md
+      - webui/README.md
+      - docs/getting-started/webui.md
+      - docs/getting-started/first-use.md
+    reason: WebUI manifest 新增 Catalog/Navigation 双 revision，并明确 NavigationPolicy 只能投影已注册静态定义。
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/README.md
+      - docs/development/application-module-development.md
+    reason: 新增 HTTP、Permission、Migration、WebUI 分类型完成品和显式 composition 聚合规则。
+  - id: capability
+    decision: updated
+    documents:
+      - docs/operations/runtime-capabilities.md
+    reason: 记录 Permission Catalog、Migration Catalog 与多模块运行能力的当前验证范围。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+      - docs/getting-started/first-use.md
+    reason: OpenAPI 与 operation inventory 现由 Auth、Todo 多模块契约共同生成，并使用 owner 提供的 typed security scheme。

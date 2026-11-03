@@ -1,0 +1,11 @@
+
+Running 7 tests using 1 worker
+
+(node:32916) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › apps\web\e2e\settings-semantic.spec.ts:5:3 › Comparison choices adapt to their container and retain long labels at 1440 (30.1s)
+(node:28272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [chromium] › apps\web\e2e\settings-semantic.spec.ts:5:3 › Comparison choices adapt to their container and retain long labels at 320 (30.0s)
+(node:25684) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

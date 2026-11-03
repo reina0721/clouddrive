@@ -1,0 +1,38 @@
+[WebServer] (node:30448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:7740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:31628) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:1384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 23 tests using 1 worker
+
+(node:21024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\motion-progressive.spec.ts:8:1 › settings keeps its shell stable and enters semantic regions inside the nested Page (1.7s)
+  ok  2 [chromium] › apps\web\e2e\motion-progressive.spec.ts:41:3 › progressive settings remains usable through long, fast and reverse scrolling at 1440 (2.5s)
+  ok  3 [chromium] › apps\web\e2e\motion-progressive.spec.ts:41:3 › progressive settings remains usable through long, fast and reverse scrolling at 390 (2.4s)
+  ok  4 [chromium] › apps\web\e2e\motion-progressive.spec.ts:41:3 › progressive settings remains usable through long, fast and reverse scrolling at 320 (2.3s)
+  ok  5 [chromium] › apps\web\e2e\motion-progressive.spec.ts:114:3 › content is immediately available with missing motion observation (1.9s)
+  ok  6 [chromium] › apps\web\e2e\motion-progressive.spec.ts:114:3 › content is immediately available with silent motion observation (1.9s)
+  ok  7 [chromium] › apps\web\e2e\motion-progressive.spec.ts:114:3 › content is immediately available with reduced motion observation (1.9s)
+  ok  8 [chromium] › apps\web\e2e\motion-progressive.spec.ts:148:1 › anchor refresh and browser return never leave reading content hidden (2.1s)
+  ok  9 [chromium] › apps\web\e2e\motion-progressive.spec.ts:170:1 › master detail swaps locally while preserving selection focus (1.1s)
+  ok 10 [chromium] › apps\web\e2e\motion-progressive.spec.ts:184:1 › an invalid bookmark fragment cannot interrupt hydration or hide settings (1.1s)
+  ok 11 [chromium] › apps\web\e2e\motion-progressive.spec.ts:197:3 › dark English expanded text keeps progressive regions accessible at 320 (1.8s)
+  ok 12 [chromium] › apps\web\e2e\motion-progressive.spec.ts:197:3 › dark English expanded text keeps progressive regions accessible at 2048 (2.1s)
+  ok 13 [chromium] › apps\web\e2e\recents.spec.ts:3:1 › 最近访问记录：页面入口导航写入 workbench recents（LRU 去重） (2.1s)
+  ok 14 [chromium] › apps\web\e2e\settings-semantic.spec.ts:5:3 › Comparison choices adapt to their container and retain long labels at 1440 (1.9s)
+  ok 15 [chromium] › apps\web\e2e\settings-semantic.spec.ts:5:3 › Comparison choices adapt to their container and retain long labels at 320 (1.8s)
+  ok 16 [chromium] › apps\web\e2e\settings-semantic.spec.ts:49:1 › System contrast responds independently of the assistive-settings toggle (3.6s)
+  ok 17 [chromium] › apps\web\e2e\settings-semantic.spec.ts:85:1 › Mobile category navigation honors scroll preference after drawer focus restoration (3.9s)
+  ok 18 [chromium] › apps\web\e2e\settings-semantic.spec.ts:127:3 › Semantic appearance choices preserve preview, selection and persistence at 1440 (3.2s)
+  ok 19 [chromium] › apps\web\e2e\settings-semantic.spec.ts:127:3 › Semantic appearance choices preserve preview, selection and persistence at 390 (3.0s)
+  ok 20 [chromium] › apps\web\e2e\settings-semantic.spec.ts:127:3 › Semantic appearance choices preserve preview, selection and persistence at 320 (3.1s)
+  ok 21 [chromium] › apps\web\e2e\surface-foundation.spec.ts:21:1 › Initial detail content stays readable; tab selection alone triggers content swap (2.1s)
+  ok 22 [chromium] › apps\web\e2e\surface-foundation.spec.ts:38:1 › 七类 Page Archetype 在四级视口可直接验收 (29.3s)
+  ok 23 [chromium] › apps\web\e2e\surface-foundation.spec.ts:61:1 › Universal 与 Surface authority 视觉面保持分层 (4.9s)
+
+  23 passed (1.4m)

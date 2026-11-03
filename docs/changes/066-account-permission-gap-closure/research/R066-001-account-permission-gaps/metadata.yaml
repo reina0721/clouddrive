@@ -1,0 +1,44 @@
+schema_version: 1
+id: R066-001
+title: "账号与权限体系闭环缺口核实：账号/角色生命周期、按钮级显隐、列表体验与数据权限边界"
+question: "当前账号与权限体系（IAM + Auth + Organization + Navigation + Permission Catalog + WebUI）相对「用户管理/角色管理/菜单与权限管理/部门与岗位管理」四要素闭环，逐项缺口是什么；各缺口的模块归属、实现边界（可直接补齐 vs 需边界突破）与补齐路径如何？"
+research_type: current-project
+topics: ["iam", "auth", "rbac", "organization", "navigation", "webui", "permission"]
+keywords: ["AccountLifecycle", "RoleLifecycle", "Archive", "ActionTrigger", "ActionPermissions", "ButtonPermission", "DataScope", "数据权限", "409", "乐观锁"]
+applicable_scenarios: ["账号与权限体系缺口补齐设计", "账号/角色生命周期管理", "WebUI 按钮级权限呈现", "列表查询/分页体验", "数据权限或资源级授权立项"]
+non_applicable_scenarios: ["多租户", "外部 IAM/SSO/OIDC", "动态权限模型", "role_menu 表引入", "把前端权限冒充服务端授权"]
+status: active
+summary: "核心 Core RBAC 闭环（账号-角色-权限键-Casbin 求值-revision 失效-WebUI 投影）已完整且文档与代码一致；缺口集中在：账号无资料更新与删除（含归档）；角色无更新/启停/归档；WebUI 按钮级权限机制（ActionTrigger/ActionPermissions）存在但 iam/org/nav 管理页未接入；各列表无查询/过滤/分页；409 冲突无差异确认 UI；分配页无乐观锁；部门树非可折叠控件。数据权限（部门数据范围）完全缺失，055/064 已明确为重大边界突破需单独确认；角色-菜单显式绑定与动态菜单与 056/058 边界冲突。账号 Archived 字段缺失（需迁移），角色/部门/岗位已有 Archived 字段但无 service 方法，均为 IAM/Organization 边界内的自然延伸缺口。"
+evidence:
+  types: ["source-code", "tests", "generated-artifact", "prior-research"]
+  primary_sources:
+    - title: "IAM 模型/服务/repo/HTTP 契约/WebUI 页面"
+      locator: "internal/module/iam/{model,service,repo,binding/http,binding/webui/web}"
+      snapshot: "a5f02db 验证 2026-08-25"
+    - title: "Organization 模型/服务/WebUI 页面"
+      locator: "internal/module/organization/{model,service,binding/webui/web}"
+      snapshot: "a5f02db 验证 2026-08-25"
+    - title: "Navigation 模型/服务/WebUI 页面"
+      locator: "internal/module/navigation/{service,binding/webui/web}"
+      snapshot: "a5f02db 验证 2026-08-25"
+    - title: "WebUI 宿主 manifest 投影与权限机制"
+      locator: "internal/webui/contract.go; internal/composition/webui_http.go; webui/src/{components/AppShell.tsx,ui/index.tsx,sdk/zone/index.tsx}"
+      snapshot: "a5f02db 验证 2026-08-25"
+    - title: "公开 HTTP 契约产物"
+      locator: "api/openapi.yaml"
+      snapshot: "a5f02db 验证 2026-08-25"
+    - title: "既有研究与变更判定"
+      locator: "docs/changes/{054,055,056,058,064}/README.md 与 requirements/design；docs/architecture/technology-selection.md Permission/AuthZ 行"
+      snapshot: "复核 2026-08-25"
+researched_at: "2026-08-25"
+verified_at: "2026-08-25"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-09-25"
+  refresh_triggers: ["授权模型（Casbin/DecisionPoint）变化", "账号/角色模型或 migration 变化", "WebUI 权限呈现机制（manifest/actionPermissions）变化", "数据权限或资源级授权需求立项", "organization 关系进入授权决策"]
+relations:
+  extends: ["053/R002", "053/R005", "054/R001", "055/R001", "056/R001", "058/R001", "064/R064-001"]
+  related: ["022/R006"]
+  supersedes: []
+  superseded_by: []
+report: report.md

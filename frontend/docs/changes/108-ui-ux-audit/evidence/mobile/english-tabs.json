@@ -1,0 +1,44 @@
+[
+  {
+    "client": 212,
+    "direction": "row",
+    "labels": ["Overview", "Notifications", "Analytics", "Customers"],
+    "overflow": "auto",
+    "scroll": 401
+  },
+  {
+    "client": 212,
+    "direction": "row",
+    "labels": ["Normal", "Empty", "Unavailable"],
+    "overflow": "auto",
+    "scroll": 261
+  },
+  {
+    "client": 212,
+    "direction": "row",
+    "labels": ["Overview", "Notifications", "Customers"],
+    "overflow": "auto",
+    "scroll": 377
+  },
+  {
+    "client": 212,
+    "direction": "row",
+    "labels": ["Overview", "Notifications12", "Customers4"],
+    "overflow": "auto",
+    "scroll": 386
+  },
+  {
+    "client": 178,
+    "direction": "column",
+    "labels": ["Overview", "Notifications", "Analytics", "Customers"],
+    "overflow": "auto",
+    "scroll": 178
+  },
+  {
+    "client": 170,
+    "direction": "row",
+    "labels": ["Normal", "Empty"],
+    "overflow": "auto",
+    "scroll": 170
+  }
+]

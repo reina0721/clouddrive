@@ -1,0 +1,46 @@
+schema_version: 1
+id: R105-001
+title: 'Overlay Trigger 按钮 pressed/hover/focus 状态被染成 Brand Blue 的根因研究'
+question: 'DialogSurface / ConfirmDialog / DestructiveConfirmDialog / DrawerSurface / CommandMenu 的触发按钮在点击后为何出现 Brand Blue 覆盖，正确修复层与状态是什么？'
+research_type: current-state-audit
+topics:
+  ['ui-adapter', 'overlay trigger', 'hero-ui button variant', 'pressed state', 'focus-visible']
+keywords: ['button--primary', 'ui-overlay-trigger', '--accent', 'data-pressed', 'variant ghost']
+applicable_scenarios:
+  ['105 Overlay Trigger 交互状态视觉修复：共享 Trigger 语义层、三态中性化、danger 语义保持']
+non_applicable_scenarios:
+  ['普通业务 Action 按钮 pressed 行为、全局 --accent 重映射、页面级 CSS 特判']
+status: active
+summary: 'HeroUI buttonVariants 默认 variant="primary"，使所有未显式传 variant 的 HeroButton 都带 button--primary（--button-bg* = var(--accent) = 蓝）；项目 ui-overlay-trigger 只用 Tailwind utility 覆盖 idle/hover，未显式治理 pressed/focus-visible，导致不同构建/交互时序下 pressed/hover 露 accent 蓝。项目自己的 Action 组件用 variant="ghost" + tv 语义色解决同款问题，是正确先例。'
+evidence:
+  types: ['vendor-source', 'project-source', 'runtime-observation']
+  primary_sources:
+    - title: 'HeroUI buttonVariants 默认 variant'
+      locator: 'node_modules/.pnpm/@heroui+styles@3.2.4.../dist/components/button/button.styles.js'
+      snapshot: 'defaultVariants: { size: "md", variant: "primary" }；variants.variant 含 primary/danger/ghost/outline/secondary/tertiary'
+    - title: 'HeroUI button 基类状态色'
+      locator: '@heroui/styles/dist/components/button.css'
+      snapshot: '.button[data-pressed="true"]/&:active 用 var(--button-bg-pressed)；.button--primary 的 --button-bg-pressed/hover = var(--accent-hover)'
+    - title: 'HeroUI 默认主题 accent 为蓝'
+      locator: '@heroui/styles/dist/themes/default/variables.css'
+      snapshot: '--accent: oklch(0.6204 0.195 253.83)（蓝）；项目未重映射 --accent'
+    - title: '项目先例：Action 用 variant="ghost" + tv 语义色'
+      locator: 'packages/ui-adapter/src/action.tsx'
+      snapshot: 'Action 渲染 HeroButton variant="ghost"，tv 定义 primary/secondary/quiet/danger 的 bg/text/hover'
+    - title: '运行态观测（两构建 pressed 行为不一致）'
+      locator: 'playwright probe on /ui-elements/overlays Dialog trigger'
+      snapshot: '构建 A：mouse down 时背景变 accent 蓝；构建 B：idle/pressed/hover 均白，after-close 露 rgb(242,244,248) 冷灰 hover'
+  researched_at: '2026-09-03'
+  verified_at: '2026-09-03'
+validity:
+  mode: revision-bounded
+  refresh_triggers:
+    [
+      'HeroUI Button variant 默认值或 --accent 主题变化、ui-overlay-trigger/Action/overlay 组件样式重构、Overlay Trigger 语义契约变化时需定向复核',
+    ]
+relations:
+  extends: ['R098-001']
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

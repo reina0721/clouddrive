@@ -1,0 +1,631 @@
+{
+  "check": "check-final.txt",
+  "testCount": 219,
+  "passed": 205,
+  "visualFailed": 14,
+  "nonvisualFailureCount": 0,
+  "createdAtUTC": "2026-10-08T07:39:09.823Z",
+  "pairs": [
+    {
+      "name": "surface-shell-compact-sibling-swap",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\navigation-收缩侧栏切换兄弟菜单时同一时刻只有一个-Flyout-且旧菜单不残留-chromium\\surface-shell-compact-sibling-swap-expected.png",
+          "output": "01-surface-shell-compact-sibling-swap-expected.png",
+          "sha256": "834027f1a46a0f7e1b9df2f916819738df29f6b311eb3582c729d65911457a3a"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\navigation-收缩侧栏切换兄弟菜单时同一时刻只有一个-Flyout-且旧菜单不残留-chromium\\surface-shell-compact-sibling-swap-actual.png",
+          "output": "01-surface-shell-compact-sibling-swap-actual.png",
+          "sha256": "08dfe60e6159c569817d0fcac74280fe6ff30d9ab9395d48b85bb96f93173c1c"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\navigation-收缩侧栏切换兄弟菜单时同一时刻只有一个-Flyout-且旧菜单不残留-chromium\\surface-shell-compact-sibling-swap-diff.png",
+          "output": "01-surface-shell-compact-sibling-swap-diff.png",
+          "sha256": "3e0de5dc798eba13655dc40025b8366963e5d53276b3b1dab6abb6182b256a03"
+        }
+      ]
+    },
+    {
+      "name": "surface-shell-compact-flyout",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\navigation-收缩侧栏的-Hover-Flyout-保持稳定并支持键盘进入-chromium\\surface-shell-compact-flyout-expected.png",
+          "output": "02-surface-shell-compact-flyout-expected.png",
+          "sha256": "2cc1c8eb37999ee7bd6229be11aadff76486d4364b083c4497a3189b82a7e65b"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\navigation-收缩侧栏的-Hover-Flyout-保持稳定并支持键盘进入-chromium\\surface-shell-compact-flyout-actual.png",
+          "output": "02-surface-shell-compact-flyout-actual.png",
+          "sha256": "26be01201162e10f19485da910eb83ca2c448a4d4c788d423439657c9a5c6505"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\navigation-收缩侧栏的-Hover-Flyout-保持稳定并支持键盘进入-chromium\\surface-shell-compact-flyout-diff.png",
+          "output": "02-surface-shell-compact-flyout-diff.png",
+          "sha256": "628e4d7c5d93f08f4d4c6d13b02fd958de85cfc1f26c5c1662a7b43b3f9ec245"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-command-open",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\overlays-DatePicker-与-Command-展开面支持键盘及无障碍扫描-chromium\\ui-elements-command-open-expected.png",
+          "output": "03-ui-elements-command-open-expected.png",
+          "sha256": "69e3f65e84007376f463637843eaf9069800deeeed1bf945b66c1c9370a78441"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\overlays-DatePicker-与-Command-展开面支持键盘及无障碍扫描-chromium\\ui-elements-command-open-actual.png",
+          "output": "03-ui-elements-command-open-actual.png",
+          "sha256": "4a2d8b5a328c90b56ad05079bfb9de33e1cb3420d2a7737dadf57cea4ef21545"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\overlays-DatePicker-与-Command-展开面支持键盘及无障碍扫描-chromium\\ui-elements-command-open-diff.png",
+          "output": "03-ui-elements-command-open-diff.png",
+          "sha256": "6416a181e362be208769e0b981a151fdbd22af5e79d38e2784633da6ef9e943f"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-date-picker-open",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\overlays-DatePicker-与-Command-展开面支持键盘及无障碍扫描-chromium\\ui-elements-date-picker-open-expected.png",
+          "output": "04-ui-elements-date-picker-open-expected.png",
+          "sha256": "190967ced91bfd89e2da09f859c62b16adabddae08b60d8c6df6a5b7d7491474"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\overlays-DatePicker-与-Command-展开面支持键盘及无障碍扫描-chromium\\ui-elements-date-picker-open-actual.png",
+          "output": "04-ui-elements-date-picker-open-actual.png",
+          "sha256": "7053cf31a327e44f665f9786de30206f44b6d84cb2fda45fd46509920e5d0107"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\overlays-DatePicker-与-Command-展开面支持键盘及无障碍扫描-chromium\\ui-elements-date-picker-open-diff.png",
+          "output": "04-ui-elements-date-picker-open-diff.png",
+          "sha256": "fbc44496a6a9eae21f17f0fc2afd084ffc354fa512ffee40da626f815cd780c9"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-menu-open",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\\ui-elements-menu-open-expected.png",
+          "output": "05-ui-elements-menu-open-expected.png",
+          "sha256": "859af00c76ce2d1e7f04dcbc0561b013fd2a101a7630897088e14ecaa23c75e0"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\\ui-elements-menu-open-actual.png",
+          "output": "05-ui-elements-menu-open-actual.png",
+          "sha256": "4ba969c18f2d73d6d9019b48b006ba7a8651bac417d48c80ed4ec30812a2b11c"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\\ui-elements-menu-open-diff.png",
+          "output": "05-ui-elements-menu-open-diff.png",
+          "sha256": "dff8e7b254e007f7b23ee14cce7509d63213b5c8a418d3dc5fdef9a921d776f4"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-popover-open",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\\ui-elements-popover-open-expected.png",
+          "output": "06-ui-elements-popover-open-expected.png",
+          "sha256": "6bd4c962b198e929ae21918e512d47fa05ce15e1545462edc9c56d9753ae64d6"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\\ui-elements-popover-open-actual.png",
+          "output": "06-ui-elements-popover-open-actual.png",
+          "sha256": "861fa0741f45901cb7e430d92d55457cb4b2e6d147e9d39c6d7593737d6e0884"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\\ui-elements-popover-open-diff.png",
+          "output": "06-ui-elements-popover-open-diff.png",
+          "sha256": "b8162376b2524c9df317eea52f8fdfb135301ca01881d532ec01a4e3700bbd30"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-tooltip-open",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\\ui-elements-tooltip-open-expected.png",
+          "output": "07-ui-elements-tooltip-open-expected.png",
+          "sha256": "ec5e2a75ca9017ee79323877b8556eb759167594bc720d473948039da16f15f9"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\\ui-elements-tooltip-open-actual.png",
+          "output": "07-ui-elements-tooltip-open-actual.png",
+          "sha256": "afc2c0bb4ad85a513cae997108a08fd1edbca960fd6e76675f9999275bcf9b35"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\\ui-elements-tooltip-open-diff.png",
+          "output": "07-ui-elements-tooltip-open-diff.png",
+          "sha256": "4b8174fcb818cd290894c681efb2410ece3ac879ea740b63511bdc5626558481"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-combobox-open",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\overlays-Select-与-Combobox-使用统一-Popup、键盘和选中状态-chromium\\ui-elements-combobox-open-expected.png",
+          "output": "08-ui-elements-combobox-open-expected.png",
+          "sha256": "b951b3e32482ec3cb005f07249b7159a70475736b85025a90ccfc83fff7004c2"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\overlays-Select-与-Combobox-使用统一-Popup、键盘和选中状态-chromium\\ui-elements-combobox-open-actual.png",
+          "output": "08-ui-elements-combobox-open-actual.png",
+          "sha256": "870ef62a7f3709e538146d5928985fa07ca34ae1e1bcd082860d663aad8c2e22"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\overlays-Select-与-Combobox-使用统一-Popup、键盘和选中状态-chromium\\ui-elements-combobox-open-diff.png",
+          "output": "08-ui-elements-combobox-open-diff.png",
+          "sha256": "74ea83d03796985a9e7f07a7c32f0ebe0ea645f3496b28dbe69098b3571228fb"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-select-open",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\overlays-Select-与-Combobox-使用统一-Popup、键盘和选中状态-chromium\\ui-elements-select-open-expected.png",
+          "output": "09-ui-elements-select-open-expected.png",
+          "sha256": "e0842ee1ae961bac74b2ad458fdb6e1ff8abccb8d8e5d835dc4d327bb26128a2"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\overlays-Select-与-Combobox-使用统一-Popup、键盘和选中状态-chromium\\ui-elements-select-open-actual.png",
+          "output": "09-ui-elements-select-open-actual.png",
+          "sha256": "33c3261bb1ebe433eb6aa2dbe0e7c555bd7644c1bb42dbfc6af84bb50fedfc4e"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\overlays-Select-与-Combobox-使用统一-Popup、键盘和选中状态-chromium\\ui-elements-select-open-diff.png",
+          "output": "09-ui-elements-select-open-diff.png",
+          "sha256": "8e4f26df1ea07c8c34ea5936c8cacd349c57c05d25664c27f8ad4193d081d8eb"
+        }
+      ]
+    },
+    {
+      "name": "page-archetypes-overview-desktop",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\surface-foundation-Universal-与-Surface-authority-视觉面保持分层-chromium\\page-archetypes-overview-desktop-expected.png",
+          "output": "10-page-archetypes-overview-desktop-expected.png",
+          "sha256": "2c80a774baac6d48e1df4a0e90cf8be40d579feb05b7d5758f7fdf5c9efb0dbe"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\surface-foundation-Universal-与-Surface-authority-视觉面保持分层-chromium\\page-archetypes-overview-desktop-actual.png",
+          "output": "10-page-archetypes-overview-desktop-actual.png",
+          "sha256": "5735c3e503585d1f7992f9cef6578e522fbaabefcab818988901d6e6184a287f"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\surface-foundation-Universal-与-Surface-authority-视觉面保持分层-chromium\\page-archetypes-overview-desktop-diff.png",
+          "output": "10-page-archetypes-overview-desktop-diff.png",
+          "sha256": "c79ec2401b7abde3e9028ddd8d294eadc12f7774f8792ee5df8fa4f165d6e978"
+        }
+      ]
+    },
+    {
+      "name": "page-patterns-collections-desktop",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\surface-foundation-Universal-与-Surface-authority-视觉面保持分层-chromium\\page-patterns-collections-desktop-expected.png",
+          "output": "11-page-patterns-collections-desktop-expected.png",
+          "sha256": "5fc60eaf8d3a5df37286057714f87e7a96f050113b372a02a5321be9bfa3fb66"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\surface-foundation-Universal-与-Surface-authority-视觉面保持分层-chromium\\page-patterns-collections-desktop-actual.png",
+          "output": "11-page-patterns-collections-desktop-actual.png",
+          "sha256": "c03441c20b19a7543bc2d6a00d5e883b89d4a5da69d21d4134734ee79ba3379b"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\surface-foundation-Universal-与-Surface-authority-视觉面保持分层-chromium\\page-patterns-collections-desktop-diff.png",
+          "output": "11-page-patterns-collections-desktop-diff.png",
+          "sha256": "33253f300b693338cb487c2ba0e514cb151f6601a9a051a8facb98d970ea9e3a"
+        }
+      ]
+    },
+    {
+      "name": "overview-desktop",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-Overview、Reference-Form-与-Settings-真实页面进入视觉矩阵-chromium\\overview-desktop-expected.png",
+          "output": "12-overview-desktop-expected.png",
+          "sha256": "db7684d297a9db15394f6da8c8ae66c285a4865d845a38e831863940dae61bad"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-Overview、Reference-Form-与-Settings-真实页面进入视觉矩阵-chromium\\overview-desktop-actual.png",
+          "output": "12-overview-desktop-actual.png",
+          "sha256": "f262c448e250433356fd813901d7035ebed5be1253bb5e0f16af4fd465f0500f"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-Overview、Reference-Form-与-Settings-真实页面进入视觉矩阵-chromium\\overview-desktop-diff.png",
+          "output": "12-overview-desktop-diff.png",
+          "sha256": "be4459630081f63556c7a51624721e2e611a3f4349a3b941cc0024538f651219"
+        }
+      ]
+    },
+    {
+      "name": "settings-desktop",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-Overview、Reference-Form-与-Settings-真实页面进入视觉矩阵-chromium\\settings-desktop-expected.png",
+          "output": "13-settings-desktop-expected.png",
+          "sha256": "0f6039c0c600b4c93cd56eb167953051e18d925072b01dd04e606bdab71a4b6b"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-Overview、Reference-Form-与-Settings-真实页面进入视觉矩阵-chromium\\settings-desktop-actual.png",
+          "output": "13-settings-desktop-actual.png",
+          "sha256": "679f777ed01508cacce93febd89c8b3848616be8ca9ec4e4088e39926c8c619f"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-Overview、Reference-Form-与-Settings-真实页面进入视觉矩阵-chromium\\settings-desktop-diff.png",
+          "output": "13-settings-desktop-diff.png",
+          "sha256": "6963702bce0826543b1c4203aaa91afc55ffaee473611325bbb96c56423b71b8"
+        }
+      ]
+    },
+    {
+      "name": "reference-multi-select",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-Reference-多选与分页的真实联动状态进入视觉矩阵-chromium\\reference-multi-select-expected.png",
+          "output": "14-reference-multi-select-expected.png",
+          "sha256": "c5c27f5b8c640737e50363acfc9f6023b370f8af18ea5cf05c4209f13e990e96"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-Reference-多选与分页的真实联动状态进入视觉矩阵-chromium\\reference-multi-select-actual.png",
+          "output": "14-reference-multi-select-actual.png",
+          "sha256": "86866e091eb80872eeabe6b30722ea73c2a4ec8e065fea8da9508fb5e7943c98"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-Reference-多选与分页的真实联动状态进入视觉矩阵-chromium\\reference-multi-select-diff.png",
+          "output": "14-reference-multi-select-diff.png",
+          "sha256": "a724e8289ac24065325e1f9f1a96cb94e95da7087744eefe859841754b0417bd"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-toast-compact",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-Toast、Destructive-Confirm-与-Compact-Density-开启态进入视觉矩阵-chromium\\ui-elements-toast-compact-expected.png",
+          "output": "15-ui-elements-toast-compact-expected.png",
+          "sha256": "d660fbfe0f02e592260cad81a202798d65b40ba15b07a49343ea861c0fb23bb8"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-Toast、Destructive-Confirm-与-Compact-Density-开启态进入视觉矩阵-chromium\\ui-elements-toast-compact-actual.png",
+          "output": "15-ui-elements-toast-compact-actual.png",
+          "sha256": "5f7c555aaecbd8fe514638f131862a3480438746160d7d4c09201929d7d33eb8"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-Toast、Destructive-Confirm-与-Compact-Density-开启态进入视觉矩阵-chromium\\ui-elements-toast-compact-diff.png",
+          "output": "15-ui-elements-toast-compact-diff.png",
+          "sha256": "09d8025e0ac442cdde25ee096ae98e602370bb23680b940c3c84b9d2c9f3f690"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-family-actions-selection",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-actions-selection-expected.png",
+          "output": "16-ui-elements-family-actions-selection-expected.png",
+          "sha256": "efbfb2e10f79af677cc4ce6dd06f0e0372372baa7d5080b8627889da452bd5cf"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-actions-selection-actual.png",
+          "output": "16-ui-elements-family-actions-selection-actual.png",
+          "sha256": "2db8d5b54043eba5ae6fe2dd0db76b66724d087a7f7e0613c8112af495d4f7e1"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-actions-selection-diff.png",
+          "output": "16-ui-elements-family-actions-selection-diff.png",
+          "sha256": "8f1dd6d1cef638daedd62fc04f9280d5d7e319193e34cac83ed427f2309fa3ce"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-family-feedback",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-feedback-expected.png",
+          "output": "17-ui-elements-family-feedback-expected.png",
+          "sha256": "d710de785601f2fbb68f8b747a40e27a4b52be6fcd77f943422d600e0bc00779"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-feedback-actual.png",
+          "output": "17-ui-elements-family-feedback-actual.png",
+          "sha256": "f6cb50fd8f0cb66f74c185a58e43751e77736fd20eb3c173ae9c26982809d0e9"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-feedback-diff.png",
+          "output": "17-ui-elements-family-feedback-diff.png",
+          "sha256": "759af4b958b13a5b8684803dd30bcac8f10f19107adbc13782dfa643242f2a68"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-family-forms",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-forms-expected.png",
+          "output": "18-ui-elements-family-forms-expected.png",
+          "sha256": "b68131cd6af1cbc92ca83740994c016161cd9ff65db295c79820b795f10ba03c"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-forms-actual.png",
+          "output": "18-ui-elements-family-forms-actual.png",
+          "sha256": "022148aab3c3b0328bf8d715bbeb247a8aa1050a2b143be857979f8ca5b4db0f"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-forms-diff.png",
+          "output": "18-ui-elements-family-forms-diff.png",
+          "sha256": "1bb646539315df0d4f741c532e593d174f521cda8b7329c714eb076376e2f9e0"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-family-identity-display",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-identity-display-expected.png",
+          "output": "19-ui-elements-family-identity-display-expected.png",
+          "sha256": "4e21bd075a96b168244ce83389bf927ca8f1158bd726f4bf01c0e151eae8c1c7"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-identity-display-actual.png",
+          "output": "19-ui-elements-family-identity-display-actual.png",
+          "sha256": "e08ec9f3f0cf0fb01f5a699530db8cc75dcefa63b7d330de874c463f4eccc49d"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-identity-display-diff.png",
+          "output": "19-ui-elements-family-identity-display-diff.png",
+          "sha256": "9a1b8ff4879966e469295a7904f64b8ef36b693145452419389e0d47e52e6483"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-family-navigation",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-navigation-expected.png",
+          "output": "20-ui-elements-family-navigation-expected.png",
+          "sha256": "d718ea482c99de848b5be4f0afbe8fe08b9ba047fe453bb8bac7c67d34ff8772"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-navigation-actual.png",
+          "output": "20-ui-elements-family-navigation-actual.png",
+          "sha256": "15ee721473f6d2815c5cf56862567913b219f87c7dee926684ebc22699152849"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-navigation-diff.png",
+          "output": "20-ui-elements-family-navigation-diff.png",
+          "sha256": "a678c02599e35a9d23d3dc4a70f34c7f52c49efcec46d3e3fac0d29cc0082266"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-family-overlays",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-overlays-expected.png",
+          "output": "21-ui-elements-family-overlays-expected.png",
+          "sha256": "e5f1db4c51946491e44d7a09e1965a70f59e50438d0d711b013295ce4d53b6db"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-overlays-actual.png",
+          "output": "21-ui-elements-family-overlays-actual.png",
+          "sha256": "c6eb1044315b6b9d36f0a2857ff44fcbc23cc2858272c85d96c6a6a83e055bcd"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-overlays-diff.png",
+          "output": "21-ui-elements-family-overlays-diff.png",
+          "sha256": "e932d458ed12ee2293eee1695bc9385264c5ede713eb495d158c4886780c03f4"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-family-status-async",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-status-async-expected.png",
+          "output": "22-ui-elements-family-status-async-expected.png",
+          "sha256": "82085d10a2ecd267d4b6adc674a79b64dbb1c21757e2f1a3b1bc5fcffd662b4c"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-status-async-actual.png",
+          "output": "22-ui-elements-family-status-async-actual.png",
+          "sha256": "505ff9b23392a5ceac4d5c0377622b093ec61c48954abc9087a8f9d3ff38bb91"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\\ui-elements-family-status-async-diff.png",
+          "output": "22-ui-elements-family-status-async-diff.png",
+          "sha256": "632548d8c57954cb774a73b9c55a8e1e54a1fdac51f952e7e45be6bf1aa63e3f"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-desktop",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium\\ui-elements-desktop-expected.png",
+          "output": "23-ui-elements-desktop-expected.png",
+          "sha256": "6dcca54b48f49560b5bcdeb49e5a322e3715d22c15ea220f6c0f951fd6f4a6b7"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium\\ui-elements-desktop-actual.png",
+          "output": "23-ui-elements-desktop-actual.png",
+          "sha256": "1b98e84461a02625bcc3c4b5c8e728f0ae4185eeb07f3bbc6787d9c9d1b198ab"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium\\ui-elements-desktop-diff.png",
+          "output": "23-ui-elements-desktop-diff.png",
+          "sha256": "82912380ae6d6fc57a19a9559765ad3d27c87e8a93807326f2078265bd53e1b8"
+        }
+      ]
+    },
+    {
+      "name": "reference-desktop",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-桌面与超宽屏-Reference-布局保持稳定-chromium\\reference-desktop-expected.png",
+          "output": "24-reference-desktop-expected.png",
+          "sha256": "909b7b0c6832454c38349cd301665e4a46fc44ffe5c63ccca4bc35771bae9faa"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-桌面与超宽屏-Reference-布局保持稳定-chromium\\reference-desktop-actual.png",
+          "output": "24-reference-desktop-actual.png",
+          "sha256": "391e6aa6eac21f97285f7ce5069c2ffe61d95786e8a19fff7f17595bf6faf4a8"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-桌面与超宽屏-Reference-布局保持稳定-chromium\\reference-desktop-diff.png",
+          "output": "24-reference-desktop-diff.png",
+          "sha256": "f7f0acdccc3d5739746b72d003577d1277b29ef6c394125b537d580dc165a7a2"
+        }
+      ]
+    },
+    {
+      "name": "reference-ultrawide",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-桌面与超宽屏-Reference-布局保持稳定-chromium\\reference-ultrawide-expected.png",
+          "output": "25-reference-ultrawide-expected.png",
+          "sha256": "ef90e3d8786add5e2860e1719f2e8d205cfcd29386e0d872e6ebe47fe7143b66"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-桌面与超宽屏-Reference-布局保持稳定-chromium\\reference-ultrawide-actual.png",
+          "output": "25-reference-ultrawide-actual.png",
+          "sha256": "ead37387f87f38cda33be4bc34365f22f60cf67ab9061f4633e4e2778e6b494a"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-桌面与超宽屏-Reference-布局保持稳定-chromium\\reference-ultrawide-diff.png",
+          "output": "25-reference-ultrawide-diff.png",
+          "sha256": "a9afa69b7b7bb3bfb99c39195bee4e2809186191caa24c36222d687c7a84a875"
+        }
+      ]
+    },
+    {
+      "name": "mobile-navigation-open",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-移动侧栏打开状态纳入视觉回归-chromium\\mobile-navigation-open-expected.png",
+          "output": "26-mobile-navigation-open-expected.png",
+          "sha256": "d55672a6d5e35500aa4e2f6ed05f20976ce7d92da3904355c45e26d57ce2a614"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-移动侧栏打开状态纳入视觉回归-chromium\\mobile-navigation-open-actual.png",
+          "output": "26-mobile-navigation-open-actual.png",
+          "sha256": "df1854a11657ea2f00e39a807b7147c029d61087e61a3382d29829f0ac300c35"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-移动侧栏打开状态纳入视觉回归-chromium\\mobile-navigation-open-diff.png",
+          "output": "26-mobile-navigation-open-diff.png",
+          "sha256": "e01d35d64fd46fbb2b5aedde705884de3f92bdb0934bdc9251b8c76b38de7a09"
+        }
+      ]
+    },
+    {
+      "name": "ui-elements-mobile-dark-en",
+      "items": [
+        {
+          "kind": "expected",
+          "source": "test-results\\playwright\\visual-移动窗口、Dark-Mode-与英文扩张保持无溢出-chromium\\ui-elements-mobile-dark-en-expected.png",
+          "output": "27-ui-elements-mobile-dark-en-expected.png",
+          "sha256": "79b34355945c4c24d001a69401c17f3d107cd41452904c4cb56307ea09cb43c3"
+        },
+        {
+          "kind": "actual",
+          "source": "test-results\\playwright\\visual-移动窗口、Dark-Mode-与英文扩张保持无溢出-chromium\\ui-elements-mobile-dark-en-actual.png",
+          "output": "27-ui-elements-mobile-dark-en-actual.png",
+          "sha256": "ba596e5e8b9c38a59611c0ce14eaa870a35c94303f56fcfc07f8eb80ed7a0ec2"
+        },
+        {
+          "kind": "diff",
+          "source": "test-results\\playwright\\visual-移动窗口、Dark-Mode-与英文扩张保持无溢出-chromium\\ui-elements-mobile-dark-en-diff.png",
+          "output": "27-ui-elements-mobile-dark-en-diff.png",
+          "sha256": "6c40faa8d5f5e291224e75f055de509e3d9b1646a529ef0f5eee6f912b26587b"
+        }
+      ]
+    }
+  ]
+}

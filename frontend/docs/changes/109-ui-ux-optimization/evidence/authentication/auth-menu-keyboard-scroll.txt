@@ -1,0 +1,50 @@
+[WebServer] (node:7372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:19372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:31932) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:8348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:31388) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › apps\web\e2e\account-menu.spec.ts:140:1 › Dark English expanded text and Reduced Motion keep preference overlays accessible (30.2s)
+
+
+  1) [chromium] › apps\web\e2e\account-menu.spec.ts:140:1 › Dark English expanded text and Reduced Motion keep preference overlays accessible 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.focus: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('region', { name: 'Current user', exact: true })
+
+
+      178 |   await page.keyboard.press('Escape');
+      179 |   const region = page.getByRole('region', { name: 'Current user', exact: true });
+    > 180 |   await region.focus();
+          |                ^
+      181 |   await expect(region).toBeFocused();
+      182 |   await page.keyboard.press('End');
+      183 |   await expect(page.getByRole('menuitem', { name: 'Sign out', exact: true })).toBeInViewport({
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\account-menu.spec.ts:180:16
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\account-menu-Dark-English--ce630-ference-overlays-accessible-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\account-menu-Dark-English--ce630-ference-overlays-accessible-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\account-menu-Dark-English--ce630-ference-overlays-accessible-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\account-menu-Dark-English--ce630-ference-overlays-accessible-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\account-menu.spec.ts:140:1 › Dark English expanded text and Reduced Motion keep preference overlays accessible 

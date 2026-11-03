@@ -1,0 +1,79 @@
+schema_version: 1
+id: R083-003
+title: "设计基线逐页对照审计"
+question: "082 已实施的每个页面（Accounts/Roles/Permissions/Sessions/ApiTokens/Audit/Departments/Menus/Dashboard/Settings/Login-Setup 约 11 个页面组）相对 docs/changes/admin-design-baseline.md（27 节后台产品设计风格基准）逐一对照后属于「达标 / 部分达标（差距清单）/ 旧结构沿用需重做」中的哪一档；每页 13 个固定设计维度（页面模板、Feature 化、DataTable、FilterBar、Detail、EntityHeader、MetricCard、StatusBadge、状态全集、危险确认、信息密度、Table 操作列、命名/样式污染）的逐项判定与代码证据；重做优先序与每页「重做 vs 保留+补齐」三档判定（大改/中改/小改）。"
+research_type: current-project
+topics:
+  - "设计基线逐页对照"
+  - "页面模板与状态全集"
+  - "DataTable/FilterBar 能力缺口"
+  - "业务组件缺失（EntityHeader/MetricCard）"
+  - "样式污染逐页存量"
+keywords:
+  - "083"
+  - "082"
+  - "design baseline"
+  - "页面审计"
+  - "DataTable"
+  - "FilterBar"
+  - "EmptyState"
+  - "StatusBadge"
+  - "MetricCard"
+  - "EntityHeader"
+  - ":global"
+  - "页面重做优先序"
+applicable_scenarios:
+  - "083 页面迁移任务（requirements/design/tasks）的逐页切片输入：每页差距清单与「重做 vs 保留+补齐」判定"
+  - "重做优先序的排期依据（样式清理/P 分页/过滤接线/业务组件缺失/危险确认/状态全集）"
+  - "页面模板落地时对各页模板归属（List Workspace / Configuration / Dashboard / Blank）的确认"
+  - "与 R083-001（差异裁决）和 R083-002（样式/布局事实）配对引用作为 083 规划的事实层"
+non_applicable_scenarios:
+  - "后端 operation 清单重新枚举（沿用 R002 55 operation/23 权限键）"
+  - "浏览器渲染层面的视觉回归与像素级验收（本档案未启动浏览器，视觉结论标注为推断）"
+  - "布局骨架（100dvh/滚动模型/宽度档）的逐项核验（属于 R083-002 已完成范围，本档案只引用其结果）"
+status: active
+summary: "11 个页面组×13 个固定维度共 143 项判定：有效判定 105 项中「达标」30 项（28.6%）、「部分达标」60 项（57.1%）、「需重做」15 项（14.3%）；没有任何页面整体达标（单页达标率最高 Login/Setup 60%，最低 ApiTokens 9.1%）。结构级维度（页面模板、Detail 模式、StatusBadge 一致性）普遍达标或部分达标，能力级缺口集中在：DataTable 排序（后端无 sort）与过滤接线（accounts/sessions 后端已有 typed filter 未 surface）、Audit 无分页（只看前 50 条）、时间戳 raw 呈现（Sessions 4 列/Audit）、EmptyState/Loading 组件化（5 页 DataTable 空态为 page-meta 段落）、危险操作缺确认（archive/revoke）、Table 操作列违反「1 主操作+…」折叠（ApiTokens 4 按钮内联）、业务组件缺失（MetricCard/EntityHeader/ActivityTimeline）、以及 6 模块 137 处 :global 样式污染逐页存量。重做优先序：P0 样式权威清理与骨架宽度接线（全部页）→ P1 Audit 分页、时间戳格式化、Settings 双导航收敛 → P2 FilterBar 接线与后端 sort → P3 MetricCard/EntityHeader 组件化与操作列折叠 → P4 危险确认与空载态 → P5 Feature 拆解。"
+evidence:
+  types:
+    - source-code
+    - documentation
+  primary_sources:
+    - title: "后台产品设计风格基准（Design Baseline，27 节）"
+      locator: "docs/changes/admin-design-baseline.md"
+      snapshot: "commit 5a3def3"
+    - title: "R083-001 差异分析（逐节矩阵与裁决）"
+      locator: "docs/changes/083-production-fullstack-reactor/research/R083-001-proposal-vs-082/report.md"
+      snapshot: "HEAD 08d5130/5a3def3"
+    - title: "R083-002 样式权威与布局骨架事实基线（137 处 :global 精确清单、滚动模型、宽度档零消费）"
+      locator: "docs/changes/083-production-fullstack-reactor/research/R083-002-style-layout-baseline/report.md"
+      snapshot: "commit 5a3def3"
+    - title: "模块页面代码（逐页全文读取）"
+      locator: "internal/module/{iam,ops,settings,organization,navigation,auth}/binding/webui/web/*.tsx（AccountsPage/RolesPage/PermissionsPage/SessionsPage/ApiTokensPage/AuditPage/DepartmentsPage/MenusPage/DashboardPage/CapabilitiesPage/Settings 8 页+Layout/LoginPage/SetupPage/PositionsPage/AssignmentsPage）"
+      snapshot: "HEAD 1948975 实测（与 5a3def3 页面代码一致，HEAD 仅多一条文档修正提交）"
+    - title: "模块样式文件"
+      locator: "internal/module/*/binding/webui/web/*.module.css（iam 25 处/ops 75 处/settings 8 处/organization 5 处/navigation 15 处/auth 9 处 :global）"
+      snapshot: "HEAD 1948975 实测（计数与 R083-002 一致）"
+    - title: "平台语义组件与壳层"
+      locator: "webui/src/ui/index.tsx（917 行，60+ 项导出）、webui/src/components/AppShell.tsx、webui/src/sdk/query/unified.ts、webui/src/generated/webui-registry.ts、webui/src/styles.css"
+      snapshot: "HEAD 1948975 实测"
+  primary_sources_note: "任务给定 HEAD 为 5a3def3；实测 HEAD 为 1948975（仅 docs/changes 计数修正提交，页面代码与 5a3def3 一致），判定以 HEAD 代码为准。"
+researched_at: "2026-08-28"
+verified_at: "2026-08-28"
+validity:
+  mode: snapshot
+  review_after: "2026-09-28"
+  refresh_triggers:
+    - "083 页面迁移任务落地导致任何页面结构/状态语言变化（本档案为迁移前基线，落地后需复核）"
+    - "新增后端能力（server-side sort 等）改变 DataTable 能力判定"
+    - "样式权威清理（档 1）完成导致各页 :global 维度判定失效"
+    - "设计基线文本修订"
+relations:
+  extends: []
+  related:
+    - "R083-001"
+    - "R083-002"
+    - "R001"
+    - "R002"
+  supersedes: []
+  superseded_by: []
+report: report.md

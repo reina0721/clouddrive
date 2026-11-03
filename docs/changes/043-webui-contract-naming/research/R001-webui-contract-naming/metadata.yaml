@@ -1,0 +1,44 @@
+schema_version: 1
+id: R001
+title: "WebUI 契约命名边界研究"
+question: "如何把 042 中不严谨的 admin 技术命名单轨替换为 webui，并保持契约、认证、路由、CLI、持久化和文档一致？"
+research_type: current-project
+topics: ["webui", "contract-naming", "single-track-migration", "auth", "http", "cli", "migration"]
+keywords: ["WebUIBinding", "WebUICatalog", "webui manifest", "webui session", "webui generate"]
+applicable_scenarios: ["042 后续命名纠正", "WebUI 扩展契约重命名", "WebUI Session 与持久化命名单轨迁移"]
+non_applicable_scenarios: ["新增页面功能", "改变认证语义", "兼容旧 Admin 协议", "部署 WebUI"]
+status: active
+summary: "当前 admin 名称同时指向宿主、契约、认证和角色，owner 不明确；项目自有技术标识应统一替换为 webui，Auth 继续拥有认证行为且不保留双轨兼容。"
+evidence:
+  types: ["source-code", "tests", "project-docs", "git-state", "user-decision"]
+  primary_sources:
+    - title: "042 实施提交"
+      locator: "c08f12d"
+      snapshot: "verified 2026-08-21; local main ahead of origin/main by one commit"
+    - title: "WebUI 契约实现"
+      locator: "internal/admin/contract.go"
+      snapshot: "HEAD c08f12d, verified 2026-08-21"
+    - title: "WebUI Composition"
+      locator: "internal/composition/admin_http.go"
+      snapshot: "HEAD c08f12d, verified 2026-08-21"
+    - title: "Auth WebUI Session"
+      locator: "internal/module/auth/adminservice"
+      snapshot: "HEAD c08f12d, verified 2026-08-21"
+    - title: "042 需求与设计"
+      locator: "docs/changes/042-admin-webui-foundation"
+      snapshot: "HEAD c08f12d, verified 2026-08-21"
+    - title: "用户命名决策"
+      locator: "current conversation"
+      snapshot: "2026-08-21: choose contract naming and use webui"
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+validity:
+  mode: snapshot
+  review_after: "2026-11-21"
+  refresh_triggers: ["042 实现被推送或发布", "WebUI 路由或 Session wire contract 改变", "新增依赖 042 admin 技术标识的外部消费者"]
+relations:
+  extends: ["042"]
+  related: ["033", "039", "040"]
+  supersedes: []
+  superseded_by: []
+report: report.md

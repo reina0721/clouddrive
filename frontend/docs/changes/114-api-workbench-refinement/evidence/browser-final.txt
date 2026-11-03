@@ -1,0 +1,69 @@
+
+Running 27 tests using 1 worker
+
+  ✓   1 [chromium] › apps/web/e2e/api-workbench-refinement.spec.ts:64:3 › workbench appearance and navigation: 1920-light-expanded (4.1s)
+  ✓   2 [chromium] › apps/web/e2e/api-workbench-refinement.spec.ts:64:3 › workbench appearance and navigation: 1440-dark-collapsed (3.8s)
+  ✓   3 [chromium] › apps/web/e2e/api-workbench-refinement.spec.ts:64:3 › workbench appearance and navigation: 1280-light-large (3.3s)
+  ✓   4 [chromium] › apps/web/e2e/api-workbench-refinement.spec.ts:64:3 › workbench appearance and navigation: 1024-dark-high-contrast (3.7s)
+  ✓   5 [chromium] › apps/web/e2e/api-workbench-refinement.spec.ts:64:3 › workbench appearance and navigation: 768-system-small (2.2s)
+  ✓   6 [chromium] › apps/web/e2e/api-workbench-refinement.spec.ts:64:3 › workbench appearance and navigation: 390-dark-english-large (2.7s)
+  ✓   7 [chromium] › apps/web/e2e/api-workbench-refinement.spec.ts:134:1 › project tree can collapse without losing a draft (2.5s)
+  ✓   8 [chromium] › apps/web/e2e/api-workbench-refinement.spec.ts:150:1 › long configuration, pending, response scrolling and failures remain usable (6.2s)
+  ✓   9 [chromium] › apps/web/e2e/api-workbench-refinement.spec.ts:212:1 › global appearance edits propagate to the workbench and persist after refresh (5.2s)
+  ✓  10 [chromium] › apps/web/e2e/api-workbench.spec.ts:61:3 › API workbench execution and state › executes a mock request, exposes assertion details and request history (4.1s)
+  ✓  11 [chromium] › apps/web/e2e/api-workbench.spec.ts:75:3 › API workbench execution and state › runner and manual task runs report the same real failure (3.8s)
+  ✓  12 [chromium] › apps/web/e2e/api-workbench.spec.ts:89:3 › API workbench execution and state › retains per-request drafts across selection, resizing and variable saves (5.4s)
+  ✓  13 [chromium] › apps/web/e2e/api-workbench.spec.ts:124:3 › API workbench execution and state › a failed durable write retains the draft and never reports Saved (2.3s)
+  ✓  14 [chromium] › apps/web/e2e/api-workbench.spec.ts:142:3 › API workbench execution and state › invalid JSON has a field error and destructive body format changes require confirmation (3.9s)
+  ✓  15 [chromium] › apps/web/e2e/api-workbench.spec.ts:163:3 › API workbench execution and state › imports only after reviewing a valid replacement and handles invalid files (3.9s)
+  ✓  16 [chromium] › apps/web/e2e/api-workbench.spec.ts:204:1 › failed task record saves can retry without executing the requests again (2.7s)
+  ✓  17 [chromium] › apps/web/e2e/api-workbench.spec.ts:223:1 › load failures are recoverable without replacing invalid workspace data (1.8s)
+  ✓  18 [chromium] › apps/web/e2e/api-workbench.spec.ts:233:1 › transport failure, empty response and denied clipboard have distinct feedback (4.5s)
+  ✓  19 [chromium] › apps/web/e2e/api-workbench.spec.ts:262:1 › named creation, search recovery, task validation and delete cancellation (10.1s)
+  ✓  20 [chromium] › apps/web/e2e/api-workbench.spec.ts:308:3 › responsive composition and overlay accessibility at 390px (9.3s)
+  ✘  21 [chromium] › apps/web/e2e/api-workbench.spec.ts:308:3 › responsive composition and overlay accessibility at 768px (7.7s)
+  ✓  22 [chromium] › apps/web/e2e/api-workbench.spec.ts:308:3 › responsive composition and overlay accessibility at 1024px (4.8s)
+  ✓  23 [chromium] › apps/web/e2e/api-workbench.spec.ts:308:3 › responsive composition and overlay accessibility at 1440px (5.4s)
+  ✓  24 [chromium] › apps/web/e2e/api-workbench.spec.ts:308:3 › responsive composition and overlay accessibility at 1920px (4.7s)
+  ✓  25 [chromium] › apps/web/e2e/api-workbench.spec.ts:308:3 › responsive composition and overlay accessibility at 2560px (4.6s)
+  ✓  26 [chromium] › apps/web/e2e/api-workbench.spec.ts:337:1 › dark English layout, keyboard collection navigation and floating layer bounds (4.0s)
+  ✓  27 [chromium] › apps/web/e2e/api-workbench.spec.ts:369:1 › history restores full request configuration as a separate request without overwriting source drafts (4.0s)
+
+
+  1) [chromium] › apps/web/e2e/api-workbench.spec.ts:308:3 › responsive composition and overlay accessibility at 768px 
+
+    Error: page.evaluate: Execution context was destroyed, most likely because of a navigation
+     Please check out https://github.com/dequelabs/axe-core-npm/blob/develop/packages/playwright/error-handling.md
+
+      51 |     );
+      52 |   });
+    > 53 |   const result = await new AxeBuilder({ page })
+         |                  ^
+      54 |     .include(selector)
+      55 |     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      56 |     .analyze();
+        at AxeBuilder.analyze (/home/rin/.cache/api-workbench-review/workspace/node_modules/.pnpm/@axe-core+playwright@4.13.0_playwright-core@1.62.1/node_modules/@axe-core/playwright/dist/index.mjs:218:13)
+        at assertAccessible (/home/rin/.cache/api-workbench-review/workspace/apps/web/e2e/api-workbench.spec.ts:53:18)
+        at /home/rin/.cache/api-workbench-review/workspace/apps/web/e2e/api-workbench.spec.ts:322:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/api-review/api-workbench-responsive-c-8ce1e-rlay-accessibility-at-768px-chromium/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/api-review/api-workbench-responsive-c-8ce1e-rlay-accessibility-at-768px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/api-review/api-workbench-responsive-c-8ce1e-rlay-accessibility-at-768px-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/api-review/api-workbench-responsive-c-8ce1e-rlay-accessibility-at-768px-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/api-review/api-workbench-responsive-c-8ce1e-rlay-accessibility-at-768px-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps/web/e2e/api-workbench.spec.ts:308:3 › responsive composition and overlay accessibility at 768px 
+  26 passed (2.1m)

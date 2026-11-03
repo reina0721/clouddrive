@@ -1,0 +1,30 @@
+schema_version: 1
+change: 067-webui-page-layout-scroll-motion
+areas:
+  - id: startup
+    decision: reviewed-no-change
+    reason: 宿主 boot 装配链（manifest -> registry -> Shell -> route）与 revision 门禁不变；Lenis/Reveal 只作用于浏览器呈现层，不引入新启动阶段。
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/organization/binding/webui/web/locale/zh-CN.json
+      - internal/module/organization/binding/webui/web/locale/en-US.json
+      - internal/module/{iam,organization,auth,navigation,ops}/binding/webui/web/*.tsx
+      - internal/module/{iam,organization,auth,navigation,ops}/binding/webui/web/*.module.css
+    reason: 组织模块 locale 键修复与操作失败反馈；全部业务页面迁移到平台布局骨架；模块 CSS 收口只保留模块专属 selector；不触碰模块 Binding/Manifest/路由/服务端契约。
+  - id: webui
+    decision: updated
+    documents:
+      - docs/development/webui.md
+      - webui/README.md
+      - webui/package.json
+      - webui/pnpm-lock.yaml
+    reason: 新增平台布局骨架原语（PageSection/StatGrid/StatCard/DataCard/Reveal 等）、滚动体验运行时（Lenis 封装、边缘阻尼、磁吸、劫持、滚动条插槽）、ThemePreferences experience 派生配置与 ThemeDrawer 体验面板；新增唯一第三方依赖 lenis 并记录维护/边界结论；样式 authority 仍为 webui/src/styles.css。
+  - id: api
+    decision: reviewed-no-change
+    reason: api/openapi.yaml 与 operation inventory 不变；不新增 HTTP operation；动作权限钩子沿用既有 OperationID。
+  - id: operations
+    decision: updated
+    documents:
+      - docs/architecture/technology-selection.md
+    reason: 新增第三方 lenis 的引入结论与封装边界记录到技术选型 authority；构建/容器/部署/安全边界不变。

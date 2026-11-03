@@ -1,0 +1,32 @@
+schema_version: 1
+id: R081-003
+title: "监控可视化的人因形态：主流产品（Grafana/Datadog/Netdata/状态页）的服务器状态呈现与本地落地"
+question: "081 首版监控分区为何'不像给人看的'；主流监控产品如何向用户展示服务器与服务状态；本项目用自研 UI 原语可落地的组件形态是什么？"
+research_type: current-project
+topics: ["ops", "monitoring", "dashboard", "ux", "status-indicator"]
+keywords: ["HealthBanner", "StatCard", "StatusIndicator", "AxisTimeSeries", "SemanticState"]
+applicable_scenarios: ["单进程自托管监控页人眼可扫形态", "语义状态（绿/黄/红）与状态词", "大数值指标卡 + 带轴时序图 + 组件状态行"]
+non_applicable_scenarios: ["复杂 BI 图表交互", "多实例拓扑视图（候选）"]
+status: active
+summary: "主流监控 UI 共性：语义状态而非原始枚举（绿/黄/红 + 可读状态词）、全局健康横幅、大数值卡（数字+单位+迷你趋势+状态色）、带坐标轴的时间序列（y 刻度+x 时间+图例）、组件状态行式列表（名称+状态圆点+状态词+异常高亮）、实时感（最近采样时间）。重设计方案：监控分区重构为健康横幅 + 指标卡行（内存/请求速率/goroutine/进程 CPU，升级 StatGrid）+ 坐标轴时序图（chaart 原语演化为 AxisLineChart）+ 组件状态表；移除首版文本健康列表与无轴迷你线堆叠。web 复核通道不可用，形态依据为公开惯例，以渲染验收为准。"
+evidence:
+  types: ["prior-research", "vendor-practice", "self-authored"]
+  primary_sources:
+    - title: "主流产品形态惯例（Grafana Stat/Time series、Netdata 指标卡、状态页组件列表）"
+      locator: "公开产品惯例（本会话 web 复核通道不可用，标注局限）"
+      snapshot: "2026-09"
+    - title: "既有自研 UI 原语"
+      locator: "webui/src/ui/index.tsx（StatusPill/CapabilityBanner/StatCard/StatGrid）；charts.tsx（LineChart 可演化坐标轴版）"
+      snapshot: "f85d63d 验证 2026-09"
+researched_at: "2026-09"
+verified_at: "2026-09"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-10"
+  refresh_triggers: ["web 复核通道恢复后可逐条对照官方设计文档", "渲染色觉可达/空态/降级态验收", "图表原语增加交互需求"]
+relations:
+  extends: ["R081-001", "R081-002", "059/R059-001"]
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

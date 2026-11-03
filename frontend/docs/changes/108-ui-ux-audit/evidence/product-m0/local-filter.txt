@@ -1,0 +1,402 @@
+- button "Open Next.js Dev Tools":
+- alert
+- link "跳到主要内容 / Skip to content":
+  - /url: "#main-content"
+- complementary:
+  - generic: C
+  - navigation "主导航":
+    - list "Universal Foundation":
+      - link "总览":
+        - /url: /
+    - list "系统":
+      - link "设置":
+        - /url: /settings
+      - link "Icon 大全":
+        - /url: /system-tools/icons
+    - list "参考资源":
+      - link "参考资源":
+        - /url: /reference-resources
+    - list "开发":
+      - link "基座能力":
+        - /url: /foundations
+      - link "Motion":
+        - /url: /motion
+      - button "Page Archetypes":
+      - button "Page Patterns":
+      - link "状态体系":
+        - /url: /states
+      - button "UI Elements":
+- banner:
+  - button "展开侧栏":
+  - button "按 Ctrl K 搜索"
+  - button "切换语言":
+  - button "切换主题":
+  - button "通知":
+  - button "当前用户":
+    - generic "Rin": RI
+    - generic: Rin
+- main:
+  - list "面包屑导航":
+    - link "基座验证"
+    - generic: /
+    - link "数据工作台" [disabled]
+  - paragraph: Reference · Workspace
+  - heading "高密度数据工作台" [level=1]
+  - paragraph: 使用 48 条本地基准数据验证 Dashboard、筛选、Table、Master-Detail、Tabs、Drawer、Dialog 与非正常状态的协作边界。
+  - button "打开活动侧栏"
+  - button "打开确认对话框"
+  - paragraph: 总工作流
+  - paragraph: "48"
+  - paragraph: 需关注
+  - paragraph: "16"
+  - paragraph: 高风险
+  - paragraph: "16"
+  - paragraph: 筛选结果
+  - paragraph: "16"
+  - toolbar "页面工具栏":
+    - searchbox "搜索 Reference 数据"
+    - button "Close":
+    - button "搜索":
+      - generic: 搜索
+    - button "清除筛选":
+      - generic: 清除筛选
+    - button "导出快照":
+      - generic: 导出快照
+  - generic: 状态
+  - button "需关注 状态":
+    - generic: 需关注
+  - combobox
+  - generic: 区域
+  - button "全部 区域":
+    - generic: 全部
+  - combobox
+  - generic: 表格密度
+  - button "舒适 表格密度":
+    - generic: 舒适
+  - combobox
+  - generic: 场景状态
+  - button "正常 场景状态":
+    - generic: 正常
+  - combobox
+  - region "Reference 工作流数据表":
+    - heading "工作流列表" [level=2]
+    - paragraph: 当前展示 16 条记录；数据量用于验证滚动、密度与溢出。
+    - button "列设置"
+    - grid "Reference 工作流数据表":
+      - rowgroup:
+        - row "工作流 尺寸调整器 负责人 尺寸调整器 状态 尺寸调整器 区域 尺寸调整器 完成度 尺寸调整器 更新时间 尺寸调整器":
+          - columnheader "工作流 尺寸调整器":
+            - generic: 工作流
+            - slider "尺寸调整器 工作流": "138"
+          - columnheader "负责人 尺寸调整器":
+            - generic: 负责人
+            - slider "尺寸调整器 负责人": "138"
+          - columnheader "状态 尺寸调整器":
+            - generic: 状态
+            - slider "尺寸调整器 状态": "138"
+          - columnheader "区域 尺寸调整器":
+            - generic: 区域
+            - slider "尺寸调整器 区域": "138"
+          - columnheader "完成度 尺寸调整器":
+            - generic: 完成度
+            - slider "尺寸调整器 完成度": "138"
+          - columnheader "更新时间 尺寸调整器":
+            - text: 更新时间
+            - slider "尺寸调整器 更新时间": "138"
+      - rowgroup:
+        - row "Partner onboarding 2 REF-002":
+          - rowheader "Partner onboarding 2 REF-002":
+            - paragraph: Partner onboarding 2
+            - paragraph: REF-002
+          - gridcell "Avery Morgan Avery Morgan 欧洲、中东与非洲":
+            - generic "Avery Morgan": AM
+            - generic: Avery Morgan
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "48%":
+            - progressbar "48%":
+              - generic: 48%
+              - generic: 48%
+          - gridcell "2026-08-28"
+        - row "Moderation quality signals 14 REF-014":
+          - rowheader "Moderation quality signals 14 REF-014":
+            - paragraph: Moderation quality signals 14
+            - paragraph: REF-014
+          - gridcell "Avery Morgan Avery Morgan 欧洲、中东与非洲":
+            - generic "Avery Morgan": AM
+            - generic: Avery Morgan
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "76%":
+            - progressbar "76%":
+              - generic: 76%
+              - generic: 76%
+          - gridcell "2026-08-28"
+        - row "Partner onboarding 26 REF-026":
+          - rowheader "Partner onboarding 26 REF-026":
+            - paragraph: Partner onboarding 26
+            - paragraph: REF-026
+          - gridcell "Avery Morgan Avery Morgan 欧洲、中东与非洲":
+            - generic "Avery Morgan": AM
+            - generic: Avery Morgan
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "40%":
+            - progressbar "40%":
+              - generic: 40%
+              - generic: 40%
+          - gridcell "2026-08-28"
+        - row "Moderation quality signals 38 REF-038":
+          - rowheader "Moderation quality signals 38 REF-038":
+            - paragraph: Moderation quality signals 38
+            - paragraph: REF-038
+          - gridcell "Avery Morgan Avery Morgan 欧洲、中东与非洲":
+            - generic "Avery Morgan": AM
+            - generic: Avery Morgan
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "68%":
+            - progressbar "68%":
+              - generic: 68%
+              - generic: 68%
+          - gridcell "2026-08-28"
+        - row "Creator support operations 5 REF-005":
+          - rowheader "Creator support operations 5 REF-005":
+            - paragraph: Creator support operations 5
+            - paragraph: REF-005
+          - gridcell "Lin Chen Lin Chen 欧洲、中东与非洲":
+            - generic "Lin Chen": LC
+            - generic: Lin Chen
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "87%":
+            - progressbar "87%":
+              - generic: 87%
+              - generic: 87%
+          - gridcell "2026-08-25"
+        - row "North Star analytics 17 REF-017":
+          - rowheader "North Star analytics 17 REF-017":
+            - paragraph: North Star analytics 17
+            - paragraph: REF-017
+          - gridcell "Lin Chen Lin Chen 欧洲、中东与非洲":
+            - generic "Lin Chen": LC
+            - generic: Lin Chen
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "51%":
+            - progressbar "51%":
+              - generic: 51%
+              - generic: 51%
+          - gridcell "2026-08-25"
+        - row "Creator support operations 29 REF-029":
+          - rowheader "Creator support operations 29 REF-029":
+            - paragraph: Creator support operations 29
+            - paragraph: REF-029
+          - gridcell "Lin Chen Lin Chen 欧洲、中东与非洲":
+            - generic "Lin Chen": LC
+            - generic: Lin Chen
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "79%":
+            - progressbar "79%":
+              - generic: 79%
+              - generic: 79%
+          - gridcell "2026-08-25"
+        - row "North Star analytics 41 REF-041":
+          - rowheader "North Star analytics 41 REF-041":
+            - paragraph: North Star analytics 41
+            - paragraph: REF-041
+          - gridcell "Lin Chen Lin Chen 欧洲、中东与非洲":
+            - generic "Lin Chen": LC
+            - generic: Lin Chen
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "43%":
+            - progressbar "43%":
+              - generic: 43%
+              - generic: 43%
+          - gridcell "2026-08-25"
+        - row "Content lifecycle governance 8 REF-008":
+          - rowheader "Content lifecycle governance 8 REF-008":
+            - paragraph: Content lifecycle governance 8
+            - paragraph: REF-008
+          - gridcell "Sam Rivera Sam Rivera 欧洲、中东与非洲":
+            - generic "Sam Rivera": SR
+            - generic: Sam Rivera
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "62%":
+            - progressbar "62%":
+              - generic: 62%
+              - generic: 62%
+          - gridcell "2026-08-22"
+        - row "Regional release readiness 20 REF-020":
+          - rowheader "Regional release readiness 20 REF-020":
+            - paragraph: Regional release readiness 20
+            - paragraph: REF-020
+          - gridcell "Sam Rivera Sam Rivera 欧洲、中东与非洲":
+            - generic "Sam Rivera": SR
+            - generic: Sam Rivera
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "90%":
+            - progressbar "90%":
+              - generic: 90%
+              - generic: 90%
+          - gridcell "2026-08-22"
+        - row "Content lifecycle governance 32 REF-032":
+          - rowheader "Content lifecycle governance 32 REF-032":
+            - paragraph: Content lifecycle governance 32
+            - paragraph: REF-032
+          - gridcell "Sam Rivera Sam Rivera 欧洲、中东与非洲":
+            - generic "Sam Rivera": SR
+            - generic: Sam Rivera
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "54%":
+            - progressbar "54%":
+              - generic: 54%
+              - generic: 54%
+          - gridcell "2026-08-22"
+        - row "Regional release readiness 44 REF-044":
+          - rowheader "Regional release readiness 44 REF-044":
+            - paragraph: Regional release readiness 44
+            - paragraph: REF-044
+          - gridcell "Sam Rivera Sam Rivera 欧洲、中东与非洲":
+            - generic "Sam Rivera": SR
+            - generic: Sam Rivera
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "82%":
+            - progressbar "82%":
+              - generic: 82%
+              - generic: 82%
+          - gridcell "2026-08-22"
+        - row "Trust review pipeline 11 REF-011":
+          - rowheader "Trust review pipeline 11 REF-011":
+            - paragraph: Trust review pipeline 11
+            - paragraph: REF-011
+          - gridcell "Mika Sato Mika Sato 欧洲、中东与非洲":
+            - generic "Mika Sato": MS
+            - generic: Mika Sato
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "37%":
+            - progressbar "37%":
+              - generic: 37%
+              - generic: 37%
+          - gridcell "2026-08-19"
+        - row "Billing reconciliation 23 REF-023":
+          - rowheader "Billing reconciliation 23 REF-023":
+            - paragraph: Billing reconciliation 23
+            - paragraph: REF-023
+          - gridcell "Mika Sato Mika Sato 欧洲、中东与非洲":
+            - generic "Mika Sato": MS
+            - generic: Mika Sato
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "65%":
+            - progressbar "65%":
+              - generic: 65%
+              - generic: 65%
+          - gridcell "2026-08-19"
+        - row "Trust review pipeline 35 REF-035":
+          - rowheader "Trust review pipeline 35 REF-035":
+            - paragraph: Trust review pipeline 35
+            - paragraph: REF-035
+          - gridcell "Mika Sato Mika Sato 欧洲、中东与非洲":
+            - generic "Mika Sato": MS
+            - generic: Mika Sato
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "93%":
+            - progressbar "93%":
+              - generic: 93%
+              - generic: 93%
+          - gridcell "2026-08-19"
+        - row "Billing reconciliation 47 REF-047":
+          - rowheader "Billing reconciliation 47 REF-047":
+            - paragraph: Billing reconciliation 47
+            - paragraph: REF-047
+          - gridcell "Mika Sato Mika Sato 欧洲、中东与非洲":
+            - generic "Mika Sato": MS
+            - generic: Mika Sato
+            - generic: 欧洲、中东与非洲
+          - gridcell "需关注":
+            - generic: 需关注
+          - gridcell "欧洲、中东与非洲"
+          - gridcell "57%":
+            - progressbar "57%":
+              - generic: 57%
+              - generic: 57%
+          - gridcell "2026-08-19"
+    - navigation "Reference 列表分页":
+      - list:
+        - button "上一页" [disabled]:
+          - generic: ‹
+        - button "第 1 页": "1"
+        - button "下一页" [disabled]:
+          - generic: ›
+    - complementary:
+      - paragraph: REF-002
+      - heading "Partner onboarding 2" [level=2]
+      - generic: 需关注
+      - tablist "工作流详情":
+        - tab "摘要" [selected]:
+          - generic: 摘要
+        - tab "活动":
+          - generic: 活动
+        - tab "风险":
+          - generic: 风险
+      - tabpanel "摘要":
+        - paragraph: 本地参考数据用于验证长内容、状态组合、响应式布局和浏览器交互，不依赖后端。
+        - generic "工作流详情":
+          - term: 负责人
+          - definition:
+            - generic "Avery Morgan": AM
+            - generic: Avery Morgan
+            - generic: 欧洲、中东与非洲
+          - term: 更新时间
+          - definition: 2026年8月28日
+- dialog "状态":
+  - button "取消"
+  - listbox "状态":
+    - option "全部":
+      - generic: 全部
+    - option "健康":
+      - generic: 健康
+    - option "需关注" [active] [selected]:
+      - generic: 需关注
+    - option "已暂停":
+      - generic: 已暂停
+  - button "取消"

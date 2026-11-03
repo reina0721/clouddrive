@@ -1,0 +1,23 @@
+[WebServer] (node:10944) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:17792) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:10016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:30464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:26892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\top-progress.spec.ts:59:1 › 极快导航（warm 缓存路由）仍显示一次完整进度周期并自然退出 (2.2s)
+  ok 2 [chromium] › apps\web\e2e\top-progress.spec.ts:84:1 › 普通首次导航（未缓存路由）能感知到进度条 (2.1s)
+  ok 3 [chromium] › apps\web\e2e\top-progress.spec.ts:100:1 › 慢速导航：进度条在 viewport 顶部、非零可见尺寸、foreground 实际延伸、完成后退出 (3.7s)
+  ok 4 [chromium] › apps\web\e2e\top-progress.spec.ts:176:1 › 连续快速点击不同路由不错误结束、不永久卡住 (2.6s)
+  ok 5 [chromium] › apps\web\e2e\top-progress.spec.ts:192:1 › 访问不存在路由不导致进度条卡住 (675ms)
+  ok 6 [chromium] › apps\web\e2e\top-progress.spec.ts:199:1 › 进度条不推动 Header/Sidebar/内容布局 (3.0s)
+  ok 7 [chromium] › apps\web\e2e\top-progress.spec.ts:219:1 › Dark Mode 与窄屏下进度条正常显示 (3.3s)
+  ok 8 [chromium] › apps\web\e2e\top-progress.spec.ts:246:1 › Reduced Motion 下进度条动画时长被压低但仍完成收尾 (3.1s)
+
+  8 passed (27.4s)

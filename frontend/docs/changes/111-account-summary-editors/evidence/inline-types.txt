@@ -1,0 +1,29 @@
+
+> clouddrive-frontend@0.1.0 typecheck D:\coder\i721\console-web
+> pnpm -r --if-present typecheck
+
+Scope: 12 of 13 workspace projects
+packages/i18n typecheck$ tsc --noEmit
+packages/types typecheck$ tsc --noEmit
+packages/schemas typecheck$ tsc --noEmit
+packages/state-foundation typecheck$ tsc --noEmit
+packages/types typecheck: Done
+packages/i18n typecheck: Done
+packages/state-foundation typecheck: Done
+packages/schemas typecheck: Done
+packages/core typecheck$ tsc --noEmit
+packages/form-foundation typecheck$ tsc --noEmit
+packages/ui-adapter typecheck$ tsc --noEmit
+packages/core typecheck: Done
+packages/form-foundation typecheck: Done
+packages/ui-adapter typecheck: Done
+packages/plugin-framework typecheck$ tsc --noEmit
+packages/surface-foundation typecheck$ tsc --noEmit
+packages/plugin-framework typecheck: Done
+packages/surface-foundation typecheck: Done
+surfaces typecheck$ tsc --noEmit
+surfaces typecheck: Done
+apps/web typecheck$ next typegen && tsc --noEmit
+apps/web typecheck: Generating route types...
+apps/web typecheck: ✓ Types generated successfully
+apps/web typecheck: Done

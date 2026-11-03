@@ -1,0 +1,30 @@
+
+[WebServer] (node:10528) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:33652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:29064) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:22200) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:13140) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+
+(node:33248) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:12:1 › Compact rail uses coherent geometry, current route, named groups and focus/hover hints
+[2/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:47:1 › Hover bridge, click pin, second click close and keyboard focus survive pointer departure
+[3/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:90:1 › Mode round trip retains exploration and closes old portal; expanded layout remains intact
+[4/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:113:1 › Compact rail stays usable at 1024/1440/2560, dark English, short height and text zoom
+[5/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:151:1 › Mobile Drawer remains expanded, traps focus and restores desktop collapse preference
+[6/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:193:3 › Touch desktop rail › Tap opens a full submenu and selecting a child navigates and dismisses it
+[7/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:206:1 › Reduced motion and repeated mode changes keep header and content in their grid column
+  7 passed (1.1m)

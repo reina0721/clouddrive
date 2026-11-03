@@ -1,0 +1,147 @@
+{
+  "dependencies": {
+    "@clouddrive/config": {
+      "owner": "global configuration",
+      "allowed": ["apps/web"]
+    },
+    "@clouddrive/surface-foundation": {
+      "owner": "Surface UX Foundation",
+      "allowed": ["apps/web", "surfaces"]
+    },
+    "@clouddrive/plugin-framework": {
+      "owner": "Plugin Contract, Registry & Route Target",
+      "allowed": ["apps/web", "surfaces"]
+    },
+    "@clouddrive/surface": {
+      "owner": "Surface Shell & Composition",
+      "allowed": ["apps/web"]
+    },
+    "@clouddrive/core": {
+      "owner": "pure frontend semantics",
+      "allowed": [
+        "apps/web",
+        "packages/surface-foundation",
+        "packages/plugin-framework",
+        "surfaces"
+      ]
+    },
+    "@clouddrive/design-system": {
+      "owner": "semantic design tokens",
+      "allowed": ["apps/web"]
+    },
+    "@clouddrive/form-foundation": {
+      "owner": "universal form lifecycle",
+      "allowed": ["apps/web", "packages/surface-foundation", "surfaces"]
+    },
+    "@clouddrive/i18n": {
+      "owner": "universal locale runtime",
+      "allowed": ["apps/web", "surfaces"]
+    },
+    "@clouddrive/schemas": {
+      "owner": "schema contract primitives",
+      "allowed": ["apps/web", "packages/form-foundation", "packages/plugin-framework", "surfaces"]
+    },
+    "@clouddrive/types": {
+      "owner": "stable shared types",
+      "allowed": [
+        "apps/web",
+        "packages/core",
+        "packages/schemas",
+        "packages/ui-adapter",
+        "packages/surface-foundation",
+        "packages/plugin-framework",
+        "surfaces"
+      ]
+    },
+    "@clouddrive/ui-adapter": {
+      "owner": "product-neutral UI contracts",
+      "allowed": ["apps/web", "packages/surface-foundation", "surfaces"]
+    },
+    "@heroui/react": {
+      "owner": "accessible UI primitives",
+      "allowed": ["packages/ui-adapter"],
+      "category": "ui-primitives"
+    },
+    "@heroui/styles": {
+      "owner": "HeroUI vendor styles",
+      "allowed": ["packages/ui-adapter"]
+    },
+    "@hookform/resolvers": {
+      "owner": "form-schema bridge",
+      "allowed": ["packages/form-foundation"]
+    },
+    "i18next": {
+      "owner": "localization runtime",
+      "allowed": ["packages/i18n"],
+      "category": "localization"
+    },
+    "lucide-react": {
+      "owner": "interface icons",
+      "allowed": ["apps/web", "surfaces"],
+      "category": "icons"
+    },
+    "next": {
+      "owner": "Web Host framework and routing",
+      "allowed": ["apps/web"],
+      "category": "framework"
+    },
+    "react": {
+      "owner": "view runtime",
+      "allowed": [
+        "apps/web",
+        "packages/surface-foundation",
+        "packages/plugin-framework",
+        "packages/form-foundation",
+        "packages/i18n",
+        "packages/ui-adapter",
+        "surfaces"
+      ]
+    },
+    "react-aria-components": {
+      "owner": "accessible interaction primitives",
+      "allowed": ["packages/ui-adapter"]
+    },
+    "react-dom": {
+      "owner": "Web renderer",
+      "allowed": ["apps/web"]
+    },
+    "react-hook-form": {
+      "owner": "complex form state",
+      "allowed": ["packages/form-foundation"],
+      "category": "form-state"
+    },
+    "react-i18next": {
+      "owner": "React localization binding",
+      "allowed": ["packages/i18n"]
+    },
+    "zod": {
+      "owner": "runtime schema validation",
+      "allowed": ["apps/web", "packages/schemas", "packages/config", "surfaces"],
+      "category": "schema"
+    },
+    "zustand": {
+      "owner": "product state foundation (Store mechanics)",
+      "allowed": ["packages/state-foundation"],
+      "category": "client-state"
+    },
+    "ajv": {
+      "owner": "JSON Schema draft-2020-12 validation",
+      "allowed": ["packages/schemas"],
+      "category": "schema"
+    },
+    "@clouddrive/state-foundation": {
+      "owner": "product state foundation (Store mechanics)",
+      "allowed": ["apps/web", "surfaces"],
+      "category": "client-state"
+    },
+    "tw-animate-css": {
+      "owner": "HeroUI component enter/exit animation utilities consumed by UI Adapter styles",
+      "allowed": ["apps/web"],
+      "category": "ui"
+    },
+    "@internationalized/date": {
+      "owner": "UI Adapter calendar value parsing for HeroUI date controls",
+      "allowed": ["packages/ui-adapter"]
+    }
+  }
+}

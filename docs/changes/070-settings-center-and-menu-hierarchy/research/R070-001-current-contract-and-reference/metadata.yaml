@@ -1,0 +1,33 @@
+schema_version: 1
+id: R070-001
+title: "当前菜单层级契约与参考站（shadcn-admin settings）的差距；WebUI 自带页面归属现状"
+question: "用户参考 https://shadcn-admin.netlify.app/settings（Profile/Account/Appearance/Notifications 四分区设置中心）要求：1) 为项目实现参考站展示的缺失页面及业务模块（设置中心）；2) 判断业务模块是否能把 WebUI 自带页面纳入自己下级菜单，若不能则重构/升级 WebUI 架构，保证「WebUI 自带或业务模块可以双向选择到自己下级或上级」并派生更多设计思路。需要回答：（a）当前 Navigation/Root 契约对 ParentID/RouteID 的 owner 约束是什么？（b）WebUI「自带页面」与业务模块页面的归属现状？（c）参考站设置中心的布局与菜单层级形态？（d）差距与升级点。"
+research_type: current-project
+topics: ["webui", "navigation", "menu-hierarchy", "settings", "host-pages", "contract", "parent-id", "shadcn-admin"]
+keywords: ["Binding.Navigation", "ParentID", "RouteID", "validateBindings", "manifest.Menu", "host page", "settings", "Profile", "Account", "Appearance", "Notifications"]
+applicable_scenarios:
+  - "实现设置中心（Profile/Account/Appearance/Notifications）页面与菜单"
+  - "评估菜单层级契约的 owner 约束并设计升级"
+non_applicable_scenarios:
+  - "把设置中心做成宿主内部业务逻辑（宿主不持有业务页面，保持既有边界）"
+status: active
+summary: "当前契约（internal/webui/contract.go validateBindings）强制 Navigation.ParentID 与 RouteID 必须引用同模块声明（跨 owner 父子引用与宿主页面入菜单均被拒绝）：iam.access 组与 organization.directory 组只能容纳本模块页面；WebUI「自带页面」只有固定系统状态页（404/403 等，不进 manifest/menu），不存在可被业务模块纳为下级的宿主页面。参考站（shadcn-admin settings）：侧栏 Settings 分组下 Profile/Account/Appearance/Notifications 四个子页，内容为表单/偏好卡，两级菜单 + 分区子页。差距与升级点：a) 设置中心作为新业务模块 settings（页面由模块持有）实现四个子页与两级菜单；b) Navigation 契约升级——允许 ParentID 引用任意已声明 navigation（跨 owner，无环校验沿用），RouteID 保持落地页归 owner；可引入「宿主导航声明（HostNavigation）」使平台分组/页面可被业务模块引用（双向：模块页可挂宿主组、宿主页可挂模块组）；c) 派生设计思路：以设置中心为第一个「双向归属」实例并记录规范。"
+evidence:
+  types: ["source-code", "tests", "documentation"]
+  primary_sources:
+    - title: "Navigation/Route owner 约束"
+      locator: "internal/webui/contract.go（validateBindings：RouteID 必须同模块、ParentID 必须同模块；NavigationPolicySnapshot 无环校验 Match 984-988 与 631-680）"
+      snapshot: "d9b151f"
+    - title: "菜单声明示例与生成"
+      locator: "internal/module/iam/binding/webui/binding.go（iam.access 组 + 子项）、contract.go manifest.Menu 生成与 retainMenuWithVisibleParents"
+      snapshot: "d9b151f"
+    - title: "宿主页面现状与前端递归渲染"
+      locator: "webui/src/components/shell/SidebarMenu.tsx（buildMenuTree/findMenuAncestors）、manifest.Menu 由模块声明"
+      snapshot: "d9b151f"
+    - title: "参考站布局形态（外部样本）"
+      locator: "https://shadcn-admin.netlify.app/settings（Settings 分组：Profile/Account/Appearance/Notifications 子页 + 表单/偏好卡）"
+      snapshot: "2026-08-26 公开 demo"
+researched_at: "2026-08-26"
+verified_at: "2026-08-26"
+refresh_triggers:
+  - "Navigation 契约 owner 约束变化"

@@ -1,0 +1,263 @@
+<!doctype html><meta charset="utf-8" /><title>109 视觉差异人工复核</title
+><style>
+  body {
+    font-family: system-ui;
+    margin: 24px;
+  }
+  section {
+    margin-bottom: 48px;
+  }
+  section div {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  figure {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+  }
+  img {
+    max-width: 100%;
+    border: 1px solid #ccc;
+  }
+  p {
+    overflow-wrap: anywhere;
+  }
+</style>
+<h1>109 视觉差异人工复核</h1>
+<p>预期 / 当前 / 差异。点击放大。快照阈值保持原值，尚未批准更新；功能失败另行修复。</p>
+<section>
+  <h2>1. surface-shell-compact-sibling-swap</h2>
+  <p>navigation-收缩侧栏切换兄弟菜单时同一时刻只有一个-Flyout-且旧菜单不残留-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="1-expected.png"><img src="1-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="1-actual.png"><img src="1-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="1-diff.png"><img src="1-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>
+<section>
+  <h2>2. surface-shell-compact-flyout</h2>
+  <p>navigation-收缩侧栏的-Hover-Flyout-保持稳定并支持键盘进入-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="2-expected.png"><img src="2-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="2-actual.png"><img src="2-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="2-diff.png"><img src="2-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>
+<section>
+  <h2>3. ui-elements-date-picker-open</h2>
+  <p>overlays-DatePicker-与-Command-展开面支持键盘及无障碍扫描-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="3-expected.png"><img src="3-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="3-actual.png"><img src="3-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="3-diff.png"><img src="3-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>
+<section>
+  <h2>4. ui-elements-menu-open</h2>
+  <p>overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="4-expected.png"><img src="4-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="4-actual.png"><img src="4-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="4-diff.png"><img src="4-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>
+<section>
+  <h2>5. ui-elements-select-open</h2>
+  <p>overlays-Select-与-Combobox-使用统一-Popup、键盘和选中状态-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="5-expected.png"><img src="5-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="5-actual.png"><img src="5-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="5-diff.png"><img src="5-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>
+<section>
+  <h2>6. page-patterns-collections-desktop</h2>
+  <p>surface-foundation-Universal-与-Surface-authority-视觉面保持分层-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="6-expected.png"><img src="6-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="6-actual.png"><img src="6-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="6-diff.png"><img src="6-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>
+<section>
+  <h2>7. overview-desktop</h2>
+  <p>visual-Overview、Reference-Form-与-Settings-真实页面进入视觉矩阵-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="7-expected.png"><img src="7-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="7-actual.png"><img src="7-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="7-diff.png"><img src="7-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>
+<section>
+  <h2>8. reference-multi-select</h2>
+  <p>visual-Reference-多选与分页的真实联动状态进入视觉矩阵-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="8-expected.png"><img src="8-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="8-actual.png"><img src="8-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="8-diff.png"><img src="8-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>
+<section>
+  <h2>9. ui-elements-toast-compact</h2>
+  <p>visual-Toast、Destructive-Confirm-与-Compact-Density-开启态进入视觉矩阵-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="9-expected.png"><img src="9-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="9-actual.png"><img src="9-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="9-diff.png"><img src="9-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>
+<section>
+  <h2>10. ui-elements-family-actions-selection</h2>
+  <p>visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="10-expected.png"><img src="10-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="10-actual.png"><img src="10-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="10-diff.png"><img src="10-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>
+<section>
+  <h2>11. ui-elements-desktop</h2>
+  <p>visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="11-expected.png"><img src="11-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="11-actual.png"><img src="11-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="11-diff.png"><img src="11-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>
+<section>
+  <h2>12. reference-desktop</h2>
+  <p>visual-桌面与超宽屏-Reference-布局保持稳定-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="12-expected.png"><img src="12-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="12-actual.png"><img src="12-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="12-diff.png"><img src="12-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>
+<section>
+  <h2>13. mobile-navigation-open</h2>
+  <p>visual-移动侧栏打开状态纳入视觉回归-chromium</p>
+  <div>
+    <figure>
+      <figcaption>expected</figcaption>
+      <a href="13-expected.png"><img src="13-expected.png" alt="expected" /></a>
+    </figure>
+    <figure>
+      <figcaption>actual</figcaption>
+      <a href="13-actual.png"><img src="13-actual.png" alt="actual" /></a>
+    </figure>
+    <figure>
+      <figcaption>diff</figcaption>
+      <a href="13-diff.png"><img src="13-diff.png" alt="diff" /></a>
+    </figure>
+  </div>
+</section>

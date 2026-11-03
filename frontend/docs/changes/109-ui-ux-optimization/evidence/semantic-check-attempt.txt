@@ -1,0 +1,7 @@
+Error: ERR_PNPM_STORE_DIR_OPEN_OPERATION_LOCK
+
+  × lock the package-manager engine store
+  ╰─▶ Failed to open the store operation lock at "C:\\Users\\Run\\AppData\
+      \Local\\pnpm-store-operation-locks\\all-stores.lock": 拒绝访问。 (os
+      error 5)
+

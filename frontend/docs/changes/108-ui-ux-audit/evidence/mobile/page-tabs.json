@@ -1,0 +1,105 @@
+{
+  "before": {
+    "active": [],
+    "client": 375,
+    "items": [
+      {
+        "current": null,
+        "h": 20,
+        "label": null,
+        "text": "创建与编辑",
+        "w": 78,
+        "x": 20
+      },
+      {
+        "current": null,
+        "h": 20,
+        "label": "关闭 创建与编辑",
+        "text": "",
+        "w": 20,
+        "x": 102
+      },
+      {
+        "current": null,
+        "h": 20,
+        "label": null,
+        "text": "数据工作台",
+        "w": 78,
+        "x": 140
+      },
+      {
+        "current": null,
+        "h": 20,
+        "label": "关闭 数据工作台",
+        "text": "",
+        "w": 20,
+        "x": 222
+      },
+      {
+        "current": null,
+        "h": 20,
+        "label": null,
+        "text": "导航",
+        "w": 36,
+        "x": 260
+      },
+      {
+        "current": null,
+        "h": 20,
+        "label": "关闭 导航",
+        "text": "",
+        "w": 20,
+        "x": 300
+      },
+      {
+        "current": null,
+        "h": 20,
+        "label": null,
+        "text": "基座能力",
+        "w": 64,
+        "x": 338
+      },
+      {
+        "current": null,
+        "h": 20,
+        "label": "关闭 基座能力",
+        "text": "",
+        "w": 20,
+        "x": 406
+      }
+    ],
+    "left": 0,
+    "scroll": 446
+  },
+  "after": {
+    "active": [
+      {
+        "rect": {
+          "bottom": 114,
+          "height": 34,
+          "left": -15,
+          "right": 89,
+          "top": 80,
+          "width": 104,
+          "x": -15,
+          "y": 80
+        },
+        "text": "基座能力"
+      }
+    ],
+    "client": 375,
+    "focused": "基座能力",
+    "left": 27,
+    "rect": {
+      "bottom": 130,
+      "height": 50,
+      "left": 0,
+      "right": 375,
+      "top": 80,
+      "width": 375,
+      "x": 0,
+      "y": 80
+    },
+    "scroll": 446
+  }
+}

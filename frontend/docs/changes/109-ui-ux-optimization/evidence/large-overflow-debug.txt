@@ -1,0 +1,202 @@
+[
+  {
+    tag: 'DIV',
+    cls: 'surface-shell-grid min-h-screen bg-canvas text-ink',
+    x: 0,
+    right: 360,
+    width: 360,
+    text: 'CCommunityUnified FrontendUniversal Foun'
+  },
+  {
+    tag: 'DIV',
+    cls: 'min-w-0',
+    x: 0,
+    right: 360,
+    width: 360,
+    text: 'RIRIRinProduct ownerFoundation validatio'
+  },
+  {
+    tag: 'HEADER',
+    cls: 'sticky top-0 z-sticky flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8',
+    x: 0,
+    right: 360,
+    width: 360,
+    text: 'RIRIRinProduct owner'
+  },
+  {
+    tag: 'DIV',
+    cls: 'ml-auto flex items-center gap-2',
+    x: 218.5,
+    right: 342,
+    width: 123.5,
+    text: 'RIRIRinProduct owner'
+  },
+  {
+    tag: 'BUTTON',
+    cls: 'dropdown__trigger ui-overlay-trigger',
+    x: 277,
+    right: 342,
+    width: 65,
+    text: 'RIRIRinProduct owner'
+  },
+  {
+    tag: 'SPAN',
+    cls: 'md:hidden',
+    x: 293.75,
+    right: 325.25,
+    width: 31.5,
+    text: 'RI'
+  },
+  {
+    tag: 'SPAN',
+    cls: 'relative inline-flex shrink-0',
+    x: 293.75,
+    right: 325.25,
+    width: 31.5,
+    text: 'RI'
+  },
+  {
+    tag: 'SPAN',
+    cls: 'avatar avatar--md shrink-0 overflow-hidden rounded-full bg-surface-inset text-ink size-7 text-xs',
+    x: 293.75,
+    right: 325.25,
+    width: 31.5,
+    text: 'RI'
+  },
+  {
+    tag: 'SPAN',
+    cls: 'avatar__fallback avatar__fallback--default grid size-full place-items-center font-bold',
+    x: 293.75,
+    right: 325.25,
+    width: 31.5,
+    text: 'RI'
+  },
+  {
+    tag: 'MAIN',
+    cls: 'mx-auto max-w-screen-2xl p-4 sm:p-6 xl:p-8',
+    x: 0,
+    right: 360,
+    width: 360,
+    text: 'Foundation validation/UI Elements/Action'
+  },
+  {
+    tag: 'DIV',
+    cls: 'surface-route-content min-w-0',
+    x: 18,
+    right: 342,
+    width: 324,
+    text: 'Foundation validation/UI Elements/Action'
+  },
+  {
+    tag: 'DIV',
+    cls: 'surface-page-stack',
+    x: 18,
+    right: 342,
+    width: 324,
+    text: 'Foundation validation/UI Elements/Action'
+  },
+  {
+    tag: 'HEADER',
+    cls: 'surface-route-region space-y-4',
+    x: 18,
+    right: 342,
+    width: 324,
+    text: 'Foundation validation/UI Elements/Action'
+  },
+  {
+    tag: 'OL',
+    cls: 'breadcrumbs flex flex-wrap text-sm text-ink-muted',
+    x: 18,
+    right: 342,
+    width: 324,
+    text: 'Foundation validation/UI Elements/Action'
+  },
+  {
+    tag: 'LI',
+    cls: 'breadcrumbs__item font-medium text-ink-muted data-[current]:text-ink',
+    x: 207.375,
+    right: 321.53125,
+    width: 114.15625,
+    text: 'UI Elements/'
+  },
+  {
+    tag: 'DIV',
+    cls: 'flex flex-wrap items-end justify-between gap-5',
+    x: 18,
+    right: 342,
+    width: 324,
+    text: 'UI Elements · CatalogActions & selection'
+  },
+  {
+    tag: 'DIV',
+    cls: 'min-w-0 max-w-3xl',
+    x: 18,
+    right: 342,
+    width: 324,
+    text: 'UI Elements · CatalogActions & selection'
+  },
+  {
+    tag: 'P',
+    cls: 'text-xs font-bold uppercase tracking-widest text-brand',
+    x: 18,
+    right: 342,
+    width: 324,
+    text: 'UI Elements · Catalog'
+  },
+  {
+    tag: 'H1',
+    cls: 'mt-3 text-balance text-3xl font-extrabold tracking-tight text-ink sm:text-4xl',
+    x: 18,
+    right: 342,
+    width: 324,
+    text: 'Actions & selection'
+  },
+  {
+    tag: 'P',
+    cls: 'mt-3 text-sm leading-7 text-ink-muted sm:text-base',
+    x: 18,
+    right: 342,
+    width: 324,
+    text: 'A short description validates the normal'
+  },
+  {
+    tag: 'SECTION',
+    cls: 'rounded-panel border shadow-panel border-border bg-surface surface-filter-grid p-4',
+    x: 18,
+    right: 342,
+    width: 324,
+    text: 'Display densityComfortable ComfortableCo'
+  },
+  {
+    tag: 'DIV',
+    cls: 'select select--full-width select--primary ui-field',
+    x: 37,
+    right: 323,
+    width: 286,
+    text: 'Display densityComfortable ComfortableCo'
+  },
+  {
+    tag: 'BUTTON',
+    cls: 'select__trigger select__trigger--full-width ui-field-control flex items-center justify-between gap-3',
+    x: 37,
+    right: 323,
+    width: 286,
+    text: 'Comfortable'
+  },
+  {
+    tag: 'DIV',
+    cls: 'switch switch--md group flex items-start justify-between gap-4 rounded-panel border border-border bg-surface p-4',
+    x: 37,
+    right: 323,
+    width: 286,
+    text: 'Expanded textSwitch to extreme content t'
+  },
+  {
+    tag: 'DIV',
+    cls: 'switch switch--md group flex items-start justify-between gap-4 rounded-panel border border-border bg-surface p-4',
+    x: 37,
+    right: 323,
+    width: 286,
+    text: 'English localeToggle locales and inspect'
+  }
+]

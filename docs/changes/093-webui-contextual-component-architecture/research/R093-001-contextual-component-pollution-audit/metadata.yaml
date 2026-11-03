@@ -1,0 +1,47 @@
+schema_version: 1
+id: R093-001
+title: "上下文化组件污染与视觉责任审计"
+question: "092 完成交互来源单轨后，为什么全站仍出现双边框、重复圆角、重卡片、控件形态错位和工作台层级退化；应保留哪些单轨结论并重构哪些视觉责任？"
+research_type: current-project-and-reference-audit
+topics: ["webui", "component-architecture", "visual-hierarchy", "design-tokens", "page-patterns"]
+keywords: ["component pollution", "context adapter", "PageSection", "FilterBar", "DataTable", "OpenAPI", "HeroUI", "React Aria", "TailAdmin"]
+applicable_scenarios: ["WebUI 宿主、业务模块、设置中心和 OpenAPI 工作台的组件与视觉治理"]
+non_applicable_scenarios: ["后端 API、数据库、权限与业务规则", "独立 frontend 目录"]
+status: active
+summary: "092 正确收敛了交互来源，却让部分完整 HeroUI 外壳、平台外壳、业务容器和后置 CSS 同时拥有视觉责任；093 应保留行为单轨，新增受控场景层并落实单一视觉所有者。"
+evidence:
+  types: ["source-code", "repository-history", "user-screenshots", "tests", "running-service", "dependency-source", "official-documentation"]
+  primary_sources:
+    - title: "用户目标与七张全站问题截图"
+      locator: "C:/Users/xiaol/.codex/attachments/4720328f-beb3-4453-8967-c6b3d0b53030/goal-objective.md；同目录 image-1.png 至 image-7.png"
+      snapshot: "2026-08-29 当前会话逐图复核"
+    - title: "当前 WebUI 组件、样式、模块页面与测试"
+      locator: "webui/src/ui；webui/src/styles.css；internal/module/*/binding/webui/web；webui/e2e"
+      snapshot: "e7ce5f8fc301018df0d4da9cc516e057baed624f，2026-08-29"
+    - title: "090 至 092 研究、计划和实现历史"
+      locator: "docs/changes/090-admin-console-design-system；docs/changes/091-ui-component-governance；docs/changes/092-webui-interaction-component-single-track"
+      snapshot: "e7ce5f8，2026-08-29 定向复核"
+    - title: "已安装 HeroUI 与 React Aria 实现"
+      locator: "webui/package.json；webui/node_modules/@heroui/styles/dist/components"
+      snapshot: "@heroui/react 3.2.4；@heroui/styles 3.2.4；react-aria-components 1.20.0"
+    - title: "HeroUI v3 官方设计与样式文档"
+      locator: "https://heroui.com/en/docs/react/releases/v3-0-0；https://heroui.com/en/docs/react/getting-started/styling"
+      snapshot: "2026-08-29 复核"
+    - title: "React Aria 官方组合与样式文档"
+      locator: "https://react-spectrum.adobe.com/react-aria/getting-started.html"
+      snapshot: "2026-08-29 复核"
+    - title: "TailAdmin 官方 React 仓库与组件文档"
+      locator: "https://github.com/TailAdmin/free-react-tailwind-admin-dashboard；https://tailadmin.com/docs/components/react"
+      snapshot: "2026-08-29 复核"
+researched_at: "2026-08-29"
+verified_at: "2026-08-29"
+validity:
+  mode: snapshot
+  review_after: "2026-10-29"
+  refresh_triggers: ["webui/src/ui 公共层或 styles.css 大幅重写", "HeroUI/RAC 主版本变化", "092 单轨边界被撤销", "出现新的全页面视觉基线或用户改变组件分层目标"]
+relations:
+  extends: ["R090-001", "R090-004", "R091-001", "R092-001"]
+  related: ["R086-001"]
+  supersedes: ["R091-002"]
+  superseded_by: []
+report: report.md

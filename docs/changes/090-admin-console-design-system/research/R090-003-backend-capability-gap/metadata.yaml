@@ -1,0 +1,32 @@
+schema_version: 1
+id: R090-003
+title: "成熟后台控制台的后端能力缺口"
+question: "当前后端能支撑哪些管理流程，哪些详情、查询、统计、审计和批量能力必须补充才能让 UI 完整表达业务？"
+research_type: internal-capability-audit
+topics: ["openapi", "iam", "organization", "audit", "operations", "batch-actions"]
+keywords: ["WebUI operations", "resource detail", "server-side query", "audit trail", "async jobs"]
+applicable_scenarios: ["后台页面功能设计", "API 契约演进", "批量操作与审计设计"]
+non_applicable_scenarios: ["把目标接口描述成当前接口", "未确认的数据模型实施"]
+status: active
+summary: "当前 WebUI/API 操作已覆盖 IAM、组织、导航与基础运维的核心 CRUD，但成熟详情页、关系查询、时间范围审计、聚合统计、部分失败和长任务进度仍需要后端契约支撑。"
+evidence:
+  types: ["openapi-contract", "go-binding", "frontend-api-client", "source-code"]
+  primary_sources:
+    - title: "当前 OpenAPI 与 WebUI registry"
+      locator: "docs/openapi；internal/**/binding/webui；webui/src/generated/webui-registry.ts"
+      snapshot: "47d2d9a，087 registry 已提交，2026-08-28 复核"
+    - title: "当前页面 API 调用"
+      locator: "webui/src/pages；webui/src/modules；webui/src/api"
+      snapshot: "2026-08-28 静态调用链复核"
+researched_at: "2026-08-28"
+verified_at: "2026-08-28"
+validity:
+  mode: snapshot
+  review_after: "2026-11-28"
+  refresh_triggers: ["OpenAPI 操作集合变化", "账户详情或审计聚合接口落地", "组织关系模型变化", "引入异步任务基础设施"]
+relations:
+  extends: ["R082-002", "R082-003"]
+  related: ["R090-001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

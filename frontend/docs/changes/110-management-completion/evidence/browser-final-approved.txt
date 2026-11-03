@@ -1,0 +1,19 @@
+[WebServer] (node:17396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:25108) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:17696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:34008) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\auto-restore.spec.ts:38:1 › 旧自动恢复偏好保留兼容，但首页不跳转且草稿仍可手动恢复 (8.9s)
+  ok 2 [chromium] › apps\web\e2e\new-page-open-mode.spec.ts:11:1 › 新页面打开方式默认当前页：点击链接同页导航 (4.5s)
+  ok 3 [chromium] › apps\web\e2e\new-page-open-mode.spec.ts:21:1 › 新页面打开方式=浏览器新标签页：声明允许入口在新标签打开 (7.2s)
+  ok 4 [chromium] › apps\web\e2e\product-system-settings.spec.ts:6:1 › Registration policy controls public signup and the resulting account role (17.9s)
+  ok 5 [chromium] › apps\web\e2e\settings-product-review.spec.ts:66:3 › All settings fields remain readable and accessible: navigation (8.2s)
+  ok 6 [chromium] › apps\web\e2e\visual.spec.ts:28:1 › 桌面 UI Elements Family 保持基础组件权威面稳定 (3.3s)
+
+  6 passed (58.9s)

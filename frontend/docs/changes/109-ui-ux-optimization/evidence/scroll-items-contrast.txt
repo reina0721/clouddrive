@@ -1,0 +1,734 @@
+
+> clouddrive-frontend@0.1.0 test:browser C:\rin\coder\i0721\console-web
+> playwright test "apps/web/e2e/reference-resources.spec.ts" "apps/web/e2e/settings-product-review.spec.ts" "--grep" "Axe|Shared controls preserve high contrast: data|Dialog confirmation uses accent foreground" "--output" "test-results/scroll-contrast" "--repeat-each=3"
+
+
+Running 9 tests using 1 worker
+
+(node:27536) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 (2.4s)
+(node:26032) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop (2.2s)
+(node:26072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, dark narrow English (2.0s)
+(node:19472) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 (2.4s)
+(node:9024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  5 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop (2.3s)
+(node:18392) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 6 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, dark narrow English (1.9s)
+(node:25644) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  7 [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 (2.4s)
+(node:19248) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  8 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop (2.4s)
+(node:25332) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 9 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, dark narrow English (1.8s)
+
+
+  1) [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 
+
+    Error: /reference-resources/detail?id=resource-alpha axe violations
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#f6f7fb",
+    +               "contrastRatio": 4.32,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#74747c",
+    +               "fontSize": "10.5pt (14px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.32 (foreground color: #74747c, background color: #f6f7fb, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<div class=\"surface-shell-grid min-h-screen bg-canvas text-ink\" data-sidebar=\"expanded\">",
+    +                 "target": Array [
+    +                   ".surface-shell-grid",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.32 (foreground color: #74747c, background color: #f6f7fb, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<a href=\"/reference-resources\">参考资源</a>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".link.breadcrumbs__link[data-slot=\"link\"] > a[href$=\"reference-resources\"]",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      69 |       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      70 |       .analyze();
+    > 71 |     expect(accessibility.violations, `${route} axe violations`).toEqual([]);
+         |                                                                 ^
+      72 |   }
+      73 | });
+      74 |
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\reference-resources.spec.ts:71:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\scroll-contrast\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\scroll-contrast\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\scroll-contrast\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\scroll-contrast\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 
+
+    Error: /reference-resources/detail?id=resource-alpha axe violations
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#f6f7fb",
+    +               "contrastRatio": 4.44,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#72727b",
+    +               "fontSize": "10.5pt (14px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.44 (foreground color: #72727b, background color: #f6f7fb, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<div class=\"surface-shell-grid min-h-screen bg-canvas text-ink\" data-sidebar=\"expanded\">",
+    +                 "target": Array [
+    +                   ".surface-shell-grid",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.44 (foreground color: #72727b, background color: #f6f7fb, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<a href=\"/reference-resources\">参考资源</a>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".link.breadcrumbs__link[data-slot=\"link\"] > a[href$=\"reference-resources\"]",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      69 |       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      70 |       .analyze();
+    > 71 |     expect(accessibility.violations, `${route} axe violations`).toEqual([]);
+         |                                                                 ^
+      72 |   }
+      73 | });
+      74 |
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\reference-resources.spec.ts:71:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\scroll-contrast\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium-repeat1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\scroll-contrast\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium-repeat1\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\scroll-contrast\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium-repeat1\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\scroll-contrast\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium-repeat1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 
+
+    Error: /reference-resources/detail?id=resource-alpha axe violations
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#f6f7fb",
+    +               "contrastRatio": 4.32,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#74747c",
+    +               "fontSize": "10.5pt (14px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.32 (foreground color: #74747c, background color: #f6f7fb, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<div class=\"surface-shell-grid min-h-screen bg-canvas text-ink\" data-sidebar=\"expanded\">",
+    +                 "target": Array [
+    +                   ".surface-shell-grid",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.32 (foreground color: #74747c, background color: #f6f7fb, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<a href=\"/reference-resources\">参考资源</a>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".link.breadcrumbs__link[data-slot=\"link\"] > a[href$=\"reference-resources\"]",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      69 |       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      70 |       .analyze();
+    > 71 |     expect(accessibility.violations, `${route} axe violations`).toEqual([]);
+         |                                                                 ^
+      72 |   }
+      73 | });
+      74 |
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\reference-resources.spec.ts:71:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\scroll-contrast\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium-repeat2\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\scroll-contrast\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium-repeat2\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\scroll-contrast\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium-repeat2\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\scroll-contrast\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium-repeat2\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 93
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#e9f0ff",
+    +               "contrastRatio": 4.38,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#2966eb",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.38 (foreground color: #2966eb, background color: #e9f0ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<span class=\"inline-flex max-w-full items-center rounded-full font-semibold border-info/35 bg-info-soft text-info gap-1 px-2.5 py-1 text-xs\"><span class=\"truncate\">comfortable · 3 columns</span></span>",
+    +                 "target": Array [
+    +                   ".border-info\\/35",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.38 (foreground color: #2966eb, background color: #e9f0ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"truncate\">comfortable · 3 columns</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".border-info\\/35 > .truncate",
+    +         ],
+    +       },
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#e9f0ff",
+    +               "contrastRatio": 4.38,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#2966eb",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.38 (foreground color: #2966eb, background color: #e9f0ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<span class=\"inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-info-soft text-info\"><span class=\"size-1.5 rounded-full bg-current\" aria-hidden=\"true\"></span>已验证</span>",
+    +                 "target": Array [
+    +                   "#react-aria3535101677-_r_1v_ > .bg-info-soft.text-info.px-2\\.5",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.38 (foreground color: #2966eb, background color: #e9f0ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-info-soft text-info\"><span class=\"size-1.5 rounded-full bg-current\" aria-hidden=\"true\"></span>已验证</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           "#react-aria3535101677-_r_1v_ > .bg-info-soft.text-info.px-2\\.5",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      44 |     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      45 |     .analyze();
+    > 46 |   expect(result.violations).toEqual([]);
+         |                             ^
+      47 |   expect(
+      48 |     await page.evaluate(
+      49 |       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        at expectAccessible (C:\rin\coder\i0721\console-web\apps\web\e2e\settings-product-review.spec.ts:46:29)
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\settings-product-review.spec.ts:175:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\scroll-contrast\settings-product-review-Sh-f759e-contrast-data-light-desktop-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\scroll-contrast\settings-product-review-Sh-f759e-contrast-data-light-desktop-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\scroll-contrast\settings-product-review-Sh-f759e-contrast-data-light-desktop-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\scroll-contrast\settings-product-review-Sh-f759e-contrast-data-light-desktop-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -   1
+    + Received  + 128
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#eaf1ff",
+    +               "contrastRatio": 4.08,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#316dec",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.08 (foreground color: #316dec, background color: #eaf1ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<span class=\"inline-flex max-w-full items-center rounded-full font-semibold border-info/35 bg-info-soft text-info gap-1 px-2.5 py-1 text-xs\"><span class=\"truncate\">comfortable · 3 columns</span></span>",
+    +                 "target": Array [
+    +                   ".border-info\\/35",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.08 (foreground color: #316dec, background color: #eaf1ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"truncate\">comfortable · 3 columns</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".border-info\\/35 > .truncate",
+    +         ],
+    +       },
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#eaf1ff",
+    +               "contrastRatio": 4.08,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#316dec",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.08 (foreground color: #316dec, background color: #eaf1ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<span class=\"inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-info-soft text-info\"><span class=\"size-1.5 rounded-full bg-current\" aria-hidden=\"true\"></span>已验证</span>",
+    +                 "target": Array [
+    +                   "#react-aria1593630567-_r_1v_ > .bg-info-soft.text-info.px-2\\.5",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.08 (foreground color: #316dec, background color: #eaf1ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-info-soft text-info\"><span class=\"size-1.5 rounded-full bg-current\" aria-hidden=\"true\"></span>已验证</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           "#react-aria1593630567-_r_1v_ > .bg-info-soft.text-info.px-2\\.5",
+    +         ],
+    +       },
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#fff3e1",
+    +               "contrastRatio": 4.44,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#ba5217",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.44 (foreground color: #ba5217, background color: #fff3e1, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<span class=\"inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-warning-soft text-warning\"><span class=\"size-1.5 rounded-full bg-current\" aria-hidden=\"true\"></span>复核中</span>",
+    +                 "target": Array [
+    +                   ".bg-warning-soft",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.44 (foreground color: #ba5217, background color: #fff3e1, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-warning-soft text-warning\"><span class=\"size-1.5 rounded-full bg-current\" aria-hidden=\"true\"></span>复核中</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".bg-warning-soft",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      44 |     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      45 |     .analyze();
+    > 46 |   expect(result.violations).toEqual([]);
+         |                             ^
+      47 |   expect(
+      48 |     await page.evaluate(
+      49 |       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        at expectAccessible (C:\rin\coder\i0721\console-web\apps\web\e2e\settings-product-review.spec.ts:46:29)
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\settings-product-review.spec.ts:175:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\scroll-contrast\settings-product-review-Sh-f759e-contrast-data-light-desktop-chromium-repeat1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\scroll-contrast\settings-product-review-Sh-f759e-contrast-data-light-desktop-chromium-repeat1\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\scroll-contrast\settings-product-review-Sh-f759e-contrast-data-light-desktop-chromium-repeat1\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\scroll-contrast\settings-product-review-Sh-f759e-contrast-data-light-desktop-chromium-repeat1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 93
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#e9f0ff",
+    +               "contrastRatio": 4.42,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#2765eb",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.42 (foreground color: #2765eb, background color: #e9f0ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<span class=\"inline-flex max-w-full items-center rounded-full font-semibold border-info/35 bg-info-soft text-info gap-1 px-2.5 py-1 text-xs\"><span class=\"truncate\">comfortable · 3 columns</span></span>",
+    +                 "target": Array [
+    +                   ".border-info\\/35",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.42 (foreground color: #2765eb, background color: #e9f0ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"truncate\">comfortable · 3 columns</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".border-info\\/35 > .truncate",
+    +         ],
+    +       },
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#e9f0ff",
+    +               "contrastRatio": 4.42,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#2765eb",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.42 (foreground color: #2765eb, background color: #e9f0ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<span class=\"inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-info-soft text-info\"><span class=\"size-1.5 rounded-full bg-current\" aria-hidden=\"true\"></span>已验证</span>",
+    +                 "target": Array [
+    +                   "#react-aria7801115852-_r_1v_ > .bg-info-soft.text-info.px-2\\.5",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.42 (foreground color: #2765eb, background color: #e9f0ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-info-soft text-info\"><span class=\"size-1.5 rounded-full bg-current\" aria-hidden=\"true\"></span>已验证</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           "#react-aria7801115852-_r_1v_ > .bg-info-soft.text-info.px-2\\.5",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      44 |     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      45 |     .analyze();
+    > 46 |   expect(result.violations).toEqual([]);
+         |                             ^
+      47 |   expect(
+      48 |     await page.evaluate(
+      49 |       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        at expectAccessible (C:\rin\coder\i0721\console-web\apps\web\e2e\settings-product-review.spec.ts:46:29)
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\settings-product-review.spec.ts:175:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\scroll-contrast\settings-product-review-Sh-f759e-contrast-data-light-desktop-chromium-repeat2\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\scroll-contrast\settings-product-review-Sh-f759e-contrast-data-light-desktop-chromium-repeat2\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\scroll-contrast\settings-product-review-Sh-f759e-contrast-data-light-desktop-chromium-repeat2\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\scroll-contrast\settings-product-review-Sh-f759e-contrast-data-light-desktop-chromium-repeat2\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 
+    [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 
+    [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 
+    [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop 
+    [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop 
+    [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop 
+  3 passed (26.8s)
+ ELIFECYCLE  Command failed with exit code 1.

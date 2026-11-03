@@ -1,0 +1,55 @@
+schema_version: 1
+id: R075-009
+title: "工作台式骨架回归：左资源树 + 顶部多标签 + 请求/响应上下分割（Apifox 核心骨架，系统组件呈现）"
+question: "用户第八轮要求重构 openapi 模块为 Apifox 核心骨架：①左侧可折叠资源区展示接口树（方法标签 + 分组节点，无限展开，顶部搜索）；②主内容区上方多标签页（点击接口树生成标签如 GET localhost，可关闭、横向滑动、当前高亮）；③标签内强制上下两块——上半请求区（URL+方法+发送、Params/Body/Headers/Cookies/Auth Tab 动态表单），下半响应区（可拖动分割线、状态码/耗时/大小/格式化 JSON）；④视觉与交互必须使用当前项目已有 UI 组件（用户提到 Element Plus 或 Ant Design 的 Menu/Tabs/Splitter），确保融入系统。需要回答：项目组件基座是什么（是否 Element Plus/AntD）；HeroUI 能提供哪些等价件（Tabs/Disclosure/Menu/Separator）；Tree 与可拖动 Splitter 是否有成熟组件可复用；工作台骨架如何与现有静态路由契约、深链、mock、执行语义共存。"
+research_type: current-project
+topics: ["工作台骨架", "资源树", "多标签", "Splitter", "请求/响应分区", "HeroUI 组件", "静态路由契约"]
+keywords: ["Tabs", "Disclosure", "Menu", "Separator", "selectedKey", "递归树", "pointer events", "flex-basis", "ApiTree", "WorkspaceTabs", "RequestPane", "ResponsePane"]
+applicable_scenarios:
+  - "openapi 模块呈现为工作台式 API 调试台（树 + 多标签 + 上下分割）且视觉沿用系统主题"
+  - "复用 HeroUI Tabs（受控 selectedKey）做多标签、Disclosure 递归做无限树、自研窄 Resizer 做上下分割"
+  - "单路由 /openapi 承载整个工作台，?op= 深链定位当前操作"
+non_applicable_scenarios:
+  - "引入 Element Plus / Ant Design 等新组件库（项目基座是 HeroUI RAC，068 契约；引入会违反基座约定并膨胀依赖）"
+  - "引入独立 tree/splitter 第三方库（树可折叠用 Disclosure 递归；分割线为纯局部交互，自研窄实现符合 3.2 例外）"
+  - "恢复多静态路由页面（工作台为单页模块内状态，?op= 深链）"
+status: active
+summary: "项目组件基座是 HeroUI v3（RAC 底座）+ 自研 @webui/sdk/ui 平台组件，不是 Element Plus/AntD；用户「如 Element Plus 或 Ant Design 的 Menu, Tabs, Splitter」应解读为『成熟组件库等价交互』，实现必须落在现有 HeroUI + 平台组件上。HeroUI 提供 Tabs（RAC 受控 selectedKey/onSelectionChange，Tab 可自定义 children 内嵌关闭按钮）、Disclosure（isExpanded/onExpandedChange 受控，递归渲染天然支持无限层级树）、Menu/Separator；无 Tree、无 Splitter——树用 Disclosure 递归组装（分组节点折叠 + 叶子行方法徽标 + 顶部搜索 Field），上下分割线用模块内自研窄 Resizer（pointer events + flex-basis 状态，平台 token 样式）。骨架为单路由 /openapi 工作台（模块内状态：树展开、标签集合、当前操作、请求 Tab、上下比例），替代 R075-007 的多路由页面；?op= 深链仍定位当前操作；数据层（openapi-data/run-store/highlight/api/mock/快照链）与执行语义（fetch credentials、bearer 内存、webuiSession CSRF、mock 禁用）全部复用；请求区 Tabs（Params/Body/Headers/Cookies/Auth）动态表单行复用 executionParameters/formFieldRows/bodyTypeOptions。"
+evidence:
+  types: ["source-code"]
+  primary_sources:
+    - title: "HeroUI v3 组件目录与 API（Tabs/Disclosure/Menu/Separator/ListBox）"
+      locator: "webui/node_modules/@heroui/react/dist/components/{tabs,disclosure,menu,separator,list-box}/index.d.ts"
+      snapshot: "2026-08-25 HEAD 32d3477"
+    - title: "平台组件与宿主标签视觉（@webui/sdk/ui、styles.css .workspace-tabs/.workspace-tab/.tab-close、--shell-tabs-height）"
+      locator: "webui/src/ui/index.tsx、webui/src/styles.css"
+      snapshot: "2026-08-25 HEAD 32d3477"
+    - title: "openapi 现状（多路由页面与数据层）"
+      locator: "internal/module/openapi/binding/webui/web/{OpenAPILayout,OpenAPIOverviewPage,OpenAPITagPage,OpenAPIOperationPage,OpenAPIModelsPage,openapi-data,run-store,highlight,api}.ts(x)、binding.go"
+      snapshot: "2026-08-25 HEAD 32d3477"
+    - title: "执行语义与深链（复用不变）"
+      locator: "OpenAPIOperationPage.tsx（fetch credentials/bearer/CSRF/20s 超时/mock 禁用）、openapi-data.ts buildRequest"
+      snapshot: "2026-08-25 HEAD 32d3477"
+    - title: "用户要求（075 第八轮）"
+      locator: "会话记录"
+      snapshot: "2026-08-25"
+researched_at: "2026-08-25"
+verified_at: "2026-08-25"
+validity:
+  mode: snapshot
+  review_after: "2026-11-25"
+  refresh_triggers:
+    - "HeroUI 未来版本提供 Tree/Splitter 组件时收敛自研实现"
+    - "平台新增 Splitter/树形组件或 Tabs 规范时改用平台原语"
+relations:
+  extends:
+    - R075-006
+    - R075-008
+  related:
+    - R075-002
+    - R075-004
+    - R075-005
+  supersedes:
+    - R075-007
+  superseded_by: []
+report: report.md

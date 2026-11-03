@@ -1,0 +1,42 @@
+schema_version: 1
+id: R004
+title: "序列化真实边界与 YAML 稳定迁移路径复核"
+question: "当前 JSON、YAML、msgpack 与项目 Codec 的真实消费者和边界是什么；YAML 应直接迁移 v4，还是选择当前稳定维护路径？"
+research_type: current-project-and-external-primary-source
+topics: ["serialization", "YAML", "JSON", "MessagePack", "dependency boundary", "maintenance"]
+keywords: ["gopkg.in/yaml.v3", "go.yaml.in/yaml/v3", "go.yaml.in/yaml/v4", "pkg/codec", "msgpack", "OpenAPI YAML", "i18n"]
+technologies: ["encoding/json", "go-yaml", "go-i18n", "kin-openapi", "msgpack"]
+applicable_scenarios: ["SERDE-057-001", "配置 YAML", "i18n YAML", "OpenAPI 生成", "序列化能力边界"]
+non_applicable_scenarios: ["外部不可信 YAML API", "已确定的 cache wire format 迁移", "引入通用 schema registry"]
+status: active
+summary: "项目直接使用已归档 gopkg.in/yaml.v3，但官方 yaml/go-yaml 已提供稳定维护的 go.yaml.in/yaml/v3 v3.0.5；v4 当前仍为 rc.6，不应作为生产直接依赖。自研 pkg/codec 无仓库内消费者，应退役而非继续包装标准库和第三方三个函数。"
+evidence:
+  types: ["source-code", "call-site-search", "dependency-manifest", "dependency-graph", "tests", "official-repository", "official-package-doc", "vulnerability-database"]
+  primary_sources:
+    - title: "当前序列化定义、调用方与生成门禁"
+      locator: "pkg/codec/; pkg/i18n/; pkg/cache/; internal/kernel/config/; pkg/httpx/contract/; internal/tools/docs-guard/; internal/tools/contract-gen/; go.mod"
+      snapshot: "4e0408edbe229759925a7fcba6ba75007e65aa2a"
+    - title: "yaml/go-yaml official repository and status"
+      locator: "https://github.com/yaml/go-yaml; https://pkg.go.dev/go.yaml.in/yaml/v3@v3.0.5; https://pkg.go.dev/go.yaml.in/yaml/v4@v4.0.0-rc.6"
+      snapshot: "2026-08-22"
+    - title: "official v3 to v4 migration guide"
+      locator: "https://github.com/yaml/go-yaml/blob/main/docs/v3-to-v4-migration.md"
+      snapshot: "2026-08-22"
+    - title: "Go vulnerability database YAML panic record"
+      locator: "https://pkg.go.dev/vuln/GO-2022-0603"
+      snapshot: "2026-08-22"
+    - title: "vmihailenco/msgpack and fxamacker/cbor official repositories"
+      locator: "https://github.com/vmihailenco/msgpack; https://github.com/fxamacker/cbor"
+      snapshot: "2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: time-sensitive
+  review_after: "2026-09-22"
+  refresh_triggers: ["go-yaml v4 stable release", "YAML security advisory", "新增外部 YAML 输入", "pkg/codec 新增真实消费者", "cache wire format 发生变化", "生成 fixture 或格式要求变化"]
+relations:
+  extends: ["057-R001", "057-R002", "012-R019", "030-R002"]
+  related: ["001", "011", "030", "032", "051"]
+  supersedes: []
+  superseded_by: []
+report: report.md

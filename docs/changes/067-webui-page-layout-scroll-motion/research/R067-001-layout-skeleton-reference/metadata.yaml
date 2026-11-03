@@ -1,0 +1,43 @@
+schema_version: 1
+id: R067-001
+title: "组织模块报错事实、TailAdmin 布局骨架与现有业务页面结构差距"
+question: "用户报告「组织管理及下级模块在 Web UI 页面中存在报错」，并要求「参照 react-demo.tailadmin.com 重构全部业务模块 Web UI 页面布局骨架」：（a）组织模块及其下级页面的报错具体是什么、文件位置与根因？（b）TailAdmin 的布局骨架由哪些区域与卡片形态组成？（c）当前全部业务模块页面的结构与平台样式 authority 约束下，差距与最小改法是什么？"
+research_type: current-project
+topics: ["webui", "organization", "layout", "localization", "page-skeleton", "tailadmin", "css-module"]
+keywords: ["webui.organization", "assignments", "i18n key", "PageHeader", "Surface", "admin-grid", "admin-card", "toolbar", "page-section", "stat-card", "data-card", "parseMissingKeyHandler"]
+applicable_scenarios:
+  - "修复组织模块页面可见报错与无反馈操作"
+  - "为全部业务模块页面建立统一的布局骨架原语并迁移"
+  - "评估现有模块 CSS 与平台样式 authority 的分界是否清晰"
+non_applicable_scenarios:
+  - "引入 Tailwind 或第三方组件库（059 已明确否定）"
+  - "改变模块 Binding、Manifest、路由、权限或服务端契约"
+  - "重写业务逻辑或数据流"
+status: active
+summary: "组织模块页面的可见报错根因是 AssignmentsPage.tsx 使用了 webui.organization.assignments.saved/conflict/revision 三个翻译键，而 locale 资源（en-US/zh-CN）只有无 assignments. 前缀的 webui.organization.saved/conflict/revision；i18n later，keySeparator/nsSeparator 关闭，缺失键被 parseMissingKeyHandler 替换为宿主「翻译资源缺失」，用户因此在分配页看到占位错误文案。另发现 Departments/Positions/Assignments 的创建/更新操作没有捕获 Promise 拒绝，失败时控制台报 unhandled rejection 且页面无反馈。布局方面：现有页面是 PageHeader + Surface(toolbar) + admin-grid 扁平卡片，各模块在自身 CSS Module 中重复定义近似 layout 规则（toolbar/admin-grid/admin-card/admin-meta/management-panel 等）；对照 TailAdmin 的「统计卡行 + 标题卡片 + 表格卡片 + 页脚分页」骨架，差距是平台缺少统一的区块卡片（section-card）、统计行（stat-grid）与表格卡片（data-card）原语，模块各自为政。"
+evidence:
+  types: ["source-code", "tests", "configuration", "localization", "external-references", "registry"]
+  primary_sources:
+    - title: "组织模块页面源码与 locale"
+      locator: "internal/module/organization/binding/webui/web/{AssignmentsPage,DepartmentsPage,PositionsPage}.tsx、locale/{zh-CN,en-US}.json、mock.ts"
+      snapshot: "5a44bdc"
+    - title: "i18n 宿主契约与缺失键处理"
+      locator: "webui/src/i18n.ts（initializeI18n keySeparator:false/nsSeparator:false、parseMissingKeyHandler）、webui/src/i18n/locale/{zh-CN,en-US}.json 的 webui.host.i18n.missing"
+      snapshot: "5a44bdc"
+    - title: "各业务模块现有页面对照"
+      locator: "internal/module/{iam,auth,navigation,ops}/binding/webui/web/*.tsx 与 *.module.css"
+      snapshot: "5a44bdc"
+    - title: "平台样式 authority"
+      locator: "webui/src/styles.css（分区 1 token / 5 public UI / 7 responsive / 8 reduced-motion）"
+      snapshot: "5a44bdc"
+    - title: "架构与模块 lint 约束"
+      locator: "webui/scripts/lint-architecture.mjs、lint-modules.mjs；docs/development/webui.md"
+      snapshot: "5a44bdc"
+    - title: "TailAdmin 布局参考（外部样本）"
+      locator: "https://react-demo.tailadmin.com/（公开 demo）"
+      snapshot: "2026-08-25 公开 demo"
+researched_at: "2026-08-25"
+verified_at: "2026-08-25"
+refresh_triggers:
+  - "组织模块 locale 键或页面结构再次变更"
+  - "平台布局原语被业务模块大面积接入"

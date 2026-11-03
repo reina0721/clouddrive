@@ -1,0 +1,66 @@
+[
+  {
+    "path": "apps/web/e2e/api-workbench.spec.ts",
+    "equal": true
+  },
+  {
+    "path": "apps/web/src/shell/app-shell.tsx",
+    "equal": true
+  },
+  {
+    "path": "docs/changes/README.md",
+    "equal": true
+  },
+  {
+    "path": "surfaces/plugins/api-workbench/i18n.ts",
+    "equal": true
+  },
+  {
+    "path": "surfaces/plugins/api-workbench/src/model/workbench-ux.test.ts",
+    "equal": true
+  },
+  {
+    "path": "surfaces/plugins/api-workbench/src/ui/project-tree.tsx",
+    "equal": true
+  },
+  {
+    "path": "surfaces/plugins/api-workbench/src/ui/request-tabs.tsx",
+    "equal": true
+  },
+  {
+    "path": "surfaces/plugins/api-workbench/src/ui/response-view.tsx",
+    "equal": true
+  },
+  {
+    "path": "surfaces/plugins/api-workbench/src/ui/status-bar.tsx",
+    "equal": true
+  },
+  {
+    "path": "surfaces/plugins/api-workbench/src/ui/workbench.tsx",
+    "equal": true
+  },
+  {
+    "path": "surfaces/plugins/api-workbench/stores/workbench.ts",
+    "equal": true
+  },
+  {
+    "path": "surfaces/src/api-workbench/README.md",
+    "equal": true
+  },
+  {
+    "path": "surfaces/src/api-workbench/model.ts",
+    "equal": true
+  },
+  {
+    "path": "surfaces/src/api-workbench/schema.ts",
+    "equal": true
+  },
+  {
+    "path": "apps/web/e2e/api-workbench-refinement.spec.ts",
+    "equal": true
+  },
+  {
+    "path": "surfaces/plugins/api-workbench/src/model/history.ts",
+    "equal": true
+  }
+]

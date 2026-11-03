@@ -1,0 +1,58 @@
+[WebServer] (node:9772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:16088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:23148) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:34348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:28816) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Password close focus { tag: 'BUTTON', id: 'react-aria19252705-_r_3s_', name: null }
+  x  1 [chromium] › apps\web\e2e\account-editors.spec.ts:64:1 › Password cancel clears secrets without altering sessions and uses one dialog (10.0s)
+
+
+  1) [chromium] › apps\web\e2e\account-editors.spec.ts:64:1 › Password cancel clears secrets without altering sessions and uses one dialog 
+
+    Error: expect(locator).toBeHidden() failed
+
+    Locator:  getByRole('button', { name: '编辑资料', exact: true })
+    Expected: hidden
+    Received: visible
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeHidden" with timeout 5000ms
+      - waiting for getByRole('button', { name: '编辑资料', exact: true })
+        14 × locator resolved to <button data-rac="" tabindex="0" type="button" data-slot="button" aria-expanded="false" id="react-aria19252705-_r_3n_" data-react-aria-pressable="true" class="button button--md button--ghost inline-flex min-h-control items-center justify-center gap-2 rounded-control px-3.5 text-sm font-semibold shadow-sm outline-none transition-colors border border-border bg-surface text-ink hover:bg-surface-muted data-[hovered=true]:bg-surface-muted data-[pressed=true]:bg-surface-muted focus-visible:ring-2 focus-visi…>编辑资料</button>
+           - unexpected value "visible"
+
+
+      85 |   await expect(dialog.getByLabel('新密码', { exact: true })).toHaveValue('');
+      86 |   await expect(page.getByRole('dialog')).toHaveCount(1);
+    > 87 |   await expect(page.getByRole('button', { name: '编辑资料', exact: true })).toBeHidden();
+         |                                                                         ^
+      88 | });
+      89 |
+      90 | test('Overlay authority submits an associated form with Enter and can intercept closing', async ({
+        at D:\coder\i721\console-web\apps\web\e2e\account-editors.spec.ts:87:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\account-focus-diagnostic\account-editors-Password-c-cb2b0-essions-and-uses-one-dialog-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\account-focus-diagnostic\account-editors-Password-c-cb2b0-essions-and-uses-one-dialog-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\account-focus-diagnostic\account-editors-Password-c-cb2b0-essions-and-uses-one-dialog-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\account-focus-diagnostic\account-editors-Password-c-cb2b0-essions-and-uses-one-dialog-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\account-editors.spec.ts:64:1 › Password cancel clears secrets without altering sessions and uses one dialog 

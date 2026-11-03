@@ -1,0 +1,8 @@
+
+> clouddrive-frontend@0.1.0 architecture:check C:\rin\coder\i0721\console-web
+> node tooling/check-boundaries-fixtures.mjs && node tooling/check-boundaries.mjs
+
+Boundary fixtures passed: 18 cases.
+Architecture checks failed:
+- packages\surface-foundation\src\viewport-reveal.tsx: Host leakage - 公共包不得直接访问浏览器 Host API
+ ELIFECYCLE  Command failed with exit code 1.

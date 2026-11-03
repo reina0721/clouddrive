@@ -1,0 +1,38 @@
+schema_version: 1
+change: 055-organization
+areas:
+  - id: repository
+    decision: updated
+    documents:
+      - README.md
+    reason: 说明 Organization 已成为默认应用的组织目录垂直切片。
+  - id: startup
+    decision: updated
+    documents:
+      - docs/getting-started/first-use.md
+      - docs/getting-started/webui.md
+    reason: fresh database 迁移和首次验收增加 Organization set 与管理页面。
+  - id: webui
+    decision: updated
+    documents:
+      - docs/getting-started/webui.md
+    reason: 增加部门、岗位和账号组织分配页面入口。
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/README.md
+      - internal/module/organization/README.md
+      - docs/architecture/README.md
+    reason: 冻结 Organization 所有权、AccountDirectory port 与 composition 装配边界。
+  - id: capability
+    decision: updated
+    documents:
+      - docs/operations/runtime-capabilities.md
+      - docs/operations/migration-and-rollback.md
+    reason: 记录组织目录与第三个独立 migration set 的当前能力。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+      - api/openapi.yaml
+    reason: 生成部门、岗位与账号组织分配 typed HTTP 契约。

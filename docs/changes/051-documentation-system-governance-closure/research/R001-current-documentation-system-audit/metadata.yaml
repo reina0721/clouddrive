@@ -1,0 +1,44 @@
+id: R001-current-documentation-system-audit
+title: 当前文档体系全量审计
+status: completed
+verified_at: 2026-08-21
+snapshot: 613bccf
+question: 当前项目文档是否完整覆盖真实实现、运行入口、模块、能力、配置和交付链，并能约束后续实现同步更新对应文档？
+scope:
+  included:
+    - README.md
+    - docs
+    - api
+    - webui
+    - frontend
+    - internal
+    - pkg
+    - scripts
+    - .github/workflows
+    - Dockerfile
+    - .goreleaser.yaml
+    - .scaffold/identity.yaml
+  excluded:
+    - old-backend
+evidence:
+  - README.md
+  - docs/README.md
+  - docs/getting-started
+  - docs/architecture
+  - docs/development
+  - docs/operations
+  - docs/configuration/README.md
+  - docs/changes/README.md
+  - api/README.md
+  - webui/package.json
+  - frontend/README.md
+  - internal/module/README.md
+  - pkg/README.md
+  - scripts
+  - .github/workflows/quality.yml
+  - .github/workflows/release.yml
+  - Dockerfile
+  - .goreleaser.yaml
+  - .scaffold/identity.yaml
+supersedes: null
+superseded_by: null

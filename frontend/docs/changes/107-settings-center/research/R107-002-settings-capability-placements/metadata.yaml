@@ -1,0 +1,67 @@
+schema_version: 1
+id: R107-002
+title: '107 设置中心公共能力落点与边界研究'
+question: '设置中心的五类公共能力（偏好 preferences、工作状态 workspace、通知 notifications、命令 commands、导航保护 leave-confirm）应放在哪一层、以什么形态提供，才能满足：设置插件与 Host Shell 与其它页面消费同一能力、禁止跨插件读私有 Store、Universal/Surface Foundation 只经 props/context 接收展示策略、Plugin 运行时不 import Host、Host 不 import plugins/* 内部？'
+research_type: architecture-comparison
+topics:
+  [
+    'capability placement',
+    'host port',
+    'plugin-framework contract',
+    'surface public model',
+    'store ownership',
+    'foundation policy',
+    'i18n precedent',
+    'navigation/locale port precedent',
+  ]
+keywords:
+  [
+    'PluginNavigationPort',
+    'PluginLocalePort',
+    'createPersistStore',
+    'filesystem ownership',
+    'foundation-contracts.json',
+    'dependency-policy.json',
+    'SettingsLayout',
+    'navigation-groups.ts',
+  ]
+applicable_scenarios:
+  [
+    '107 设置中心公共契约层设计：preferences/workspace/notifications/commands Port 与产品偏好模型的归属、Host 装配、跨 Plugin 消费、Store 边界',
+  ]
+non_applicable_scenarios:
+  ['后端/账号同步、Desktop Runtime、万能 Provider/Service Locator、为每个 Store 建 Port']
+status: active
+summary: '推荐方案：纯契约与 client Port/context 扩展 @clouddrive/plugin-framework（./preferences ./notifications ./workspace ./commands，仿现有 ./plugin 的 Port/context 模式，react 仅 peer）；产品偏好领域模型（typed 分类/默认值/migrate 形状）落 @clouddrive/surface 公共 subpath（先例 icons 页 import @clouddrive/surface/shell 与 plugin-framework ./schemas 装配模式），Host 在 composition root 装配实例并注入，禁止跨插件读私有 Store；不新增 workspace package、不把产品语义灌进 Universal。'
+evidence:
+  types: ['project-source', 'tests', 'official-documentation']
+  primary_sources:
+    - title: 'Host Navigation/Locale Port 装配先例'
+      locator: 'packages/plugin-framework/src/plugin.tsx（PluginNavigationPort/PluginLocalePort/Provider/usePluginLocale/usePluginNavigation）；apps/web/src/host/navigation-port.tsx；apps/web/src/shell/app-shell.tsx（PluginLocaleProvider port）'
+      snapshot: '77740c19；Port 由 Host 在 Root Provider 注入，Plugin 经 hook 消费'
+    - title: 'Surface 公共 subpath 先例'
+      locator: 'surfaces/plugins/system-tools/routes/icons/page.tsx（import @clouddrive/surface/shell 的 navigationIconVocabulary）；surfaces/package.json exports（./shell ./icon-presentation ./icon-components ./generated/* ./plugin-routes/*）；packages/plugin-framework ./schemas 装配（schemas.ts/schemas-runtime.ts/plugin.tsx）'
+      snapshot: '77740c19；Plugin import Surface 公共 subpath 与 framework 能力子路径均有先例'
+    - title: 'Store ownership 与依赖方向规则'
+      locator: 'frontend/AGENTS.md §4.6；frontend/surfaces/AGENTS.md；packages/state-foundation（createAppStore/createPersistStore/definePersistConfig/PERSIST_POLICY）；tooling/foundation-policy.json；tooling/dependency-policy.json'
+      snapshot: '77740c19；Host store→apps/web、Shell store→surfaces shell、Plugin store→surfaces/plugins/<plugin>/stores/*；禁止跨 Plugin 私有 store；zustand 只许 state-foundation'
+    - title: 'Universal/Surface 分工先例'
+      locator: 'packages/i18n/AGENTS.md（Universal 管 runtime factory，Surface 注入产品文案/locale 决策）；packages/surface-foundation/AGENTS.md；docs/frontend-foundation.md；docs/surface-foundation.md'
+      snapshot: '77740c19；"运行时能力进 Universal/契约、产品数据与语义进 Surface"'
+    - title: 'Registry 明确不建 command/permission 呈现模型'
+      locator: 'packages/plugin-framework/src/navigation-resolution.ts 注释与 docs/plugin-framework.md §5/§8/§10（"不为未来可能使用维护 canonical/breadcrumb/command/permission 展示模型"）'
+      snapshot: '77740c19；command/notification 需真实 UI 需求驱动新建，不强行进 Registry'
+  researched_at: '2026-09-06'
+  verified_at: '2026-09-06'
+validity:
+  mode: revision-bounded
+  refresh_triggers:
+    [
+      'plugin-framework exports/Port 模式、surface package.json exports、foundation-policy/dependency-policy、state-foundation ownership 规则或既有 Port（locale/navigation）变化时需定向复核',
+    ]
+relations:
+  extends: ['R107-001']
+  related: ['R107-003']
+  supersedes: []
+  superseded_by: []
+report: report.md

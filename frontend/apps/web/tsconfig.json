@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "plugins": [{ "name": "next" }],
+    "types": ["vitest/globals", "@testing-library/jest-dom", "@playwright/test"]
+  },
+  "include": ["next-env.d.ts", "src", "e2e", "next.config.ts", "vitest.config.ts"]
+}

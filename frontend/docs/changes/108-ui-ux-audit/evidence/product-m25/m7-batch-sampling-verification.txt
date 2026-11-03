@@ -1,0 +1,37 @@
+[WebServer] (node:32660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:14260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:24320) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:31796) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 22 tests using 1 worker
+
+(node:30540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\product-management.spec.ts:23:1 › M2–M5 user, role grants, inbox and audit form a durable management workflow (31.6s)
+  ok  2 [chromium] › apps\web\e2e\product-management.spec.ts:110:1 › Restricted account has its own inbox/profile and no management navigation or write access (14.0s)
+  ok  3 [chromium] › apps\web\e2e\product-management.spec.ts:133:1 › M2–M5 pages retain accessible responsive layout in Chinese light and English dark (1.8m)
+  ok  4 [chromium] › apps\web\e2e\product-system-settings.spec.ts:6:1 › Registration policy controls public signup and the resulting account role (17.8s)
+  ok  5 [chromium] › apps\web\e2e\product-system-settings.spec.ts:71:1 › System policy retains keyboard, overlay and accessible layout across sizes and locales (46.8s)
+  ok  6 [chromium] › apps\web\e2e\top-progress.spec.ts:59:1 › 极快导航（warm 缓存路由）仍显示一次完整进度周期并自然退出 (4.4s)
+  ok  7 [chromium] › apps\web\e2e\top-progress.spec.ts:108:1 › 普通首次导航（未缓存路由）能感知到进度条 (3.3s)
+  ok  8 [chromium] › apps\web\e2e\top-progress.spec.ts:124:1 › 慢速导航：进度条在 viewport 顶部、非零可见尺寸、foreground 实际延伸、完成后退出 (5.0s)
+  ok  9 [chromium] › apps\web\e2e\top-progress.spec.ts:200:1 › 连续快速点击不同路由不错误结束、不永久卡住 (3.9s)
+  ok 10 [chromium] › apps\web\e2e\top-progress.spec.ts:216:1 › 访问不存在路由不导致进度条卡住 (1.3s)
+  ok 11 [chromium] › apps\web\e2e\top-progress.spec.ts:223:1 › 进度条不推动 Header/Sidebar/内容布局 (4.9s)
+  ok 12 [chromium] › apps\web\e2e\top-progress.spec.ts:244:1 › Dark Mode 与窄屏下进度条正常显示 (4.8s)
+  ok 13 [chromium] › apps\web\e2e\top-progress.spec.ts:271:1 › Reduced Motion 下进度条动画时长被压低但仍完成收尾 (4.8s)
+  ok 14 [chromium] › apps\web\e2e\visual.spec.ts:16:1 › 桌面与超宽屏 Reference 布局保持稳定 (7.4s)
+  ok 15 [chromium] › apps\web\e2e\visual.spec.ts:28:1 › 桌面 UI Elements Family 保持基础组件权威面稳定 (3.2s)
+  ok 16 [chromium] › apps\web\e2e\visual.spec.ts:43:1 › 九个 UI Element Family 页面均有独立视觉基线 (24.8s)
+  ok 17 [chromium] › apps\web\e2e\visual.spec.ts:71:1 › 移动窗口、Dark Mode 与英文扩张保持无溢出 (5.2s)
+  ok 18 [chromium] › apps\web\e2e\visual.spec.ts:89:1 › 移动侧栏打开状态纳入视觉回归 (3.2s)
+  ok 19 [chromium] › apps\web\e2e\visual.spec.ts:98:1 › 状态体系页面保持 Loading 与异常状态视觉基线 (2.3s)
+  ok 20 [chromium] › apps\web\e2e\visual.spec.ts:110:1 › Overview、Reference Form 与 Settings 真实页面进入视觉矩阵 (7.5s)
+  ok 21 [chromium] › apps\web\e2e\visual.spec.ts:130:1 › Toast、Destructive Confirm 与 Compact Density 开启态进入视觉矩阵 (5.3s)
+  ok 22 [chromium] › apps\web\e2e\visual.spec.ts:144:1 › Reference 多选与分页的真实联动状态进入视觉矩阵 (5.4s)
+
+  22 passed (5.9m)

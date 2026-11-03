@@ -1,0 +1,39 @@
+schema_version: 1
+change: 080-api-token-multi-manage
+areas:
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/README.md
+    reason: IAM API-Token 增加权限知情创建、状态机与数量上限/TTL 语义；模块 README 同步令牌生命周期与最小权限边界。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+    reason: 新增 iam.api-tokens.update/disable/enable operation 与 status 过滤参数；api/openapi.yaml 与 operation inventory 经 contract-gen 更新。
+  - id: configuration
+    decision: updated
+    documents:
+      - docs/configuration/README.md
+    reason: iam.local 新增 apiTokenMaxPerAccount 与 apiTokenDefaultTTL；config init 模板与示例同步。
+  - id: operations
+    decision: updated
+    documents:
+      - docs/operations/security.md
+      - docs/operations/runtime-capabilities.md
+    reason: 记录令牌最小权限继承、状态机、TTL/上限、审计与「不自动收缩」治理语义；运行能力矩阵同步令牌生命周期行。
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+    reason: IAM 新增独立 API 令牌管理页（/admin/api-tokens）；settings 安全页令牌区块降级为入口与摘要；locale 与 mock 同步。
+  - id: startup
+    decision: reviewed-no-change
+    reason: 权限投影复用既有 authorization runtime；无新增运行组件。
+  - id: docs
+    decision: updated
+    documents:
+      - docs/changes/080-api-token-multi-manage/README.md
+      - docs/changes/080-api-token-multi-manage/tasks.md
+      - docs/changes/README.md
+    reason: 变更记录（研究/需求/设计/任务）与变更索引记录本任务状态（计划待确认→实施完成）与结论。

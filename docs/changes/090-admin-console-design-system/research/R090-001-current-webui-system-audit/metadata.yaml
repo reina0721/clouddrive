@@ -1,0 +1,35 @@
+schema_version: 1
+id: R090-001
+title: "当前 Web UI 系统审计"
+question: "当前 Web UI 为什么仍呈现开发中 Demo 感，其视觉、骨架、组件、交互和响应式问题分别由什么结构性原因造成？"
+research_type: internal-system-audit
+topics: ["webui", "visual-hierarchy", "layout", "component-system", "responsive-design"]
+keywords: ["AppShell", "PageSection", "DataTable", "design tokens", "visual screenshots"]
+applicable_scenarios: ["Web UI 重设计", "页面模式迁移", "组件体系收敛", "视觉回归"]
+non_applicable_scenarios: ["后端业务规则判断", "未运行页面的性能结论"]
+status: active
+summary: "当前系统已有较多共享组件和 Token，但壳层占用、重复层级、Card 默认化、巨型 UI 文件、页面级硬编码和移动工作台溢出共同造成低密度、弱层级与 Demo 感。"
+evidence:
+  types: ["source-code", "repository-screenshots", "dependency-manifest", "git-state"]
+  primary_sources:
+    - title: "当前 Web UI 源码与依赖"
+      locator: "webui/src；webui/package.json；webui/tailwind.config.js"
+      snapshot: "47d2d9a，087 已提交；AppShell 与 WorkspaceRegistry 于 2026-08-28 定向复核"
+    - title: "当前视觉回归截图"
+      locator: "webui/test-results/*.png"
+      snapshot: "082 至 086 的桌面、暗色和移动截图，2026-08-28 逐图复核"
+    - title: "用户提供的布局参考图"
+      locator: "C:/Users/xiaol/AppData/Local/Temp/codex-clipboard-5b776e35-6ca2-45f1-8785-a81ec1a60d10.png"
+      snapshot: "2026-08-28 当前会话视觉检查"
+researched_at: "2026-08-28"
+verified_at: "2026-08-28"
+validity:
+  mode: snapshot
+  review_after: "2026-11-28"
+  refresh_triggers: ["AppShell 或 UI SDK 大幅重写", "HeroUI 依赖完成单轨迁移", "087 工作区策略合入或撤销", "新增最新全页面视觉基线"]
+relations:
+  extends: ["R082-001", "R084-001", "R085-001", "R086-001", "R087-001"]
+  related: ["R090-002", "R090-004"]
+  supersedes: []
+  superseded_by: []
+report: report.md

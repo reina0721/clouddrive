@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>109 最终视觉差异复核</title
+  ><style>
+    body {
+      font-family: system-ui;
+      margin: 24px;
+      color: #20242a;
+    }
+    h1 {
+      font-size: 24px;
+    }
+    nav {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    section {
+      margin: 40px 0;
+      border-top: 1px solid #ddd;
+    }
+    .comparison {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    figure {
+      margin: 0;
+    }
+    figcaption {
+      margin: 8px 0;
+    }
+    img {
+      width: 100%;
+      height: auto;
+      border: 1px solid #ddd;
+    }
+    a {
+      color: #3849ba;
+    }
+    @media (max-width: 760px) {
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <h1>109 最终视觉差异：27 组</h1>
+  <p>
+    最终完整回归 219 项：205 通过、14
+    项因视觉比较失败。所有失败错误均为截图断言；后续键盘、焦点、状态与 Axe
+    断言继续执行，未出现其他失败。下面保留原基线、最终代码渲染、原阈值产生的差异；快照尚未更新。点击图片查看原尺寸。
+  </p>
+  <p>
+    目录、字段说明、尺寸收缩、页面内容和容器层级变化须逐张确认。<a
+      href="../current-workbench-detail-mobile.png"
+      >最终手机详情打开态</a
+    >另附。<a href="../check-final.txt">完整检查原日志</a>；<a href="manifest.json"
+      >来源与 SHA256 清单</a
+    >。
+  </p>
+  <nav>
+    <a href="#pair-1">surface-shell-compact-sibling-swap</a
+    ><a href="#pair-2">surface-shell-compact-flyout</a><a href="#pair-3">ui-elements-command-open</a
+    ><a href="#pair-4">ui-elements-date-picker-open</a><a href="#pair-5">ui-elements-menu-open</a
+    ><a href="#pair-6">ui-elements-popover-open</a><a href="#pair-7">ui-elements-tooltip-open</a
+    ><a href="#pair-8">ui-elements-combobox-open</a><a href="#pair-9">ui-elements-select-open</a
+    ><a href="#pair-10">page-archetypes-overview-desktop</a
+    ><a href="#pair-11">page-patterns-collections-desktop</a><a href="#pair-12">overview-desktop</a
+    ><a href="#pair-13">settings-desktop</a><a href="#pair-14">reference-multi-select</a
+    ><a href="#pair-15">ui-elements-toast-compact</a
+    ><a href="#pair-16">ui-elements-family-actions-selection</a
+    ><a href="#pair-17">ui-elements-family-feedback</a
+    ><a href="#pair-18">ui-elements-family-forms</a
+    ><a href="#pair-19">ui-elements-family-identity-display</a
+    ><a href="#pair-20">ui-elements-family-navigation</a
+    ><a href="#pair-21">ui-elements-family-overlays</a
+    ><a href="#pair-22">ui-elements-family-status-async</a><a href="#pair-23">ui-elements-desktop</a
+    ><a href="#pair-24">reference-desktop</a><a href="#pair-25">reference-ultrawide</a
+    ><a href="#pair-26">mobile-navigation-open</a><a href="#pair-27">ui-elements-mobile-dark-en</a>
+  </nav>
+  <section id="pair-1">
+    <h2>1. surface-shell-compact-sibling-swap</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="01-surface-shell-compact-sibling-swap-expected.png"
+          ><img
+            loading="lazy"
+            src="01-surface-shell-compact-sibling-swap-expected.png"
+            alt="surface-shell-compact-sibling-swap expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="01-surface-shell-compact-sibling-swap-actual.png"
+          ><img
+            loading="lazy"
+            src="01-surface-shell-compact-sibling-swap-actual.png"
+            alt="surface-shell-compact-sibling-swap actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="01-surface-shell-compact-sibling-swap-diff.png"
+          ><img
+            loading="lazy"
+            src="01-surface-shell-compact-sibling-swap-diff.png"
+            alt="surface-shell-compact-sibling-swap diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-2">
+    <h2>2. surface-shell-compact-flyout</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="02-surface-shell-compact-flyout-expected.png"
+          ><img
+            loading="lazy"
+            src="02-surface-shell-compact-flyout-expected.png"
+            alt="surface-shell-compact-flyout expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="02-surface-shell-compact-flyout-actual.png"
+          ><img
+            loading="lazy"
+            src="02-surface-shell-compact-flyout-actual.png"
+            alt="surface-shell-compact-flyout actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="02-surface-shell-compact-flyout-diff.png"
+          ><img
+            loading="lazy"
+            src="02-surface-shell-compact-flyout-diff.png"
+            alt="surface-shell-compact-flyout diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-3">
+    <h2>3. ui-elements-command-open</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="03-ui-elements-command-open-expected.png"
+          ><img
+            loading="lazy"
+            src="03-ui-elements-command-open-expected.png"
+            alt="ui-elements-command-open expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="03-ui-elements-command-open-actual.png"
+          ><img
+            loading="lazy"
+            src="03-ui-elements-command-open-actual.png"
+            alt="ui-elements-command-open actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="03-ui-elements-command-open-diff.png"
+          ><img
+            loading="lazy"
+            src="03-ui-elements-command-open-diff.png"
+            alt="ui-elements-command-open diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-4">
+    <h2>4. ui-elements-date-picker-open</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="04-ui-elements-date-picker-open-expected.png"
+          ><img
+            loading="lazy"
+            src="04-ui-elements-date-picker-open-expected.png"
+            alt="ui-elements-date-picker-open expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="04-ui-elements-date-picker-open-actual.png"
+          ><img
+            loading="lazy"
+            src="04-ui-elements-date-picker-open-actual.png"
+            alt="ui-elements-date-picker-open actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="04-ui-elements-date-picker-open-diff.png"
+          ><img
+            loading="lazy"
+            src="04-ui-elements-date-picker-open-diff.png"
+            alt="ui-elements-date-picker-open diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-5">
+    <h2>5. ui-elements-menu-open</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="05-ui-elements-menu-open-expected.png"
+          ><img
+            loading="lazy"
+            src="05-ui-elements-menu-open-expected.png"
+            alt="ui-elements-menu-open expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="05-ui-elements-menu-open-actual.png"
+          ><img
+            loading="lazy"
+            src="05-ui-elements-menu-open-actual.png"
+            alt="ui-elements-menu-open actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="05-ui-elements-menu-open-diff.png"
+          ><img
+            loading="lazy"
+            src="05-ui-elements-menu-open-diff.png"
+            alt="ui-elements-menu-open diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-6">
+    <h2>6. ui-elements-popover-open</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="06-ui-elements-popover-open-expected.png"
+          ><img
+            loading="lazy"
+            src="06-ui-elements-popover-open-expected.png"
+            alt="ui-elements-popover-open expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="06-ui-elements-popover-open-actual.png"
+          ><img
+            loading="lazy"
+            src="06-ui-elements-popover-open-actual.png"
+            alt="ui-elements-popover-open actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="06-ui-elements-popover-open-diff.png"
+          ><img
+            loading="lazy"
+            src="06-ui-elements-popover-open-diff.png"
+            alt="ui-elements-popover-open diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-7">
+    <h2>7. ui-elements-tooltip-open</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="07-ui-elements-tooltip-open-expected.png"
+          ><img
+            loading="lazy"
+            src="07-ui-elements-tooltip-open-expected.png"
+            alt="ui-elements-tooltip-open expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="07-ui-elements-tooltip-open-actual.png"
+          ><img
+            loading="lazy"
+            src="07-ui-elements-tooltip-open-actual.png"
+            alt="ui-elements-tooltip-open actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="07-ui-elements-tooltip-open-diff.png"
+          ><img
+            loading="lazy"
+            src="07-ui-elements-tooltip-open-diff.png"
+            alt="ui-elements-tooltip-open diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-8">
+    <h2>8. ui-elements-combobox-open</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="08-ui-elements-combobox-open-expected.png"
+          ><img
+            loading="lazy"
+            src="08-ui-elements-combobox-open-expected.png"
+            alt="ui-elements-combobox-open expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="08-ui-elements-combobox-open-actual.png"
+          ><img
+            loading="lazy"
+            src="08-ui-elements-combobox-open-actual.png"
+            alt="ui-elements-combobox-open actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="08-ui-elements-combobox-open-diff.png"
+          ><img
+            loading="lazy"
+            src="08-ui-elements-combobox-open-diff.png"
+            alt="ui-elements-combobox-open diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-9">
+    <h2>9. ui-elements-select-open</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="09-ui-elements-select-open-expected.png"
+          ><img
+            loading="lazy"
+            src="09-ui-elements-select-open-expected.png"
+            alt="ui-elements-select-open expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="09-ui-elements-select-open-actual.png"
+          ><img
+            loading="lazy"
+            src="09-ui-elements-select-open-actual.png"
+            alt="ui-elements-select-open actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="09-ui-elements-select-open-diff.png"
+          ><img
+            loading="lazy"
+            src="09-ui-elements-select-open-diff.png"
+            alt="ui-elements-select-open diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-10">
+    <h2>10. page-archetypes-overview-desktop</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="10-page-archetypes-overview-desktop-expected.png"
+          ><img
+            loading="lazy"
+            src="10-page-archetypes-overview-desktop-expected.png"
+            alt="page-archetypes-overview-desktop expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="10-page-archetypes-overview-desktop-actual.png"
+          ><img
+            loading="lazy"
+            src="10-page-archetypes-overview-desktop-actual.png"
+            alt="page-archetypes-overview-desktop actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="10-page-archetypes-overview-desktop-diff.png"
+          ><img
+            loading="lazy"
+            src="10-page-archetypes-overview-desktop-diff.png"
+            alt="page-archetypes-overview-desktop diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-11">
+    <h2>11. page-patterns-collections-desktop</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="11-page-patterns-collections-desktop-expected.png"
+          ><img
+            loading="lazy"
+            src="11-page-patterns-collections-desktop-expected.png"
+            alt="page-patterns-collections-desktop expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="11-page-patterns-collections-desktop-actual.png"
+          ><img
+            loading="lazy"
+            src="11-page-patterns-collections-desktop-actual.png"
+            alt="page-patterns-collections-desktop actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="11-page-patterns-collections-desktop-diff.png"
+          ><img
+            loading="lazy"
+            src="11-page-patterns-collections-desktop-diff.png"
+            alt="page-patterns-collections-desktop diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-12">
+    <h2>12. overview-desktop</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="12-overview-desktop-expected.png"
+          ><img
+            loading="lazy"
+            src="12-overview-desktop-expected.png"
+            alt="overview-desktop expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="12-overview-desktop-actual.png"
+          ><img loading="lazy" src="12-overview-desktop-actual.png" alt="overview-desktop actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="12-overview-desktop-diff.png"
+          ><img loading="lazy" src="12-overview-desktop-diff.png" alt="overview-desktop diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-13">
+    <h2>13. settings-desktop</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="13-settings-desktop-expected.png"
+          ><img
+            loading="lazy"
+            src="13-settings-desktop-expected.png"
+            alt="settings-desktop expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="13-settings-desktop-actual.png"
+          ><img loading="lazy" src="13-settings-desktop-actual.png" alt="settings-desktop actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="13-settings-desktop-diff.png"
+          ><img loading="lazy" src="13-settings-desktop-diff.png" alt="settings-desktop diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-14">
+    <h2>14. reference-multi-select</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="14-reference-multi-select-expected.png"
+          ><img
+            loading="lazy"
+            src="14-reference-multi-select-expected.png"
+            alt="reference-multi-select expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="14-reference-multi-select-actual.png"
+          ><img
+            loading="lazy"
+            src="14-reference-multi-select-actual.png"
+            alt="reference-multi-select actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="14-reference-multi-select-diff.png"
+          ><img
+            loading="lazy"
+            src="14-reference-multi-select-diff.png"
+            alt="reference-multi-select diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-15">
+    <h2>15. ui-elements-toast-compact</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="15-ui-elements-toast-compact-expected.png"
+          ><img
+            loading="lazy"
+            src="15-ui-elements-toast-compact-expected.png"
+            alt="ui-elements-toast-compact expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="15-ui-elements-toast-compact-actual.png"
+          ><img
+            loading="lazy"
+            src="15-ui-elements-toast-compact-actual.png"
+            alt="ui-elements-toast-compact actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="15-ui-elements-toast-compact-diff.png"
+          ><img
+            loading="lazy"
+            src="15-ui-elements-toast-compact-diff.png"
+            alt="ui-elements-toast-compact diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-16">
+    <h2>16. ui-elements-family-actions-selection</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="16-ui-elements-family-actions-selection-expected.png"
+          ><img
+            loading="lazy"
+            src="16-ui-elements-family-actions-selection-expected.png"
+            alt="ui-elements-family-actions-selection expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="16-ui-elements-family-actions-selection-actual.png"
+          ><img
+            loading="lazy"
+            src="16-ui-elements-family-actions-selection-actual.png"
+            alt="ui-elements-family-actions-selection actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="16-ui-elements-family-actions-selection-diff.png"
+          ><img
+            loading="lazy"
+            src="16-ui-elements-family-actions-selection-diff.png"
+            alt="ui-elements-family-actions-selection diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-17">
+    <h2>17. ui-elements-family-feedback</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="17-ui-elements-family-feedback-expected.png"
+          ><img
+            loading="lazy"
+            src="17-ui-elements-family-feedback-expected.png"
+            alt="ui-elements-family-feedback expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="17-ui-elements-family-feedback-actual.png"
+          ><img
+            loading="lazy"
+            src="17-ui-elements-family-feedback-actual.png"
+            alt="ui-elements-family-feedback actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="17-ui-elements-family-feedback-diff.png"
+          ><img
+            loading="lazy"
+            src="17-ui-elements-family-feedback-diff.png"
+            alt="ui-elements-family-feedback diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-18">
+    <h2>18. ui-elements-family-forms</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="18-ui-elements-family-forms-expected.png"
+          ><img
+            loading="lazy"
+            src="18-ui-elements-family-forms-expected.png"
+            alt="ui-elements-family-forms expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="18-ui-elements-family-forms-actual.png"
+          ><img
+            loading="lazy"
+            src="18-ui-elements-family-forms-actual.png"
+            alt="ui-elements-family-forms actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="18-ui-elements-family-forms-diff.png"
+          ><img
+            loading="lazy"
+            src="18-ui-elements-family-forms-diff.png"
+            alt="ui-elements-family-forms diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-19">
+    <h2>19. ui-elements-family-identity-display</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="19-ui-elements-family-identity-display-expected.png"
+          ><img
+            loading="lazy"
+            src="19-ui-elements-family-identity-display-expected.png"
+            alt="ui-elements-family-identity-display expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="19-ui-elements-family-identity-display-actual.png"
+          ><img
+            loading="lazy"
+            src="19-ui-elements-family-identity-display-actual.png"
+            alt="ui-elements-family-identity-display actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="19-ui-elements-family-identity-display-diff.png"
+          ><img
+            loading="lazy"
+            src="19-ui-elements-family-identity-display-diff.png"
+            alt="ui-elements-family-identity-display diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-20">
+    <h2>20. ui-elements-family-navigation</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="20-ui-elements-family-navigation-expected.png"
+          ><img
+            loading="lazy"
+            src="20-ui-elements-family-navigation-expected.png"
+            alt="ui-elements-family-navigation expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="20-ui-elements-family-navigation-actual.png"
+          ><img
+            loading="lazy"
+            src="20-ui-elements-family-navigation-actual.png"
+            alt="ui-elements-family-navigation actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="20-ui-elements-family-navigation-diff.png"
+          ><img
+            loading="lazy"
+            src="20-ui-elements-family-navigation-diff.png"
+            alt="ui-elements-family-navigation diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-21">
+    <h2>21. ui-elements-family-overlays</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="21-ui-elements-family-overlays-expected.png"
+          ><img
+            loading="lazy"
+            src="21-ui-elements-family-overlays-expected.png"
+            alt="ui-elements-family-overlays expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="21-ui-elements-family-overlays-actual.png"
+          ><img
+            loading="lazy"
+            src="21-ui-elements-family-overlays-actual.png"
+            alt="ui-elements-family-overlays actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="21-ui-elements-family-overlays-diff.png"
+          ><img
+            loading="lazy"
+            src="21-ui-elements-family-overlays-diff.png"
+            alt="ui-elements-family-overlays diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-22">
+    <h2>22. ui-elements-family-status-async</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="22-ui-elements-family-status-async-expected.png"
+          ><img
+            loading="lazy"
+            src="22-ui-elements-family-status-async-expected.png"
+            alt="ui-elements-family-status-async expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="22-ui-elements-family-status-async-actual.png"
+          ><img
+            loading="lazy"
+            src="22-ui-elements-family-status-async-actual.png"
+            alt="ui-elements-family-status-async actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="22-ui-elements-family-status-async-diff.png"
+          ><img
+            loading="lazy"
+            src="22-ui-elements-family-status-async-diff.png"
+            alt="ui-elements-family-status-async diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-23">
+    <h2>23. ui-elements-desktop</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="23-ui-elements-desktop-expected.png"
+          ><img
+            loading="lazy"
+            src="23-ui-elements-desktop-expected.png"
+            alt="ui-elements-desktop expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="23-ui-elements-desktop-actual.png"
+          ><img
+            loading="lazy"
+            src="23-ui-elements-desktop-actual.png"
+            alt="ui-elements-desktop actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="23-ui-elements-desktop-diff.png"
+          ><img loading="lazy" src="23-ui-elements-desktop-diff.png" alt="ui-elements-desktop diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-24">
+    <h2>24. reference-desktop</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="24-reference-desktop-expected.png"
+          ><img
+            loading="lazy"
+            src="24-reference-desktop-expected.png"
+            alt="reference-desktop expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="24-reference-desktop-actual.png"
+          ><img loading="lazy" src="24-reference-desktop-actual.png" alt="reference-desktop actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="24-reference-desktop-diff.png"
+          ><img loading="lazy" src="24-reference-desktop-diff.png" alt="reference-desktop diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-25">
+    <h2>25. reference-ultrawide</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="25-reference-ultrawide-expected.png"
+          ><img
+            loading="lazy"
+            src="25-reference-ultrawide-expected.png"
+            alt="reference-ultrawide expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="25-reference-ultrawide-actual.png"
+          ><img
+            loading="lazy"
+            src="25-reference-ultrawide-actual.png"
+            alt="reference-ultrawide actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="25-reference-ultrawide-diff.png"
+          ><img loading="lazy" src="25-reference-ultrawide-diff.png" alt="reference-ultrawide diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-26">
+    <h2>26. mobile-navigation-open</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="26-mobile-navigation-open-expected.png"
+          ><img
+            loading="lazy"
+            src="26-mobile-navigation-open-expected.png"
+            alt="mobile-navigation-open expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="26-mobile-navigation-open-actual.png"
+          ><img
+            loading="lazy"
+            src="26-mobile-navigation-open-actual.png"
+            alt="mobile-navigation-open actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="26-mobile-navigation-open-diff.png"
+          ><img
+            loading="lazy"
+            src="26-mobile-navigation-open-diff.png"
+            alt="mobile-navigation-open diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section id="pair-27">
+    <h2>27. ui-elements-mobile-dark-en</h2>
+    <div class="comparison">
+      <figure>
+        <figcaption>原基线</figcaption>
+        <a href="27-ui-elements-mobile-dark-en-expected.png"
+          ><img
+            loading="lazy"
+            src="27-ui-elements-mobile-dark-en-expected.png"
+            alt="ui-elements-mobile-dark-en expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>当前渲染</figcaption>
+        <a href="27-ui-elements-mobile-dark-en-actual.png"
+          ><img
+            loading="lazy"
+            src="27-ui-elements-mobile-dark-en-actual.png"
+            alt="ui-elements-mobile-dark-en actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>像素差异</figcaption>
+        <a href="27-ui-elements-mobile-dark-en-diff.png"
+          ><img
+            loading="lazy"
+            src="27-ui-elements-mobile-dark-en-diff.png"
+            alt="ui-elements-mobile-dark-en diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+</html>

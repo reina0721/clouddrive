@@ -1,0 +1,82 @@
+[WebServer] (node:34888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:35556) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:2364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 58 tests using 1 worker
+
+(node:32304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\surface-foundation.spec.ts:21:1 › Initial detail content stays readable; tab selection alone triggers content swap (3.8s)
+  ok  2 [chromium] › apps\web\e2e\surface-foundation.spec.ts:38:1 › 七类 Page Archetype 在四级视口可直接验收 (45.1s)
+  ok  3 [chromium] › apps\web\e2e\surface-foundation.spec.ts:61:1 › Universal 与 Surface authority 视觉面保持分层 (7.3s)
+  ok  4 [chromium] › apps\web\e2e\table-density.spec.ts:18:1 › 全局默认表格密度流入参考列表（数据展示 → 资源列表） (4.9s)
+  ok  5 [chromium] › apps\web\e2e\table-density.spec.ts:28:1 › 页面显式操作优先于全局默认（参考列表密度切换为舒适） (5.7s)
+  ok  6 [chromium] › apps\web\e2e\time-display.spec.ts:17:1 › 通知条目显示时刻（默认 24 小时） (3.2s)
+  ok  7 [chromium] › apps\web\e2e\time-display.spec.ts:25:1 › 12 小时制：通知条目时刻带 AM/PM（真实联动） (5.1s)
+  ok  8 [chromium] › apps\web\e2e\toast-duration.spec.ts:15:1 › 提示时长偏好流入 Toast（长=8s：toast 在 6.5s 仍可见） (10.7s)
+  ok  9 [chromium] › apps\web\e2e\toast-duration.spec.ts:27:1 › 提示时长偏好流入 Toast（短=3s：toast 在 4.5s 消失） (8.6s)
+  ok 10 [chromium] › apps\web\e2e\top-progress.spec.ts:59:1 › 极快导航（warm 缓存路由）仍显示一次完整进度周期并自然退出 (3.8s)
+  ok 11 [chromium] › apps\web\e2e\top-progress.spec.ts:84:1 › 普通首次导航（未缓存路由）能感知到进度条 (3.4s)
+  ok 12 [chromium] › apps\web\e2e\top-progress.spec.ts:100:1 › 慢速导航：进度条在 viewport 顶部、非零可见尺寸、foreground 实际延伸、完成后退出 (5.0s)
+  ok 13 [chromium] › apps\web\e2e\top-progress.spec.ts:176:1 › 连续快速点击不同路由不错误结束、不永久卡住 (3.9s)
+  ok 14 [chromium] › apps\web\e2e\top-progress.spec.ts:192:1 › 访问不存在路由不导致进度条卡住 (1.3s)
+  ok 15 [chromium] › apps\web\e2e\top-progress.spec.ts:199:1 › 进度条不推动 Header/Sidebar/内容布局 (4.2s)
+  ok 16 [chromium] › apps\web\e2e\top-progress.spec.ts:219:1 › Dark Mode 与窄屏下进度条正常显示 (4.4s)
+  ok 17 [chromium] › apps\web\e2e\top-progress.spec.ts:246:1 › Reduced Motion 下进度条动画时长被压低但仍完成收尾 (4.7s)
+  ok 18 [chromium] › apps\web\e2e\transition.spec.ts:117:1 › 无 Suspense 页面深入导航播放方向进入并恢复稳定 (4.1s)
+  ok 19 [chromium] › apps\web\e2e\transition.spec.ts:153:1 › Family 页面导航在拆帧场景下保持功能正确且动画不失控 (4.8s)
+  ok 20 [chromium] › apps\web\e2e\transition.spec.ts:170:1 › 减弱动态效果时方向过渡时长接近零 (4.3s)
+  ok 21 [chromium] › apps\web\e2e\transition.spec.ts:186:1 › 浏览器后退不播放方向进入并正确恢复页面 (5.5s)
+  ok 22 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:6:1 › Shell keeps the main content in its viewport at breakpoint boundaries (8.0s)
+  ok 23 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:22:1 › Mobile navigation traps focus, closes with Escape and releases on desktop resize (2.6s)
+  ok 24 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:38:1 › Settings search hands focus to the requested field after closing its drawer (3.3s)
+  ok 25 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:57:1 › Reference identity, validation and local saves stay consistent (5.4s)
+  ok 26 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:76:1 › Routes retain titles and main content on mobile and desktop (1.4m)
+  ok 27 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:96:1 › Critical mobile paths meet WCAG AA automated checks (5.7s)
+  ok 28 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:112:1 › Short dialogs keep actions reachable at 256 and 400 pixels (7.7s)
+  ok 29 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:130:1 › Column resizing preserves pointer and keyboard widths through reload (8.6s)
+  ok 30 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:165:1 › Closing the active page tab can be cancelled without losing inputs (4.8s)
+  ok 31 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:191:1 › Operation example closes failure, retry and cancellation loops (7.9s)
+  ok 32 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:209:1 › Detail example validates, saves and resets its real local fields (2.7s)
+  ok 33 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:226:1 › Mobile showcase index focuses the actual component heading (2.5s)
+  ok 34 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: compact (15.0s)
+  ok 35 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: standard (16.1s)
+  ok 36 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: comfortable (15.1s)
+  ok 37 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:315:1 › Corrupt current column layout is reported and can be retried (3.1s)
+  ok 38 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:340:1 › Saving a restored draft clears its dirty baseline before continuing creation (4.0s)
+  ok 39 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:377:1 › Native repeated submits create one resource and allow retry after validation (2.9s)
+  ok 40 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:394:1 › Leaving during validation prevents a stale save and redirect (3.3s)
+  ok 41 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:430:1 › Leaving the local form simulation cancels its pending feedback (3.4s)
+  ok 42 [chromium] › apps\web\e2e\unread-reminder.spec.ts:15:1 › 未读提醒默认开：未读通知带"刚刚"标记（真实联动） (3.0s)
+  ok 43 [chromium] › apps\web\e2e\unread-reminder.spec.ts:21:1 › 关闭 未读提醒：未读行无"刚刚"标记但角标仍计数 (4.8s)
+  ok 44 [chromium] › apps\web\e2e\visual.spec.ts:16:1 › 桌面与超宽屏 Reference 布局保持稳定 (6.2s)
+  ok 45 [chromium] › apps\web\e2e\visual.spec.ts:28:1 › 桌面 UI Elements Family 保持基础组件权威面稳定 (2.4s)
+  ok 46 [chromium] › apps\web\e2e\visual.spec.ts:42:1 › 九个 UI Element Family 页面均有独立视觉基线 (20.7s)
+  ok 47 [chromium] › apps\web\e2e\visual.spec.ts:70:1 › 移动窗口、Dark Mode 与英文扩张保持无溢出 (5.3s)
+  ok 48 [chromium] › apps\web\e2e\visual.spec.ts:88:1 › 移动侧栏打开状态纳入视觉回归 (2.5s)
+  ok 49 [chromium] › apps\web\e2e\visual.spec.ts:97:1 › 状态体系页面保持 Loading 与异常状态视觉基线 (2.1s)
+  ok 50 [chromium] › apps\web\e2e\visual.spec.ts:109:1 › Overview、Reference Form 与 Settings 真实页面进入视觉矩阵 (5.9s)
+  ok 51 [chromium] › apps\web\e2e\visual.spec.ts:129:1 › Toast、Destructive Confirm 与 Compact Density 开启态进入视觉矩阵 (4.8s)
+  ok 52 [chromium] › apps\web\e2e\visual.spec.ts:143:1 › Reference 多选与分页的真实联动状态进入视觉矩阵 (5.6s)
+  ok 53 [chromium] › apps\web\e2e\workbench-home.spec.ts:14:1 › 收藏：详情页收藏 → 首页"收藏"区段展示并可跳转 (3.7s)
+  ok 54 [chromium] › apps\web\e2e\workbench-home.spec.ts:28:1 › 最近访问：访问参考列表后首页"最近访问"区段展示（默认开） (3.3s)
+  ok 55 [chromium] › apps\web\e2e\workbench-mobile-109.spec.ts:4:1 › Mobile workbench detail preserves identity, selection and list focus (6.2s)
+(node:33100) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  ok 56 [backend-contract] › apps\web\e2e\authentication-backend.spec.ts:6:1 › Backend mode uses CSRF/session API for login, restore and logout without Mock persistence (14.2s)
+  ok 57 [backend-contract] › apps\web\e2e\authentication-backend.spec.ts:64:1 › Backend restore failure stays closed, supports retry and never supplies a demo identity (3.6s)
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  ok 58 [backend-contract] › apps\web\e2e\authentication-backend.spec.ts:87:1 › Backend registration reports pending/success and failed logout keeps all private content hidden (6.0s)
+
+  58 passed (7.7m)
+M0_REMAINING_EXIT_CODE=0

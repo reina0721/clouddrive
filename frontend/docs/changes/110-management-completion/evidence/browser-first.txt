@@ -1,0 +1,556 @@
+
+[WebServer] (node:15448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:28088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[WebServer] (node:35360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:26232) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 16 tests using 1 worker
+
+(node:35072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/16] [chromium] › apps\web\e2e\management-completion.spec.ts:5:1 › Home has only recents and never redirects to a saved draft
+  1) [chromium] › apps\web\e2e\management-completion.spec.ts:5:1 › Home has only recents and never redirects to a saved draft 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('switch', { name: '本地草稿自动保存' })
+        - locator resolved to <input title="" tabindex="0" role="switch" type="checkbox" aria-label="本地草稿自动保存" data-react-aria-pressable="true"/>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <span class="block text-sm font-semibold text-ink">本地草稿自动保存</span> from <span class="min-w-0 flex-1">…</span> subtree intercepts pointer events
+      - retrying click action
+        - waiting for element to be visible, enabled and stable
+        - element is not stable
+      - retrying click action
+        - waiting 20ms
+        - waiting for element to be visible, enabled and stable
+        - element is not stable
+      2 × retrying click action
+          - waiting 100ms
+          - waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      12 × retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <label data-rac="" data-slot="switch-content" data-react-aria-pressable="true" class="switch__content ui-switch-content px-3 py-2">…</label> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <span class="block text-sm font-semibold text-ink">本地草稿自动保存</span> from <span class="min-w-0 flex-1">…</span> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <label data-rac="" data-slot="switch-content" data-react-aria-pressable="true" class="switch__content ui-switch-content px-3 py-2">…</label> intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <span class="block text-sm font-semibold text-ink">本地草稿自动保存</span> from <span class="min-w-0 flex-1">…</span> subtree intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+
+
+       6 |   await page.goto('/settings/actions');
+       7 |   const autosave = page.getByRole('switch', { name:'本地草稿自动保存' });
+    >  8 |   if (!await autosave.isChecked()) await autosave.click();
+         |                                                   ^
+       9 |   await page.goto('/reference-resources/create'); await page.getByLabel('名称', {exact:true}).fill('Retained draft');
+      10 |   await page.goto('/'); await expect(page.getByRole('heading',{name:'工作台',exact:true})).toBeVisible();
+      11 |   await expect(page.locator('#workbench-recents')).toBeVisible();
+        at D:\coder\i721\console-web\apps\web\e2e\management-completion.spec.ts:8:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Home-5b763--redirects-to-a-saved-draft-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\management-completion-Home-5b763--redirects-to-a-saved-draft-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Home-5b763--redirects-to-a-saved-draft-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\management-completion-Home-5b763--redirects-to-a-saved-draft-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:16096) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[2/16] [chromium] › apps\web\e2e\management-completion.spec.ts:17:1 › Bulk status preserves protected users and reports partial results
+  2) [chromium] › apps\web\e2e\management-completion.spec.ts:17:1 › Bulk status preserves protected users and reports partial results 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.check: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('checkbox', { name: '选择当前页', exact: true })
+        - locator resolved to <input title="" tabindex="0" type="checkbox" aria-label="选择当前页" data-react-aria-pressable="true"/>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <label data-rac="" data-slot="checkbox-content" data-react-aria-pressable="true" class="checkbox__content ui-choice-content">…</label> intercepts pointer events
+      - retrying click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <div class="border-b border-border p-4">…</div> intercepts pointer events
+      - retrying click action
+        - waiting 20ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <label data-rac="" data-slot="checkbox-content" data-react-aria-pressable="true" class="checkbox__content ui-choice-content">…</label> intercepts pointer events
+      2 × retrying click action
+          - waiting 100ms
+          - waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <div class="border-b border-border p-4">…</div> intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <label data-rac="" data-slot="checkbox-content" data-react-aria-pressable="true" class="checkbox__content ui-choice-content">…</label> intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+      - element was detached from the DOM, retrying
+        - locator resolved to <input title="" tabindex="0" type="checkbox" aria-label="选择当前页" data-react-aria-pressable="true"/>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <label data-rac="" data-slot="checkbox-content" data-react-aria-pressable="true" class="checkbox__content ui-choice-content">…</label> intercepts pointer events
+      - retrying click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <div class="border-b border-border p-4">…</div> intercepts pointer events
+      - retrying click action
+        - waiting 20ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <label data-rac="" data-slot="checkbox-content" data-react-aria-pressable="true" class="checkbox__content ui-choice-content">…</label> intercepts pointer events
+      2 × retrying click action
+          - waiting 100ms
+          - waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      11 × retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <div class="border-b border-border p-4">…</div> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <label data-rac="" data-slot="checkbox-content" data-react-aria-pressable="true" class="checkbox__content ui-choice-content">…</label> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+
+
+      17 |     'workbench-favorites',
+      18 |     'workbench-activity',
+    > 19 |     'workbench-shortcuts',
+         |                           ^
+      20 |   ])
+      21 |     await expect(page.locator('#' + id)).toHaveCount(0);
+      22 |   await page.goto('/reference-resources/create');
+        at D:\coder\i721\console-web\apps\web\e2e\management-completion.spec.ts:19:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Bulk-97315-and-reports-partial-results-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\management-completion-Bulk-97315-and-reports-partial-results-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Bulk-97315-and-reports-partial-results-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\management-completion-Bulk-97315-and-reports-partial-results-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:20904) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[3/16] [chromium] › apps\web\e2e\management-completion.spec.ts:30:1 › Role members change only the selected role and audit filters survive detail return
+  3) [chromium] › apps\web\e2e\management-completion.spec.ts:30:1 › Role members change only the selected role and audit filters survive detail return 
+
+    Test timeout of 120000ms exceeded.
+
+    Error: locator.check: Test timeout of 120000ms exceeded.
+    Call log:
+      - waiting for getByRole('checkbox', { name: '编辑自己的资料', exact: true })
+        - locator resolved to <input title="" tabindex="0" type="checkbox" aria-label="编辑自己的资料" data-react-aria-pressable="true"/>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <label data-rac="" data-slot="checkbox-content" data-react-aria-pressable="true" class="checkbox__content ui-choice-content">…</label> intercepts pointer events
+      - retrying click action
+        - waiting for element to be visible, enabled and stable
+        - element is not stable
+      - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+          - waiting 100ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <label data-rac="" data-slot="checkbox-content" data-react-aria-pressable="true" class="checkbox__content ui-choice-content">…</label> intercepts pointer events
+      55 × retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <form novalidate="" class="grid gap-5 p-5">…</form> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <label data-rac="" data-slot="checkbox-content" data-react-aria-pressable="true" class="checkbox__content ui-choice-content">…</label> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <span data-slot="checkbox-control" class="checkbox__control mt-0.5 grid size-5 shrink-0 place-items-center rounded-control border border-border-strong bg-surface text-on-brand">…</span> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <span data-slot="checkbox-control" class="checkbox__control mt-0.5 grid size-5 shrink-0 place-items-center rounded-control border border-border-strong bg-surface text-on-brand">…</span> intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <form novalidate="" class="grid gap-5 p-5">…</form> intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <label data-rac="" data-slot="checkbox-content" data-react-aria-pressable="true" class="checkbox__content ui-choice-content">…</label> intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+
+
+      31 |   await expect(dialog).toContainText('不能停用当前账号');
+      32 |   await dialog.getByRole('button', { name: '确认修改', exact: true }).click();
+    > 33 |   await expect(dialog).toBeHidden();
+         |                                     ^
+      34 |   await expect(page.getByRole('main')).toContainText('成功');
+      35 |   const state = await page.evaluate(
+      36 |     () => JSON.parse(localStorage.getItem('clouddrive.auth-mock') ?? '').state,
+        at D:\coder\i721\console-web\apps\web\e2e\management-completion.spec.ts:33:64
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Role-86ffd-lters-survive-detail-return-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\management-completion-Role-86ffd-lters-survive-detail-return-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Role-86ffd-lters-survive-detail-return-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\management-completion-Role-86ffd-lters-survive-detail-return-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:21992) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[4/16] [chromium] › apps\web\e2e\management-completion.spec.ts:53:1 › Account password changes reject bad credentials then revoke sessions and require sign-in
+  4) [chromium] › apps\web\e2e\management-completion.spec.ts:53:1 › Account password changes reject bad credentials then revoke sessions and require sign-in 
+
+    Test timeout of 90000ms exceeded.
+
+    Error: locator.click: Test timeout of 90000ms exceeded.
+    Call log:
+      - waiting for getByRole('dialog').getByRole('button', { name: '确认', exact: true })
+
+
+      55 |   await page.reload();
+      56 |   await expect(
+    > 57 |     page.getByRole('heading', { name: '用户管理', exact: true, level: 1 }),
+         |                                                                        ^
+      58 |   ).toBeVisible();
+      59 | });
+      60 |
+        at D:\coder\i721\console-web\apps\web\e2e\management-completion.spec.ts:57:141
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Acco-83d1c-essions-and-require-sign-in-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\management-completion-Acco-83d1c-essions-and-require-sign-in-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Acco-83d1c-essions-and-require-sign-in-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\management-completion-Acco-83d1c-essions-and-require-sign-in-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:33244) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[5/16] [chromium] › apps\web\e2e\management-completion.spec.ts:67:55 › Seven entrances remain usable across devices: zh-light
+[6/16] [chromium] › apps\web\e2e\management-completion.spec.ts:67:55 › Seven entrances remain usable across devices: en-dark
+[7/16] [chromium] › apps\web\e2e\product-management.spec.ts:23:1 › M2–M5 user, role grants, inbox and audit form a durable management workflow
+  5) [chromium] › apps\web\e2e\product-management.spec.ts:23:1 › M2–M5 user, role grants, inbox and audit form a durable management workflow 
+
+    Error: expect(page).toHaveURL(expected) failed
+
+    Expected pattern: /\/audit-logs\/detail\?id=/
+    Received string:  "http://127.0.0.1:4173/audit-logs/detail?q=M25&operation=all&result=all&actor=&object=&from=&to=&page=1&pageSize=20&id=audit-ec73c7a1-dc0b-4ed1-9562-befe1aeebac1"
+    Timeout: 15000ms
+
+    Call log:
+      - Expect "toHaveURL" with timeout 15000ms
+        5 × locator resolved to <html lang="zh-CN" data-theme="light" data-accent="purple" data-hydrated="true" data-motion-swap="on" data-motion-async="on" data-motion-media="on" data-contrast="system" data-motion-screen="on" data-motion-reveal="on" data-density="standard" data-follow-system="on" data-enhance-focus="off" data-motion-mode="system" data-motion-feedback="on" data-content-width="auto" data-enhance-target="off" data-font-scale="standard" data-route-intent="forward" data-system-contrast="standard">…</html>
+          - unexpected value "http://127.0.0.1:4173/audit-logs?q=M25"
+        28 × locator resolved to <html lang="zh-CN" data-theme="light" data-accent="purple" data-hydrated="true" data-motion-swap="on" data-motion-async="on" data-motion-media="on" data-contrast="system" data-motion-screen="on" data-motion-reveal="on" data-density="standard" data-follow-system="on" data-enhance-focus="off" data-motion-mode="system" data-motion-feedback="on" data-content-width="auto" data-enhance-target="off" data-font-scale="standard" data-system-contrast="standard">…</html>
+           - unexpected value "http://127.0.0.1:4173/audit-logs/detail?q=M25&operation=all&result=all&actor=&object=&from=&to=&page=1&pageSize=20&id=audit-ec73c7a1-dc0b-4ed1-9562-befe1aeebac1"
+
+
+      67 |   await expect(page.getByRole('main')).toContainText('M25 Updated member');
+      68 |   await page.getByRole('main').getByRole('link', { name: '修改用户角色', exact: true }).click();
+    > 69 |   await expect(page).toHaveURL(/\/audit-logs\/detail\?id=/, { timeout: 15000 });
+         |                      ^
+      70 |   await expect(page.getByRole('main')).toContainText('mock-demo');
+      71 |   await expect(page.getByRole('main')).toContainText(userId);
+      72 |   await expect(
+        at D:\coder\i721\console-web\apps\web\e2e\product-management.spec.ts:69:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\product-management-M2–M5-u-f8d04-durable-management-workflow-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\product-management-M2–M5-u-f8d04-durable-management-workflow-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\product-management-M2–M5-u-f8d04-durable-management-workflow-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\product-management-M2–M5-u-f8d04-durable-management-workflow-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:27796) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[8/16] [chromium] › apps\web\e2e\product-management.spec.ts:110:1 › Restricted account has its own inbox/profile and no management navigation or write access
+[9/16] [chromium] › apps\web\e2e\product-management.spec.ts:133:1 › M2–M5 pages retain accessible responsive layout in Chinese light and English dark
+[10/16] [chromium] › apps\web\e2e\product-system-settings.spec.ts:6:1 › Registration policy controls public signup and the resulting account role
+[11/16] [chromium] › apps\web\e2e\product-system-settings.spec.ts:71:1 › System policy retains keyboard, overlay and accessible layout across sizes and locales
+  6) [chromium] › apps\web\e2e\product-system-settings.spec.ts:71:1 › System policy retains keyboard, overlay and accessible layout across sizes and locales 
+
+    Test timeout of 180000ms exceeded.
+
+    Error: locator.click: Test timeout of 180000ms exceeded.
+    Call log:
+      - waiting for getByRole('alertdialog', { name: 'Confirm registration policy changes', exact: true }).getByRole('button', { name: 'Cancel', exact: true })
+
+
+      141 |       await confirmation
+      142 |         .getByRole('button', { name: english ? 'Cancel' : '取消', exact: true })
+    > 143 |         .click();
+          |          ^
+      144 |       await expect(enabled).not.toBeChecked();
+      145 |       await page
+      146 |         .getByRole('button', {
+        at D:\coder\i721\console-web\apps\web\e2e\product-system-settings.spec.ts:143:10
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\product-system-settings-Sy-1832d-ut-across-sizes-and-locales-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\product-system-settings-Sy-1832d-ut-across-sizes-and-locales-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\product-system-settings-Sy-1832d-ut-across-sizes-and-locales-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\product-system-settings-Sy-1832d-ut-across-sizes-and-locales-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:27864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[12/16] [chromium] › apps\web\e2e\product-workbench.spec.ts:5:1 › Product IA retains old links, search targets, page tabs and history
+[13/16] [chromium] › apps\web\e2e\product-workbench.spec.ts:41:1 › Home contains only recents while drafts and notification actions remain available in their owners
+  7) [chromium] › apps\web\e2e\product-workbench.spec.ts:41:1 › Home contains only recents while drafts and notification actions remain available in their owners 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '通知', exact: true })
+
+
+      59 |   await expect(page).toHaveURL(/\/reference-resources(?:\?.*)?$/);
+      60 |   await page.goto('/');
+    > 61 |   await page.getByRole('button', { name: '通知', exact: true }).click();
+         |                                                               ^
+      62 |   await expect(page.getByRole('dialog', { name: '通知中心' })).toContainText('参考资源已保存');
+      63 |   await page.getByRole('dialog', { name: '通知中心' }).getByRole('button', { name: '全部标为已读' }).click();
+      64 |   await expect(page.getByRole('dialog', { name: '通知中心' }).getByRole('button', { name: '全部标为已读' })).toHaveCount(0);
+        at D:\coder\i721\console-web\apps\web\e2e\product-workbench.spec.ts:61:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\product-workbench-Home-con-bbfcc-n-available-in-their-owners-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\product-workbench-Home-con-bbfcc-n-available-in-their-owners-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\product-workbench-Home-con-bbfcc-n-available-in-their-owners-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\product-workbench-Home-con-bbfcc-n-available-in-their-owners-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:12424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[14/16] [chromium] › apps\web\e2e\product-workbench.spec.ts:69:1 › English dark workbench is usable at mobile, tablet, desktop and wide widths
+[15/16] [chromium] › apps\web\e2e\workbench-home.spec.ts:14:1 › 收藏能力保留在详情页，首页仅保留最近访问
+[16/16] [chromium] › apps\web\e2e\workbench-home.spec.ts:28:1 › 最近访问：访问参考列表后首页"最近访问"区段展示（默认开）
+  7 failed
+    [chromium] › apps\web\e2e\management-completion.spec.ts:5:1 › Home has only recents and never redirects to a saved draft 
+    [chromium] › apps\web\e2e\management-completion.spec.ts:17:1 › Bulk status preserves protected users and reports partial results 
+    [chromium] › apps\web\e2e\management-completion.spec.ts:30:1 › Role members change only the selected role and audit filters survive detail return 
+    [chromium] › apps\web\e2e\management-completion.spec.ts:53:1 › Account password changes reject bad credentials then revoke sessions and require sign-in 
+    [chromium] › apps\web\e2e\product-management.spec.ts:23:1 › M2–M5 user, role grants, inbox and audit form a durable management workflow 
+    [chromium] › apps\web\e2e\product-system-settings.spec.ts:71:1 › System policy retains keyboard, overlay and accessible layout across sizes and locales 
+    [chromium] › apps\web\e2e\product-workbench.spec.ts:41:1 › Home contains only recents while drafts and notification actions remain available in their owners 
+  9 passed (15.2m)

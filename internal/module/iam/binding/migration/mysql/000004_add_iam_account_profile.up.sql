@@ -1,0 +1,3 @@
+ALTER TABLE iam_accounts ADD COLUMN nickname VARCHAR(128) NULL;
+ALTER TABLE iam_accounts ADD COLUMN bio TEXT NULL;
+ALTER TABLE iam_accounts ADD COLUMN birth_date VARCHAR(16) NULL;

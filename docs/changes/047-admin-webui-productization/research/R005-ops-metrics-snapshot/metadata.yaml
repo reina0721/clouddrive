@@ -1,0 +1,33 @@
+id: R005
+title: "Ops Metrics 快照与参考指标卡对照"
+question: "如何把 Soybean 工作台的指标卡视觉层级映射到当前真实 management metrics，而不伪造历史趋势或业务统计？"
+status: passed
+snapshot:
+  date: "2026-08-21"
+  commit: "7cb7db9"
+evidence:
+  - path: "https://soybeanjs.cn/home"
+    location: "browser screenshot and DOM snapshot"
+    fact: "The workbench displays four high-contrast metric cards before later chart and activity details."
+  - path: "internal/kernel/app/observability/metrics.go"
+    location: "metric collector definitions"
+    fact: "The current process exports app_http_requests_total, app_http_in_flight_requests, app_telemetry_exported_spans_total, and app_telemetry_dropped_spans_total."
+  - path: "internal/module/ops/binding/webui/web/api.ts"
+    location: "loadMetrics"
+    fact: "Ops WebUI already reads the existing /management/metrics text response."
+facts:
+  - "The current metrics endpoint is a point-in-time Prometheus exposition response; no historical series contract exists."
+  - "HTTP request totals are labeled by operation, method, status class, and error class, so a UI summary must sum matching finite series."
+inferences:
+  - "Four truthful metric cards provide the closest current parity; a trend chart must wait for an explicit history contract."
+limitations:
+  - "Local project visual screenshot remains blocked by the self-signed Vite HTTPS certificate."
+applicable_scenarios:
+  - "Ops Dashboard metrics overview"
+  - "Soybean workbench metric-card calibration"
+non_applicable_scenarios:
+  - "Historical trend chart"
+  - "Business revenue or activity statistics"
+refresh_triggers:
+  - "Prometheus metric names or label shape changes"
+  - "A history-capable management metrics contract is introduced"

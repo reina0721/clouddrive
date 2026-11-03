@@ -1,0 +1,35 @@
+schema_version: 1
+id: R081-001
+title: "运维监控可视化能力盘点：运行时仪表盘/时序报表图、进程与宿主监控的现状与路径"
+question: "现有 Ops/observability 对（需求1）持久监听与输出的服务状态可视化、（需求2）服务器状态监控模块的现状与缺口是什么；时序报表数据、进程/宿主指标采集、前端图表取向如何选？"
+research_type: current-project
+topics: ["ops", "observability", "monitoring", "dashboard", "sparkline"]
+keywords: ["RuntimeSnapshot", "Metrics", "NodeExporter", "SVGChart", "ServerMonitoring", "滚动窗口"]
+applicable_scenarios: ["单进程自托管运行状态可视化", "进程级监控闭环（内存/goroutine/GC）", "基础时序报表图（请求/调度/消息趋势）", "node-exporter 宿主机指标接入指引"]
+non_applicable_scenarios: ["多实例聚合监控", "Prometheus+Alertmanager 全链路（外部部署指引）", "复杂 BI 报表/图表缩放联动（触发图表库评估）", "durable metrics 存储"]
+status: active
+summary: "现状：已有 management probe/diagnostics/metrics（Prometheus text）与 WebUI Dashboard/Capabilities（快照卡片+metrics 数值解析，无时序）。缺口：无时序报表图、无进程/宿主监控（RuntimeSnapshot 缺内存/goroutine/GC/uptime，metrics 缺 runtime Gauge）、组件明细仅 scheduler/messaging health。采用：时序数据=前端滚动窗口轮询累积（零后端存储）；进程指标=标准库 runtime（跨平台零依赖），OS 级（CPU/磁盘/网络）=node-exporter 标准路径（文档指引；gopsutil 无法复核不作为默认）；图表=自研轻量 SVG chart 原语（webui/src/ui，延续自研 UI 原语方向，不引入 echarts/recharts）。工作量 M+。"
+evidence:
+  types: ["source-code", "tests", "prior-research"]
+  primary_sources:
+    - title: "Ops management 端点与快照"
+      locator: "internal/module/ops/{binding/http/handler.go,service/service.go,model/model.go,binding/webui/web/{DashboardPage.tsx,dashboard-data.ts,metrics-data.ts}}"
+      snapshot: "4532445 验证 2026-09"
+    - title: "Observability 与 metrics 端点"
+      locator: "internal/kernel/app/observability；internal/transport/http/huma.go（/management/metrics 挂载）"
+      snapshot: "4532445 验证 2026-09"
+    - title: "UI 原语与自研方向"
+      locator: "webui/src/ui/index.tsx；docs/changes/059/README.md"
+      snapshot: "复核 2026-09"
+researched_at: "2026-09"
+verified_at: "2026-09"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-10"
+  refresh_triggers: ["management/diagnostics 状态字段变化", "metrics 指标集变化", "node-exporter 接入实践", "复杂图表需求立项"]
+relations:
+  extends: ["002/R002", "059/R059-001", "064/R064-001"]
+  related: ["R081-002"]
+  supersedes: []
+  superseded_by: []
+report: report.md

@@ -1,0 +1,6 @@
+id: R001
+status: verified
+verified_at: 2026-11-03
+refresh_triggers:
+  - source branch revision changes
+  - authentication or frontend contract changes

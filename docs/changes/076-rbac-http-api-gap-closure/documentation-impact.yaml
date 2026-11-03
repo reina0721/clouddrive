@@ -1,0 +1,40 @@
+schema_version: 1
+change: 076-rbac-http-api-gap-closure
+areas:
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/README.md
+    reason: 模块索引链接修正（settings 根 README 入口）并同步 Organization/IAM 模块 HTTP 与密码策略边界。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+    reason: org security profile 变更 + 新增 `iam.roles.accounts.list`、`iam.permissions.roles.list` operation 与 sessions/accounts 过滤分页参数；api/openapi.yaml 与 operation inventory 经 contract-gen 更新。
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+    reason: org 前端 mutation 请求补齐 Origin/X-CSRF-Token 头（对齐 iam 页面 mutationHeaders 模式）；WebUI 请求身份契约说明同步。
+  - id: operations
+    decision: updated
+    documents:
+      - docs/operations/security.md
+      - docs/operations/runtime-capabilities.md
+    reason: 记录 org webuiSession 认证与 CSRF 守卫、会话分页/过期过滤、账号过滤与密码策略配置语义；运行能力矩阵同步新增查询能力行。
+  - id: configuration
+    decision: updated
+    documents:
+      - docs/configuration/README.md
+      - config.example.yaml
+    reason: 新增 iam.local.passwordPolicy 配置节（minLength/maxLength/requireComplexity）与默认值；config init 模板同步。
+  - id: startup
+    decision: reviewed-no-change
+    reason: 宿主 boot、manifest/registry、revision 门禁与 OperationGate 结构不变；org 迁移沿用既有 gate/mutationGuard 装配，不新增运行组件。
+  - id: docs
+    decision: updated
+    documents:
+      - docs/changes/076-rbac-http-api-gap-closure/README.md
+      - docs/changes/076-rbac-http-api-gap-closure/tasks.md
+      - docs/changes/README.md
+    reason: 变更记录（研究/需求/设计/任务）与变更索引记录本任务状态（研究中→计划待确认→实施完成）与结论。

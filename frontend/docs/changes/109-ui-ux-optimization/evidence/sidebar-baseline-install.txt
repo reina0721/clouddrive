@@ -1,0 +1,12 @@
+Scope: all 13 workspace projects
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +378
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 378, reused 81, downloaded 0, added 4
+Progress: resolved 378, reused 81, downloaded 0, added 30
+Progress: resolved 378, reused 81, downloaded 0, added 51
+Progress: resolved 378, reused 81, downloaded 0, added 69
+Progress: resolved 378, reused 81, downloaded 0, added 79
+Progress: resolved 378, reused 81, downloaded 0, added 80
+ ERR_PNPM_NO_OFFLINE_TARBALL  A package is missing from the store but cannot download it in offline mode. The missing package may be downloaded from https://npm-proxy2.helloworlds.eu.org/@axe-core/playwright/-/playwright-4.13.0.tgz.

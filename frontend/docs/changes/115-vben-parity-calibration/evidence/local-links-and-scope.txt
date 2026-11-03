@@ -1,0 +1,1 @@
+PASS: 21 Markdown files, 140 relative links/source targets; six canonical VP specs; UTF-8 valid; documentation-only scope. Next typegen source side effect restored.

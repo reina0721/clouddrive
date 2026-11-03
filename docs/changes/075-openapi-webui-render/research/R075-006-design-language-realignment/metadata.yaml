@@ -1,0 +1,48 @@
+schema_version: 1
+id: R075-006
+title: "设计语言回归：提取 Apifox 业务能力，融入 Community Go 后台视觉（去外壳）"
+question: "用户指出 openapi 模块当前的 Apifox 风格 UI 与整个后台系统（深色左侧导航、蓝色主调、圆角卡片、标准中后台表单/表格控件）严重脱节，像套用了陌生前端模板。要求：停止模仿 Apifox 的外壳，提取其业务能力（API 文档查看、在线调试 Try it out），用系统既有组件（表单/表格/弹窗/折叠面板）以贴合后台操作习惯的流程呈现；基于现有架构“微改造”而非“大换血”，去除偏离主题的设计。"
+research_type: current-project
+topics: ["设计语言回归", "平台组件", "微改造", "API 文档查看", "在线调试"]
+keywords: ["@webui/sdk/ui", "PageSection", "DataTable", "Drawer", "设计令牌", "去 Apifox 外壳"]
+applicable_scenarios:
+  - "Admin WebUI 内以平台设计语言承载 API 文档查看 + 在线调试（Try it out）"
+  - "复用现有模块流程范式（列表 → 详情/弹层 → 表单 → 提交 → 反馈）"
+non_applicable_scenarios:
+  - "工具类软件工作台布局（资源树+右响应栏）原样嵌入后台"
+  - "继续使用 Apifox 视觉 token/自定义壳层"
+status: active
+summary: "用户否决 Apifox 外壳：openapi 模块回归平台设计语言（@webui/sdk/ui + 模块 css 遵循 styles.css 的 Shell/布局/表单/表格语义），删除 Apifox 专属 token/自定义树/标签/命令面板外观；保留并呈现业务能力（接口列表/筛选、文档查看、Debug 参数编辑、发送、响应展示），流程贴合后台（列表 → 详情弹层/展开 → 表单 → 发送 → 响应卡片）；执行/解析/深链能力全部保留（微改造，不大换血）。"
+evidence:
+  types: ["source-code"]
+  primary_sources:
+    - title: "平台组件与样式 authority（@webui/sdk/ui、styles.css 的 Shell/表单/表格/卡片语义）"
+      locator: "webui/src/ui/index.tsx、webui/src/styles.css"
+      snapshot: "2026-08-25 HEAD 9536334"
+    - title: "现有模块范式（IAM/Navigation/settings：列表、DataTable、Drawer/ConfirmDialog、SectionNav）"
+      locator: "internal/module/{iam,navigation,settings}/binding/webui/web"
+      snapshot: "2026-08-25 HEAD 9536334"
+    - title: "openapi 模块 9536334 实现（apifox 外观壳层 + 业务层）"
+      locator: "internal/module/openapi/binding/webui/web"
+      snapshot: "2026-08-25 HEAD 9536334"
+    - title: "用户要求（075 第五轮）"
+      locator: "会话记录"
+      snapshot: "2026-08-25"
+researched_at: "2026-08-25"
+verified_at: "2026-08-25"
+validity:
+  mode: snapshot
+  review_after: "2026-11-25"
+  refresh_triggers:
+    - "平台新增与需求匹配的组件（如内嵌详情弹层、折叠面板规范）时收敛实现"
+    - "用户提供系统视觉对照截图时按平台 token 校准细节"
+relations:
+  extends: []
+  related:
+    - R075-002
+    - R075-004
+    - R075-005
+  supersedes:
+    - R075-005
+  superseded_by: []
+report: report.md

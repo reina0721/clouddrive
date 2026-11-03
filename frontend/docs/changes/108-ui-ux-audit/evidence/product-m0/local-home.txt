@@ -1,0 +1,78 @@
+- button "Open Next.js Dev Tools":
+- alert
+- link "跳到主要内容 / Skip to content":
+  - /url: "#main-content"
+- complementary:
+  - generic: C
+  - navigation "主导航"
+- banner:
+  - button "展开侧栏":
+  - button "切换语言":
+  - button "切换主题":
+  - button "通知":
+- main:
+  - paragraph: Frontend Foundation
+  - heading "构建稳定、可治理的产品前端基座" [level=1]
+  - paragraph: 统一 Design System、UI Contract、Product Surface 与 Web Host，通过现有规范组合业务功能。
+  - link "组件规范":
+    - /url: /ui-elements
+    - generic: 组件规范
+  - link "页面模式":
+    - /url: /page-patterns/layout-navigation
+    - generic: 页面模式
+  - link "完整资源流程":
+    - /url: /reference-resources
+    - generic: 完整资源流程
+  - link "查看基座地图":
+    - /url: /foundations
+    - generic: 查看基座地图
+  - generic "基座指标":
+    - paragraph: 页面路由
+    - paragraph: "39"
+    - paragraph: 共享契约
+    - paragraph: 产品插件
+    - paragraph: "9"
+    - paragraph: 共享契约
+    - paragraph: Runtime Hosts
+    - paragraph: "1"
+    - paragraph: 共享契约
+  - heading "最近访问" [level=2]
+  - list:
+    - link "构建稳定、可治理的产品前端基座":
+      - /url: /
+      - generic: 构建稳定、可治理的产品前端基座
+  - heading "基础能力" [level=2]
+  - paragraph: 以可执行契约衡量，而不是以目录数量衡量。
+  - generic: 4 / 4 tracked
+  - heading "Design System" [level=3]
+  - paragraph: 语义色彩、排版、间距、层级和动效由统一 Token 驱动。
+  - generic: 就绪
+  - heading "UI Adapter" [level=3]
+  - paragraph: HeroUI 被限制在稳定的语义界面契约之后。
+  - generic: 建设中
+  - heading "Host Boundary" [level=3]
+  - paragraph: 当前唯一 Web Host 装配 Product Surface；平台生命周期归 Host 管理。
+  - generic: 建设中
+  - heading "Architecture Gates" [level=3]
+  - paragraph: import boundary、类型、测试和样式规则自动执行。
+  - generic: 就绪
+  - heading "质量门禁" [level=2]
+  - paragraph: 错误依赖和样式污染会在进入页面前失败。
+  - list:
+    - generic: 依赖边界
+    - generic: 已启用
+    - generic: HeroUI 隔离
+    - generic: 已启用
+    - generic: Token 治理
+    - generic: 已启用
+    - generic: Host 边界
+    - generic: 已启用
+  - heading "最近建设轨迹" [level=2]
+  - paragraph: 只展示新前端基座内的真实建设范围。
+  - list:
+    - generic: "1"
+    - generic: Token 契约
+    - generic: "2"
+    - generic: Web Host 装配
+    - generic: "3"
+    - generic: UI Adapter 边界

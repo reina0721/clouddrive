@@ -1,0 +1,10 @@
+
+> clouddrive-frontend@0.1.0 test:browser C:\rin\coder\i0721\console-web
+> playwright test "apps/web/e2e/account-menu.spec.ts" "--grep" "Overlay authority" "--output=test-results/account-authority-final"
+
+
+Running 1 test using 1 worker
+
+  ok 1 [chromium] › apps\web\e2e\account-menu.spec.ts:222:1 › Overlay authority uses the same grouped menu with selection and disabled semantics (2.6s)
+
+  1 passed (3.6s)

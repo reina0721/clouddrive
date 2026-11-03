@@ -1,0 +1,32 @@
+schema_version: 1
+id: R092-001
+title: "全站交互组件来源刷新"
+question: "091 完成后，当前 WebUI 是否仍存在同类通用交互的多套实现，现有 HeroUI v3 与 React Aria 是否足以单轨替换？"
+research_type: current-project
+topics: ["webui", "component-governance", "accessibility"]
+keywords: ["HeroUI", "React Aria", "input", "button", "tabs", "tree", "combobox"]
+applicable_scenarios: ["当前 WebUI 宿主、业务模块与 OpenAPI 工作台组件治理"]
+non_applicable_scenarios: ["后端 API、数据库与独立 frontend 目录"]
+status: active
+summary: "091 只收口部分 select、checkbox 和 overlay；全站仍有 SearchInput、筛选 input、DataTable selection、自绘 Tabs/Tree/Combobox/Disclosure 与模块直连组件库等双轨，现有依赖已覆盖替换能力。"
+evidence:
+  types: ["source-code", "dependency-types", "tests", "screenshots"]
+  primary_sources:
+    - title: "当前 WebUI 源码"
+      locator: "webui/src 与 internal/module/*/binding/webui/web"
+      snapshot: "6f6396f880c1e142da0c21d9f378a89d4a7902eb + 实施前工作区"
+    - title: "已安装组件声明"
+      locator: "webui/node_modules/@heroui/react 与 react-aria-components"
+      snapshot: "@heroui/react 3.2.4; react-aria-components 1.20.0"
+researched_at: "2026-08-29"
+verified_at: "2026-08-29"
+validity:
+  mode: snapshot
+  review_after: "2026-09-29"
+  refresh_triggers: ["HeroUI/RAC 版本变化", "webui/src/ui 公共契约变化", "新增模块直接实现通用交互"]
+relations:
+  extends: ["R091-001"]
+  related: ["R090-004"]
+  supersedes: []
+  superseded_by: []
+report: report.md

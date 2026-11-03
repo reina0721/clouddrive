@@ -1,0 +1,20 @@
+
+Running 3 tests using 1 worker
+
+node:internal/child_process:458
+    throw new ErrnoException(err, 'spawn');
+          ^
+
+Error: spawn EPERM
+    at ChildProcess.spawn (node:internal/child_process:458:11)
+    at spawn (node:child_process:813:9)
+    at Object.fork (node:child_process:174:10)
+    at WorkerHost.startRunner (C:\rin\coder\i0721\console-web\node_modules\.pnpm\playwright@1.62.1\node_modules\playwright\lib\runner\index.js:1899:49)
+    at WorkerHost.start (C:\rin\coder\i0721\console-web\node_modules\.pnpm\playwright@1.62.1\node_modules\playwright\lib\runner\index.js:5172:23)
+    at Dispatcher._runJobInWorker (C:\rin\coder\i0721\console-web\node_modules\.pnpm\playwright@1.62.1\node_modules\playwright\lib\runner\index.js:5283:20) {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'spawn'
+}
+
+Node.js v24.19.0

@@ -1,0 +1,39 @@
+schema_version: 1
+id: R003
+title: "方案与现状差异分析"
+question: "temp-new-changes.md 方案在当前 WebUI 现状下的逐项差距是什么,哪些可落地、哪些应排除?(方案已由 80 节重构为 81 章中文编号,差异矩阵按研究时 80 节编号记录,新旧映射见 report §4.11)"
+research_type: current-project
+topics: ["webui", "gap-analysis", "proposal", "requirements-input"]
+keywords: ["temp-new-changes", "差异分析", "可落地", "否决", "编号映射"]
+applicable_scenarios: ["082 requirements/design/tasks 的逐项输入", "重构范围裁剪"]
+non_applicable_scenarios: ["方案实现本身", "后端能力评估"]
+status: active
+summary: "一行结论:方案多数主题已由 059-081 实现或部分实现,真实差距集中在 DataTable 能力增强、统一 Filter 与 URL State、表单架构决策、Master-Detail 采用、语义组件补齐、页面级状态体系(Empty/Error/Loading)、以及 WorkspaceTabs 去留、Permission Matrix 按真实 taxonomy、Audit Detail 等需重述的决策点;新版方案新增的 Query/Mutation 统一、Backend 错误分类、Frontend Adapter 层、Session 管理、三层 QA 等独立章节由 082 requirements 以新增 REQ 吸收;与静态插拔、HeroUI 单轨、禁止 fake 等已验证边界正面冲突的项应否决或重述,真正落地范围以差异矩阵建议动作为准"
+evidence:
+  types: ["docs", "source-code", "research-reports"]
+  primary_sources:
+    - title: "方案文档(80 节快照)"
+      locator: "docs/changes/temp-new-changes.md"
+      snapshot: "c3a23c0"
+    - title: "方案文档(81 章重构版)"
+      locator: "docs/changes/temp-new-changes.md"
+      snapshot: "3b758bd"
+    - title: "现状审计与能力清单"
+      locator: "docs/changes/082-webui-architecture-rebuild/research/R001-webui-current-state/report.md, R002-backend-capability-map/report.md"
+      snapshot: "c3a23c0"
+researched_at: "2026-08-27"
+verified_at: "2026-08-27"
+validity:
+  mode: snapshot
+  review_after: "2026-09-27"
+  refresh_triggers: ["方案文档再次修改", "R001/R002 覆盖的现状发生变化"]
+relations:
+  extends: []
+  related:
+    - id: R001
+      title: "WebUI 前端现状审计"
+    - id: R002
+      title: "后端真实能力清单"
+  supersedes: []
+  superseded_by: []
+report: report.md

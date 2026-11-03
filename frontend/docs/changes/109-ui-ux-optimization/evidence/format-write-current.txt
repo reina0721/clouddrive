@@ -1,0 +1,727 @@
+
+> clouddrive-frontend@0.1.0 format D:\coder\i721\console-web
+> prettier --write .
+
+.codex/context.md 210ms
+AGENTS.md 102ms
+apps/AGENTS.md 7ms
+apps/web/AGENTS.md 8ms
+apps/web/CLAUDE.md 2ms
+apps/web/e2e/accessibility-effects.spec.ts 106ms (unchanged)
+apps/web/e2e/accordion.spec.ts 57ms (unchanged)
+apps/web/e2e/appearance-display.spec.ts 20ms (unchanged)
+apps/web/e2e/async-region.spec.ts 48ms (unchanged)
+apps/web/e2e/auto-refresh.spec.ts 13ms (unchanged)
+apps/web/e2e/auto-restore.spec.ts 16ms (unchanged)
+apps/web/e2e/breadcrumbs.spec.ts 10ms (unchanged)
+apps/web/e2e/collect-noncritical.spec.ts 10ms (unchanged)
+apps/web/e2e/column-settings.spec.ts 12ms (unchanged)
+apps/web/e2e/commands.spec.ts 7ms (unchanged)
+apps/web/e2e/confirm-bulk.spec.ts 9ms (unchanged)
+apps/web/e2e/confirm-reset.spec.ts 12ms (unchanged)
+apps/web/e2e/copy-feedback.spec.ts 7ms (unchanged)
+apps/web/e2e/corrupt-settings.spec.ts 8ms
+apps/web/e2e/create-destination.spec.ts 9ms (unchanged)
+apps/web/e2e/data-display.spec.ts 11ms (unchanged)
+apps/web/e2e/date-format.spec.ts 13ms (unchanged)
+apps/web/e2e/design-contract.spec.ts 17ms (unchanged)
+apps/web/e2e/detail-longtext.spec.ts 12ms (unchanged)
+apps/web/e2e/draft-autosave.spec.ts 14ms
+apps/web/e2e/edit-destination.spec.ts 8ms (unchanged)
+apps/web/e2e/empty-state.spec.ts 8ms (unchanged)
+apps/web/e2e/focus-first-error.spec.ts 11ms (unchanged)
+apps/web/e2e/form-focus-relative.spec.ts 11ms (unchanged)
+apps/web/e2e/leave-confirm.spec.ts 11ms (unchanged)
+apps/web/e2e/menu-memory.spec.ts 12ms (unchanged)
+apps/web/e2e/motion-foundation.spec.ts 9ms (unchanged)
+apps/web/e2e/motion-preference.spec.ts 8ms (unchanged)
+apps/web/e2e/navigation-noop.spec.ts 30ms (unchanged)
+apps/web/e2e/navigation-protection.spec.ts 6ms (unchanged)
+apps/web/e2e/navigation.spec.ts 53ms (unchanged)
+apps/web/e2e/new-page-open-mode.spec.ts 8ms (unchanged)
+apps/web/e2e/notification-alerts.spec.ts 18ms (unchanged)
+apps/web/e2e/notification-center.spec.ts 10ms (unchanged)
+apps/web/e2e/notifications.spec.ts 7ms (unchanged)
+apps/web/e2e/overlays.spec.ts 144ms (unchanged)
+apps/web/e2e/page-size.spec.ts 5ms (unchanged)
+apps/web/e2e/page-tabs.spec.ts 22ms
+apps/web/e2e/persist-failure.spec.ts 11ms (unchanged)
+apps/web/e2e/rapid-navigation.spec.ts 7ms (unchanged)
+apps/web/e2e/recents.spec.ts 15ms (unchanged)
+apps/web/e2e/reference-resources.spec.ts 15ms (unchanged)
+apps/web/e2e/reference.spec.ts 12ms (unchanged)
+apps/web/e2e/remember-filters.spec.ts 13ms (unchanged)
+apps/web/e2e/remember-pagination.spec.ts 8ms (unchanged)
+apps/web/e2e/remember-sort.spec.ts 9ms (unchanged)
+apps/web/e2e/scroll-to-top.spec.ts 9ms (unchanged)
+apps/web/e2e/search-history.spec.ts 9ms (unchanged)
+apps/web/e2e/search-suggestions.spec.ts 10ms (unchanged)
+apps/web/e2e/search-trigger.spec.ts 7ms (unchanged)
+apps/web/e2e/settings-routes.spec.ts 23ms (unchanged)
+apps/web/e2e/settings.spec.ts 19ms (unchanged)
+apps/web/e2e/shortcuts.spec.ts 6ms (unchanged)
+apps/web/e2e/states.spec.ts 10ms (unchanged)
+apps/web/e2e/surface-foundation.spec.ts 12ms (unchanged)
+apps/web/e2e/table-density.spec.ts 6ms
+apps/web/e2e/time-display.spec.ts 6ms (unchanged)
+apps/web/e2e/toast-duration.spec.ts 5ms (unchanged)
+apps/web/e2e/top-progress.spec.ts 48ms (unchanged)
+apps/web/e2e/transition.spec.ts 29ms (unchanged)
+apps/web/e2e/ui-ux-109.spec.ts 51ms (unchanged)
+apps/web/e2e/unread-reminder.spec.ts 7ms (unchanged)
+apps/web/e2e/visual.spec.ts 26ms (unchanged)
+apps/web/e2e/workbench-home.spec.ts 5ms (unchanged)
+apps/web/next.config.ts 6ms (unchanged)
+apps/web/package.json 21ms
+apps/web/postcss.config.mjs 8ms
+apps/web/src/app/foundations/page.tsx 3ms (unchanged)
+apps/web/src/app/layout.tsx 10ms (unchanged)
+apps/web/src/app/loading.tsx 2ms (unchanged)
+apps/web/src/app/motion/page.tsx 2ms (unchanged)
+apps/web/src/app/not-found.tsx 8ms (unchanged)
+apps/web/src/app/page-archetypes/create-edit/page.tsx 2ms (unchanged)
+apps/web/src/app/page-archetypes/detail/page.tsx 2ms (unchanged)
+apps/web/src/app/page-archetypes/master-detail/page.tsx 2ms (unchanged)
+apps/web/src/app/page-archetypes/operation/page.tsx 3ms (unchanged)
+apps/web/src/app/page-archetypes/overview/page.tsx 2ms (unchanged)
+apps/web/src/app/page-archetypes/resource-list/page.tsx 2ms (unchanged)
+apps/web/src/app/page-archetypes/settings/page.tsx 2ms (unchanged)
+apps/web/src/app/page-patterns/collections-data/page.tsx 1ms (unchanged)
+apps/web/src/app/page-patterns/detail-settings/page.tsx 2ms (unchanged)
+apps/web/src/app/page-patterns/forms-actions/page.tsx 2ms (unchanged)
+apps/web/src/app/page-patterns/layout-navigation/page.tsx 1ms (unchanged)
+apps/web/src/app/page-patterns/states-feedback/page.tsx 2ms (unchanged)
+apps/web/src/app/page.tsx 69ms (unchanged)
+apps/web/src/app/reference-resources/create/page.tsx 2ms (unchanged)
+apps/web/src/app/reference-resources/detail/page.tsx 1ms (unchanged)
+apps/web/src/app/reference-resources/edit/page.tsx 1ms (unchanged)
+apps/web/src/app/reference-resources/page.tsx 1ms (unchanged)
+apps/web/src/app/settings/accessibility/page.tsx 1ms (unchanged)
+apps/web/src/app/settings/actions/page.tsx 1ms (unchanged)
+apps/web/src/app/settings/data-display/page.tsx 1ms (unchanged)
+apps/web/src/app/settings/layout.tsx 2ms (unchanged)
+apps/web/src/app/settings/locale/page.tsx 1ms (unchanged)
+apps/web/src/app/settings/navigation/page.tsx 1ms (unchanged)
+apps/web/src/app/settings/notifications/page.tsx 1ms (unchanged)
+apps/web/src/app/settings/page.tsx 2ms (unchanged)
+apps/web/src/app/settings/shortcuts/page.tsx 1ms (unchanged)
+apps/web/src/app/states/page.tsx 1ms (unchanged)
+apps/web/src/app/system-tools/icons/page.tsx 2ms (unchanged)
+apps/web/src/app/ui-elements/actions-selection/page.tsx 3ms (unchanged)
+apps/web/src/app/ui-elements/data/page.tsx 2ms (unchanged)
+apps/web/src/app/ui-elements/feedback/page.tsx 2ms (unchanged)
+apps/web/src/app/ui-elements/forms/page.tsx 1ms (unchanged)
+apps/web/src/app/ui-elements/identity-display/page.tsx 1ms (unchanged)
+apps/web/src/app/ui-elements/navigation/page.tsx 1ms (unchanged)
+apps/web/src/app/ui-elements/overlays/page.tsx 2ms (unchanged)
+apps/web/src/app/ui-elements/page.tsx 1ms (unchanged)
+apps/web/src/app/ui-elements/status-async/page.tsx 1ms (unchanged)
+apps/web/src/app/ui-elements/surfaces/page.tsx 1ms (unchanged)
+apps/web/src/host/anchor-focus.ts 8ms (unchanged)
+apps/web/src/host/app-loading-surface.tsx 6ms (unchanged)
+apps/web/src/host/commands-port.ts 8ms (unchanged)
+apps/web/src/host/error-boundary.tsx 10ms (unchanged)
+apps/web/src/host/global-progress-context.ts 4ms (unchanged)
+apps/web/src/host/global-progress-controller.ts 7ms (unchanged)
+apps/web/src/host/global-progress-provider.tsx 4ms (unchanged)
+apps/web/src/host/global-progress-state.ts 13ms (unchanged)
+apps/web/src/host/leave-confirm-dialog.tsx 13ms (unchanged)
+apps/web/src/host/leave-confirm-port.ts 4ms (unchanged)
+apps/web/src/host/leave-confirm.ts 18ms (unchanged)
+apps/web/src/host/motion-policy.tsx 28ms (unchanged)
+apps/web/src/host/navigation-lifecycle.ts 11ms (unchanged)
+apps/web/src/host/navigation-port.tsx 15ms (unchanged)
+apps/web/src/host/navigation-progress.ts 9ms (unchanged)
+apps/web/src/host/notification-alerts.tsx 18ms (unchanged)
+apps/web/src/host/notifications-port.ts 6ms (unchanged)
+apps/web/src/host/preferences-port.ts 20ms (unchanged)
+apps/web/src/host/providers.tsx 35ms (unchanged)
+apps/web/src/host/recent-visit-recorder.ts 10ms (unchanged)
+apps/web/src/host/route-target-resolver.ts 5ms (unchanged)
+apps/web/src/host/route-transition-constants.ts 3ms (unchanged)
+apps/web/src/host/route-transition.tsx 12ms (unchanged)
+apps/web/src/host/router-text-link.tsx 9ms (unchanged)
+apps/web/src/host/scroll-preference.ts 3ms (unchanged)
+apps/web/src/host/startup-target.ts 7ms (unchanged)
+apps/web/src/host/top-progress.tsx 11ms (unchanged)
+apps/web/src/host/use-desktop-notification.ts 13ms (unchanged)
+apps/web/src/host/workbench-port.ts 9ms (unchanged)
+apps/web/src/host/workspace-port.ts 15ms (unchanged)
+apps/web/src/i18n/i18n.ts 2ms (unchanged)
+apps/web/src/i18n/resources.ts 11ms (unchanged)
+apps/web/src/shell/app-shell.tsx 50ms (unchanged)
+apps/web/src/shell/brand-mark.tsx 3ms (unchanged)
+apps/web/src/shell/navigation-icon-resolver.ts 5ms (unchanged)
+apps/web/src/shell/navigation-tree.tsx 16ms (unchanged)
+apps/web/src/shell/navigation.ts 3ms (unchanged)
+apps/web/src/shell/notification-center.tsx 23ms (unchanged)
+apps/web/src/shell/page-tabs.tsx 21ms (unchanged)
+apps/web/src/shell/plugin-navigation.ts 2ms (unchanged)
+apps/web/src/shell/use-page-tabs-recorder.ts 8ms (unchanged)
+apps/web/src/state/use-notifications-store.ts 10ms (unchanged)
+apps/web/src/state/use-page-tabs-store.ts 14ms (unchanged)
+apps/web/src/state/use-shell-store.ts 26ms (unchanged)
+apps/web/src/state/use-workbench-store.ts 13ms (unchanged)
+apps/web/src/state/use-workspace-store.ts 8ms (unchanged)
+apps/web/src/styles.css 54ms (unchanged)
+apps/web/src/test/commands-port.test.ts 12ms (unchanged)
+apps/web/src/test/global-progress.test.ts 17ms (unchanged)
+apps/web/src/test/inner-control-visual.test.tsx 24ms (unchanged)
+apps/web/src/test/leave-confirm.test.ts 11ms (unchanged)
+apps/web/src/test/mock-server.test.ts 3ms (unchanged)
+apps/web/src/test/mock-server.ts 2ms (unchanged)
+apps/web/src/test/motion-policy.test.tsx 11ms (unchanged)
+apps/web/src/test/navigation-icon-resolver.test.ts 3ms (unchanged)
+apps/web/src/test/navigation-lifecycle.test.ts 13ms (unchanged)
+apps/web/src/test/notifications-store.test.ts 12ms (unchanged)
+apps/web/src/test/overlay-trigger.test.tsx 12ms (unchanged)
+apps/web/src/test/page-tabs-store.test.ts 9ms (unchanged)
+apps/web/src/test/preferences-port.test.ts 9ms (unchanged)
+apps/web/src/test/providers.test.tsx 11ms (unchanged)
+apps/web/src/test/setup.ts 4ms (unchanged)
+apps/web/src/test/shell-store.test.ts 11ms (unchanged)
+apps/web/src/test/startup-target.test.ts 6ms (unchanged)
+apps/web/src/test/top-progress.test.tsx 10ms (unchanged)
+apps/web/src/test/ui-element-actions.test.tsx 13ms (unchanged)
+apps/web/src/test/ui-element-data-display.test.tsx 10ms (unchanged)
+apps/web/src/test/ui-element-feedback.test.tsx 15ms (unchanged)
+apps/web/src/test/ui-element-foundations.test.tsx 13ms (unchanged)
+apps/web/src/test/ui-element-media.test.tsx 10ms (unchanged)
+apps/web/src/test/ui-element-status.test.tsx 16ms (unchanged)
+apps/web/src/test/workbench-store.test.ts 18ms (unchanged)
+apps/web/src/test/workspace-port.test.ts 17ms (unchanged)
+apps/web/tsconfig.json 3ms
+apps/web/vitest.config.ts 4ms
+docs/changes/094-frontend-ui-elements-infrastructure/design/completion-traceability.md 74ms
+docs/changes/094-frontend-ui-elements-infrastructure/design/component-contracts.md 35ms
+docs/changes/094-frontend-ui-elements-infrastructure/design/migration-and-validation.md 24ms
+docs/changes/094-frontend-ui-elements-infrastructure/design/README.md 11ms
+docs/changes/094-frontend-ui-elements-infrastructure/README.md 35ms
+docs/changes/094-frontend-ui-elements-infrastructure/requirements/README.md 8ms
+docs/changes/094-frontend-ui-elements-infrastructure/requirements/ui-elements-capability.md 22ms
+docs/changes/094-frontend-ui-elements-infrastructure/research/R094-001-tailadmin-ui-elements-refresh/metadata.yaml 36ms
+docs/changes/094-frontend-ui-elements-infrastructure/research/R094-001-tailadmin-ui-elements-refresh/report.md 21ms
+docs/changes/094-frontend-ui-elements-infrastructure/research/R094-002-current-frontend-ui-audit/metadata.yaml 11ms
+docs/changes/094-frontend-ui-elements-infrastructure/research/R094-002-current-frontend-ui-audit/report.md 26ms
+docs/changes/094-frontend-ui-elements-infrastructure/research/R094-003-heroui-tailwind-official-composition/metadata.yaml 14ms
+docs/changes/094-frontend-ui-elements-infrastructure/research/R094-003-heroui-tailwind-official-composition/report.md 28ms
+docs/changes/094-frontend-ui-elements-infrastructure/research/README.md 9ms
+docs/changes/094-frontend-ui-elements-infrastructure/tasks.md 58ms
+docs/changes/095-page-transitions-and-motion/design/motion-system.md 58ms
+docs/changes/095-page-transitions-and-motion/design/README.md 6ms
+docs/changes/095-page-transitions-and-motion/README.md 26ms
+docs/changes/095-page-transitions-and-motion/requirements/page-transition-capability.md 26ms
+docs/changes/095-page-transitions-and-motion/requirements/README.md 4ms
+docs/changes/095-page-transitions-and-motion/research/R095-001-view-transition-facts/metadata.yaml 12ms
+docs/changes/095-page-transitions-and-motion/research/R095-001-view-transition-facts/report.md 63ms
+docs/changes/095-page-transitions-and-motion/tasks.md 21ms
+docs/changes/096-motion-foundation/design/motion-foundation.md 63ms
+docs/changes/096-motion-foundation/design/README.md 4ms
+docs/changes/096-motion-foundation/README.md 11ms
+docs/changes/096-motion-foundation/requirements/motion-governance-capability.md 16ms
+docs/changes/096-motion-foundation/requirements/README.md 4ms
+docs/changes/096-motion-foundation/research/R096-001-current-motion-assets/metadata.yaml 11ms
+docs/changes/096-motion-foundation/research/R096-001-current-motion-assets/report.md 33ms
+docs/changes/096-motion-foundation/tasks.md 23ms
+docs/changes/097-motion-governance/design/motion-governance-design.md 29ms
+docs/changes/097-motion-governance/design/README.md 2ms
+docs/changes/097-motion-governance/README.md 10ms
+docs/changes/097-motion-governance/requirements/motion-governance-capability.md 14ms
+docs/changes/097-motion-governance/requirements/README.md 4ms
+docs/changes/097-motion-governance/research/R097-001-async-content-and-governance/metadata.yaml 10ms
+docs/changes/097-motion-governance/research/R097-001-async-content-and-governance/report.md 29ms
+docs/changes/097-motion-governance/tasks.md 22ms
+docs/changes/098-frontend-product-foundation/design/foundation-architecture.md 15ms
+docs/changes/098-frontend-product-foundation/design/README.md 2ms
+docs/changes/098-frontend-product-foundation/README.md 8ms
+docs/changes/098-frontend-product-foundation/requirements/frontend-product-foundation.md 8ms
+docs/changes/098-frontend-product-foundation/requirements/README.md 6ms
+docs/changes/098-frontend-product-foundation/research/R098-001-current-foundation-boundaries/metadata.yaml 8ms
+docs/changes/098-frontend-product-foundation/research/R098-001-current-foundation-boundaries/report.md 9ms
+docs/changes/098-frontend-product-foundation/research/R098-002-universal-contracts/metadata.yaml 7ms
+docs/changes/098-frontend-product-foundation/research/R098-002-universal-contracts/report.md 12ms
+docs/changes/098-frontend-product-foundation/tasks.md 16ms
+docs/changes/099-admin-shell-navigation-interaction/design/README.md 3ms
+docs/changes/099-admin-shell-navigation-interaction/design/shell-navigation-fix.md 22ms
+docs/changes/099-admin-shell-navigation-interaction/README.md 8ms
+docs/changes/099-admin-shell-navigation-interaction/requirements/README.md 3ms
+docs/changes/099-admin-shell-navigation-interaction/requirements/shell-sidebar-interaction.md 7ms
+docs/changes/099-admin-shell-navigation-interaction/research/R099-001-shell-navigation-interaction/metadata.yaml 6ms
+docs/changes/099-admin-shell-navigation-interaction/research/R099-001-shell-navigation-interaction/report.md 14ms
+docs/changes/099-admin-shell-navigation-interaction/tasks.md 9ms
+docs/changes/100-top-progress/design/README.md 7ms
+docs/changes/100-top-progress/README.md 14ms
+docs/changes/100-top-progress/requirements/README.md 6ms
+docs/changes/100-top-progress/research/R100-001-top-progress/metadata.yaml 3ms
+docs/changes/100-top-progress/tasks.md 9ms
+docs/changes/101-admin-surface-file-routes/design/admin-surface-file-routes.md 25ms
+docs/changes/101-admin-surface-file-routes/design/README.md 3ms
+docs/changes/101-admin-surface-file-routes/README.md 12ms
+docs/changes/101-admin-surface-file-routes/requirements/admin-surface-file-routes.md 12ms
+docs/changes/101-admin-surface-file-routes/requirements/README.md 3ms
+docs/changes/101-admin-surface-file-routes/research/R101-001-surface-file-routes/metadata.yaml 8ms
+docs/changes/101-admin-surface-file-routes/research/R101-001-surface-file-routes/report.md 14ms
+docs/changes/101-admin-surface-file-routes/tasks.md 19ms
+docs/changes/102-frontend-documentation-system/design/documentation-system-design.md 13ms
+docs/changes/102-frontend-documentation-system/design/README.md 2ms
+docs/changes/102-frontend-documentation-system/README.md 7ms
+docs/changes/102-frontend-documentation-system/requirements/frontend-documentation-system.md 13ms
+docs/changes/102-frontend-documentation-system/requirements/README.md 2ms
+docs/changes/102-frontend-documentation-system/research/R102-001-frontend-docs-audit/metadata.yaml 6ms
+docs/changes/102-frontend-documentation-system/research/R102-001-frontend-docs-audit/report.md 13ms
+docs/changes/102-frontend-documentation-system/tasks.md 10ms
+docs/changes/103-navigation-noop-lifecycle/design/navigation-lifecycle-design.md 17ms
+docs/changes/103-navigation-noop-lifecycle/design/README.md 2ms
+docs/changes/103-navigation-noop-lifecycle/README.md 7ms
+docs/changes/103-navigation-noop-lifecycle/requirements/navigation-noop-lifecycle.md 8ms
+docs/changes/103-navigation-noop-lifecycle/requirements/README.md 2ms
+docs/changes/103-navigation-noop-lifecycle/research/R103-001-navigation-noop-lifecycle/metadata.yaml 5ms
+docs/changes/103-navigation-noop-lifecycle/research/R103-001-navigation-noop-lifecycle/report.md 16ms
+docs/changes/103-navigation-noop-lifecycle/tasks.md 13ms
+docs/changes/105-overlay-trigger-visual-states/design/overlay-trigger-design.md 16ms
+docs/changes/105-overlay-trigger-visual-states/design/README.md 3ms
+docs/changes/105-overlay-trigger-visual-states/README.md 6ms
+docs/changes/105-overlay-trigger-visual-states/requirements/overlay-trigger-visual-states.md 7ms
+docs/changes/105-overlay-trigger-visual-states/requirements/README.md 2ms
+docs/changes/105-overlay-trigger-visual-states/research/R105-001-overlay-trigger-blue-states/metadata.yaml 5ms
+docs/changes/105-overlay-trigger-visual-states/research/R105-001-overlay-trigger-blue-states/report.md 17ms
+docs/changes/105-overlay-trigger-visual-states/tasks.md 15ms
+docs/changes/106-plugin-schemas-access/design/entry-surface.md 13ms
+docs/changes/106-plugin-schemas-access/design/README.md 5ms
+docs/changes/106-plugin-schemas-access/README.md 9ms
+docs/changes/106-plugin-schemas-access/requirements/plugin-schema-access.md 9ms
+docs/changes/106-plugin-schemas-access/requirements/README.md 4ms
+docs/changes/106-plugin-schemas-access/tasks.md 11ms
+docs/changes/107-settings-center/design/capability-ports.md 24ms
+docs/changes/107-settings-center/design/design-system-theming.md 19ms
+docs/changes/107-settings-center/design/list-form-adapters.md 26ms
+docs/changes/107-settings-center/design/migration-cleanup.md 16ms
+docs/changes/107-settings-center/design/README.md 13ms
+docs/changes/107-settings-center/design/settings-consumer-evidence.md 52ms
+docs/changes/107-settings-center/design/settings-plugin.md 28ms
+docs/changes/107-settings-center/design/shell-integration.md 24ms
+docs/changes/107-settings-center/README.md 16ms
+docs/changes/107-settings-center/requirements/list-form-actions.md 19ms
+docs/changes/107-settings-center/requirements/navigation-tabs-workspace.md 14ms
+docs/changes/107-settings-center/requirements/notifications-shortcuts.md 12ms
+docs/changes/107-settings-center/requirements/README.md 8ms
+docs/changes/107-settings-center/requirements/settings-page.md 27ms
+docs/changes/107-settings-center/research/R107-001-settings-architecture-state/metadata.yaml 7ms
+docs/changes/107-settings-center/research/R107-001-settings-architecture-state/report.md 37ms
+docs/changes/107-settings-center/research/R107-002-settings-capability-placements/metadata.yaml 6ms
+docs/changes/107-settings-center/research/R107-002-settings-capability-placements/report.md 27ms
+docs/changes/107-settings-center/research/R107-003-design-system-accent-density/metadata.yaml 5ms
+docs/changes/107-settings-center/research/R107-003-design-system-accent-density/report.md 27ms
+docs/changes/107-settings-center/research/R107-004-tailadmin-settings-review/metadata.yaml 5ms
+docs/changes/107-settings-center/research/R107-004-tailadmin-settings-review/report.md 22ms
+docs/changes/107-settings-center/research/README.md 9ms
+docs/changes/107-settings-center/tasks.md 174ms (unchanged)
+docs/changes/108-ui-ux-audit/evidence/mobile/all-routes.json 265ms
+docs/changes/108-ui-ux-audit/evidence/mobile/english-segments.json 3ms
+docs/changes/108-ui-ux-audit/evidence/mobile/english-tabs.json 2ms
+docs/changes/108-ui-ux-audit/evidence/mobile/landscape-settings.json 2ms
+docs/changes/108-ui-ux-audit/evidence/mobile/page-tabs.json 4ms
+docs/changes/108-ui-ux-audit/evidence/mobile/resize-selected.json 1ms
+docs/changes/108-ui-ux-audit/evidence/mobile/segments-overflow.json 6ms
+docs/changes/108-ui-ux-audit/evidence/mobile/settings-categories.json 14ms
+docs/changes/108-ui-ux-audit/evidence/mobile/settings-search.json 1ms
+docs/changes/108-ui-ux-audit/evidence/mobile/state-tabs-end.json 2ms
+docs/changes/108-ui-ux-audit/evidence/mobile/tab-interactions.json 9ms
+docs/changes/108-ui-ux-audit/evidence/responsive/breakpoints.json 3ms
+docs/changes/108-ui-ux-audit/evidence/responsive/dialog-short-focus.json 2ms
+docs/changes/108-ui-ux-audit/evidence/responsive/english-large-comfortable.json 141ms
+docs/changes/108-ui-ux-audit/evidence/responsive/matrix.json 384ms
+docs/changes/108-ui-ux-audit/evidence/responsive/overlays.json 5ms
+docs/changes/108-ui-ux-audit/evidence/responsive/settings-widths.json 2ms
+docs/changes/108-ui-ux-audit/evidence/responsive/zoom-equivalent.json 39ms
+docs/changes/108-ui-ux-audit/mobile-review.md 110ms
+docs/changes/108-ui-ux-audit/README.md 126ms
+docs/changes/108-ui-ux-audit/responsive-review.md 95ms
+docs/changes/109-ui-ux-optimization/design/README.md 2ms (unchanged)
+docs/changes/109-ui-ux-optimization/evidence/lint.json 102ms (unchanged)
+docs/changes/109-ui-ux-optimization/evidence/visual-diffs/index.html 265ms
+docs/changes/109-ui-ux-optimization/evidence/visual-review.md 12ms (unchanged)
+docs/changes/109-ui-ux-optimization/README.md 7ms (unchanged)
+docs/changes/109-ui-ux-optimization/requirements/README.md 2ms (unchanged)
+docs/changes/109-ui-ux-optimization/research/consumers.md 5ms (unchanged)
+docs/changes/109-ui-ux-optimization/research/README.md 4ms (unchanged)
+docs/changes/109-ui-ux-optimization/tasks.md 62ms (unchanged)
+docs/changes/README.md 22ms (unchanged)
+docs/foundation-extension-governance.md 8ms
+docs/frontend-foundation.md 19ms (unchanged)
+docs/motion-foundation.md 35ms
+docs/plugin-framework.md 91ms (unchanged)
+docs/quality-evidence.md 13ms (unchanged)
+docs/README.md 14ms (unchanged)
+docs/surface-foundation.md 9ms
+docs/ui-element-system.md 72ms (unchanged)
+docs/ui-visual-calibration.md 35ms
+eslint.config.mjs 12ms
+package.json 2ms
+packages/core/AGENTS.md 4ms
+packages/core/package.json 1ms
+packages/core/src/index.ts 2ms
+packages/core/src/navigation-lifecycle.test.ts 10ms
+packages/core/src/navigation.test.ts 15ms
+packages/core/src/navigation.ts 21ms
+packages/core/tsconfig.json 1ms
+packages/design-system/design-system.schema.json 40ms (unchanged)
+packages/design-system/package.json 1ms
+packages/design-system/src/motion.css 27ms (unchanged)
+packages/design-system/src/tokens.css 37ms (unchanged)
+packages/form-foundation/AGENTS.md 3ms
+packages/form-foundation/package.json 1ms
+packages/form-foundation/src/index.test.tsx 7ms
+packages/form-foundation/src/index.tsx 25ms
+packages/form-foundation/tsconfig.json 2ms
+packages/i18n/AGENTS.md 4ms
+packages/i18n/package.json 2ms
+packages/i18n/src/format.ts 7ms
+packages/i18n/src/index.test.tsx 7ms
+packages/i18n/src/index.tsx 21ms
+packages/i18n/tsconfig.json 2ms
+packages/plugin-framework/AGENTS.md 24ms
+packages/plugin-framework/package.json 2ms
+packages/plugin-framework/src/capabilities.test.tsx 58ms
+packages/plugin-framework/src/commands.tsx 7ms
+packages/plugin-framework/src/contract.ts 9ms
+packages/plugin-framework/src/diagnostics.ts 9ms
+packages/plugin-framework/src/framework.test.ts 82ms
+packages/plugin-framework/src/host.ts 53ms
+packages/plugin-framework/src/index.ts 7ms
+packages/plugin-framework/src/leave-confirm.tsx 51ms
+packages/plugin-framework/src/navigation-contract.ts 4ms
+packages/plugin-framework/src/navigation-resolution.ts 54ms
+packages/plugin-framework/src/notifications.tsx 15ms (unchanged)
+packages/plugin-framework/src/plugin.test.tsx 41ms
+packages/plugin-framework/src/plugin.tsx 39ms
+packages/plugin-framework/src/preferences.tsx 13ms
+packages/plugin-framework/src/registry.ts 25ms
+packages/plugin-framework/src/schemas-runtime.test.ts 13ms
+packages/plugin-framework/src/schemas-runtime.ts 4ms
+packages/plugin-framework/src/schemas.test.ts 24ms
+packages/plugin-framework/src/schemas.ts 3ms
+packages/plugin-framework/src/target-index.ts 3ms
+packages/plugin-framework/src/target-types.ts 3ms (unchanged)
+packages/plugin-framework/src/target.ts 4ms (unchanged)
+packages/plugin-framework/src/workbench.tsx 6ms
+packages/plugin-framework/src/workspace.tsx 14ms
+packages/plugin-framework/tsconfig.json 4ms
+packages/schemas/package.json 1ms
+packages/schemas/src/index.test.ts 3ms
+packages/schemas/src/index.ts 5ms
+packages/schemas/src/runtime/etag.ts 5ms
+packages/schemas/src/runtime/fixture-types.ts 5ms
+packages/schemas/src/runtime/generator-motion-language.test.ts 24ms
+packages/schemas/src/runtime/generator-motion-language.ts 44ms
+packages/schemas/src/runtime/generator-token-regions.test.ts 37ms
+packages/schemas/src/runtime/generator-token-regions.ts 61ms
+packages/schemas/src/runtime/index.ts 97ms
+packages/schemas/src/runtime/io.ts 82ms
+packages/schemas/src/runtime/json-pointer.test.ts 20ms
+packages/schemas/src/runtime/json-pointer.ts 37ms
+packages/schemas/src/runtime/patch.test.ts 28ms
+packages/schemas/src/runtime/patch.ts 59ms
+packages/schemas/src/runtime/protocol-validate.test.ts 68ms
+packages/schemas/src/runtime/protocol.ts 62ms
+packages/schemas/src/runtime/registry.ts 11ms
+packages/schemas/src/runtime/runtime-integration.test.ts 44ms
+packages/schemas/src/runtime/types.ts 8ms
+packages/schemas/tsconfig.json 3ms
+packages/state-foundation/package.json 3ms
+packages/state-foundation/src/contract/contract.test.ts 11ms
+packages/state-foundation/src/contract/persist.ts 7ms
+packages/state-foundation/src/contract/store.ts 8ms
+packages/state-foundation/src/framework.test.ts 36ms
+packages/state-foundation/src/framework.ts 10ms
+packages/state-foundation/src/hydration/corrupt.test.ts 12ms
+packages/state-foundation/src/hydration/index.ts 2ms
+packages/state-foundation/src/hydration/lifecycle.test.ts 33ms
+packages/state-foundation/src/hydration/lifecycle.ts 26ms
+packages/state-foundation/src/hydration/rehydrate.ts 6ms
+packages/state-foundation/src/index.ts 8ms
+packages/state-foundation/src/persist/config.test.ts 10ms
+packages/state-foundation/src/persist/config.ts 14ms
+packages/state-foundation/src/persist/index.ts 3ms
+packages/state-foundation/src/persist/namespace.ts 8ms
+packages/state-foundation/src/react/index.ts 2ms
+packages/state-foundation/src/react/use-hydrated-store.ts 13ms
+packages/state-foundation/src/storage/index.ts 2ms
+packages/state-foundation/src/storage/indexed-db.test.ts 17ms
+packages/state-foundation/src/storage/indexed-db.ts 21ms
+packages/state-foundation/src/storage/json.ts 33ms
+packages/state-foundation/src/storage/local.ts 6ms
+packages/state-foundation/src/storage/memory.test.ts 46ms
+packages/state-foundation/src/storage/memory.ts 15ms
+packages/state-foundation/src/storage/session.ts 7ms
+packages/state-foundation/src/storage/types.ts 11ms
+packages/state-foundation/src/storage/web-storage.test.ts 28ms
+packages/state-foundation/src/testing/async-storage.ts 20ms
+packages/state-foundation/src/testing/index.ts 2ms
+packages/state-foundation/src/testing/store-harness.ts 9ms
+packages/state-foundation/tsconfig.json 1ms
+packages/surface-foundation/AGENTS.md 14ms
+packages/surface-foundation/package.json 1ms
+packages/surface-foundation/src/collection.tsx 6ms (unchanged)
+packages/surface-foundation/src/contracts.test.tsx 9ms (unchanged)
+packages/surface-foundation/src/detail-settings.tsx 9ms (unchanged)
+packages/surface-foundation/src/form-actions.tsx 5ms (unchanged)
+packages/surface-foundation/src/layout.tsx 12ms (unchanged)
+packages/surface-foundation/src/motion-policy-context.ts 5ms (unchanged)
+packages/surface-foundation/src/periodic-refresh.test.ts 12ms (unchanged)
+packages/surface-foundation/src/periodic-refresh.ts 6ms (unchanged)
+packages/surface-foundation/src/shell-navigation-accordion.render.test.tsx 34ms (unchanged)
+packages/surface-foundation/src/shell-navigation-accordion.test.ts 62ms (unchanged)
+packages/surface-foundation/src/shell-navigation-accordion.ts 37ms (unchanged)
+packages/surface-foundation/src/shell-navigation.tsx 53ms (unchanged)
+packages/surface-foundation/src/states-operations.tsx 20ms (unchanged)
+packages/surface-foundation/src/styles.css 47ms (unchanged)
+packages/surface-foundation/src/use-periodic-refresh.ts 4ms (unchanged)
+packages/surface-foundation/src/viewport-reveal.tsx 15ms (unchanged)
+packages/surface-foundation/tsconfig.json 1ms
+packages/types/package.json 1ms
+packages/types/src/index.ts 3ms
+packages/types/tsconfig.json 1ms
+packages/ui-adapter/AGENTS.md 42ms
+packages/ui-adapter/package.json 4ms (unchanged)
+packages/ui-adapter/src/accessibility.tsx 9ms (unchanged)
+packages/ui-adapter/src/action.tsx 9ms (unchanged)
+packages/ui-adapter/src/async-region.tsx 7ms (unchanged)
+packages/ui-adapter/src/browser-layout.ts 11ms (unchanged)
+packages/ui-adapter/src/busy-indicator.tsx 3ms (unchanged)
+packages/ui-adapter/src/card.tsx 9ms (unchanged)
+packages/ui-adapter/src/checkbox-field.tsx 7ms (unchanged)
+packages/ui-adapter/src/combo-field.tsx 8ms (unchanged)
+packages/ui-adapter/src/command-menu.tsx 14ms (unchanged)
+packages/ui-adapter/src/confirm-dialog.tsx 17ms (unchanged)
+packages/ui-adapter/src/content-swap-transition.tsx 5ms (unchanged)
+packages/ui-adapter/src/data-display.tsx 3ms (unchanged)
+packages/ui-adapter/src/data-table.tsx 27ms (unchanged)
+packages/ui-adapter/src/date-picker-calendar.tsx 4ms (unchanged)
+packages/ui-adapter/src/date-picker-field.tsx 7ms (unchanged)
+packages/ui-adapter/src/description-list.tsx 10ms (unchanged)
+packages/ui-adapter/src/dialog-surface.tsx 11ms (unchanged)
+packages/ui-adapter/src/disclosure.tsx 5ms (unchanged)
+packages/ui-adapter/src/drawer-surface.tsx 8ms (unchanged)
+packages/ui-adapter/src/feedback-context.ts 6ms (unchanged)
+packages/ui-adapter/src/feedback-presence.tsx 9ms (unchanged)
+packages/ui-adapter/src/feedback-provider.tsx 10ms (unchanged)
+packages/ui-adapter/src/feedback.tsx 20ms (unchanged)
+packages/ui-adapter/src/field-contract.ts 2ms (unchanged)
+packages/ui-adapter/src/form-error-summary.tsx 7ms (unchanged)
+packages/ui-adapter/src/form-field.tsx 3ms (unchanged)
+packages/ui-adapter/src/icon-action.tsx 8ms (unchanged)
+packages/ui-adapter/src/identity.tsx 13ms (unchanged)
+packages/ui-adapter/src/menu-button.tsx 7ms (unchanged)
+packages/ui-adapter/src/navigation-flyout.tsx 14ms (unchanged)
+packages/ui-adapter/src/navigation.tsx 24ms (unchanged)
+packages/ui-adapter/src/overlay-trigger.tsx 8ms (unchanged)
+packages/ui-adapter/src/overlays.tsx 2ms (unchanged)
+packages/ui-adapter/src/panel.tsx 4ms (unchanged)
+packages/ui-adapter/src/popover-card.tsx 3ms (unchanged)
+packages/ui-adapter/src/progress-meter.tsx 5ms (unchanged)
+packages/ui-adapter/src/radio-group-field.tsx 14ms (unchanged)
+packages/ui-adapter/src/ready-image.tsx 12ms (unchanged)
+packages/ui-adapter/src/search-box.tsx 4ms (unchanged)
+packages/ui-adapter/src/select-field.tsx 13ms (unchanged)
+packages/ui-adapter/src/skeleton.tsx 3ms (unchanged)
+packages/ui-adapter/src/state-surface.tsx 8ms (unchanged)
+packages/ui-adapter/src/status-pill.tsx 6ms (unchanged)
+packages/ui-adapter/src/step-navigation.tsx 6ms (unchanged)
+packages/ui-adapter/src/styles.css 20ms (unchanged)
+packages/ui-adapter/src/switch-field.tsx 3ms (unchanged)
+packages/ui-adapter/src/tabs-view.tsx 19ms (unchanged)
+packages/ui-adapter/src/text-area-field.tsx 5ms (unchanged)
+packages/ui-adapter/src/text-field.tsx 6ms (unchanged)
+packages/ui-adapter/src/toggle-group.tsx 14ms (unchanged)
+packages/ui-adapter/src/tooltip-action.tsx 3ms (unchanged)
+packages/ui-adapter/src/tree.tsx 20ms (unchanged)
+packages/ui-adapter/tsconfig.json 2ms
+playwright.config.ts 5ms
+pnpm-workspace.yaml 4ms
+prettier.config.mjs 4ms
+README.md 50ms
+surfaces/AGENTS.md 73ms
+surfaces/generated/catalog/catalog.ts 39ms (unchanged)
+surfaces/generated/composition/composition.ts 6ms (unchanged)
+surfaces/generated/composition/i18n.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/foundations/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/motion/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/page-archetypes/create-edit/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/page-archetypes/detail/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/page-archetypes/master-detail/page.ts 3ms (unchanged)
+surfaces/generated/plugin-routes/page-archetypes/operation/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/page-archetypes/overview/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/page-archetypes/resource-list/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/page-archetypes/settings/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/page-patterns/collections-data/page.ts 6ms (unchanged)
+surfaces/generated/plugin-routes/page-patterns/detail-settings/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/page-patterns/forms-actions/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/page-patterns/layout-navigation/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/page-patterns/states-feedback/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/reference-resources/create/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/reference-resources/detail/page.ts 3ms (unchanged)
+surfaces/generated/plugin-routes/reference-resources/edit/page.ts 3ms (unchanged)
+surfaces/generated/plugin-routes/reference-resources/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/settings/accessibility/page.ts 3ms (unchanged)
+surfaces/generated/plugin-routes/settings/actions/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/settings/data-display/page.ts 5ms (unchanged)
+surfaces/generated/plugin-routes/settings/layout.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/settings/locale/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/settings/navigation/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/settings/notifications/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/settings/page.ts 2ms (unchanged)
+surfaces/generated/plugin-routes/settings/shortcuts/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/states/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/system-tools/icons/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/ui-elements/actions-selection/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/ui-elements/data/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/ui-elements/feedback/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/ui-elements/forms/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/ui-elements/identity-display/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/ui-elements/navigation/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/ui-elements/overlays/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/ui-elements/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/ui-elements/status-async/page.ts 1ms (unchanged)
+surfaces/generated/plugin-routes/ui-elements/surfaces/page.ts 1ms (unchanged)
+surfaces/package.json 1ms
+surfaces/plugins/foundations/i18n.ts 3ms (unchanged)
+surfaces/plugins/foundations/plugin.navigation.ts 2ms (unchanged)
+surfaces/plugins/foundations/plugin.ts 1ms (unchanged)
+surfaces/plugins/foundations/routes/page.tsx 33ms (unchanged)
+surfaces/plugins/motion/i18n.ts 2ms (unchanged)
+surfaces/plugins/motion/plugin.navigation.ts 3ms (unchanged)
+surfaces/plugins/motion/plugin.ts 2ms (unchanged)
+surfaces/plugins/motion/routes/page.tsx 9ms (unchanged)
+surfaces/plugins/motion/src/motion-inspector.tsx 9ms (unchanged)
+surfaces/plugins/navigation-groups.ts 3ms (unchanged)
+surfaces/plugins/page-archetypes/i18n.ts 30ms (unchanged)
+surfaces/plugins/page-archetypes/plugin.navigation.ts 3ms (unchanged)
+surfaces/plugins/page-archetypes/plugin.ts 2ms (unchanged)
+surfaces/plugins/page-archetypes/routes/create-edit/page.tsx 28ms (unchanged)
+surfaces/plugins/page-archetypes/routes/detail/page.tsx 2ms (unchanged)
+surfaces/plugins/page-archetypes/routes/master-detail/page.tsx 2ms (unchanged)
+surfaces/plugins/page-archetypes/routes/operation/page.tsx 1ms (unchanged)
+surfaces/plugins/page-archetypes/routes/overview/page.tsx 1ms (unchanged)
+surfaces/plugins/page-archetypes/routes/resource-list/page.tsx 1ms (unchanged)
+surfaces/plugins/page-archetypes/routes/settings/page.tsx 1ms (unchanged)
+surfaces/plugins/page-archetypes/src/browser-reference-export.ts 4ms (unchanged)
+surfaces/plugins/page-archetypes/src/browser-workbench.ts 3ms (unchanged)
+surfaces/plugins/page-archetypes/src/column-layout-schema.ts 13ms (unchanged)
+surfaces/plugins/page-archetypes/src/column-layout.test.ts 9ms (unchanged)
+surfaces/plugins/page-archetypes/src/page-archetype-showcase.tsx 21ms (unchanged)
+surfaces/plugins/page-archetypes/src/reference-scenarios.ts 12ms (unchanged)
+surfaces/plugins/page-archetypes/src/resource-list-page.tsx 136ms
+surfaces/plugins/page-archetypes/src/schemas.ts 4ms (unchanged)
+surfaces/plugins/page-archetypes/src/search-history.test.ts 8ms (unchanged)
+surfaces/plugins/page-archetypes/stores/column-layout.ts 14ms (unchanged)
+surfaces/plugins/page-archetypes/stores/search-history.ts 9ms (unchanged)
+surfaces/plugins/page-patterns/i18n.ts 9ms (unchanged)
+surfaces/plugins/page-patterns/plugin.navigation.ts 2ms (unchanged)
+surfaces/plugins/page-patterns/plugin.ts 2ms (unchanged)
+surfaces/plugins/page-patterns/routes/collections-data/page.tsx 2ms (unchanged)
+surfaces/plugins/page-patterns/routes/detail-settings/page.tsx 1ms (unchanged)
+surfaces/plugins/page-patterns/routes/forms-actions/page.tsx 2ms (unchanged)
+surfaces/plugins/page-patterns/routes/layout-navigation/page.tsx 2ms (unchanged)
+surfaces/plugins/page-patterns/routes/states-feedback/page.tsx 2ms (unchanged)
+surfaces/plugins/page-patterns/src/page-pattern-catalog.tsx 19ms (unchanged)
+surfaces/plugins/reference-resources/data.ts 4ms (unchanged)
+surfaces/plugins/reference-resources/i18n.ts 11ms (unchanged)
+surfaces/plugins/reference-resources/plugin.navigation.ts 3ms (unchanged)
+surfaces/plugins/reference-resources/plugin.ts 1ms (unchanged)
+surfaces/plugins/reference-resources/routes/create/page.tsx 1ms (unchanged)
+surfaces/plugins/reference-resources/routes/detail/page.tsx 21ms (unchanged)
+surfaces/plugins/reference-resources/routes/edit/page.tsx 6ms (unchanged)
+surfaces/plugins/reference-resources/routes/page.tsx 10ms (unchanged)
+surfaces/plugins/reference-resources/src/browser-clipboard.ts 2ms (unchanged)
+surfaces/plugins/reference-resources/src/resource-form.tsx 23ms (unchanged)
+surfaces/plugins/reference-resources/src/schema.ts 3ms (unchanged)
+surfaces/plugins/reference-resources/src/use-reference-resources.ts 3ms (unchanged)
+surfaces/plugins/reference-resources/stores/resources.ts 7ms (unchanged)
+surfaces/plugins/settings/i18n.ts 16ms (unchanged)
+surfaces/plugins/settings/plugin.navigation.ts 2ms (unchanged)
+surfaces/plugins/settings/plugin.ts 2ms (unchanged)
+surfaces/plugins/settings/routes/accessibility/page.tsx 2ms (unchanged)
+surfaces/plugins/settings/routes/actions/page.tsx 3ms (unchanged)
+surfaces/plugins/settings/routes/data-display/page.tsx 3ms (unchanged)
+surfaces/plugins/settings/routes/layout.tsx 7ms (unchanged)
+surfaces/plugins/settings/routes/locale/page.tsx 2ms (unchanged)
+surfaces/plugins/settings/routes/navigation/page.tsx 2ms (unchanged)
+surfaces/plugins/settings/routes/notifications/page.tsx 2ms (unchanged)
+surfaces/plugins/settings/routes/page.tsx 2ms (unchanged)
+surfaces/plugins/settings/routes/shortcuts/page.tsx 3ms (unchanged)
+surfaces/plugins/settings/src/category-sections.tsx 86ms (unchanged)
+surfaces/plugins/settings/src/restore-defaults.tsx 9ms (unchanged)
+surfaces/plugins/settings/src/settings-categories.ts 8ms (unchanged)
+surfaces/plugins/settings/src/settings-context.ts 3ms (unchanged)
+surfaces/plugins/settings/src/settings-hooks.tsx 10ms (unchanged)
+surfaces/plugins/settings/src/settings-index.test.ts 8ms (unchanged)
+surfaces/plugins/settings/src/settings-index.ts 16ms (unchanged)
+surfaces/plugins/settings/src/settings-layout-shell.tsx 26ms (unchanged)
+surfaces/plugins/states/i18n.ts 2ms (unchanged)
+surfaces/plugins/states/plugin.navigation.ts 2ms (unchanged)
+surfaces/plugins/states/plugin.ts 1ms (unchanged)
+surfaces/plugins/states/routes/page.tsx 8ms (unchanged)
+surfaces/plugins/system-tools/i18n.ts 2ms (unchanged)
+surfaces/plugins/system-tools/plugin.navigation.ts 2ms (unchanged)
+surfaces/plugins/system-tools/plugin.ts 1ms (unchanged)
+surfaces/plugins/system-tools/routes/icons/page.tsx 5ms (unchanged)
+surfaces/plugins/ui-elements/i18n.ts 39ms
+surfaces/plugins/ui-elements/plugin.navigation.ts 4ms (unchanged)
+surfaces/plugins/ui-elements/plugin.ts 2ms (unchanged)
+surfaces/plugins/ui-elements/routes/actions-selection/page.tsx 6ms (unchanged)
+surfaces/plugins/ui-elements/routes/data/page.tsx 3ms (unchanged)
+surfaces/plugins/ui-elements/routes/feedback/page.tsx 2ms (unchanged)
+surfaces/plugins/ui-elements/routes/forms/page.tsx 3ms (unchanged)
+surfaces/plugins/ui-elements/routes/identity-display/page.tsx 2ms (unchanged)
+surfaces/plugins/ui-elements/routes/navigation/page.tsx 2ms (unchanged)
+surfaces/plugins/ui-elements/routes/overlays/page.tsx 3ms (unchanged)
+surfaces/plugins/ui-elements/routes/page.tsx 3ms (unchanged)
+surfaces/plugins/ui-elements/routes/status-async/page.tsx 2ms (unchanged)
+surfaces/plugins/ui-elements/routes/surfaces/page.tsx 3ms (unchanged)
+surfaces/plugins/ui-elements/src/actions-selection-page.tsx 16ms (unchanged)
+surfaces/plugins/ui-elements/src/component-preview.tsx 5ms (unchanged)
+surfaces/plugins/ui-elements/src/data-elements-page.tsx 18ms (unchanged)
+surfaces/plugins/ui-elements/src/family-page.tsx 20ms (unchanged)
+surfaces/plugins/ui-elements/src/feedback-page.tsx 18ms (unchanged)
+surfaces/plugins/ui-elements/src/form-elements-page.tsx 21ms
+surfaces/plugins/ui-elements/src/identity-display-page.tsx 9ms
+surfaces/plugins/ui-elements/src/navigation-elements-page.tsx 37ms
+surfaces/plugins/ui-elements/src/overlay-elements-page.tsx 17ms (unchanged)
+surfaces/plugins/ui-elements/src/preview-anchor.ts 5ms (unchanged)
+surfaces/plugins/ui-elements/src/status-async-page.tsx 15ms
+surfaces/plugins/ui-elements/src/surfaces-page.tsx 18ms (unchanged)
+surfaces/src/composition.ts 12ms
+surfaces/src/generated.test.ts 26ms
+surfaces/src/i18n.ts 16ms
+surfaces/src/navigation-icon-components.ts 5ms
+surfaces/src/navigation-icon-presentation.tsx 6ms
+surfaces/src/navigation-icon.test.ts 13ms
+surfaces/src/navigation-icon.ts 13ms
+surfaces/src/preferences-model.test.ts 52ms (unchanged)
+surfaces/src/preferences-model.ts 242ms
+surfaces/src/shell-model.ts 11ms
+surfaces/src/shell.test.ts 17ms
+surfaces/src/shell.ts 3ms
+surfaces/tsconfig.json 86ms
+tooling/boundary-policy.mjs 54ms
+tooling/check-boundaries-fixtures.mjs 28ms
+tooling/check-boundaries.mjs 26ms
+tooling/check-dependencies.mjs 10ms
+tooling/check-docs.mjs 19ms
+tooling/check-foundation-fixtures.mjs 12ms
+tooling/check-foundation-governance.mjs 35ms
+tooling/check-performance-budget.mjs 35ms
+tooling/check-tailwind-sources.mjs 14ms
+tooling/dependency-policy.json 9ms
+tooling/foundation-contracts.json 7ms (unchanged)
+tooling/foundation-policy.json 1ms
+tooling/foundation-policy.mjs 4ms
+tooling/plugin-codegen/codegen.mjs 254ms
+tooling/plugin-codegen/dev.mjs 28ms
+tooling/plugin-codegen/watch.mjs 28ms
+tooling/runtime-codegen/codegen.mjs 16ms
+tooling/runtime-codegen/watch.mjs 14ms
+tooling/tailwind-source-policy.mjs 4ms
+tsconfig.base.json 2ms
+tsconfig.json 2ms

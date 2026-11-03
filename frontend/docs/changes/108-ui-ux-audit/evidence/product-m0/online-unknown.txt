@@ -1,0 +1,19 @@
+- alert
+- link "跳到主要内容 / Skip to content":
+  - /url: "#main-content"
+- main:
+  - link "C Community":
+    - /url: /welcome
+    - generic: C
+    - generic: Community
+  - button "切换语言":
+  - button "切换主题":
+  - heading "auth.notFoundTitle" [level=3]
+  - paragraph: auth.notFoundDescription
+  - button "auth.enterWorkspace":
+    - generic: auth.enterWorkspace
+  - complementary:
+    - paragraph: 开发演示模式
+    - paragraph: 这是本地模拟认证，可注册演示账户。请勿使用真实密码。
+    - paragraph: 演示邮箱：demo@community.test
+    - paragraph: 演示密码：CommunityDemo2026!

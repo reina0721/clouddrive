@@ -1,0 +1,21 @@
+schema_version: 1
+change: 059-webui-shell-experience-upgrade
+areas:
+  - id: startup
+    decision: reviewed-no-change
+    reason: 宿主 boot 装配链（manifest -> registry -> Shell -> route）不变；错误与 revision 门禁仍进入 StartupState/SystemStatePage。
+  - id: module
+    decision: reviewed-no-change
+    reason: 本变更不修改 Go Manifest、Binding、业务 API 或权限模型；模块 WS 页面只在自己 facet 内消费平台 surface/field token。
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+      - docs/development/webui.md
+    reason: 新增宿主骨架组件拆分（components/shell/*）、design token 分区、motion 常量与 overlay 状态机、Shell/Page skeleton 与 reduced-motion 决策说明；样式 authority 仍为 webui/src/styles.css。
+  - id: api
+    decision: reviewed-no-change
+    reason: api/openapi.yaml 由 contract-gen 生成；059 未改动业务 API 契约或 operation inventory。
+  - id: operations
+    decision: reviewed-no-change
+    reason: 启动、迁移、部署与安全边界不变；overlay/动效仅属于浏览器呈现层。

@@ -1,0 +1,124 @@
+
+Running 16 tests using 1 worker
+
+(node:884) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\motion-foundation.spec.ts:3:1 › Motion Inspector 按模式、分类与慢速倍率统一控制 recipe (3.2s)
+  ok  2 [chromium] › apps\web\e2e\motion-foundation.spec.ts:29:1 › ViewportReveal 首次进入后保持 revealed，不因再次滚入而重播 (1.9s)
+  ok  3 [chromium] › apps\web\e2e\motion-foundation.spec.ts:39:1 › ReadyImage 慢加载完成后不改变预留尺寸 (1.7s)
+  ok  4 [chromium] › apps\web\e2e\motion-progressive.spec.ts:7:1 › settings keeps its shell stable and enters semantic regions inside the nested Page (2.6s)
+  x   5 [chromium] › apps\web\e2e\motion-progressive.spec.ts:40:3 › progressive settings remains usable through long, fast and reverse scrolling at 1440 (2.7s)
+(node:27156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   6 [chromium] › apps\web\e2e\motion-progressive.spec.ts:40:3 › progressive settings remains usable through long, fast and reverse scrolling at 390 (2.4s)
+(node:27016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   7 [chromium] › apps\web\e2e\motion-progressive.spec.ts:40:3 › progressive settings remains usable through long, fast and reverse scrolling at 320 (2.4s)
+(node:26724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  8 [chromium] › apps\web\e2e\motion-progressive.spec.ts:96:3 › content is immediately available with missing motion observation (3.6s)
+  ok  9 [chromium] › apps\web\e2e\motion-progressive.spec.ts:96:3 › content is immediately available with silent motion observation (3.1s)
+  ok 10 [chromium] › apps\web\e2e\motion-progressive.spec.ts:96:3 › content is immediately available with reduced motion observation (3.0s)
+  ok 11 [chromium] › apps\web\e2e\motion-progressive.spec.ts:130:1 › anchor refresh and browser return never leave reading content hidden (3.6s)
+  ok 12 [chromium] › apps\web\e2e\motion-progressive.spec.ts:148:1 › master detail swaps locally while preserving selection focus (1.7s)
+  ok 13 [chromium] › apps\web\e2e\transition.spec.ts:111:1 › 无 Suspense 页面深入导航播放方向进入并恢复稳定 (3.4s)
+  ok 14 [chromium] › apps\web\e2e\transition.spec.ts:147:1 › Family 页面导航在拆帧场景下保持功能正确且动画不失控 (4.0s)
+  ok 15 [chromium] › apps\web\e2e\transition.spec.ts:164:1 › 减弱动态效果时方向过渡时长接近零 (3.8s)
+  ok 16 [chromium] › apps\web\e2e\transition.spec.ts:180:1 › 浏览器后退不播放方向进入并正确恢复页面 (3.9s)
+
+
+  1) [chromium] › apps\web\e2e\motion-progressive.spec.ts:40:3 › progressive settings remains usable through long, fast and reverse scrolling at 1440 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 2
+
+      80 |       .toBe(false);
+      81 |     expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(height);
+    > 82 |     expect(Number(await page.locator('html').getAttribute('data-test-observer-count'))).toBe(1);
+         |                                                                                         ^
+      83 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      84 |       true,
+      85 |     );
+        at D:\coder\i721\console-web\apps\web\e2e\motion-progressive.spec.ts:82:89
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\motion-progressive-progres-5f16e-d-reverse-scrolling-at-1440-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\motion-progressive-progres-5f16e-d-reverse-scrolling-at-1440-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\motion-progressive-progres-5f16e-d-reverse-scrolling-at-1440-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\motion-progressive-progres-5f16e-d-reverse-scrolling-at-1440-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\motion-progressive.spec.ts:40:3 › progressive settings remains usable through long, fast and reverse scrolling at 390 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 2
+
+      80 |       .toBe(false);
+      81 |     expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(height);
+    > 82 |     expect(Number(await page.locator('html').getAttribute('data-test-observer-count'))).toBe(1);
+         |                                                                                         ^
+      83 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      84 |       true,
+      85 |     );
+        at D:\coder\i721\console-web\apps\web\e2e\motion-progressive.spec.ts:82:89
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\motion-progressive-progres-88a58-nd-reverse-scrolling-at-390-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\motion-progressive-progres-88a58-nd-reverse-scrolling-at-390-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\motion-progressive-progres-88a58-nd-reverse-scrolling-at-390-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\motion-progressive-progres-88a58-nd-reverse-scrolling-at-390-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › apps\web\e2e\motion-progressive.spec.ts:40:3 › progressive settings remains usable through long, fast and reverse scrolling at 320 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 2
+
+      80 |       .toBe(false);
+      81 |     expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(height);
+    > 82 |     expect(Number(await page.locator('html').getAttribute('data-test-observer-count'))).toBe(1);
+         |                                                                                         ^
+      83 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      84 |       true,
+      85 |     );
+        at D:\coder\i721\console-web\apps\web\e2e\motion-progressive.spec.ts:82:89
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\motion-progressive-progres-a254d-nd-reverse-scrolling-at-320-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\motion-progressive-progres-a254d-nd-reverse-scrolling-at-320-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\motion-progressive-progres-a254d-nd-reverse-scrolling-at-320-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\motion-progressive-progres-a254d-nd-reverse-scrolling-at-320-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › apps\web\e2e\motion-progressive.spec.ts:40:3 › progressive settings remains usable through long, fast and reverse scrolling at 1440 
+    [chromium] › apps\web\e2e\motion-progressive.spec.ts:40:3 › progressive settings remains usable through long, fast and reverse scrolling at 390 
+    [chromium] › apps\web\e2e\motion-progressive.spec.ts:40:3 › progressive settings remains usable through long, fast and reverse scrolling at 320 
+  13 passed (57.1s)

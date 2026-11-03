@@ -1,0 +1,41 @@
+schema_version: 1
+id: R067-002
+title: "滚动与动效能力的技术选型与承载边界（Lenis vs 自研；弹入响应 vs 动画库）"
+question: "为 WebUI 实现「阻尼平滑滚动（Lenis 柔化滚轮、保留触控原生惯性）、弹入响应（调节内容面板/卡片/列表进入视口的弹入节奏）、滚动体验（磁吸吸附、显式滚动场景劫持、边缘阻尼）、页面滚动条（默认稳定插槽预留右侧）、边缘阻尼/橡皮筋」及派生配置设置，应当引入哪些成熟第三方、在哪里封装、如何与既有 reduced-motion 决策和 059「不引入动画库」边界共存？结论的证据阈值是什么？"
+research_type: external-comparison
+topics: ["webui", "smooth-scroll", "lenis", "reveal-on-scroll", "rubber-band", "scroll-snap", "scroll-hijack", "scrollbar-gutter", "reduced-motion", "technology-selection"]
+keywords: ["lenis", "@studio-freight/lenis", "smooth-scrollbar", "framer-motion", "motion", "IntersectionObserver", "scroll-snap-type", "scrollbar-gutter", "overscroll-behavior", "prefers-reduced-motion"]
+applicable_scenarios:
+  - "为工作区滚动容器接入阻尼平滑滚动并支持开关/强度配置"
+  - "实现视图进入时的弹入响应且不引入动画库"
+  - "实现磁吸吸附、显式滚动劫持、边缘阻尼与滚动条稳定插槽的派生配置"
+non_applicable_scenarios:
+  - "引入动画/动效库做全库过渡（059 否定 framer-motion 等）"
+  - "改变 Shell 静态插拔、路由、模块边界或服务端契约"
+  - "把滚动能力做成模块可装载的运行时插件"
+status: active
+summary: "结论：引入 lenis（1.3.x，MIT，darkroom.engineering 维护，npm 下载量与应用面为主流平滑滚动方案）作为阻尼平滑滚动的成熟第三方，按「项目自有窄契约 + 边界封装」原则在 webui/src/scroll/ 建立 SmoothScrollController（可注入工厂便于测试；duration/easing 由阻尼档位派生；reduced-motion 或设置关闭时彻底销毁回退原生；触控 syncTouch=false 保留原生惯性）；弹入响应不引入动画库，在自研 Reveal（IntersectionObserver + CSS transition + --reveal-* token）内实现，与 059「平台自研原语为准、不引入动画库」一致；磁吸吸附用 CSS scroll-snap 驱动、显式滚动场景劫持与边缘阻尼为平台源内小工具，全部由 ThemePreferences.experience 派生配置（data-experience-*）与 data-motion=reduce 统一降级。scrollbar-gutter:stable 是平台 CSS 层能力，默认开启（稳定插槽、预留右侧）。"
+evidence:
+  types: ["source-code", "tests", "external-references", "package-registry", "documentation"]
+  primary_sources:
+    - title: "Lenis 官方文档与仓库"
+      locator: "https://github.com/darkroomengineering/lenis、https://lenis.darkroom.engineering/（wrapper/content、classes、syncTouch、reducedMotion 选项）"
+      snapshot: "2026-08-25 公开文档；npm registry lenis 1.3.26"
+    - title: "替代方案参考"
+      locator: "smooth-scrollbar（维护放缓）、locomotive-scroll（维护放缓/捆绑偏重）、framer-motion useScroll（动画库，059 否定）"
+      snapshot: "2026-08-25 公开文档"
+    - title: "现有动效决策与 token"
+      locator: "webui/src/motion.ts、webui/src/theme.ts（effectiveReduceMotion/data-motion）、webui/src/styles.css 分区 1（--motion-*）与分区 8（reduced-motion override）"
+      snapshot: "5a44bdc"
+    - title: "宿主 scroll 容器结构"
+      locator: "webui/src/components/AppShell.tsx（.page-viewport overflow:auto）、styles.css `.app-workspace/.page-viewport`"
+      snapshot: "5a44bdc"
+    - title: "平台样式 authority 与 lint"
+      locator: "webui/scripts/lint-architecture.mjs（业务 selector 禁入平台）、docs/development/webui.md（模块只能依赖 @webui/sdk/*）"
+      snapshot: "5a44bdc"
+researched_at: "2026-08-25"
+verified_at: "2026-08-25"
+refresh_triggers:
+  - "Lenis 主版本或维护状态发生重大变化"
+  - "浏览器 scrollbar-gutter/overscroll 行为出现标准变化"
+  - "平台动画库决策被新的确认推翻"

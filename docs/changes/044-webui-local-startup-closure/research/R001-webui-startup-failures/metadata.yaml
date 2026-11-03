@@ -1,0 +1,41 @@
+schema_version: 1
+id: R001
+title: "WebUI 本地启动失败根因"
+question: "为什么 Vite 端口和 Go Service 都已监听，WebUI 仍无法打开或显示装配失败？"
+research_type: current-project
+topics: ["webui", "vite", "https", "chi", "mount", "manifest"]
+keywords: ["server.https", "plugin-basic-ssl", "StripPrefix", "/api/v1/admin/manifest", "Secure Cookie"]
+applicable_scenarios: ["042 WebUI 本地启动", "manifest 404", "Vite TLS handshake failure"]
+non_applicable_scenarios: ["043 命名迁移", "生产 TLS 证书", "外部反向代理部署"]
+status: active
+summary: "后端 404 来自 Chi mount 不改写 URL.Path 与嵌套 ServeMux 的路径不匹配；前端 TLS 失败来自缺少有效证书，HTTP 临时回退又与 Secure Cookie 冲突。"
+evidence:
+  types: ["runtime-probe", "source-code", "dependency-source", "official-docs", "user-confirmation"]
+  primary_sources:
+    - title: "本地运行探测"
+      locator: "127.0.0.1:8080/9090/5173"
+      snapshot: "2026-08-21: readyz=200, manifest/session=404, TLS handshake failed"
+    - title: "应用 Router"
+      locator: "internal/composition/service.go"
+      snapshot: "HEAD c7ef219, verified 2026-08-21"
+    - title: "Chi Mux Mount"
+      locator: "github.com/go-chi/chi/v5/mux.go"
+      snapshot: "module cache v5.3.1, verified 2026-08-21"
+    - title: "Vite server.https"
+      locator: "https://vite.dev/config/server-options.html#server-https"
+      snapshot: "verified 2026-08-21"
+    - title: "Vite basic SSL plugin"
+      locator: "https://github.com/vitejs/vite-plugin-basic-ssl"
+      snapshot: "verified 2026-08-21"
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+validity:
+  mode: snapshot
+  review_after: "2026-11-21"
+  refresh_triggers: ["HTTP router implementation changes", "Vite dev server changes", "043 changes WebUI route prefix"]
+relations:
+  extends: ["042"]
+  related: ["043"]
+  supersedes: []
+  superseded_by: []
+report: report.md

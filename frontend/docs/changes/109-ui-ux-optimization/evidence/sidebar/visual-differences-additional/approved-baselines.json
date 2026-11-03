@@ -1,0 +1,18 @@
+[
+  {
+    "name": "ui-elements-dialog-open",
+    "path": "apps\\web\\e2e\\overlays.spec.ts-snapshots\\ui-elements-dialog-open-chromium-win32.png",
+    "before": "59b2a60f99c842b94f934ff293e97b66058b8b570ddef82e4ffaa3d240f4acd9",
+    "after": "9b1b4622c8e68d9bb427e41c6c1be9abe6ffd56a56c47ce2b6ee6a864e345c97",
+    "confirmedAt": "2026-10-11T00:31:24.500Z",
+    "confirmation": "确认更新这 2 张基线"
+  },
+  {
+    "name": "ui-elements-desktop",
+    "path": "apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-desktop-chromium-win32.png",
+    "before": "92b64d924a9ed72e3a9709ebd2bd653c232ee49ea88e47d935532a444f728cb0",
+    "after": "db3d21d7cb249261d9a03ab29902503d436bd2eaa51513a53a7e425295006587",
+    "confirmedAt": "2026-10-11T00:31:24.516Z",
+    "confirmation": "确认更新这 2 张基线"
+  }
+]

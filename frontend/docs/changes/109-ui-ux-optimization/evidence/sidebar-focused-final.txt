@@ -1,0 +1,51 @@
+
+Running 11 tests using 1 worker
+
+(node:31428) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\commands.spec.ts:3:1 › 命令菜单聚合插件注册命令：Ctrl+K → 新建资源命令执行跳转 (4.2s)
+  ok  2 [chromium] › apps\web\e2e\sidebar-design.spec.ts:12:1 › Compact rail uses coherent geometry, current route, named groups and focus/hover hints (8.6s)
+  ok  3 [chromium] › apps\web\e2e\sidebar-design.spec.ts:49:1 › Hover bridge, click pin, second click close and keyboard focus survive pointer departure (7.7s)
+  ok  4 [chromium] › apps\web\e2e\sidebar-design.spec.ts:92:1 › Mode round trip retains exploration and closes old portal; expanded layout remains intact (4.0s)
+  ok  5 [chromium] › apps\web\e2e\sidebar-design.spec.ts:115:1 › Compact rail stays usable at 1024/1440/2560, dark English, short height and text zoom (7.4s)
+  ok  6 [chromium] › apps\web\e2e\sidebar-design.spec.ts:153:1 › Mobile Drawer remains expanded, traps focus and restores desktop collapse preference (15.9s)
+  ok  7 [chromium] › apps\web\e2e\sidebar-design.spec.ts:195:3 › Touch desktop rail › Tap opens a full submenu and selecting a child navigates and dismisses it (4.8s)
+  ok  8 [chromium] › apps\web\e2e\sidebar-design.spec.ts:208:1 › Reduced motion and repeated mode changes keep header and content in their grid column (5.1s)
+  ok  9 [chromium] › apps\web\e2e\sidebar-design.spec.ts:230:1 › Icon navigation hint and flyout use the same primitives in the Overlay authority (5.2s)
+  ok 10 [chromium] › apps\web\e2e\sidebar-design.spec.ts:254:1 › Compact tooltip link preserves the Host leave confirmation before navigation (6.2s)
+  x  11 [chromium] › apps\web\e2e\sidebar-design.spec.ts:273:1 › Standard motion changes width monotonically and keeps header/content naturally aligned (3.8s)
+
+
+  1) [chromium] › apps\web\e2e\sidebar-design.spec.ts:273:1 › Standard motion changes width monotonically and keeps header/content naturally aligned 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 40
+    Received: 131.5
+
+      307 |     expect(Math.abs(frame.header - frame.rail)).toBeLessThan(1);
+      308 |     expect(frame.main).toBeGreaterThanOrEqual(frame.rail);
+    > 309 |     expect(frame.iconCenter).toBe(40);
+          |                              ^
+      310 |     if (i > 0) expect(frame.rail).toBeLessThanOrEqual(frames[i - 1]!.rail + 0.5);
+      311 |   }
+      312 | });
+        at D:\coder\i721\console-web\apps\web\e2e\sidebar-design.spec.ts:309:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-focused-final\sidebar-design-Standard-mo-ec1c0-r-content-naturally-aligned-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-focused-final\sidebar-design-Standard-mo-ec1c0-r-content-naturally-aligned-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-focused-final\sidebar-design-Standard-mo-ec1c0-r-content-naturally-aligned-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-focused-final\sidebar-design-Standard-mo-ec1c0-r-content-naturally-aligned-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\sidebar-design.spec.ts:273:1 › Standard motion changes width monotonically and keeps header/content naturally aligned 
+  10 passed (1.3m)

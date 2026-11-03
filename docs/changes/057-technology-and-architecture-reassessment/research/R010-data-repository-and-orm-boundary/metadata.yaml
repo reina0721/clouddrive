@@ -1,0 +1,42 @@
+schema_version: 1
+id: R010
+title: "数据 Repository 与 ORM 边界复核"
+question: "当前反射式 BaseRepository/Schema/Query 是否有真实价值；GORM Gen、sqlc 或直接 GORM 哪个最适合当前三方言和模块 Repository port？"
+research_type: current-project-and-external-primary-source
+topics: ["database", "ORM", "repository", "GORM", "sqlc", "code generation"]
+keywords: ["BaseRepository", "Schema", "Query", "WithinTx", "GORM Gen", "sqlc"]
+technologies: ["GORM", "GORM Gen", "sqlc", "golang-migrate"]
+applicable_scenarios: ["DATA-057-001", "模块 Repository Adapter", "三方言 CRUD", "事务与乐观锁"]
+non_applicable_scenarios: ["migration 执行器替换", "分析型 SQL", "单数据库方言服务", "跨服务事务"]
+status: active
+summary: "保留 GORM 连接、事务和错误翻译；用模块 Adapter 内的 concrete record + direct GORM 单轨替换反射式 BaseRepository/Schema/Query。当前没有复杂 join 或 handwritten SQL 需求，GORM Gen 与 sqlc 都增加生成和多方言成本，暂不采用。"
+evidence:
+  types: ["source-code", "call-site-search", "dependency-manifest", "tests", "migration-comparison", "official-source", "release-metadata", "vulnerability-database"]
+  primary_sources:
+    - title: "当前 database capability、generic repository 与全部 production 调用方"
+      locator: "pkg/database/; internal/module/{iam,organization,navigation,todo}/repo/"
+      snapshot: "74db2b41fb4a37ca0efcef9618ba904ca9ad4250"
+    - title: "当前 module migration SQL"
+      locator: "internal/module/*/binding/migration/"
+      snapshot: "74db2b41fb4a37ca0efcef9618ba904ca9ad4250"
+    - title: "GORM Gen v0.3.28 official source and metadata"
+      locator: "https://github.com/go-gorm/gen/tree/v0.3.28"
+      snapshot: "2026-08-22"
+    - title: "sqlc v1.31.1 official source and metadata"
+      locator: "https://github.com/sqlc-dev/sqlc/tree/v1.31.1"
+      snapshot: "2026-08-22"
+    - title: "OSV Go package query"
+      locator: "https://api.osv.dev/v1/query"
+      snapshot: "2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: time-sensitive
+  review_after: "2026-11-22"
+  refresh_triggers: ["出现复杂 join/window/CTE", "数据库方言范围收敛", "GORM 或候选安全公告", "Repository 查询量和重复样板显著增长"]
+relations:
+  extends: ["057-R001", "057-R002"]
+  related: ["053", "054"]
+  supersedes: []
+  superseded_by: []
+report: report.md

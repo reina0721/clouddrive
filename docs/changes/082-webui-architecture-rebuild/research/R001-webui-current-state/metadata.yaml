@@ -1,0 +1,43 @@
+schema_version: 1
+id: R001
+title: "WebUI 前端现状审计"
+question: "当前 WebUI 的真实前端架构现状是什么?"
+research_type: current-project
+topics: ["webui", "frontend-architecture", "react", "heroui"]
+keywords: ["webui", "AppShell", "zone", "sdk", "route", "navigation"]
+applicable_scenarios: ["WebUI 产品架构重构的前端现状基线", "前端能力评估"]
+non_applicable_scenarios: ["后端 API 契约审计", "非 webui/ 目录的前端"]
+status: active
+summary: "当前 WebUI 是 React 19 + Vite 7 + TS + HeroUI v3 + Tailwind v4 的声明式托管 Admin Shell:路由由 7 个 Go 模块的 Binding 声明,经 Go 生成链产出 webui-registry.ts(27 个 lazy entry/24 条路由/25 个菜单节点)并叠加运行时 Manifest(access/availability/navigation 门禁投影,GET /api/v1/webui/manifest);宿主 AppShell+Sidebar/Header/WorkspaceTabs/AccountMenu 有 5 类 zone 分区注入点(当前仅 ops 挂载 header-actions 与 footer-status);SDK 九目录按 runtime/http/query/i18n/navigation/mock/zone/ui/feedback 拆契约(其中 navigation/feedback 无消费者);UI 原语 40+ 由 HeroUI/RAC 拼装,图表与交互状态链自研;数据获取仅 Ops 走 react-query(useGatedQueries),其余模块手写 api.ts+useState,写操作统一 Origin+X-CSRF-Token,409 用 expectedVersion/差异确认;样式以 styles.css 单一 authority(token/reset/Shell/overlay/public UI/loading/responsive/reduced-motion 八分区)+lenis 窄封装滚动运行时+applyTheme 暗色/体验;权限呈现经 ActionPermissions→Manifest actionPermissions→useActionAccess→ActionTrigger 按钮级投影,denied 隐藏/禁用;表单全部手写(react-hook-form/zod 已声明依赖但零使用);测试 Vitest 151+Playwright 22(dev 20+mock 2)。已知边界:overlay 容器与 Switch/Checkbox 自绘、HostNavigation 契约能力保留但无装配实例(073 移除 host.center)、OpenAPI mock 禁执行、监控仅 available 挂载、E2E 依赖本机 dev、容器验收未闭环。"
+evidence:
+  types: ["source-code", "tests", "docs"]
+  primary_sources:
+    - title: "webui 源码目录"
+      locator: "webui/src"
+      snapshot: "c3a23c0"
+    - title: "生成链与生成物"
+      locator: "webui/scripts/generate.mjs, internal/composition/webui_registry.go, webui/src/generated/webui-registry.ts"
+      snapshot: "c3a23c0"
+    - title: "WebUI 契约(Go 侧)"
+      locator: "internal/webui/contract.go, internal/composition/webui_http.go"
+      snapshot: "c3a23c0"
+    - title: "各业务模块 webui facet"
+      locator: "internal/module/*/binding/webui/binding.go 与 web/"
+      snapshot: "c3a23c0"
+    - title: "WebUI 开发指南与变更记录 059-081"
+      locator: "docs/development/webui.md, docs/changes/059..081"
+      snapshot: "c3a23c0"
+researched_at: "2026-08-27"
+verified_at: "2026-08-27"
+validity:
+  mode: snapshot
+  review_after: "2026-09-27"
+  refresh_triggers: ["WebUI 路由/Shell/SDK 契约发生结构性变化", "新增业务模块 facet 或生成链变化"]
+relations:
+  extends: []
+  related:
+    - id: R002
+      title: "后端真实能力清单"
+  supersedes: []
+  superseded_by: []
+report: report.md

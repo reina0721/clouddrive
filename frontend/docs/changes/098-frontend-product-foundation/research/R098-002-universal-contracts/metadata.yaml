@@ -1,0 +1,42 @@
+schema_version: 1
+id: R098-002
+title: 'Universal Form、i18n 与 UI/Motion 公共契约研究'
+question: '如何在不复制第三方 API、不引入后端语义的前提下，把 Form、i18n、Accessibility 与 Motion 收敛为跨 Product Surface 的稳定 Frontend Foundation？'
+research_type: official-contract-and-boundary-design
+topics: ['react-hook-form', 'zod', 'i18next', 'HeroUI', 'motion', 'accessibility']
+keywords: ['formState', 'Controller', 'supportedLngs', 'fallbackLng', 'ZodType', 'React Aria']
+applicable_scenarios: ['通用表单编排、语言运行时、UI Element 扩展、Motion Primitive 分层']
+non_applicable_scenarios: ['业务 Schema、API DTO、服务端校验、业务翻译资源']
+status: active
+summary: '沿用 RHF+Zod 与 i18next 成熟能力，但只收口重复且稳定的编排语义；字段定义、Schema、文案和业务状态仍由 Feature/Surface 提供。HeroUI/React Aria 继续拥有交互与 Accessibility，Motion 参数继续由 Token/Policy 单源管理。'
+evidence:
+  types:
+    ['project-source', 'installed-package-source', 'official-documentation', 'previous-research']
+  primary_sources:
+    - title: '现有 Reference Form'
+      locator: 'apps/web/src/app/reference/form/page.tsx；apps/web/src/app/preferences/page.tsx'
+      snapshot: '重复 resolver 动态装配、dirty/pending/reset/error 转换与 Controller glue'
+    - title: 'i18next configuration options'
+      locator: 'https://www.i18next.com/overview/configuration-options'
+      snapshot: 'create/init、supportedLngs、fallbackLng 与 resources 是官方语言运行时边界'
+    - title: 'Zod 4 API'
+      locator: 'https://zod.dev/packages/zod'
+      snapshot: 'ZodType 提供 parse/safeParse/async 以及 TypeScript 类型推导；当前项目锁定 Zod 4.5.2'
+    - title: 'HeroUI + Tailwind 官方互补研究'
+      locator: 'R094-003'
+      snapshot: 'HeroUI/React Aria 拥有 interaction/focus/keyboard；Tailwind/Token 拥有视觉、响应式和状态组合'
+  researched_at: '2026-08-31'
+  verified_at: '2026-08-31'
+validity:
+  mode: version-and-date-bounded
+  review_after: '2026-10-31'
+  refresh_triggers:
+    [
+      'React Hook Form、Zod、i18next、HeroUI、Tailwind 或 React 主版本变化；公共 Form/i18n API 无法表达真实 Surface 用例',
+    ]
+relations:
+  extends: ['R094-003', 'R097-001']
+  related: ['R098-001']
+  supersedes: []
+  superseded_by: []
+report: report.md

@@ -1,0 +1,42 @@
+schema_version: 1
+id: R103-001
+title: 'Admin Shell 重复点击当前 Route 的导航生命周期问题研究'
+question: '为什么重复点击当前已激活 Route 会导致不必要重导航且 Top Progress 永久停在 loading，正确修复点在整条链路的哪一层？'
+research_type: current-state-audit
+topics:
+  ['navigation lifecycle', 'global progress', 'route no-op', 'host navigation port', 'next router']
+keywords:
+  ['beginNavigation', 'RouteTransition', 'completeNavigation', 'pendingCount', 'resolved href']
+applicable_scenarios: ['103 统一导航生命周期与 no-op 短路、重复点击幂等、Top Progress 正确收敛']
+non_applicable_scenarios: ['后端路由、权限引擎、非静态 Host、view transition 视觉重设计']
+status: active
+summary: '所有导航入口在 click 层无条件 beginNavigation；RouteTransition 只在 pathname 变化时 complete；Next App Router push/Link 不返回完成 promise 且同 URL 点击无真实 commit。同路由 no-op 点击因此永远等不到 complete，pendingCount 卡 1。修复点是统一的导航事务层（no-op 判断 + begin/commit/cancel/fail 收敛），不是 Progress 表象。'
+evidence:
+  types: ['project-source', 'official-documentation']
+  primary_sources:
+    - title: '导航入口无条件 beginNavigation'
+      locator: 'apps/admin-web/src/shell/navigation-tree.tsx；apps/admin-web/src/shell/app-shell.tsx；apps/admin-web/src/host/admin-navigation-port.tsx；apps/admin-web/src/host/router-text-link.tsx'
+      snapshot: 'click 层 markForwardRouteIntent()+beginNavigation() 后交给 Next Link/router.push'
+    - title: '唯一 commit 观测点只认 pathname'
+      locator: 'apps/admin-web/src/host/route-transition.tsx'
+      snapshot: 'previousPathnameRef === pathname 时提前 return，completeNavigation() 不触发；search/hash-only 同样不触发'
+    - title: 'begin/end 模块级单例'
+      locator: 'apps/admin-web/src/host/navigation-progress.ts；apps/admin-web/src/host/global-progress-state.ts'
+      snapshot: 'currentNavigationEnd 单 handle；pendingCount 由 store 管理；15s 超时兜底存在'
+    - title: 'Next App Router push/Link 无完成 promise'
+      locator: 'apps/admin-web/node_modules/next/dist/docs/01-app/03-api-reference/04-functions/use-router.md；.../link.md'
+      snapshot: 'push/replace 返回 void；同 URL 点击不重跑页面数据获取；search-param/hash-only 导航不改 bfcacheId'
+  researched_at: '2026-09-03'
+  verified_at: '2026-09-03'
+validity:
+  mode: revision-bounded
+  refresh_triggers:
+    [
+      'Next App Router 导航契约、RouteTransition/Global Progress 实现、Shell 导航入口或导航等价语义变化时需定向复核',
+    ]
+relations:
+  extends: ['R100-001', 'R098-001']
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

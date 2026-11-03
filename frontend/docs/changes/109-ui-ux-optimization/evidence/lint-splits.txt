@@ -1,0 +1,37 @@
+
+D:\coder\i721\console-web\apps\web\src\host\notification-alerts.tsx
+  16:10  error  'useFrontendTranslation' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\coder\i721\console-web\apps\web\src\shell\page-tabs.tsx
+  6:10  error  'generatedSurfaceRegistry' is defined but never used  @typescript-eslint/no-unused-vars
+  7:21  error  'useRef' is defined but never used                    @typescript-eslint/no-unused-vars
+
+D:\coder\i721\console-web\surfaces\plugins\settings\src\settings-hooks.tsx
+  13:10  error  'createContext' is defined but never used          @typescript-eslint/no-unused-vars
+  13:25  error  'useContext' is defined but never used             @typescript-eslint/no-unused-vars
+  21:10  error  'route' is defined but never used                  @typescript-eslint/no-unused-vars
+  21:17  error  'RouteLink' is defined but never used              @typescript-eslint/no-unused-vars
+  22:15  error  'NavigationIconId' is defined but never used       @typescript-eslint/no-unused-vars
+  23:10  error  'NavigationIcon' is defined but never used         @typescript-eslint/no-unused-vars
+  25:10  error  'PageHeader' is defined but never used             @typescript-eslint/no-unused-vars
+  27:10  error  'DrawerSurface' is defined but never used          @typescript-eslint/no-unused-vars
+  28:10  error  'Action' is defined but never used                 @typescript-eslint/no-unused-vars
+  29:10  error  'Panel' is defined but never used                  @typescript-eslint/no-unused-vars
+  30:10  error  'SearchBox' is defined but never used              @typescript-eslint/no-unused-vars
+  34:10  error  'RestoreAllButton' is defined but never used       @typescript-eslint/no-unused-vars
+  34:28  error  'RestoreCategoryButton' is defined but never used  @typescript-eslint/no-unused-vars
+  35:10  error  'normalizeSearchTerm' is defined but never used    @typescript-eslint/no-unused-vars
+  35:31  error  'searchSettings' is defined but never used         @typescript-eslint/no-unused-vars
+
+D:\coder\i721\console-web\surfaces\plugins\settings\src\settings-layout-shell.tsx
+  13:10  error  'createContext' is defined but never used         @typescript-eslint/no-unused-vars
+  13:25  error  'useContext' is defined but never used            @typescript-eslint/no-unused-vars
+  13:47  error  'useSyncExternalStore' is defined but never used  @typescript-eslint/no-unused-vars
+  17:3   error  'usePreferencesPort' is defined but never used    @typescript-eslint/no-unused-vars
+  19:8   error  'PreferencesPort' is defined but never used       @typescript-eslint/no-unused-vars
+  22:15  error  'NavigationIconId' is defined but never used      @typescript-eslint/no-unused-vars
+  24:15  error  'Preferences' is defined but never used           @typescript-eslint/no-unused-vars
+  26:10  error  'AlertBanner' is defined but never used           @typescript-eslint/no-unused-vars
+  31:10  error  'TriangleAlert' is defined but never used         @typescript-eslint/no-unused-vars
+
+✖ 27 problems (27 errors, 0 warnings)

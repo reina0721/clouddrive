@@ -1,0 +1,5 @@
+
+> clouddrive-frontend@0.1.0 docs:check /home/rin/.cache/api-workbench-review/workspace
+> node tooling/check-docs.mjs
+
+Docs structure check passed: entry + 8 authorities, 20 change records indexed.

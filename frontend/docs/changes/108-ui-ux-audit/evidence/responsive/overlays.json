@@ -1,0 +1,122 @@
+[
+  {
+    "buttons": [
+      {
+        "h": 40,
+        "text": "取消",
+        "y": 259
+      },
+      {
+        "h": 40,
+        "text": "确认",
+        "y": 259
+      }
+    ],
+    "h": 224,
+    "scrollAncestors": [
+      {
+        "class": "modal__dialog modal__dialog--scroll-inside modal__dialog--lg ui-overlay-surface w-full",
+        "h": 222,
+        "overflow": "clip",
+        "scroll": 298
+      },
+      {
+        "class": "modal__container",
+        "h": 256,
+        "overflow": "visible",
+        "scroll": 256
+      },
+      {
+        "class": "modal__backdrop modal__backdrop--opaque bg-scrim backdrop-blur-sm",
+        "h": 256,
+        "overflow": "visible",
+        "scroll": 256
+      }
+    ],
+    "vh": 256,
+    "vw": 320,
+    "w": 273,
+    "x": 16,
+    "y": 16
+  },
+  {
+    "buttons": [
+      {
+        "h": 40,
+        "text": "取消",
+        "y": 329
+      },
+      {
+        "h": 40,
+        "text": "确认",
+        "y": 329
+      }
+    ],
+    "h": 370,
+    "scrollAncestors": [
+      {
+        "class": "modal__dialog modal__dialog--scroll-inside modal__dialog--lg ui-overlay-surface w-full",
+        "h": 368,
+        "overflow": "clip",
+        "scroll": 368
+      },
+      {
+        "class": "modal__container",
+        "h": 450,
+        "overflow": "visible",
+        "scroll": 450
+      },
+      {
+        "class": "modal__backdrop modal__backdrop--opaque bg-scrim backdrop-blur-sm",
+        "h": 450,
+        "overflow": "visible",
+        "scroll": 450
+      }
+    ],
+    "vh": 450,
+    "vw": 720,
+    "w": 512,
+    "x": 96.5,
+    "y": 40
+  },
+  {
+    "buttons": [
+      {
+        "h": 40,
+        "text": "取消",
+        "y": 279
+      },
+      {
+        "h": 40,
+        "text": "确认",
+        "y": 279
+      }
+    ],
+    "h": 320,
+    "scrollAncestors": [
+      {
+        "class": "modal__dialog modal__dialog--scroll-inside modal__dialog--lg ui-overlay-surface w-full",
+        "h": 318,
+        "overflow": "clip",
+        "scroll": 318
+      },
+      {
+        "class": "modal__container",
+        "h": 400,
+        "overflow": "visible",
+        "scroll": 400
+      },
+      {
+        "class": "modal__backdrop modal__backdrop--opaque bg-scrim backdrop-blur-sm",
+        "h": 400,
+        "overflow": "visible",
+        "scroll": 400
+      }
+    ],
+    "vh": 400,
+    "vw": 1440,
+    "w": 512,
+    "x": 456.5,
+    "y": 40
+  }
+]

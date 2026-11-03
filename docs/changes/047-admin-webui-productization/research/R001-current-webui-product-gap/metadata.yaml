@@ -1,0 +1,56 @@
+schema_version: 1
+id: R001
+title: "当前 WebUI 产品化与参考样本差距"
+question: "如何在不重建模块、权限和 Composition 体系的前提下，让当前 WebUI 成为由模块按需贡献、可诚实表达能力状态并可持续视觉校准的完整后台宿主？"
+research_type: current-project
+topics: ["webui", "module-binding", "composition", "frontend-host", "i18n", "capability-state", "visual-reference"]
+keywords: ["Binding", "applicationWebUICatalog", "webuiEntryRegistry", "manifest", "react-i18next", "Available", "Degraded", "Unavailable", "Not Implemented", "SoybeanAdmin"]
+applicable_scenarios: ["WebUI 宿主产品化", "模块按需贡献管理页面", "后台能力渐进接入", "视觉与交互逐页校准"]
+non_applicable_scenarios: ["动态远程插件", "Module Federation", "复制 SoybeanAdmin 源码", "为无管理需求模块创建空页面", "重建业务权限体系"]
+status: active
+summary: "现有 WebUI Contract 与 Composition 方向可复用，但宿主尚未消费生成 registry/locales，模块页面所有权、四态语义、产品级组件和视觉验收仍未闭合。"
+evidence:
+  types: ["source-code", "tests", "project-docs", "browser-observation", "official-docs", "official-source"]
+  primary_sources:
+    - title: "当前 WebUI Contract"
+      locator: "internal/webui/contract.go"
+      snapshot: "HEAD 72e99de, verified 2026-08-21"
+    - title: "当前 WebUI Composition 与生成器"
+      locator: "internal/composition/http_contracts.go; internal/composition/webui_registry.go; internal/composition/webui_http.go"
+      snapshot: "HEAD 72e99de, verified 2026-08-21"
+    - title: "当前 React 宿主"
+      locator: "webui/src/App.tsx; webui/src/generated/webui-registry.ts; webui/src/styles.css"
+      snapshot: "HEAD 72e99de, verified 2026-08-21"
+    - title: "当前 Auth/Ops WebUI Binding"
+      locator: "internal/module/auth/binding/webui; internal/module/ops/binding/webui"
+      snapshot: "HEAD 72e99de, verified 2026-08-21"
+    - title: "042–046 历史任务证据"
+      locator: "docs/changes/042-admin-webui-foundation through docs/changes/046-webui-setup-validation-errors"
+      snapshot: "verified 2026-08-21"
+    - title: "SoybeanAdmin 在线演示"
+      locator: "https://soybeanjs.cn"
+      snapshot: "2026-08-21 browser DOM and screenshot observation of login, home Shell, manage/user list and filters, create-user drawer, 403 page, and theme drawer; explicit mobile viewport pass timed out"
+    - title: "SoybeanAdmin 官方介绍与目录说明"
+      locator: "https://admin-docs.soybeanjs.cn/zh/guide/intro; https://admin-docs.soybeanjs.cn/zh/guide/quick-start"
+      snapshot: "verified 2026-08-21"
+    - title: "SoybeanAdmin 官方仓库"
+      locator: "https://github.com/soybeanjs/soybean-admin"
+      snapshot: "verified 2026-08-21"
+    - title: "react-i18next 官方文档"
+      locator: "https://react.i18next.com; https://react.i18next.com/latest/usetranslation-hook"
+      snapshot: "verified 2026-08-21"
+    - title: "用户最新范围与视觉决策"
+      locator: "current conversation"
+      snapshot: "2026-08-21: Admin WebUI 本体优先，当前先重构布局和骨架，并对 soybeanjs.cn 宿主体验做高保真持续参考；不复制 Demo"
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+validity:
+  mode: snapshot
+  review_after: "2026-09-21"
+  refresh_triggers: ["WebUI Contract 或生成器改变", "Auth/Ops 页面或权限 operation 改变", "前端技术栈主版本改变", "SoybeanAdmin 参考站点布局或页面体系明显改变", "新增业务模块 WebUI 用例"]
+relations:
+  extends: ["042", "043", "044", "045", "046"]
+  related: ["033", "034", "041"]
+  supersedes: []
+  superseded_by: []
+report: report.md

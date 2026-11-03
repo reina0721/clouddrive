@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Authentication：7 项视觉确认</title
+  ><style>
+    body {
+      font: 16px system-ui;
+      margin: 24px;
+      background: #f4f5f7;
+      color: #172033;
+    }
+    section {
+      background: white;
+      padding: 20px;
+      margin: 24px 0;
+      border: 1px solid #ddd;
+    }
+    .images {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    figure {
+      margin: 0;
+      flex: 1;
+      min-width: 220px;
+    }
+    img {
+      width: 100%;
+      height: auto;
+      border: 1px solid #ddd;
+    }
+    code {
+      overflow-wrap: anywhere;
+    }
+    figcaption {
+      padding: 8px;
+    }
+  </style>
+  <h1>Authentication：7 项视觉确认</h1>
+  <p>
+    5 项新认证页面候选 + 2 项 Form 展示页密码控件变化。用户于 2026-10-09 确认本批全部 7
+    项，已逐项校验 SHA-256 并限定更新基线；旧图与差异保留。点击图片查看原尺寸。
+  </p>
+  <p>
+    浏览器完整复验 323/329 通过；另一个进度条检查因恢复就绪等待缺失，独立修复验证。Backend 受控协议
+    3 项通过，不代表真实服务联调。
+  </p>
+  <section>
+    <h2>1. Authentication login-320</h2>
+    <p>新增基线候选（此前无基线）</p>
+    <div class="images">
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="authentication-login-320-actual.png"
+          ><img
+            src="authentication-login-320-actual.png"
+            alt="Authentication login-320 actual"
+            loading="lazy"
+        /></a>
+      </figure>
+    </div>
+    <p>
+      候选 SHA-256: <code>eaa737282711c3cad0e64507f5cf73b21a8ee051d2bc593e41d84e5cf8564f62</code>
+    </p>
+  </section>
+  <section>
+    <h2>2. Authentication login-1440</h2>
+    <p>新增基线候选（此前无基线）</p>
+    <div class="images">
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="authentication-login-1440-actual.png"
+          ><img
+            src="authentication-login-1440-actual.png"
+            alt="Authentication login-1440 actual"
+            loading="lazy"
+        /></a>
+      </figure>
+    </div>
+    <p>
+      候选 SHA-256: <code>5d47e74b97ec753a52b4b0c37bd71a036581938b484bdfc77b2fae9da1a147b9</code>
+    </p>
+  </section>
+  <section>
+    <h2>3. Authentication register-320</h2>
+    <p>新增基线候选（此前无基线）</p>
+    <div class="images">
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="authentication-register-320-actual.png"
+          ><img
+            src="authentication-register-320-actual.png"
+            alt="Authentication register-320 actual"
+            loading="lazy"
+        /></a>
+      </figure>
+    </div>
+    <p>
+      候选 SHA-256: <code>cb48c0cff619d40e7337689b166ca0d656c5d1c9ccddcd8379e8b13c771e29d7</code>
+    </p>
+  </section>
+  <section>
+    <h2>4. Authentication register-1440</h2>
+    <p>新增基线候选（此前无基线）</p>
+    <div class="images">
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="authentication-register-1440-actual.png"
+          ><img
+            src="authentication-register-1440-actual.png"
+            alt="Authentication register-1440 actual"
+            loading="lazy"
+        /></a>
+      </figure>
+    </div>
+    <p>
+      候选 SHA-256: <code>3080e99eaf0bbbd22884e579afb34f21a5a0f00a5599d3864098e80d63f048db</code>
+    </p>
+  </section>
+  <section>
+    <h2>5. Authentication register-320-en-dark-large</h2>
+    <p>新增基线候选（此前无基线）</p>
+    <div class="images">
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="authentication-register-320-en-dark-large-actual.png"
+          ><img
+            src="authentication-register-320-en-dark-large-actual.png"
+            alt="Authentication register-320-en-dark-large actual"
+            loading="lazy"
+        /></a>
+      </figure>
+    </div>
+    <p>
+      候选 SHA-256: <code>7d725359629194d4dcbc9c722a916b3668870a0778636f0138060ecc4ec88657</code>
+    </p>
+  </section>
+  <section>
+    <h2>6. ui-elements-family-forms</h2>
+    <p>已有基线 / 当前候选 / 差异</p>
+    <div class="images">
+      <figure>
+        <figcaption>expected</figcaption>
+        <a href="ui-elements-family-forms-expected.png"
+          ><img
+            src="ui-elements-family-forms-expected.png"
+            alt="ui-elements-family-forms expected"
+            loading="lazy"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="ui-elements-family-forms-actual.png"
+          ><img
+            src="ui-elements-family-forms-actual.png"
+            alt="ui-elements-family-forms actual"
+            loading="lazy"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>diff</figcaption>
+        <a href="ui-elements-family-forms-diff.png"
+          ><img
+            src="ui-elements-family-forms-diff.png"
+            alt="ui-elements-family-forms diff"
+            loading="lazy"
+        /></a>
+      </figure>
+    </div>
+    <p>
+      候选 SHA-256: <code>903ea3263f69538ea5b2b75ce0bcb8cdfc5b37bb805dc5f39463fe7b87b9607c</code>
+    </p>
+  </section>
+  <section>
+    <h2>7. ui-elements-mobile-dark-en</h2>
+    <p>已有基线 / 当前候选 / 差异</p>
+    <div class="images">
+      <figure>
+        <figcaption>expected</figcaption>
+        <a href="ui-elements-mobile-dark-en-expected.png"
+          ><img
+            src="ui-elements-mobile-dark-en-expected.png"
+            alt="ui-elements-mobile-dark-en expected"
+            loading="lazy"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="ui-elements-mobile-dark-en-actual.png"
+          ><img
+            src="ui-elements-mobile-dark-en-actual.png"
+            alt="ui-elements-mobile-dark-en actual"
+            loading="lazy"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>diff</figcaption>
+        <a href="ui-elements-mobile-dark-en-diff.png"
+          ><img
+            src="ui-elements-mobile-dark-en-diff.png"
+            alt="ui-elements-mobile-dark-en diff"
+            loading="lazy"
+        /></a>
+      </figure>
+    </div>
+    <p>
+      候选 SHA-256: <code>c35988d19edeba89bca92b1b733ffb83ee2ddf9fd3c257aa34f79c4176ee3047</code>
+    </p>
+  </section>
+</html>

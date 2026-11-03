@@ -1,0 +1,4 @@
+
+> clouddrive-frontend@0.1.0 lint D:\coder\i721\console-web
+> eslint . --max-warnings 0
+

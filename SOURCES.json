@@ -1,0 +1,15 @@
+{
+  "backend": {
+    "url": "https://github.com/reina0721/community-go.git",
+    "branch": "main",
+    "commit": "57c49e68d283505bd79e2ed8ee41523d64a826b8"
+  },
+  "frontend": {
+    "url": "https://github.com/reina0721/console-web.git",
+    "branch": "dsh/117-page-transitions",
+    "commit": "a154f64f0cd5d1c420e0135fd095892b063d47b4",
+    "excludedBrowserArchives": "docs/changes/118-clouddrive-integration/excluded-source-artifacts.json"
+  },
+  "import": "source snapshot",
+  "verifiedAt": "2026-11-03"
+}

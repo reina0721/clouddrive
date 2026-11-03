@@ -1,0 +1,75 @@
+
+C:\rin\coder\i0721\console-web\apps\web\src\auth\environment-notice.tsx
+  12:7  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+C:\rin\coder\i0721\console-web\apps\web\src\auth\environment-notice.tsx:12:7
+  10 |     if (config.mode !== 'mock') return null;
+  11 |     return (
+> 12 |       <aside className="mt-6 space-y-2 rounded-control bg-surface-muted p-4 text-xs leading-5 text-ink-muted">
+     |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |         <p className="font-semibold text-ink">{t('auth.demoTitle')}</p>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 14 |         <p>{t('auth.demoDescription')}</p>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 15 |         <p className="break-all">{t('auth.demoAccount')}</p>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 16 |         <p className="break-all">{t('auth.demoPassword')}</p>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 17 |       </aside>
+     | ^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  18 |     );
+  19 |   } catch {
+  20 |     return null;  react-hooks/error-boundaries
+  13:9  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+C:\rin\coder\i0721\console-web\apps\web\src\auth\environment-notice.tsx:13:9
+  11 |     return (
+  12 |       <aside className="mt-6 space-y-2 rounded-control bg-surface-muted p-4 text-xs leading-5 text-ink-muted">
+> 13 |         <p className="font-semibold text-ink">{t('auth.demoTitle')}</p>
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  14 |         <p>{t('auth.demoDescription')}</p>
+  15 |         <p className="break-all">{t('auth.demoAccount')}</p>
+  16 |         <p className="break-all">{t('auth.demoPassword')}</p>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/error-boundaries
+  14:9  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+C:\rin\coder\i0721\console-web\apps\web\src\auth\environment-notice.tsx:14:9
+  12 |       <aside className="mt-6 space-y-2 rounded-control bg-surface-muted p-4 text-xs leading-5 text-ink-muted">
+  13 |         <p className="font-semibold text-ink">{t('auth.demoTitle')}</p>
+> 14 |         <p>{t('auth.demoDescription')}</p>
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  15 |         <p className="break-all">{t('auth.demoAccount')}</p>
+  16 |         <p className="break-all">{t('auth.demoPassword')}</p>
+  17 |       </aside>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/error-boundaries
+  15:9  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+C:\rin\coder\i0721\console-web\apps\web\src\auth\environment-notice.tsx:15:9
+  13 |         <p className="font-semibold text-ink">{t('auth.demoTitle')}</p>
+  14 |         <p>{t('auth.demoDescription')}</p>
+> 15 |         <p className="break-all">{t('auth.demoAccount')}</p>
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  16 |         <p className="break-all">{t('auth.demoPassword')}</p>
+  17 |       </aside>
+  18 |     );                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/error-boundaries
+  16:9  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+C:\rin\coder\i0721\console-web\apps\web\src\auth\environment-notice.tsx:16:9
+  14 |         <p>{t('auth.demoDescription')}</p>
+  15 |         <p className="break-all">{t('auth.demoAccount')}</p>
+> 16 |         <p className="break-all">{t('auth.demoPassword')}</p>
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  17 |       </aside>
+  18 |     );
+  19 |   } catch {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/error-boundaries
+
+✖ 5 problems (5 errors, 0 warnings)
+

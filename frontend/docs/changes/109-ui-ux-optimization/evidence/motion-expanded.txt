@@ -1,0 +1,63 @@
+
+Running 12 tests using 1 worker
+
+(node:2540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\motion-progressive.spec.ts:8:1 › settings keeps its shell stable and enters semantic regions inside the nested Page (3.5s)
+  ok  2 [chromium] › apps\web\e2e\motion-progressive.spec.ts:41:3 › progressive settings remains usable through long, fast and reverse scrolling at 1440 (4.0s)
+  ok  3 [chromium] › apps\web\e2e\motion-progressive.spec.ts:41:3 › progressive settings remains usable through long, fast and reverse scrolling at 390 (3.7s)
+  ok  4 [chromium] › apps\web\e2e\motion-progressive.spec.ts:41:3 › progressive settings remains usable through long, fast and reverse scrolling at 320 (3.7s)
+  ok  5 [chromium] › apps\web\e2e\motion-progressive.spec.ts:108:3 › content is immediately available with missing motion observation (3.1s)
+  ok  6 [chromium] › apps\web\e2e\motion-progressive.spec.ts:108:3 › content is immediately available with silent motion observation (2.9s)
+  ok  7 [chromium] › apps\web\e2e\motion-progressive.spec.ts:108:3 › content is immediately available with reduced motion observation (2.8s)
+  ok  8 [chromium] › apps\web\e2e\motion-progressive.spec.ts:142:1 › anchor refresh and browser return never leave reading content hidden (3.4s)
+  ok  9 [chromium] › apps\web\e2e\motion-progressive.spec.ts:160:1 › master detail swaps locally while preserving selection focus (1.7s)
+  x  10 [chromium] › apps\web\e2e\motion-progressive.spec.ts:174:1 › server-rendered reading stays visible before JavaScript is available (5.3s)
+(node:26568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 11 [chromium] › apps\web\e2e\motion-progressive.spec.ts:187:3 › dark English expanded text keeps progressive regions accessible at 320 (3.4s)
+  ok 12 [chromium] › apps\web\e2e\motion-progressive.spec.ts:187:3 › dark English expanded text keeps progressive regions accessible at 2048 (3.8s)
+
+
+  1) [chromium] › apps\web\e2e\motion-progressive.spec.ts:174:1 › server-rendered reading stays visible before JavaScript is available 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.surface-viewport-reveal')
+    Expected: 2
+    Received: 0
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" with timeout 5000ms
+      - waiting for locator('.surface-viewport-reveal')
+        14 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      178 |   const page = await context.newPage();
+      179 |   await page.goto('/settings/actions');
+    > 180 |   await expect(page.locator('.surface-viewport-reveal')).toHaveCount(2);
+          |                                                          ^
+      181 |   await expect(page.locator('.surface-viewport-reveal').last()).toHaveCSS('opacity', '1');
+      182 |   await expect(page.locator('.surface-viewport-reveal').last()).toHaveCSS('transform', 'none');
+      183 |   await context.close();
+        at D:\coder\i721\console-web\apps\web\e2e\motion-progressive.spec.ts:180:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\motion-progressive-server--32d4b-ore-JavaScript-is-available-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\motion-progressive-server--32d4b-ore-JavaScript-is-available-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\motion-progressive-server--32d4b-ore-JavaScript-is-available-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\motion-progressive-server--32d4b-ore-JavaScript-is-available-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\motion-progressive.spec.ts:174:1 › server-rendered reading stays visible before JavaScript is available 
+  11 passed (46.9s)

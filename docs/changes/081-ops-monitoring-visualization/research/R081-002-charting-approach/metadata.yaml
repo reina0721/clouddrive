@@ -1,0 +1,32 @@
+schema_version: 1
+id: R081-002
+title: "可视化与宿主指标实现取向：自研 SVG 图表 vs 图表库、runtime vs gopsutil vs node-exporter"
+question: "运行状态可视化应采用的图表实现（自研 SVG vs echarts/recharts）与服务器指标采集（runtime 标准库 vs gopsutil vs node-exporter）取向？"
+research_type: current-project
+topics: ["webui", "charts", "host-metrics", "node-exporter"]
+keywords: ["SVGChart", "Sparkline", "gopsutil", "NodeExporter", "RuntimeMetrics"]
+applicable_scenarios: ["基础时序曲线与状态图", "进程级监控闭环", "node-exporter 宿主机指标"]
+non_applicable_scenarios: ["复杂图表交互（缩放/联动）", "无复核第三方强制引入", "跨平台磁盘/网络进程内采集"]
+status: active
+summary: "图表采用自研轻量 SVG chart 原语（webui/src/ui，Sparkline/LineChart，零依赖、可测、可复用，延续自研 UI 原语方向；触发复杂交互再评估 echarts/recharts）；进程级指标用标准库 runtime（memory/goroutine/GC/uptime，跨平台零依赖）；OS 级（CPU/磁盘/网络）走 Prometheus node-exporter 标准路径（已在 /metrics 文本兼容），gopsutil 因无法在线复核维护状态不作为默认。"
+evidence:
+  types: ["source-code", "prior-research"]
+  primary_sources:
+    - title: "WebUI UI 原语集与自研方向"
+      locator: "webui/src/ui/index.tsx；docs/changes/059/README.md"
+      snapshot: "复核 2026-09"
+    - title: "metrics 端点格式（Prometheus text）"
+      locator: "internal/transport/http/huma.go；ops binding/webui/web/metrics-data.ts"
+      snapshot: "4532445 验证 2026-09"
+researched_at: "2026-09"
+verified_at: "2026-09"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-10"
+  refresh_triggers: ["复杂图表需求立项", "gopsutil 可复核且有强需求", "node-exporter 接入实践"]
+relations:
+  extends: ["R081-001", "059/R059-001"]
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

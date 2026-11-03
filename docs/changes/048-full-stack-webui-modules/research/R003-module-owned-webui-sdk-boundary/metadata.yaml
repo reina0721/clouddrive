@@ -1,0 +1,41 @@
+schema_version: 1
+id: R003
+title: "业务模块自有 WebUI 与 SDK 适配边界"
+question: "在 WebUI 页面继续由业务模块持有的前提下，怎样保证普通新模块不修改 WebUI core，并只在真实新宿主能力出现时扩展 SDK interface/adapter？"
+research_type: architecture-decision
+topics: ["module-owned-webui", "sdk-contract", "adapter", "composition", "sourcepath"]
+keywords: ["@webui/sdk", "module-local adapter", "host-level capability", "SourcePath", "core zero diff"]
+applicable_scenarios: ["048 修订", "新增业务模块 WebUI", "新增 WebUI SDK capability", "Auth/Ops 收口"]
+non_applicable_scenarios: ["远程微前端", "运行时插件", "社区 Nuxt frontend", "无 WebUI 的后端模块"]
+status: active
+summary: "保留 internal/module/<id>/binding/webui/web 的业务 owner 与构建期 SourcePath；用分层 @webui/sdk public contract 隔离 platform。普通模块 core 零修改，模块专属技术留模块，只有 host-level 新能力才单独新增 SDK interface 与 adapter。"
+evidence:
+  types: ["user-decision", "source-code", "project-rules", "prior-research"]
+  primary_sources:
+    - title: "用户修订决策"
+      locator: "current conversation"
+      snapshot: "2026-08-21: WebUI 继续由业务模块持有；普通新模块不得修改 core；缺少新能力/技术契约时才实现 SDK adapter interface"
+    - title: "当前模块 WebUI owner"
+      locator: "internal/module/auth/binding/webui; internal/module/ops/binding/webui"
+      snapshot: "HEAD 13c28bf, verified 2026-08-21"
+    - title: "当前宿主 public contract 与业务泄漏"
+      locator: "webui/src/contracts/index.tsx; webui/src/ui/index.tsx; webui/src/App.tsx; webui/src/styles.css"
+      snapshot: "HEAD 13c28bf, verified 2026-08-21"
+    - title: "当前 Binding 与生成路径"
+      locator: "internal/webui/contract.go; internal/composition/http_contracts.go; internal/composition/webui_registry.go"
+      snapshot: "HEAD 13c28bf, verified 2026-08-21"
+    - title: "仓库第三方封装与模块边界规则"
+      locator: "AGENTS.md; internal/module/README.md; docs/development/application-module-development.md"
+      snapshot: "HEAD 13c28bf, verified 2026-08-21"
+validity:
+  mode: current-decision-and-commit-snapshot
+  review_after: "2026-09-21"
+  refresh_triggers: ["SDK public interface 确认或改变", "模块 WebUI 目录改变", "出现远程模块需求", "SourcePath 构建机制改变"]
+relations:
+  extends: ["R001"]
+  related: ["R002", "047/R001"]
+  supersedes: ["R002"]
+  superseded_by: []
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+report: report.md

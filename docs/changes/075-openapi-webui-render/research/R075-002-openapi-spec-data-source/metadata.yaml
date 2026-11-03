@@ -1,0 +1,55 @@
+schema_version: 1
+id: R075-002
+title: "WebUI 渲染 API 契约的数据源与模块接入机制"
+question: "WebUI 页面如何获得与 api/openapi.yaml 一致的契约，并在 server-hosted / separated / mock 三态数据源环境下零请求一致渲染，同时保持契约单权威、无静默漂移？"
+research_type: current-project
+topics: ["OpenAPI 契约", "WebUI 模块", "代码生成", "mock 数据源", "单权威"]
+keywords: ["api/openapi.yaml", "webui generate", "webui-registry.ts", "Binding", "MockSource", "applicationWebUIModules", "huma OpenAPIPath"]
+applicable_scenarios:
+  - "WebUI 需要渲染当前仓库代码优先生成的公开契约"
+  - "托管构建（模式 B）、分离开发（模式 A）与全 WebUI mock（无后端）三态共用同一数据"
+non_applicable_scenarios:
+  - "需要展示『运行中进程实时契约』而非构建期契约的场景（当前契约本身就是构建期产物，无此需求）"
+  - "需要外部客户端下载 openapi.yaml 的公开端点（属于独立产品决策，本次不做）"
+status: active
+summary: "扩展 webui generate 从 api/openapi.yaml 解析生成 webui/src/generated/openapi-spec.ts（JSON 对象导出）并纳入 --check 严格比对；页面直接 import，mock 模式零请求。不做运行期 fetch / 静态目录复制 / Vite 代理，避免 mock 契约复制与三类环境分叉。"
+evidence:
+  types: ["source-code", "tests"]
+  primary_sources:
+    - title: "api/README.md（契约 authority）"
+      locator: "api/README.md"
+      snapshot: "2026-08-25 HEAD 416ddd0"
+    - title: "internal/transport/http/huma.go（内置 OpenAPI 端点关闭）"
+      locator: "internal/transport/http/huma.go"
+      snapshot: "2026-08-25 HEAD 416ddd0"
+    - title: "internal/composition/webui_registry.go（registry 生成链）"
+      locator: "internal/composition/webui_registry.go"
+      snapshot: "2026-08-25 HEAD 416ddd0"
+    - title: "internal/webui/contract.go（Binding/校验/Manifest）"
+      locator: "internal/webui/contract.go"
+      snapshot: "2026-08-25 HEAD 416ddd0"
+    - title: "internal/composition/http_contracts.go（WebUI 模块汇总点）"
+      locator: "internal/composition/http_contracts.go"
+      snapshot: "2026-08-25 HEAD 416ddd0"
+    - title: "cmd/app/main.go 与 webui/scripts/generate.mjs（webui generate 命令链）"
+      locator: "cmd/app/main.go"
+      snapshot: "2026-08-25 HEAD 416ddd0"
+    - title: ".scaffold/layout.json（布局清单）"
+      locator: ".scaffold/layout.json"
+      snapshot: "2026-08-25 HEAD 416ddd0"
+researched_at: "2026-08-25"
+verified_at: "2026-08-25"
+validity:
+  mode: snapshot
+  review_after: "2026-11-25"
+  refresh_triggers:
+    - "webui 生成链或 layout 清单结构变化（如 registryOutput 迁移、生成命令拆分）"
+    - "契约 authority 变化（如引入第二份契约文件）"
+    - "mock 数据源契约变化（WebUIMockRoute / 全 WebUI mock 机制调整）"
+relations:
+  extends: []
+  related:
+    - R075-001
+  supersedes: []
+  superseded_by: []
+report: report.md

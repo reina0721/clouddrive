@@ -1,0 +1,44 @@
+schema_version: 1
+id: R061-001
+title: "Ops 页面 management 数据通路与默认启动 4xx 根因"
+question: "默认启动（模式 B：Go 服务托管 WebUI）下，为何 Ops `运行状态`/`能力清单` 页请求 /management/* 一直 4xx？两种模式的 management 数据通路分别是什么？WebUI 在没有真实 management 数据的环境（mock/静态预览）应如何表现？"
+research_type: current-project
+topics: ["webui", "ops", "management", "http-composition", "spa-hosting", "multi-env"]
+keywords: ["/management", "readyz", "dashboard", "vite-proxy", "404", "mock", "hosting"]
+applicable_scenarios: ["为当前仓库修复模式 B 下 Ops 页面拿不到 management 数据的问题", "为 WebUI 建立真实/无数据多环境数据源语义"]
+non_applicable_scenarios: ["新增公开业务 API operation 或 contract-gen 契约", "改变 CORS/Session/Origin 安全语义", "容器 runtime 或远端 CI 浏览器验收", "多前端根或子路径部署"]
+status: active
+summary: "模式 B 的业务 listener 从不挂载 /management（024 OPS-REQ-001 与 060 延续），/management 前缀在 SPA 处理器中被排除并返回 JSON 404；而 Ops 页面（internal/module/ops/binding/webui/web）硬编码 /management/* 同源请求，因此默认启动下四个必需探针全部 404；模式 A 依赖 Vite `/management` 代理去前缀转发到 9090 才可用。060 E2E 把 managementStatus=404 当作期望断言，首次暴露该功能缺口。"
+evidence:
+  types: ["source-code", "tests", "configuration"]
+  primary_sources:
+    - title: "Ops 页面数据调用"
+      locator: "internal/module/ops/binding/webui/web/api.ts、operations.ts、DashboardPage.tsx"
+      snapshot: "20a634c"
+    - title: "management HTTP 路由与监听"
+      locator: "internal/module/ops/binding/http/handler.go、internal/module/ops/module.go、internal/composition/generation.go"
+      snapshot: "20a634c"
+    - title: "业务 Router 组成与 /management 排除"
+      locator: "internal/composition/service.go、internal/webuihost/spa.go"
+      snapshot: "20a634c"
+    - title: "模式 A 代理与目标"
+      locator: "webui/vite.config.ts、webui/.env.example"
+      snapshot: "20a634c"
+    - title: "060 实施证据与既有安全决策"
+      locator: "docs/changes/060-webui-hosting-modes/tasks.md（E2E-060-001）、docs/changes/024-production-ready-one-shot-completion/requirements.md（OPS-REQ-001）"
+      snapshot: "20a634c"
+    - title: "默认 404 语义来源"
+      locator: "pkg/httpx/router.go、internal/composition/service_test.go、generation_test.go"
+      snapshot: "20a634c"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: snapshot
+  review_after: "2026-11-22"
+  refresh_triggers: ["业务 Router 挂载 /management facade 之后", "management 路由集合变化", "Vite 代理配置变化", "Ops 页面数据流重构"]
+relations:
+  extends: []
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

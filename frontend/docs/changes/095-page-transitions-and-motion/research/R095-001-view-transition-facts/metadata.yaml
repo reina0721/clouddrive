@@ -1,0 +1,70 @@
+schema_version: 1
+id: R095-001
+title: 'Next.js 16 / React ViewTransition 页面转场能力与项目约束'
+question: '当前 frontend 基座（Next.js 16 + React 19 + Tailwind v4 + HeroUI）应如何实现路由级页面转场与动效分层：运行时是否可用 View Transitions API、类型如何补齐、与项目 Token 与质量门禁约束怎样兼容？'
+research_type: installed-version-and-source-audit
+topics:
+  ['frontend', 'page transitions', 'View Transitions API', 'React ViewTransition', 'motion tokens']
+keywords:
+  [
+    'Next.js 16.3.3',
+    'React 19.2.8',
+    '@types/react 19.2.18',
+    'transitionTypes',
+    'view-transition-class',
+    'prefers-reduced-motion',
+  ]
+applicable_scenarios:
+  ['frontend Web Host 路由转场、动效分层、Design System 动效 Token 扩展与转场验证']
+non_applicable_scenarios:
+  [
+    '组件级透明度动画（ui-element-system §10 禁止文字 Surface 整体 Opacity 动画）',
+    'HeroUI Overlay 打开/关闭动效改造',
+    '引入动画库替代 HeroUI 交互契约',
+    '旧 webui/ 与 old-frontend/ 动效实现迁移',
+  ]
+status: active
+summary: 'Next.js 16 内置 react 快照已在运行时导出 ViewTransition；官方 App Router 无需配置即可使用浏览器 View Transitions API。React 实现不产生额外 DOM，而是临时为子树宿主元素设置 view-transition-name/view-transition-class（转场后恢复），enter/exit 可按 transitionTypes 分类型解析并回退 default。@types/react 稳定版缺少 ViewTransition 类型，需以 react/canary 类型引用补齐。项目动效 Token、reduced-motion 手法与质量门禁均可兼容，无需新增依赖。'
+evidence:
+  types: ['installed-package-manifest', 'installed-source', 'official-documentation', 'lockfile']
+  primary_sources:
+    - title: 'Next.js 16 View transitions guide'
+      locator: 'frontend/apps/web/node_modules/next/dist/docs/01-app/02-guides/view-transitions.md'
+      snapshot: '6f08aa37，官方说明 App Router 无需配置、四种模式、方向滑动 CSS 配方、header 锚定、pointer-events 与 reduced-motion 处理'
+    - title: 'Next.js 16 Upgrade 文档'
+      locator: 'frontend/apps/web/node_modules/next/dist/docs/01-app/02-guides/upgrading/version-16.md'
+      snapshot: '6f08aa37，L116 要求升级 @types/react 到最新以使用 TypeScript'
+    - title: 'Next.js 内置 react 运行时导出'
+      locator: 'frontend/apps/web/node_modules/next/dist/compiled/react/cjs/react.development.js L878; react.react-server.production.js L306'
+      snapshot: '6f08aa37，exports.ViewTransition = REACT_VIEW_TRANSITION_TYPE 存在'
+    - title: 'React ViewTransition 宿主实现'
+      locator: 'frontend/apps/web/node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js L3926-3980、L14325-14540、L24008'
+      snapshot: '6f08aa37，getViewTransitionName/getClassNameByType/getViewTransitionClassName/applyViewTransitionToHostInstances 语义'
+    - title: 'Next Link 与 useRouter transitionTypes 类型'
+      locator: 'frontend/apps/web/node_modules/next/dist/client/link.d.ts L102; dist/shared/lib/app-router-context.shared-runtime.d.ts L14'
+      snapshot: '6f08aa37，transitionTypes?: string[] 且 Link 与 router.push 均支持'
+    - title: '@types/react 类型缺口与会话'
+      locator: 'frontend/node_modules/@types/react/index.d.ts; canary.d.ts 头部说明; package.json exports ./canary'
+      snapshot: '6f08aa37，稳定版无 ViewTransition；canary.d.ts 提供模块增强并文档化 import {} from react/canary 的激活方式'
+    - title: '项目动效 Token 与规则'
+      locator: 'frontend/packages/design-system/src/tokens.css; motion.ts; frontend/docs/ui-element-system.md §10'
+      snapshot: '6f08aa37，fast/standard/slow=120/180/240ms、ease-product；全局 reduced-motion 只覆盖 * 选择器；文字 Surface 不参与整体 Opacity 动画'
+  researched_at: '2026-09-12'
+  verified_at: '2026-09-12'
+validity:
+  mode: version-and-date-bounded
+  review_after: '2026-11-12'
+  refresh_triggers:
+    [
+      'Next.js 或 React 依赖版本变化（尤其 ViewTransition 相关 API 变更）',
+      '@types/react 稳定版补入 ViewTransition 类型（可移除 react/canary 引用）',
+      'View Transitions API 各浏览器支持矩阵变化（transition types 支持）',
+      '项目动效 Token、z-index 或质量门禁规则变化',
+      '出现真实“返回上一级”导航入口（需要引入 nav-back 方向语义）',
+    ]
+relations:
+  extends: []
+  related: ['R094-003']
+  supersedes: []
+  superseded_by: []
+report: report.md

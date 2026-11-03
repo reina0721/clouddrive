@@ -1,0 +1,49 @@
+
+Running 7 tests using 1 worker
+
+(node:32032) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\authentication.spec.ts:12:1 › Anonymous deep link preserves destination; login restores identity; logout protects content (3.2s)
+  ok 2 [chromium] › apps\web\e2e\authentication.spec.ts:37:1 › Registration validates confirmation, displays success and persists only salted password digest (2.8s)
+  x  3 [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 320 (1.6s)
+(node:31068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 390 (4.6s)
+  ok 5 [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 768 (3.2s)
+  ok 6 [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 1440 (3.3s)
+  ok 7 [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 2048 (3.5s)
+
+
+  1) [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 320 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      69 |       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      70 |       await expect(page.getByRole('button', { name: '当前用户', exact: true })).toHaveCount(0);
+    > 71 |       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+         |                                                                                             ^
+      72 |         true,
+      73 |       );
+      74 |       const axe = await new AxeBuilder({ page })
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\authentication.spec.ts:71:93
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\authentication-Authenticat-5b3ad-ts-remain-accessible-at-320-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\authentication-Authenticat-5b3ad-ts-remain-accessible-at-320-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\authentication-Authenticat-5b3ad-ts-remain-accessible-at-320-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\authentication-Authenticat-5b3ad-ts-remain-accessible-at-320-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\authentication.spec.ts:65:3 › Authentication layouts remain accessible at 320 
+  6 passed (23.9s)

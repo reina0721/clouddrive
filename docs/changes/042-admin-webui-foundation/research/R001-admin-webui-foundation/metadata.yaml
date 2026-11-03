@@ -1,0 +1,56 @@
+schema_version: 1
+id: R001
+title: "Admin WebUI 基础与模块接入研究"
+question: "如何沿用当前 Module、Binding、Composition、权限和 i18n 体系建立可选 Admin WebUI，并安全增加本地管理员 Session 认证？"
+research_type: current-project
+topics: ["admin-webui", "module-binding", "composition", "auth", "session", "i18n", "frontend"]
+keywords: ["AdminBinding", "applicationAdminBindings", "manifest", "React", "Vite", "HeroUI", "Tailwind CSS", "Session", "CSRF", "HttpOnly"]
+applicable_scenarios: ["新增 Admin WebUI 宿主", "业务模块按需贡献后台页面", "浏览器本地管理员登录", "Ops 运行看板"]
+non_applicable_scenarios: ["动态远程插件", "Module Federation", "Todo 后台页面", "替换普通 API Bearer JWT", "复用历史 old-backend WebUI"]
+status: active
+summary: "现有显式 Binding 与 Composition 可扩展为可选 Admin Contract；Auth 需新增独立 WebUI Session 路径，Ops 可提供首个真实页面，Todo 无需接入。"
+evidence:
+  types: ["source-code", "tests", "project-docs", "official-docs", "user-decision"]
+  primary_sources:
+    - title: "应用模块开发指南"
+      locator: "docs/development/application-module-development.md"
+      snapshot: "working tree at HEAD 2b9462e plus uncommitted migration, verified 2026-08-21"
+    - title: "应用模块契约"
+      locator: "internal/module/contracts.go"
+      snapshot: "working tree at HEAD 2b9462e plus uncommitted migration, verified 2026-08-21"
+    - title: "应用 HTTP Contract 聚合"
+      locator: "internal/composition/http_contracts.go"
+      snapshot: "working tree at HEAD 2b9462e plus uncommitted migration, verified 2026-08-21"
+    - title: "Auth 模块"
+      locator: "internal/module/auth/module.go"
+      snapshot: "working tree at HEAD 2b9462e plus uncommitted migration, verified 2026-08-21"
+    - title: "Ops 模块"
+      locator: "internal/module/ops/module.go"
+      snapshot: "working tree at HEAD 2b9462e plus uncommitted migration, verified 2026-08-21"
+    - title: "HeroUI React Quick Start"
+      locator: "https://heroui.com/en/docs/react/getting-started/quick-start"
+      snapshot: "verified 2026-08-21"
+    - title: "Vite Getting Started"
+      locator: "https://vite.dev/guide/"
+      snapshot: "verified 2026-08-21"
+    - title: "OWASP Session Management Cheat Sheet"
+      locator: "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html"
+      snapshot: "verified 2026-08-21"
+    - title: "OWASP CSRF Prevention Cheat Sheet"
+      locator: "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html"
+      snapshot: "verified 2026-08-21"
+    - title: "OWASP Password Storage Cheat Sheet"
+      locator: "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html"
+      snapshot: "verified 2026-08-21"
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+validity:
+  mode: snapshot
+  review_after: "2026-11-21"
+  refresh_triggers: ["Module/Binding/Composition 契约改变", "Auth profile 或 operation policy 改变", "HeroUI/Vite 主版本改变", "前置迁移提交内容与当前工作树不一致"]
+relations:
+  extends: ["030", "031", "032", "033", "034"]
+  related: ["041"]
+  supersedes: []
+  superseded_by: []
+report: report.md

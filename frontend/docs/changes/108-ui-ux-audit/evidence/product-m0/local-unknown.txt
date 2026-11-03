@@ -1,0 +1,28 @@
+- button "Open Next.js Dev Tools":
+- alert
+- link "跳到主要内容 / Skip to content":
+  - /url: "#main-content"
+- main:
+  - link "C Community":
+    - /url: /welcome
+    - generic: C
+    - generic: Community
+  - button "切换语言":
+  - button "切换主题":
+  - region "清晰的界面，专注的工作。":
+    - paragraph: clouddrive
+    - heading "清晰的界面，专注的工作。" [level=2]
+    - paragraph: 回到熟悉的工作台，让日常任务、个人偏好和操作反馈井然有序。
+    - list:
+      - listitem: 统一的工作台与导航
+      - listitem: 持续保存的界面偏好
+      - listitem: 清晰、及时的状态反馈
+  - heading "页面不存在" [level=3]
+  - paragraph: 当前地址没有对应页面，请返回工作台选择有效入口。
+  - button "进入工作台":
+    - generic: 进入工作台
+  - complementary:
+    - paragraph: 开发演示模式
+    - paragraph: 这是本地模拟认证，可注册演示账户。请勿使用真实密码。
+    - paragraph: 演示邮箱：demo@community.test
+    - paragraph: 演示密码：CommunityDemo2026!

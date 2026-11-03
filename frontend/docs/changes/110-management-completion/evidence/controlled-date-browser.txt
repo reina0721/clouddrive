@@ -1,0 +1,68 @@
+
+[WebServer] (node:10380) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:24616) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:29420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:28588) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+
+(node:33040) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/4] [chromium] › apps\web\e2e\management-completion.spec.ts:175:3 › Mobile management filters and bulk confirmation remain accessible at 320
+  1) [chromium] › apps\web\e2e\management-completion.spec.ts:175:3 › Mobile management filters and bulk confirmation remain accessible at 320 
+
+    Error: expect(locator).not.toHaveAttribute() failed
+
+    Locator: locator('.ui-field').filter({ has: getByText('开始日期', { exact: true }) }).getByRole('spinbutton', { name: /年|year/i })
+    Expected: not have attribute
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "not toHaveAttribute" with timeout 5000ms
+      - waiting for locator('.ui-field').filter({ has: getByText('开始日期', { exact: true }) }).getByRole('spinbutton', { name: /年|year/i })
+
+
+      194 |     await page.getByRole('button', { name: '清除筛选', exact: true }).click();
+      195 |     await page.getByText('筛选条件', { exact: true }).click();
+    > 196 |     await expect(field.getByRole('spinbutton', { name: /年|year/i })).not.toHaveAttribute('aria-valuenow');
+          |                                                                          ^
+      197 |     await page.goto('/users?pageSize=50');
+      198 |     await page.getByRole('checkbox', { name: '选择当前页', exact: true }).press('Space');
+      199 |     await page.getByRole('button', { name: '批量停用', exact: true }).click();
+        at D:\coder\i721\console-web\apps\web\e2e\management-completion.spec.ts:196:74
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Mobi-e1878-on-remain-accessible-at-320-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\management-completion-Mobi-e1878-on-remain-accessible-at-320-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Mobi-e1878-on-remain-accessible-at-320-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\management-completion-Mobi-e1878-on-remain-accessible-at-320-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:22348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[2/4] [chromium] › apps\web\e2e\management-completion.spec.ts:175:3 › Mobile management filters and bulk confirmation remain accessible at 390
+[3/4] [chromium] › apps\web\e2e\product-system-settings.spec.ts:71:1 › System policy retains keyboard, overlay and accessible layout across sizes and locales
+[4/4] [chromium] › apps\web\e2e\visual.spec.ts:43:1 › 九个 UI Element Family 页面均有独立视觉基线
+  1 failed
+    [chromium] › apps\web\e2e\management-completion.spec.ts:175:3 › Mobile management filters and bulk confirmation remain accessible at 320 
+  3 passed (2.0m)

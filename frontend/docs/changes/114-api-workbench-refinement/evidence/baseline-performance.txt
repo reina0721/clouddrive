@@ -1,0 +1,5 @@
+
+> clouddrive-frontend@0.1.0 performance:check /home/rin/.cache/api-workbench-review/workspace
+> node tooling/check-performance-budget.mjs
+
+Performance budget passed: initial=378704, maxRoute=/page-archetypes/resource-list:445213, union=1343715, css=49152, largest=/home/rin/.cache/api-workbench-review/workspace/apps/web/dist/_next/static/chunks/3ssrbocxvm8yd.js:84658, rawJs=4339855.

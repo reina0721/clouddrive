@@ -1,0 +1,1 @@
+CREATE TABLE navigation_menu_policies (navigation_id VARCHAR(128) PRIMARY KEY, enabled BOOLEAN NOT NULL, parent_override VARCHAR(128) NULL, order_override INT NULL, catalog_revision VARCHAR(64) NOT NULL, version BIGINT UNSIGNED NOT NULL DEFAULT 1, updated_at DATETIME(6) NOT NULL) ENGINE=InnoDB;

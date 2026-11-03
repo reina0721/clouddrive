@@ -1,0 +1,22 @@
+[
+  {
+    "route": "/welcome",
+    "url": "https://console-proxy.admin3808.workers.dev/welcome",
+    "snapshot": "- alert\n- link \"跳到主要内容 / Skip to content\":\n  - /url: \"#main-content\"\n- main:\n  - link \"C Community\":\n    - /url: /welcome\n    - generic: C\n    - generic: Community\n  - button \"切换语言\":\n  - button \"切换主题\":\n  - heading \"欢迎使用 Community\" [level=1]\n  - paragraph: 一个拥有统一界面、导航与个人偏好的后台工作台。\n  - link \"进入工作台\":\n    - /url: /\n  - link \"注册账户\":\n    - /url: /register\n  - complementary:\n    - paragraph: 开发演示模式\n    - paragraph: 这是本地模拟认证，可注册演示账户。请勿使用真实密码。\n    - paragraph: 演示邮箱：demo@community.test\n    - paragraph: 演示密码：CommunityDemo2026!"
+  },
+  {
+    "route": "/login",
+    "url": "https://console-proxy.admin3808.workers.dev/login",
+    "snapshot": "- alert\n- link \"跳到主要内容 / Skip to content\":\n  - /url: \"#main-content\"\n- main:\n  - link \"C Community\":\n    - /url: /welcome\n    - generic: C\n    - generic: Community\n  - button \"切换语言\":\n  - button \"切换主题\":\n  - heading \"欢迎回来\" [level=1]\n  - paragraph: 使用邮箱和密码登录你的工作台。\n  - generic: 邮箱\n  - textbox \"邮箱\"\n  - generic: 密码\n  - textbox \"密码\"\n  - button \"显示密码\":\n  - button \"登录\":\n    - generic: 登录\n  - paragraph:\n    - text: 还没有账户？\n    - link \"注册账户\":\n      - /url: /register?returnTo=%2F\n  - complementary:\n    - paragraph: 开发演示模式\n    - paragraph: 这是本地模拟认证，可注册演示账户。请勿使用真实密码。\n    - paragraph: 演示邮箱：demo@community.test\n    - paragraph: 演示密码：CommunityDemo2026!"
+  },
+  {
+    "route": "/register",
+    "url": "https://console-proxy.admin3808.workers.dev/register",
+    "snapshot": "- alert\n- link \"跳到主要内容 / Skip to content\":\n  - /url: \"#main-content\"\n- main:\n  - link \"C Community\":\n    - /url: /welcome\n    - generic: C\n    - generic: Community\n  - button \"切换语言\":\n  - button \"切换主题\":\n  - heading \"创建你的账户\" [level=1]\n  - paragraph: 填写基本信息，开始使用 Community。\n  - generic: 姓名\n  - textbox \"姓名\"\n  - generic: 邮箱\n  - textbox \"邮箱\"\n  - generic: 密码\n  - textbox \"密码\"\n  - button \"显示密码\":\n  - generic: 使用 12–128 个字符，建议采用独特的长密码。\n  - generic: 确认密码\n  - textbox \"确认密码\"\n  - button \"显示确认密码\":\n  - button \"创建账户\":\n    - generic: 创建账户\n  - paragraph:\n    - text: 已有账户？\n    - link \"前往登录\":\n      - /url: /login?returnTo=%2F\n  - complementary:\n    - paragraph: 开发演示模式\n    - paragraph: 这是本地模拟认证，可注册演示账户。请勿使用真实密码。\n    - paragraph: 演示邮箱：demo@community.test\n    - paragraph: 演示密码：CommunityDemo2026!"
+  },
+  {
+    "route": "/session-expired",
+    "url": "https://console-proxy.admin3808.workers.dev/session-expired",
+    "snapshot": "- alert\n- link \"跳到主要内容 / Skip to content\":\n  - /url: \"#main-content\"\n- main:\n  - link \"C Community\":\n    - /url: /welcome\n    - generic: C\n    - generic: Community\n  - button \"切换语言\":\n  - button \"切换主题\":\n  - heading \"欢迎回来\" [level=1]\n  - paragraph: 使用邮箱和密码登录你的工作台。\n  - region \"会话已过期\":\n    - heading \"会话已过期\" [level=3]\n    - paragraph: 请重新登录，随后会返回刚才的页面。\n  - generic: 邮箱\n  - textbox \"邮箱\"\n  - generic: 密码\n  - textbox \"密码\"\n  - button \"显示密码\":\n  - button \"登录\":\n    - generic: 登录\n  - paragraph:\n    - text: 还没有账户？\n    - link \"注册账户\":\n      - /url: /register?returnTo=%2F\n  - complementary:\n    - paragraph: 开发演示模式\n    - paragraph: 这是本地模拟认证，可注册演示账户。请勿使用真实密码。\n    - paragraph: 演示邮箱：demo@community.test\n    - paragraph: 演示密码：CommunityDemo2026!"
+  }
+]

@@ -1,0 +1,57 @@
+{
+  "reason": "Exclude browser test result archives from the source snapshot; source packages, plugins, licenses and source provenance are retained.",
+  "artifacts": [
+    {
+      "path": "frontend/docs/changes/108-ui-ux-audit/evidence/product-m25/m7-approved-full-sampling-failures.zip",
+      "sha256": "7e69aca72754b7eb9277a92253243e3c830d2f312beb358c3aa82b327c7893b2"
+    },
+    {
+      "path": "frontend/docs/changes/108-ui-ux-audit/evidence/product-m25/m7-backend-sync-batch.zip",
+      "sha256": "c6b32d53d7cf6fbbf700c065a4fc61a3f4f0d05ec7da26f3cc7c56450c5bd9da"
+    },
+    {
+      "path": "frontend/docs/changes/108-ui-ux-audit/evidence/product-m25/m7-batch-sampling-verification.zip",
+      "sha256": "54b1fb9234e6db05e32cfaf0e6f1e90ff66d17b8ef357e639b63951c81db61ea"
+    },
+    {
+      "path": "frontend/docs/changes/108-ui-ux-audit/evidence/product-m25/m7-before-backend-sync.zip",
+      "sha256": "f416e2369c1aad5997b39f173e1ede7fd4a6f066045f5a12f81fc37c196ace3f"
+    },
+    {
+      "path": "frontend/docs/changes/108-ui-ux-audit/evidence/product-m25/m7-final-browser-evidence.zip",
+      "sha256": "5934065fc4c11c4144b812f9bfdd29bad0dcbc3247ee823378088c3b2cd92373"
+    },
+    {
+      "path": "frontend/docs/changes/108-ui-ux-audit/evidence/product-m25/m7-full-before-visual-review/navigation-展开侧栏用同一递归能力呈现-P-0c607-ve-Path-Anchored-Accordion）-chromium/trace.zip",
+      "sha256": "6121fe44de32b436472ab260bb353970efe98283877fb8da53f0849881439cce"
+    },
+    {
+      "path": "frontend/docs/changes/108-ui-ux-audit/evidence/product-m25/m7-full-before-visual-review/navigation-收缩侧栏切换兄弟菜单时同一时刻只有一个-Flyout-且旧菜单不残留-chromium/trace.zip",
+      "sha256": "1d8d40f166c7cde05a6d33c2cd11882d62bdd4cc8a176174b1ca766ced1f2c98"
+    },
+    {
+      "path": "frontend/docs/changes/108-ui-ux-audit/evidence/product-m25/m7-full-before-visual-review/navigation-收缩侧栏的-Hover-Flyout-保持稳定并支持键盘进入-chromium/trace.zip",
+      "sha256": "51bffeecbae8cd5a2a76732b9abf6e882f4a0714c6b655db0e6d5eb937f12969"
+    },
+    {
+      "path": "frontend/docs/changes/108-ui-ux-audit/evidence/product-m25/m7-full-before-visual-review-original.zip",
+      "sha256": "3ce2d3dbefbf6264e044056f316b7c11dcaa9b579741a3abffe817470a68d286"
+    },
+    {
+      "path": "frontend/docs/changes/108-ui-ux-audit/evidence/product-m25/m7-lifecycle-browser-audit-script.zip",
+      "sha256": "38c0dd6edec8a34e141a092cd35ffa38db802facd9ce16636186443a33114c44"
+    },
+    {
+      "path": "frontend/docs/changes/110-management-completion/evidence/browser-approved-artifacts.zip",
+      "sha256": "ec7f3067c8f49d7f508a0155064237f1de673fd6ec7327a37365f7c0f8b1340f"
+    },
+    {
+      "path": "frontend/docs/changes/110-management-completion/evidence/browser-full-artifacts.zip",
+      "sha256": "0fa3068deb2d5429055683e973440aa42ef828c12ff913b45adacf3388d7a44a"
+    },
+    {
+      "path": "frontend/docs/changes/111-account-summary-editors/evidence/browser-full-artifacts.zip",
+      "sha256": "fb2ec947262aa620bf38875d2c58123d0bbcf01d5be7c63039042429adc662dd"
+    }
+  ]
+}

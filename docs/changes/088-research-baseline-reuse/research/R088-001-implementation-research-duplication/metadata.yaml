@@ -1,0 +1,35 @@
+schema_version: 1
+id: R088-001
+title: "实施入口重复研究缺口"
+question: "研究门禁通过后，实施入口是否会重复全量核对代码事实，如何只在证据漂移时定向刷新？"
+research_type: governance
+topics: ["research", "planning", "implementation", "evidence-reuse"]
+keywords: ["research baseline", "refresh_triggers", "drift check", "duplicate research", "implementation validation"]
+applicable_scenarios: ["已确认计划进入实施", "研究快照与当前工作树比较", "失败用例与研究边界区分"]
+non_applicable_scenarios: ["首次研究代码事实", "已命中刷新触发器的定向复核", "修改后必要测试"]
+status: active
+summary: "现有门禁缺少实施入口的增量判定，容易将基线检查扩张为重复研究；应以快照后变更路径与 refresh_triggers 为唯一复研触发依据。"
+evidence:
+  types: ["repository-rules", "change-records", "user-reported-execution-plan", "git-state"]
+  primary_sources:
+    - title: "当前研究优先门禁"
+      locator: "AGENTS.md；docs/research/README.md；docs/changes/013-research-plan-implementation-gate"
+      snapshot: "bf78f1b472399c6af9b031234f846fcdb4d17432，2026-08-28 复核"
+    - title: "087 研究与任务分工"
+      locator: "docs/changes/087-settings-workspace-navigation/research/R087-001-settings-workspace-conflict/report.md；docs/changes/087-settings-workspace-navigation/tasks.md"
+      snapshot: "2026-08-28 当前工作树"
+    - title: "用户提供的 087 实施任务截图"
+      locator: "2026-08-28 当前会话附件"
+      snapshot: "截图显示确认实施时再次列出‘核对当前代码事实’"
+researched_at: "2026-08-28"
+verified_at: "2026-08-28"
+validity:
+  mode: snapshot
+  review_after: "2027-02-28"
+  refresh_triggers: ["AGENTS.md 门禁状态机变化", "研究 metadata 不再记录证据快照或 refresh_triggers", "实施流程引入自动基线验证器"]
+relations:
+  extends: ["R001-012-research-workflow-gap"]
+  related: ["R087-001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

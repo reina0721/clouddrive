@@ -1,0 +1,46 @@
+﻿vite v7.3.6 building client environment for production...
+transforming...
+✓ 1807 modules transformed.
+node : 
+At line:1 char:271
++ ... :CI='true'; node node_modules/vite/bin/vite.js build --outDir $env:TE ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(!) outDir C:\Users\xiaol\AppData\Local\Temp\webui-perf-dist is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+
+rendering chunks...
+computing gzip size...
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/index.html                                0.38 kB │ gzip:   0.28 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/organization-CAAGDMT6.css          1.07 kB │ gzip:   0.39 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/MenusPage-DNTPhWKg.css             1.25 kB │ gzip:   0.38 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/iam-B1xje8Z2.css                   1.79 kB │ gzip:   0.60 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/ops-CNZxX2L2.css                   8.35 kB │ gzip:   1.74 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/index-DRrL67xt.css                34.21 kB │ gzip:   6.83 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/PermissionsPage-1JWFgHBr.js        0.55 kB │ gzip:   0.35 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/zh-CN-DGUPFdsD.js                  0.68 kB │ gzip:   0.38 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/en-US-RfnfTqvz.js                  0.70 kB │ gzip:   0.30 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/zh-CN-Cxzk2oGh.js                  0.97 kB │ gzip:   0.40 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/en-US-Bk1AxpPu.js                  1.03 kB │ gzip:   0.33 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/LoginPage-DHPZeMqL.js              1.04 kB │ gzip:   0.52 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/organization.module-B6KFz5PD.js    1.11 kB │ gzip:   0.45 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/SecurityPage-DLaDc3qd.js           1.25 kB │ gzip:   0.60 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/SetupPage-D0xu8Kv-.js              1.32 kB │ gzip:   0.58 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/PositionsPage-DghsxM9W.js          1.43 kB │ gzip:   0.60 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/iam.module-GSlvbP-z.js             1.85 kB │ gzip:   0.66 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/AssignmentsPage-BcmF21ac.js        1.86 kB │ gzip:   0.80 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/DepartmentsPage-q_b7Ll8y.js        1.91 kB │ gzip:   0.79 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/zh-CN-D0m6LmdP.js                  2.36 kB │ gzip:   0.96 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/en-US-CsbIrlZ4.js                  2.41 kB │ gzip:   0.77 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/MenusPage-t4-9rReK.js              3.08 kB │ gzip:   1.23 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/AccountsPage-C8CmVkY3.js           3.17 kB │ gzip:   1.26 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/RolesPage-DM0hQjCx.js              3.23 kB │ gzip:   1.39 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/CapabilitiesPage-CMY7OvBP.js       6.06 kB │ gzip:   1.94 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/zh-CN-hzjCNKm_.js                  7.41 kB │ gzip:   2.16 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/en-US-cPDMkOAq.js                  7.69 kB │ gzip:   1.85 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/DashboardPage-DSAa8Uz7.js         10.97 kB │ gzip:   2.87 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/ops.module-Dxq2Hom5.js            13.24 kB │ gzip:   4.73 kB
+C:/Users/xiaol/AppData/Local/Temp/webui-perf-dist/assets/index-D1GQsI3S.js                368.30 kB │ gzip: 115.31 kB
+✓ built in 2.52s

@@ -1,0 +1,17 @@
+[
+  {
+    "client": 267,
+    "focus": "tabpanel",
+    "left": 0,
+    "list": {
+      "right": 321,
+      "x": 54
+    },
+    "scroll": 1110,
+    "selected": {
+      "right": 1160,
+      "text": "没有访问权限",
+      "x": 1052
+    }
+  }
+]

@@ -1,0 +1,16 @@
+[WebServer] (node:35184) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:33700) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:35704) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:10856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\product-workbench.spec.ts:4:1 › Product IA retains old links, search targets, page tabs and history (7.1s)
+  ok 2 [chromium] › apps\web\e2e\product-workbench.spec.ts:40:1 › Workbench resumes a real draft; save feedback and unread state share the header source (8.4s)
+  ok 3 [chromium] › apps\web\e2e\product-workbench.spec.ts:72:1 › English dark workbench is usable at mobile, tablet, desktop and wide widths (9.0s)
+
+  3 passed (31.4s)

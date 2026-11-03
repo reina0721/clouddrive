@@ -1,0 +1,82 @@
+
+[WebServer] (node:12420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:30304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:24580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:2364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:17928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/9] [chromium] › apps\web\e2e\sidebar-design.spec.ts:12:1 › Compact rail uses coherent geometry, current route, named groups and focus/hover hints
+  1) [chromium] › apps\web\e2e\sidebar-design.spec.ts:12:1 › Compact rail uses coherent geometry, current route, named groups and focus/hover hints 
+
+    Error: expect(locator).not.toHaveCSS(expected) failed
+
+    Locator:  getByRole('navigation', { name: '主导航' }).getByRole('link', { name: '设置', exact: true })
+    Expected: not "none"
+    Received: "none"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "not toHaveCSS" with timeout 5000ms
+      - waiting for getByRole('navigation', { name: '主导航' }).getByRole('link', { name: '设置', exact: true })
+        13 × locator resolved to <a role="link" tabindex="0" aria-label="设置" href="/settings" data-slot="tooltip-trigger" aria-describedby="react-aria6401087141-_r_6c_" class="tooltip__trigger ui-navigation-icon-trigger">…</a>
+           - unexpected value "none"
+
+
+      36 |   await expect(settings).toBeFocused();
+      37 |   await expect(settings).toHaveCSS('outline-style', 'none');
+    > 38 |   await expect(settings).not.toHaveCSS('box-shadow', 'none');
+         |                              ^
+      39 |   await settings.press('Escape');
+      40 |   await expect(page.getByRole('tooltip')).toBeHidden();
+      41 |   await settings.press('Enter');
+        at D:\coder\i721\console-web\apps\web\e2e\sidebar-design.spec.ts:38:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\sidebar-design-Compact-rai-f96fb-roups-and-focus-hover-hints-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\sidebar-design-Compact-rai-f96fb-roups-and-focus-hover-hints-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\sidebar-design-Compact-rai-f96fb-roups-and-focus-hover-hints-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\sidebar-design-Compact-rai-f96fb-roups-and-focus-hover-hints-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:28592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[2/9] [chromium] › apps\web\e2e\sidebar-design.spec.ts:48:1 › Hover bridge, click pin, second click close and keyboard focus survive pointer departure
+[WebServer] ⨯ The directory at "D:\coder\i721\console-web\apps\web\.next\backend-contract\dev" was deleted.
+[WebServer] 
+[WebServer] Deleting this directory while Next.js is running can lead to undefined behavior. Restarting the server to recover...
+
+
+[WebServer] (node:23240) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[3/9] [chromium] › apps\web\e2e\sidebar-design.spec.ts:91:1 › Mode round trip retains exploration and closes old portal; expanded layout remains intact
+[4/9] [chromium] › apps\web\e2e\sidebar-design.spec.ts:114:1 › Compact rail stays usable at 1024/1440/2560, dark English, short height and text zoom
+[5/9] [chromium] › apps\web\e2e\sidebar-design.spec.ts:152:1 › Mobile Drawer remains expanded, traps focus and restores desktop collapse preference
+[6/9] [chromium] › apps\web\e2e\sidebar-design.spec.ts:194:3 › Touch desktop rail › Tap opens a full submenu and selecting a child navigates and dismisses it
+[7/9] [chromium] › apps\web\e2e\sidebar-design.spec.ts:207:1 › Reduced motion and repeated mode changes keep header and content in their grid column
+[8/9] [chromium] › apps\web\e2e\sidebar-design.spec.ts:229:1 › Icon navigation hint and flyout use the same primitives in the Overlay authority
+[9/9] [chromium] › apps\web\e2e\sidebar-design.spec.ts:253:1 › Standard motion changes width monotonically and keeps header/content naturally aligned
+  1 failed
+    [chromium] › apps\web\e2e\sidebar-design.spec.ts:12:1 › Compact rail uses coherent geometry, current route, named groups and focus/hover hints 
+  8 passed (1.6m)

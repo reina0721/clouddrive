@@ -1,0 +1,52 @@
+schema_version: 1
+change: 057-technology-and-architecture-reassessment
+areas:
+  - id: startup
+    decision: reviewed-no-change
+    reason: 已实施任务不改变命令、配置文件位置、首次使用或服务入口；Application.New 新增静态 Blueprint 校验但无需运维步骤，JWKS lifecycle 仍由原 Supervisor participant 拥有。
+  - id: capability
+    decision: updated
+    documents:
+      - docs/architecture/technology-selection.md
+    reason: 缓存、AuthN、Execution、Serde、限流、CORS、Huma HTTP、otelhttp instrumentation、Data 与静态 Blueprint 均已按成熟方案和 owner/reload 证据收敛；authority 明确区分已实现边界与未来刷新条件。
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/README.md
+      - internal/module/auth/README.md
+      - internal/module/iam/README.md
+      - internal/module/todo/README.md
+      - internal/kernel/app/README.md
+      - pkg/observability/README.md
+      - pkg/database/README.md
+      - internal/kernel/README.md
+    reason: 记录 Auth JWT/JWK 共享刷新与取消语义、IAM 凭据演进所有权、Kernel Execution 同步 memory backend 和受控 retry 观测边界；HTTP 模块以 Huma registration 作为单一契约源；全部 module Data repository 已迁移 direct GORM，旧 generic API 已删除，并限制 ORM 只进入 session bridge 与 module repo Adapter。
+  - id: configuration
+    decision: updated
+    documents:
+      - docs/configuration/README.md
+    reason: 整体实施只删除失效 L1、HTTP retry 与 recovery 配置并同步当前示例和 binding；最终 Blueprint 切片不新增配置键，不改变剩余配置的 reload 或 management listener 语义。
+  - id: operations
+    decision: reviewed-no-change
+    reason: Telemetry lease、exporter lifecycle、diagnostics、Prometheus 与外部 collector 验收边界均保持，现有运行能力矩阵无需改变。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+    reason: Huma 已接管全部 31 个业务 operation 的 typed binding、validation、OpenAPI 与 route registration；项目 OperationGate、Problem 和 operation/policy ownership 保持边界，旧 DSL、dispatcher 与重复 validation 已删除。
+  - id: architecture
+    decision: updated
+    documents:
+      - docs/architecture/technology-selection.md
+      - docs/architecture/README.md
+      - docs/development/application-module-development.md
+      - docs/changes/057-technology-and-architecture-reassessment/README.md
+      - docs/changes/057-technology-and-architecture-reassessment/design.md
+      - docs/changes/057-technology-and-architecture-reassessment/tasks.md
+    reason: R008-R013 已冻结 Config、HTTP、Data、Security、Observability 与 owner/reload 的采用/拒绝结论和接入边界；静态 Blueprint 首个架构切片已完成，Generation 保留动态资源事务职责。
+  - id: documentation
+    decision: updated
+    documents:
+      - docs/README.md
+      - docs/changes/README.md
+    reason: 当前 authority、能力导航、模块指南与 057 证据已随单轨实现同步；文档治理 schema、扫描范围和失败语义未改变。

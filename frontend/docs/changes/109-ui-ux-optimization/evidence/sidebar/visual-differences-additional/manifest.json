@@ -1,0 +1,32 @@
+[
+  {
+    "folder": "01",
+    "name": "ui-elements-dialog-open",
+    "test": "overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium",
+    "baselines": [
+      "apps\\web\\e2e\\overlays.spec.ts-snapshots\\ui-elements-dialog-open-chromium-win32.png"
+    ],
+    "hashes": {
+      "expected": "59b2a60f99c842b94f934ff293e97b66058b8b570ddef82e4ffaa3d240f4acd9",
+      "actual": "9b1b4622c8e68d9bb427e41c6c1be9abe6ffd56a56c47ce2b6ee6a864e345c97",
+      "diff": "88cfa451a4ae1fce8f987b38b3f7463423faa3ea9e59abdcacfc939aecbafdf8"
+    },
+    "requiresApproval": true,
+    "resolution": "Dialog 文字、输入焦点框与边缘存在约 1px 差异；3 次原断言复验均失败。焦点、Escape、Drawer 与 Axe 流程通过。未修改 Dialog 契约；动效关闭仍有差异，原因尚未确定。"
+  },
+  {
+    "folder": "02",
+    "name": "ui-elements-desktop",
+    "test": "visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium",
+    "baselines": [
+      "apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-desktop-chromium-win32.png"
+    ],
+    "hashes": {
+      "expected": "92b64d924a9ed72e3a9709ebd2bd653c232ee49ea88e47d935532a444f728cb0",
+      "actual": "db3d21d7cb249261d9a03ab29902503d436bd2eaa51513a53a7e425295006587",
+      "diff": "d03019a5270feed8323ff1faa87d3efa59f8be4ffb0c3dff5fc59e2fd2a8fd85"
+    },
+    "requiresApproval": true,
+    "resolution": "Sidebar 轴线、Header 图标与目录摘要文字有差异。最近 3 次原断言通过，完整回归曾失败；保留对照供确认，不将偶发通过表述为全量通过。"
+  }
+]

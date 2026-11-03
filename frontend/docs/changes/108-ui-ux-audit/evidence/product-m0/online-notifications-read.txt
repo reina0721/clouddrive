@@ -1,0 +1,99 @@
+- log
+- log
+- alert
+- link "跳到主要内容 / Skip to content":
+  - /url: "#main-content"
+- complementary:
+  - generic: C
+  - paragraph: Community
+  - paragraph: 统一前端基座
+  - navigation "主导航":
+    - paragraph: Universal Foundation
+    - list "Universal Foundation":
+      - link "总览":
+        - /url: /
+        - generic: 总览
+    - paragraph: 系统
+    - list "系统":
+      - link "设置":
+        - /url: /settings
+        - generic: 设置
+      - link "Icon 大全":
+        - /url: /system-tools/icons
+        - generic: Icon 大全
+    - paragraph: 参考资源
+    - list "参考资源":
+      - link "参考资源":
+        - /url: /reference-resources
+        - generic: 参考资源
+    - paragraph: 开发
+    - list "开发":
+      - link "基座能力":
+        - /url: /foundations
+        - generic: 基座能力
+      - link "Motion":
+        - /url: /motion
+        - generic: Motion
+      - button "展开或收起Page Archetypes":
+        - generic: Page Archetypes
+      - button "展开或收起Page Patterns":
+        - generic: Page Patterns
+      - link "状态体系":
+        - /url: /states
+        - generic: 状态体系
+      - button "展开或收起UI Elements":
+        - generic: UI Elements
+  - generic: Architecture Preview
+  - paragraph: React 19 · HeroUI · Tailwind CSS v4
+- banner:
+  - button "收起侧栏":
+  - button "按 Ctrl K 搜索"
+  - button "切换语言":
+  - button "切换主题":
+  - button "通知" [expanded]:
+  - button "当前用户":
+    - generic "Rin": RI
+    - generic: Rin
+- main:
+  - list "面包屑":
+    - link "参考资源":
+      - link "参考资源":
+        - /url: /reference-resources
+    - generic: /
+    - link "参考资源详情" [disabled]
+  - paragraph: 本地演示 · 刷新后恢复示例数据
+  - heading "参考资源详情" [level=1]
+  - paragraph: 详情页从 canonical hierarchy 自动继承列表导航。
+  - button "收藏此页":
+  - button "复制 ID":
+    - generic: 复制 ID
+  - link "返回列表":
+    - /url: /reference-resources
+  - paragraph: resource-d6314bf5-6d4f-4378-ba31-b6a236ac1e88
+  - heading "M0 审计演示资源 已编辑" [level=2]
+  - paragraph: 本地演示 · 刷新后恢复示例数据
+  - generic: 草稿
+  - generic "参考资源详情":
+    - term: 类型
+    - definition: 确定性示例
+    - term: 状态
+    - definition: 草稿
+  - link "编辑此资源":
+    - /url: /reference-resources/edit?id=resource-d6314bf5-6d4f-4378-ba31-b6a236ac1e88
+- button "取消"
+- dialog "通知中心":
+  - heading "通知中心" [level=2]
+  - paragraph: 收纳应用内真实事件反馈；点击条目可标为已读。
+  - button "关闭通知中心" [active]:
+    - generic: ×
+  - list:
+    - button "参考资源已保存 成功 已保存，继续留在编辑页。 04:28":
+      - generic: 参考资源已保存
+      - generic: 成功
+      - generic: 已保存，继续留在编辑页。
+      - generic: 04:28
+    - button "参考资源已保存 成功 已保存，返回资源列表。 04:28":
+      - generic: 参考资源已保存
+      - generic: 成功
+      - generic: 已保存，返回资源列表。
+      - generic: 04:28

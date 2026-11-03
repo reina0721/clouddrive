@@ -1,0 +1,41 @@
+schema_version: 1
+id: R001
+title: "项目规范与可执行门禁审计"
+question: "项目主题文档中的强制规范是否被当前代码、测试、扫描器和交付入口真实命中，哪些表述超出了实际覆盖？"
+research_type: current-project
+topics: ["project-rules", "architecture-gates", "webui", "quality", "release"]
+keywords: ["application module", "configuration ownership", "logging boundary", "lint-architecture", "Verify-Quality", "release", "NOASSERTION"]
+applicable_scenarios: ["新增业务能力", "新增 WebUI 模块", "质量验证", "发布声明", "规范合规审计"]
+non_applicable_scenarios: ["Agent 协作门禁", "外部平台规则", "未执行的生产验收"]
+status: active
+summary: "Go 架构、配置、日志和当前 Auth/Ops WebUI 约束有通过证据；WebUI Node 扫描只覆盖 Auth/Ops，统一 Go quality/release 不运行 WebUI，Apache 源码许可证与 OCI NOASSERTION 未对齐。"
+evidence:
+  types: ["source-code", "tests", "scripts", "workflows", "documentation", "local-validation"]
+  primary_sources:
+    - title: "项目开发与运维规范"
+      locator: "docs/development/application-module-development.md; docs/development/webui.md; docs/development/logging.md; docs/configuration/README.md; docs/operations/build-and-container.md; docs/operations/release.md"
+      snapshot: "HEAD 3d0d537 before 049, verified 2026-08-21"
+    - title: "Go 架构、配置、日志与 WebUI 契约门禁"
+      locator: "internal/kernel/composition/architecture_test.go; internal/composition/configuration_test.go; internal/webui/contract_test.go; internal/composition/webui_registry_test.go"
+      snapshot: "HEAD 3d0d537, go test ./... passed 2026-08-21"
+    - title: "WebUI Node 扫描范围"
+      locator: "webui/scripts/lint-architecture.mjs; webui/scripts/lint-modules.mjs; webui/scripts/lint-i18n-contract.mjs"
+      snapshot: "HEAD 3d0d537, each enumerates Auth/Ops roots or selectors, verified 2026-08-21"
+    - title: "质量与发布 workflow"
+      locator: "scripts/Verify-Quality.ps1; scripts/verify-quality.sh; .github/workflows/quality.yml; .github/workflows/release.yml"
+      snapshot: "HEAD 3d0d537, no Node or WebUI steps, verified 2026-08-21"
+    - title: "许可证事实"
+      locator: "LICENSE; NOTICE; README.md; Dockerfile"
+      snapshot: "HEAD 3d0d537, Apache-2.0 source declaration and OCI NOASSERTION label, verified 2026-08-21"
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+validity:
+  mode: current-code-and-document-snapshot
+  review_after: "2026-09-21"
+  refresh_triggers: ["新增业务或 WebUI 模块", "修改前端扫描器", "修改质量或 release workflow", "修改许可证或 Dockerfile label", "改变项目 authority"]
+relations:
+  extends: ["040-R001"]
+  related: ["017", "041", "048"]
+  supersedes: []
+  superseded_by: []
+report: report.md

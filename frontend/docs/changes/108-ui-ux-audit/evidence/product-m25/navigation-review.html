@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" />
+  <title>M2–M7 联合验收与导航视觉审阅</title>
+  <h1>M2–M7 联合验收与导航视觉审阅</h1>
+  <p>
+    新增用户管理、角色管理、审计日志和系统配置。个人账户、通知中心、个人偏好归入个人；开发中心入口与原
+    URL 保留，可滚动访问。桌面导航、手机导航打开态已获批准并复测通过；Hover Flyout
+    也已获得完整清单确认，全部视觉审阅已收口，不调整差异阈值。
+  </p>
+  <p>
+    最终完整 pnpm check 退出码 0：427 项单元测试、350/350
+    浏览器测试及静态、构建、性能、格式、文档门禁全部通过。 展开导航、手机打开态与 Hover Flyout
+    按人工授权更新；兄弟菜单在修正侧栏内滚动后通过原基线，无需更新。
+    用户、角色、通知、审计、注册策略、Backend HTTP 契约、响应式、键盘、Axe
+    与旧功能回归均通过本轮扫描。 实际后端仍待联调；本页保留全部导航视觉审阅的原始对照。
+  </p>
+  <h2>桌面导航（已批准）</h2>
+  <table>
+    <tr>
+      <th>已批准的 M1 基线</th>
+      <th>当前 M2–M6 实现</th>
+    </tr>
+    <tr>
+      <td><img src="m26-surface-shell-parent-navigation-expected.png" alt="M1 桌面导航基线" /></td>
+      <td><img src="m26-surface-shell-parent-navigation-actual.png" alt="当前桌面导航" /></td>
+    </tr>
+  </table>
+  <details>
+    <summary>桌面差异图</summary>
+    <img src="m26-surface-shell-parent-navigation-diff.png" alt="桌面导航差异" />
+  </details>
+  <h2>手机打开态导航（已批准）</h2>
+  <table>
+    <tr>
+      <th>已批准的 M1 基线</th>
+      <th>当前 M2–M6 实现</th>
+    </tr>
+    <tr>
+      <td><img src="m26-mobile-navigation-open-expected.png" alt="M1 手机导航基线" /></td>
+      <td><img src="m26-mobile-navigation-open-actual.png" alt="当前手机导航" /></td>
+    </tr>
+  </table>
+  <details>
+    <summary>手机差异图</summary>
+    <img src="m26-mobile-navigation-open-diff.png" alt="手机导航差异" />
+  </details>
+  <h2>收缩侧栏 Hover Flyout（完整清单已批准）</h2>
+  <p>
+    新增管理与个人导航后，UI Elements 触发器下移；菜单继续由现役浮层按视口约束定位。
+    菜单内容、字体、尺寸与操作保持原实现，主页面仍在顶部。悬停进入、点击跳转、Enter 打开、Escape
+    关闭及焦点恢复断言通过。左下角 N 是 Next
+    开发工具标记，与旧测试环境右下角位置不同，生产部署不包含该工具。
+  </p>
+  <table>
+    <tr>
+      <th>已批准的 M1 基线</th>
+      <th>当前 M2–M7 实现</th>
+    </tr>
+    <tr>
+      <td>
+        <img
+          src="m27-surface-shell-compact-flyout-expected.png"
+          alt="原收缩侧栏 Hover Flyout 基线"
+        />
+      </td>
+      <td>
+        <img src="m27-surface-shell-compact-flyout-actual.png" alt="当前收缩侧栏 Hover Flyout" />
+      </td>
+    </tr>
+  </table>
+  <details>
+    <summary>Hover Flyout 差异图</summary>
+    <img src="m27-surface-shell-compact-flyout-diff.png" alt="Hover Flyout 差异" />
+  </details>
+  <p>
+    兄弟菜单截图差异已通过正确的侧栏内滚动消除：主页面 scrollY=0，原基线通过，没有更新。
+    视觉认可不替代最终门禁；本页集中保存完整扫描后的全部导航审阅记录。
+  </p>
+</html>

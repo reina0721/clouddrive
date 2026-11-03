@@ -1,0 +1,41 @@
+schema_version: 1
+id: R001
+title: "Setup 输入错误被误报为 500"
+question: "为什么 CORS 和数据库修复后，WebUI setup 仍返回 internal_server_error？"
+research_type: current-project
+topics: ["webui", "auth", "setup", "validation", "error-contract"]
+keywords: ["internal_server_error", "validatePassword", "normalizeUsername", "writeServiceError", "minPasswordRunes"]
+applicable_scenarios: ["WebUI 首次设置", "用户名输入校验", "密码长度校验", "Auth HTTP 错误呈现"]
+non_applicable_scenarios: ["登录凭据枚举防护", "密码强度算法变更", "统一迁移全部 HTTP problem 响应"]
+status: active
+summary: "Setup 的用户名和密码校验返回普通 error，HTTP presenter 未识别后按未知故障映射为 500；当前数据库结构正确且为空，运行日志中的零耗时 500 与该前置校验路径一致。"
+evidence:
+  types: ["user-runtime-log", "runtime-database", "source-code", "frontend-source"]
+  primary_sources:
+    - title: "用户运行日志"
+      locator: "conversation runtime log"
+      snapshot: "2026-08-21 07:02:27 setup POST returned 500 internal_server_error with zero reported duration"
+    - title: "当前本地 SQLite schema"
+      locator: ".data/app.db sqlite_master"
+      snapshot: "2026-08-21: version 4; webui_users and webui_sessions exist; both row counts are zero"
+    - title: "WebUI Auth Service 校验"
+      locator: "internal/module/auth/webuiauth/service.go:normalizeUsername,validatePassword"
+      snapshot: "2026-08-21: invalid username/password length return anonymous fmt errors; password range is 15..128 runes"
+    - title: "WebUI Auth HTTP 错误映射"
+      locator: "internal/module/auth/webuiauth/http.go:writeServiceError"
+      snapshot: "2026-08-21: only locked/setup_closed/invalid_credentials are typed; every other error becomes 500"
+    - title: "Setup 页面"
+      locator: "webui/src/pages/SetupPage.tsx"
+      snapshot: "2026-08-21: no visible password range, no input length attributes, and raw backend code is displayed"
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+validity:
+  mode: snapshot
+  review_after: "2026-11-21"
+  refresh_triggers: ["WebUI Auth validation changes", "Auth HTTP error response changes", "Setup page form changes", "global problem presenter migration"]
+relations:
+  extends: ["045"]
+  related: ["024"]
+  supersedes: []
+  superseded_by: []
+report: report.md

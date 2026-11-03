@@ -1,0 +1,74 @@
+
+> clouddrive-frontend@0.1.0 check D:\coder\i721\console-web
+> pnpm foundation:check && pnpm architecture:check && pnpm dependency:check && pnpm codegen:plugins:check && pnpm codegen:design:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm performance:check && pnpm test:browser && pnpm format:check && pnpm docs:check
+
+
+> clouddrive-frontend@0.1.0 foundation:check D:\coder\i721\console-web
+> node tooling/check-foundation-fixtures.mjs && node tooling/check-foundation-governance.mjs && node tooling/check-tailwind-sources.mjs
+
+Foundation fixtures passed: 14 cases.
+Tailwind source coverage fixtures passed: 8 cases.
+Foundation governance passed for 12 workspaces and 11 contract owners.
+Tailwind source coverage passed: entry + 2 @source roots cover all TSX-bearing workspaces.
+
+> clouddrive-frontend@0.1.0 architecture:check D:\coder\i721\console-web
+> node tooling/check-boundaries-fixtures.mjs && node tooling/check-boundaries.mjs
+
+Boundary fixtures passed: 18 cases.
+Architecture checks passed for 508 source files.
+
+> clouddrive-frontend@0.1.0 dependency:check D:\coder\i721\console-web
+> node tooling/check-dependencies.mjs
+
+Dependency governance passed for 25 governed dependencies.
+
+> clouddrive-frontend@0.1.0 codegen:plugins:check D:\coder\i721\console-web
+> node tooling/plugin-codegen/codegen.mjs --check
+
+Plugin codegen is fresh.
+
+> clouddrive-frontend@0.1.0 codegen:design:check D:\coder\i721\console-web
+> node tooling/runtime-codegen/codegen.mjs --check
+
+[runtime-codegen] fresh packages/design-system/src/tokens.css
+[runtime-codegen] fresh packages/design-system/src/motion.css
+[runtime-codegen] 全部 Artifact fresh。
+
+> clouddrive-frontend@0.1.0 lint D:\coder\i721\console-web
+> eslint . --max-warnings 0
+
+
+> clouddrive-frontend@0.1.0 typecheck D:\coder\i721\console-web
+> pnpm -r --if-present typecheck
+
+Scope: 12 of 13 workspace projects
+packages/types typecheck$ tsc --noEmit
+packages/i18n typecheck$ tsc --noEmit
+packages/state-foundation typecheck$ tsc --noEmit
+packages/schemas typecheck$ tsc --noEmit
+packages/types typecheck: Done
+packages/i18n typecheck: Done
+packages/state-foundation typecheck: Done
+packages/schemas typecheck: Done
+packages/core typecheck$ tsc --noEmit
+packages/form-foundation typecheck$ tsc --noEmit
+packages/ui-adapter typecheck$ tsc --noEmit
+packages/core typecheck: Done
+packages/form-foundation typecheck: Done
+packages/ui-adapter typecheck: Done
+packages/plugin-framework typecheck$ tsc --noEmit
+packages/surface-foundation typecheck$ tsc --noEmit
+packages/plugin-framework typecheck: Done
+packages/surface-foundation typecheck: Done
+surfaces typecheck$ tsc --noEmit
+surfaces typecheck: Done
+apps/web typecheck$ next typegen && tsc --noEmit
+apps/web typecheck: Generating route types...
+apps/web typecheck: ✓ Types generated successfully
+apps/web typecheck: e2e/motion-progressive.spec.ts(120,28): error TS4112: This member cannot have an 'override' modifier because its containing class '(Anonymous class)' does not extend another class.
+apps/web typecheck: Failed
+D:\coder\i721\console-web\apps\web:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @clouddrive/web@0.1.0 typecheck: `next typegen && tsc --noEmit`
+Exit status 2
+ ELIFECYCLE  Command failed with exit code 2.
+ ELIFECYCLE  Command failed with exit code 2.

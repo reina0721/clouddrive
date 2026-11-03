@@ -1,0 +1,41 @@
+schema_version: 1
+id: R002
+title: "Core RBAC、安全语义与策略引擎选择"
+question: "账号权限首版应采用哪个 RBAC 子集，权限与 Session 变更怎样 fail closed，是否应引入 Casbin？"
+research_type: technology-selection
+topics: ["RBAC", "authorization", "session-security", "password", "Casbin"]
+keywords: ["Core RBAC", "user-role assignment", "permission-role assignment", "deny by default", "session invalidation", "Casbin watcher"]
+applicable_scenarios: ["053 权限模型", "角色权限管理", "Session 权限变更", "策略引擎选型"]
+non_applicable_scenarios: ["角色继承", "职责分离", "ABAC", "多租户", "外部 IAM"]
+status: active
+summary: "首版采用无层级的 Core RBAC，权限只经角色授予并由服务端每请求校验；权限或密码变化撤销受影响 Session。Casbin 能执行复杂模型但不管理账号/角色实体且多实例同步需额外组件，当前精确 operation 权限场景不引入。"
+evidence:
+  types: ["standard", "official-security-guidance", "official-source", "current-project-source"]
+  primary_sources:
+    - title: "NIST RBAC FAQ 与 Core RBAC 组成"
+      locator: "https://csrc.nist.gov/Projects/role-based-access-control/faqs"
+      snapshot: "official page, verified 2026-08-21"
+    - title: "OWASP Authorization Cheat Sheet"
+      locator: "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html"
+      snapshot: "official current page, verified 2026-08-21"
+    - title: "OWASP Session Management Cheat Sheet"
+      locator: "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html"
+      snapshot: "official current page, verified 2026-08-21"
+    - title: "OWASP Password Storage Cheat Sheet"
+      locator: "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html"
+      snapshot: "official current page, verified 2026-08-21"
+    - title: "Apache Casbin official repository and role manager/watcher documentation"
+      locator: "https://github.com/apache/casbin; https://casbin.apache.org/docs/role-managers/; https://v3.casbin.org/docs/watchers"
+      snapshot: "official repository/docs, verified 2026-08-21"
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+validity:
+  mode: dated-primary-source
+  review_after: "2026-11-21"
+  refresh_triggers: ["需要角色继承/deny/ABAC/多租户", "引入多实例权限缓存", "Casbin becomes required", "OWASP or NIST guidance materially changes"]
+relations:
+  extends: ["042/R001"]
+  related: ["024/R002", "048/R001", "053/R001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

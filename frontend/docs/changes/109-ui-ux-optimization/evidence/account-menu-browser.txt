@@ -1,0 +1,17 @@
+
+> clouddrive-frontend@0.1.0 test:browser C:\rin\coder\i0721\console-web
+> playwright test "apps/web/e2e/account-menu.spec.ts"
+
+
+Running 8 tests using 1 worker
+
+  ok 1 [chromium] › apps\web\e2e\account-menu.spec.ts:49:3 › Account menu keeps identity, groups and language selection usable at 320 (2.8s)
+  ok 2 [chromium] › apps\web\e2e\account-menu.spec.ts:49:3 › Account menu keeps identity, groups and language selection usable at 390 (2.7s)
+  ok 3 [chromium] › apps\web\e2e\account-menu.spec.ts:49:3 › Account menu keeps identity, groups and language selection usable at 1440 (2.9s)
+  ok 4 [chromium] › apps\web\e2e\account-menu.spec.ts:49:3 › Account menu keeps identity, groups and language selection usable at 2048 (2.9s)
+  ok 5 [chromium] › apps\web\e2e\account-menu.spec.ts:86:1 › Account submenu keyboard returns focus; theme supports system and persisted choices (3.5s)
+  ok 6 [chromium] › apps\web\e2e\account-menu.spec.ts:135:1 › Dark English expanded text and Reduced Motion keep preference overlays accessible (1.6s)
+  ok 7 [chromium] › apps\web\e2e\account-menu.spec.ts:175:1 › Hover crosses into submenu safely; a sticky header remains anchored after scrolling (1.8s)
+  ok 8 [chromium] › apps\web\e2e\account-menu.spec.ts:195:1 › Touch selection and short viewport use the same nested overlay lifecycle (1.8s)
+
+  8 passed (20.9s)

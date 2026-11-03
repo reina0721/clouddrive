@@ -1,0 +1,131 @@
+
+> clouddrive-frontend@0.1.0 test:browser D:\coder\i721\console-web
+> playwright test "apps/web/e2e/product-system-settings.spec.ts" "apps/web/e2e/product-management-backend.spec.ts" "apps/web/e2e/overlays.spec.ts" "apps/web/e2e/visual.spec.ts" "--grep" "System policy retains|Backend M2|Toast 与 Data|Toast、Destructive"
+
+[WebServer] (node:13556) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:29504) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:8812) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:31828) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:13080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\overlays.spec.ts:234:1 › Toast 与 Data 状态可通过确定性 URL 直接验证 (7.0s)
+  x  2 [chromium] › apps\web\e2e\product-system-settings.spec.ts:70:1 › System policy retains keyboard, overlay and accessible layout across sizes and locales (10.8s)
+(node:17588) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [chromium] › apps\web\e2e\visual.spec.ts:129:1 › Toast、Destructive Confirm 与 Compact Density 开启态进入视觉矩阵 (5.7s)
+(node:21984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  ok 4 [backend-contract] › apps\web\e2e\product-management-backend.spec.ts:4:1 › Backend M2–M5 uses proposed REST/CSRF contracts, preserves conflict drafts and synchronizes notifications (26.9s)
+
+
+  1) [chromium] › apps\web\e2e\product-system-settings.spec.ts:70:1 › System policy retains keyboard, overlay and accessible layout across sizes and locales 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#6757d0",
+    +               "contrastRatio": 4.45,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#e9e6f8",
+    +               "fontSize": "10.5pt (14px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.45 (foreground color: #e9e6f8, background color: #6757d0, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<button data-slot=\"button\" class=\"button button--md bu...\" data-rac=\"\" type=\"button\" tabindex=\"0\" data-react-aria-pres...=\"true\" id=\"react-aria5426733794...\">",
+    +                 "target": Array [
+    +                   "#react-aria5426733794-_r_4d_",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.45 (foreground color: #e9e6f8, background color: #6757d0, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<button data-slot=\"button\" class=\"button button--md bu...\" data-rac=\"\" type=\"button\" tabindex=\"0\" data-react-aria-pres...=\"true\" id=\"react-aria5426733794...\">",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           "#react-aria5426733794-_r_4d_",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      129 |             .analyze()
+      130 |         ).violations,
+    > 131 |       ).toEqual([]);
+          |         ^
+      132 |       await saveEvidenceScreenshot(page, {
+      133 |         path: testInfo.outputPath(
+      134 |           `system-policy-${english ? 'en-dark' : 'zh-light'}-${width}-confirm.png`,
+        at D:\coder\i721\console-web\apps\web\e2e\product-system-settings.spec.ts:131:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\product-system-settings-Sy-1832d-ut-across-sizes-and-locales-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\product-system-settings-Sy-1832d-ut-across-sizes-and-locales-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\product-system-settings-Sy-1832d-ut-across-sizes-and-locales-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\product-system-settings-Sy-1832d-ut-across-sizes-and-locales-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\product-system-settings.spec.ts:70:1 › System policy retains keyboard, overlay and accessible layout across sizes and locales 
+  3 passed (1.1m)
+ ELIFECYCLE  Command failed with exit code 1.

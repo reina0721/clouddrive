@@ -1,0 +1,74 @@
+schema_version: 1
+id: R094-002
+title: '当前新前端 UI 体系、依赖与页面缺口审计'
+question: 'frontend 当前已经实现哪些 UI 基础设施，真实调用和门禁证明了什么；哪些缺口会阻碍形成完整且可替换 HeroUI 的后台管理 UI Elements 体系？'
+research_type: current-project-and-technology-audit
+topics:
+  [
+    'frontend',
+    'React 19',
+    'HeroUI v3',
+    'UI Adapter',
+    'design tokens',
+    'showcase',
+    'reference pages',
+  ]
+keywords:
+  [
+    'packages/ui-adapter',
+    'packages/design-system',
+    'HeroUI 3.2.4',
+    'PageLayout',
+    'DataTable',
+    'no-op action',
+    'visual regression',
+  ]
+applicable_scenarios: ['frontend UI 基础设施完善、真实页面迁移、Showcase 与质量门禁']
+non_applicable_scenarios:
+  ['根 webui 重构', '后端 API 与业务模块', 'frontend 接入 Go build、Docker 或 release']
+status: active
+summary: 'HeroUI 隔离、Token、Form/Overlay/Data/State 和 Reference 证据已成立；缺口集中在身份/导航/分页/Toast/Confirm/Card anatomy/Radio/集合支撑、无行为控件、页面私有基础元素与全页截图稳定性。'
+evidence:
+  types:
+    [
+      'source-code',
+      'repository-history',
+      'installed-dependency-source',
+      'official-documentation',
+      'tests',
+      'build-output',
+    ]
+  primary_sources:
+    - title: '当前 frontend 源码与文档'
+      locator: 'frontend/packages；frontend/apps；frontend/docs；frontend/tooling'
+      snapshot: '22bf5d786ece18cd9ad5913deca4d4706f3e6508，2026-08-30'
+    - title: '当前 Git 历史与工作区'
+      locator: 'git log/status -- frontend'
+      snapshot: 'HEAD 22bf5d7；frontend/AGENTS.md 仅标题为用户既有修改'
+    - title: '已安装 HeroUI React 包'
+      locator: 'frontend/packages/ui-adapter/node_modules/@heroui/react/package.json'
+      snapshot: '@heroui/react 3.2.4，MIT，导出 Avatar/Breadcrumbs/ButtonGroup/Link/Pagination/ProgressBar/Spinner/Toast 等'
+    - title: 'HeroUI v3 官方组件文档'
+      locator: 'https://heroui.com/en/docs/react/components'
+      snapshot: '2026-08-30 复核 Avatar、Breadcrumbs、ButtonGroup、Pagination、ProgressBar、Spinner、Link、Toast'
+    - title: 'frontend 完整质量基线'
+      locator: 'cd frontend && pnpm check'
+      snapshot: '2026-08-30：架构/依赖/lint/typecheck/unit/build/performance 通过；Playwright 17/18，通过项覆盖状态、数据、Overlay、Axe；reference full-page screenshot 在并发全量运行中稳定性失败，随后单 worker 定向复跑 1/1 通过'
+researched_at: '2026-08-30'
+verified_at: '2026-08-30'
+validity:
+  mode: snapshot
+  review_after: '2026-10-30'
+  refresh_triggers:
+    [
+      'packages/ui-adapter、packages/design-system 或 PageLayout 在确认前发生相关修改',
+      'HeroUI/Tailwind/React 版本变化',
+      'frontend 产品范围或 Host 边界变化',
+      '出现新的真实业务页面或数据源',
+    ]
+relations:
+  extends: []
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

@@ -1,0 +1,53 @@
+schema_version: 1
+id: R062-002
+title: "「骨架 + 注入点」承载架构与候选对比（自研扩展 vs 微前端运行时 vs headless 交互库）"
+question: "把当前 WebUI 从「route/menu/locale/mock 四类注入面」升级为「分区骨架 + 类型化注入点 + 统一交互/权限契约」时，应当继续扩展现有自研静态插拔机制，还是引入成熟第三方（微前端运行时：single-spa/qiankun/Module Federation；无头交互组件：Radix/headless-ui/shadcn；CSS 体系：Tailwind）？结论的收益、边界和验证证据是什么？"
+research_type: external-comparison
+topics: ["webui", "micro-frontend", "plugin-architecture", "headless-components", "design-system", "static-pluggability", "architecture-assessment"]
+keywords: ["module federation", "single-spa", "qiankun", "radix ui", "headless ui", "shadcn", "tailwind", "runtime-plugin", "generated registry", "manifest"]
+applicable_scenarios:
+  - "评估当前自研静态插拔机制是否需要被成熟方案替换"
+  - "评估骨架注入点采用 typed facets 而非万能容器/Service Locator"
+  - "评估交互状态链是否引入无头组件库或以项目自有原语 + APG 对齐实现"
+non_applicable_scenarios:
+  - "把运行时远程模块、热安装、多前端独立发布作为本次目标"
+  - "为不存在真实用例的跨模块 UI 复用提前抽象"
+  - "以流行度或示例数量代替收益判断"
+status: active
+summary: "结论为「保留并演进自研静态插拔机制（单轨）」，并借用成熟无头组件与 WAI-ARIA APG 的交互状态模式作为行为契约参考（不作为依赖）。微前端运行时（single-spa/qiankun/Module Federation）与项目多个已确认边界（048 否决目录扫描与运行时远程模块、056 否决第二套路由与动态页面、059 否决运行时插件与 UI 运行时）直接冲突，引入它们需要重建签名/CSP/版本协商/资源隔离，纯属为未立项目标付成本；headless 库（Radix/headless-ui）解决的是对话框/菜单/聚焦管理的通用模式，而宿主已在这些细节上完成 059 收口，引入价值是模式参考而非代码复用；Tailwind 已在 059 明确否决。typed facets + 生成 registry + Manifest 投影是现有结构的自然扩展，工作量可控、与质量链（architecture lint/generate:check/E2E/视觉）闭环兼容。"
+evidence:
+  types: ["source-code", "documentation", "external-references", "tests"]
+  primary_sources:
+    - title: "当前插拔语义与 SDK 边界的既有决策"
+      locator: "docs/changes/048-full-stack-webui-modules/README.md（核心决策）、docs/changes/059-webui-shell-experience-upgrade/design.md（2.4 可插拔语义、10 依赖结论）、docs/changes/056-navigation/README.md（实施门禁）"
+      snapshot: "b36dcc6..eb895e0"
+    - title: "项目技术选型与架构复核基线"
+      locator: "docs/architecture/technology-selection.md（决策原则、抽象与接入边界）、docs/changes/057-technology-and-architecture-reassessment/README.md"
+      snapshot: "eb895e0"
+    - title: "现有生成/装载链路实现"
+      locator: "internal/composition/webui_registry.go、webui/src/App.tsx、webui/src/components/AppShell.tsx"
+      snapshot: "eb895e0"
+    - title: "项目路由/菜单/权限现有契约"
+      locator: "internal/webui/contract.go、internal/module/iam/binding/webui/binding.go"
+      snapshot: "eb895e0"
+    - title: "无头组件与可访问交互参考（模式参考，不引入）"
+      locator: "WAI-ARIA Authoring Practices Guide（APG：dialog/menu/toolbar/button 状态与键盘契约）；Radix UI / Headless UI 官方文档（state/disabled/focus 模式）"
+      snapshot: "2026-08-24 公开文档"
+    - title: "微前端与运行时插件候选（评估后不引入）"
+      locator: "single-spa 官方文档；qiankun 官方文档；Module Federation 官方文档（webpack/vite）"
+      snapshot: "2026-08-24 公开文档"
+researched_at: "2026-08-24"
+verified_at: "2026-08-24"
+validity:
+  mode: snapshot
+  review_after: "2026-11-24"
+  refresh_triggers:
+    - "出现真实的多前端独立发布、远程模块或跨团队独立部署目标"
+    - "模块数量增长导致静态 registry 构建期成本无法接受（需量化证据）"
+    - "宿主交互细节出现无法以自研原语覆盖的屏障（需真实用例）"
+relations:
+  extends: []
+  related: ["R062-001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

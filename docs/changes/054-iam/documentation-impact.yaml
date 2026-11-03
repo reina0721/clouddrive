@@ -1,0 +1,47 @@
+schema_version: 1
+change: 054-iam
+areas:
+  - id: repository
+    decision: updated
+    documents:
+      - README.md
+    reason: 说明 IAM 已成为本地账号、凭据、Session 与 Core RBAC 的当前实现。
+  - id: startup
+    decision: updated
+    documents:
+      - docs/getting-started/first-use.md
+      - docs/getting-started/local-development.md
+    reason: 首次启动改为 IAM setup，示例只使用临时数据库与环境变量注入 setup token。
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+      - docs/getting-started/webui.md
+      - docs/development/webui.md
+    reason: IAM 独立拥有认证、安全、账号、角色和权限页面，并要求可见菜单 namespace 按授权状态加载。
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/README.md
+      - internal/module/auth/README.md
+      - internal/module/iam/README.md
+    reason: 冻结 IAM 与 Auth 所有权边界，以及 IAM 对 Catalog、Migration、HTTP 与 WebUI 的贡献。
+  - id: capability
+    decision: updated
+    documents:
+      - docs/operations/runtime-capabilities.md
+      - docs/operations/security.md
+      - docs/operations/migration-and-rollback.md
+    reason: 记录 stateful Session、Argon2id、owner 不变量、Catalog 对账和独立 IAM migration set。
+  - id: configuration
+    decision: updated
+    documents:
+      - docs/configuration/README.md
+      - config.example.yaml
+    reason: 单轨移除 auth.local，并增加 iam.local 安全预算与 setup token 注入约束。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+      - api/openapi.yaml
+    reason: 生成 IAM setup、Session、账号、角色、关系和权限目录 typed HTTP 契约。

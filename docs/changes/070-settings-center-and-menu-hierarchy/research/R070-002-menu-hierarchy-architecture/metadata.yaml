@@ -1,0 +1,31 @@
+schema_version: 1
+id: R070-002
+title: "设置中心模块与菜单层级「双向归属」的架构升级候选"
+question: "为满足「实现设置中心 + WebUI 自带/业务模块双向互为上下级」，比较承载候选：（a）设置中心归属：新业务模块 vs 宿主平台页；（b）菜单契约升级：仅放开跨 owner ParentID vs 额外引入宿主导航声明 HostNavigation；（c）Notifications 深度：前端偏好 vs 新增后端存储；（d）派生设计思路如何记录与规范化。"
+research_type: external-comparison
+topics: ["webui", "navigation", "menu-hierarchy", "settings", "host-navigation", "module-boundary", "architecture-upgrade"]
+keywords: ["HostNavigation", "跨 owner", "ParentID", "settings module", "notifications", "双向归属", "retainMenuWithVisibleParents"]
+applicable_scenarios:
+  - "设置中心作为业务模块落地"
+  - "菜单层级契约支持跨 owner 父子引用与宿主导航分组"
+non_applicable_scenarios:
+  - "在宿主 SDK 内实现业务设置逻辑（模块边界回归）"
+  - "为通知偏好引入后端存储/消息系统（当前无真实通知用例）"
+status: active
+summary: "推荐组合：a) 设置中心 = 新业务模块 settings（`internal/module/settings`，四子页 + 两级菜单，页面由模块持有，符合既有边界）；b) 契约升级 = 放开 Navigation.ParentID 跨 owner 引用（无环沿用）+ 新增宿主导航声明 `HostNavigation`（owner=host，供平台分组/平台页作为业务模块页的父级），实现双向归属；c) Notifications = 前端偏好（localStorage，明确无后端存储，记录为候选），不引入通知存储；d) 派生思路：以 settings.center 为第一个双向实例，把「双向归属」规范写入 webui 开发指南（分组 owner 与页面 owner 解耦、无环/顺序/图标门禁复用、落地页可加载门禁沿用）。收益：结构最小、门禁可复用、演示真实；成本：契约/生成链/测试/文档一次性升级。"
+evidence:
+  types: ["source-code", "tests", "documentation"]
+  primary_sources:
+    - title: "契约 owner 约束与无环门禁"
+      locator: "internal/webui/contract.go（validateBindings 984-988/970-989；NavigationPolicySnapshot parents 无环 631-680；retainMenuWithVisibleParents）"
+      snapshot: "d9b151f"
+    - title: "模块边界与页面持有原则"
+      locator: "docs/development/application-module-development.md、docs/development/webui.md（业务页面由模块持有、宿主不装业务）、docs/development/webui.md 063 菜单层级分类"
+      snapshot: "d9b151f"
+    - title: "设置中心参考形态"
+      locator: "https://shadcn-admin.netlify.app/settings（Profile/Account/Appearance/Notifications）"
+      snapshot: "2026-08-26 公开 demo"
+researched_at: "2026-08-26"
+verified_at: "2026-08-26"
+refresh_triggers:
+  - "菜单契约或宿主导航能力变化"

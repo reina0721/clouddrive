@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>设置语义续审视觉对照</title>
+    <style>
+      body {
+        font: 16px/1.6 system-ui;
+        margin: 2rem;
+        color: #1c2333;
+        background: #f5f6fa;
+      }
+      section {
+        padding: 1rem;
+        background: white;
+        margin: 1rem 0;
+      }
+      .comparison {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+      }
+      figure {
+        margin: 0;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+      h2 {
+        font-size: 1rem;
+        overflow-wrap: anywhere;
+      }
+      @media (max-width: 800px) {
+        .comparison {
+          grid-template-columns: 1fr;
+        }
+        body {
+          margin: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>设置语义续审视觉对照</h1>
+    <p>
+      2026-10-09
+      最终产品代码完整运行；每组依次为旧基线、当前实际画面、差异。点击原图查看。未更新自动快照或阈值，包含此前提交尚待人工验收的变化。
+    </p>
+    <p><a href="../index.html">八分类当前画面</a></p>
+    <section>
+      <h2>01 · surface-shell-compact-flyout</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="01/expected.png"><img loading="lazy" src="01/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="01/actual.png"><img loading="lazy" src="01/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="01/diff.png"><img loading="lazy" src="01/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>02 · surface-shell-compact-sibling-swap</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="02/expected.png"><img loading="lazy" src="02/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="02/actual.png"><img loading="lazy" src="02/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="02/diff.png"><img loading="lazy" src="02/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>03 · ui-elements-command-open</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="03/expected.png"><img loading="lazy" src="03/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="03/actual.png"><img loading="lazy" src="03/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="03/diff.png"><img loading="lazy" src="03/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>04 · ui-elements-date-picker-open</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="04/expected.png"><img loading="lazy" src="04/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="04/actual.png"><img loading="lazy" src="04/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="04/diff.png"><img loading="lazy" src="04/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>05 · ui-elements-menu-open</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="05/expected.png"><img loading="lazy" src="05/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="05/actual.png"><img loading="lazy" src="05/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="05/diff.png"><img loading="lazy" src="05/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>06 · ui-elements-popover-open</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="06/expected.png"><img loading="lazy" src="06/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="06/actual.png"><img loading="lazy" src="06/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="06/diff.png"><img loading="lazy" src="06/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>07 · ui-elements-tooltip-open</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="07/expected.png"><img loading="lazy" src="07/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="07/actual.png"><img loading="lazy" src="07/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="07/diff.png"><img loading="lazy" src="07/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>08 · ui-elements-combobox-open</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="08/expected.png"><img loading="lazy" src="08/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="08/actual.png"><img loading="lazy" src="08/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="08/diff.png"><img loading="lazy" src="08/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>09 · ui-elements-select-open</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="09/expected.png"><img loading="lazy" src="09/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="09/actual.png"><img loading="lazy" src="09/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="09/diff.png"><img loading="lazy" src="09/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>10 · page-archetypes-overview-desktop</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="10/expected.png"><img loading="lazy" src="10/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="10/actual.png"><img loading="lazy" src="10/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="10/diff.png"><img loading="lazy" src="10/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>11 · page-patterns-collections-desktop</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="11/expected.png"><img loading="lazy" src="11/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="11/actual.png"><img loading="lazy" src="11/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="11/diff.png"><img loading="lazy" src="11/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>12 · ui-elements-family-actions-selection</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="12/expected.png"><img loading="lazy" src="12/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="12/actual.png"><img loading="lazy" src="12/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="12/diff.png"><img loading="lazy" src="12/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>13 · ui-elements-family-feedback</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="13/expected.png"><img loading="lazy" src="13/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="13/actual.png"><img loading="lazy" src="13/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="13/diff.png"><img loading="lazy" src="13/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>14 · ui-elements-family-forms</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="14/expected.png"><img loading="lazy" src="14/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="14/actual.png"><img loading="lazy" src="14/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="14/diff.png"><img loading="lazy" src="14/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>15 · ui-elements-family-identity-display</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="15/expected.png"><img loading="lazy" src="15/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="15/actual.png"><img loading="lazy" src="15/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="15/diff.png"><img loading="lazy" src="15/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>16 · ui-elements-family-navigation</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="16/expected.png"><img loading="lazy" src="16/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="16/actual.png"><img loading="lazy" src="16/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="16/diff.png"><img loading="lazy" src="16/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>17 · ui-elements-family-overlays</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="17/expected.png"><img loading="lazy" src="17/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="17/actual.png"><img loading="lazy" src="17/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="17/diff.png"><img loading="lazy" src="17/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>18 · ui-elements-family-status-async</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="18/expected.png"><img loading="lazy" src="18/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="18/actual.png"><img loading="lazy" src="18/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="18/diff.png"><img loading="lazy" src="18/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>19 · mobile-navigation-open</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="19/expected.png"><img loading="lazy" src="19/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="19/actual.png"><img loading="lazy" src="19/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="19/diff.png"><img loading="lazy" src="19/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>20 · ui-elements-mobile-dark-en</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="20/expected.png"><img loading="lazy" src="20/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="20/actual.png"><img loading="lazy" src="20/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="20/diff.png"><img loading="lazy" src="20/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>21 · ui-elements-desktop</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="21/expected.png"><img loading="lazy" src="21/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="21/actual.png"><img loading="lazy" src="21/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="21/diff.png"><img loading="lazy" src="21/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>22 · reference-desktop</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="22/expected.png"><img loading="lazy" src="22/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="22/actual.png"><img loading="lazy" src="22/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="22/diff.png"><img loading="lazy" src="22/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>23 · reference-ultrawide</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="23/expected.png"><img loading="lazy" src="23/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="23/actual.png"><img loading="lazy" src="23/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="23/diff.png"><img loading="lazy" src="23/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>24 · overview-desktop</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="24/expected.png"><img loading="lazy" src="24/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="24/actual.png"><img loading="lazy" src="24/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="24/diff.png"><img loading="lazy" src="24/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>25 · settings-desktop</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="25/expected.png"><img loading="lazy" src="25/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="25/actual.png"><img loading="lazy" src="25/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="25/diff.png"><img loading="lazy" src="25/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>26 · reference-multi-select</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="26/expected.png"><img loading="lazy" src="26/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="26/actual.png"><img loading="lazy" src="26/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="26/diff.png"><img loading="lazy" src="26/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+    <section>
+      <h2>27 · ui-elements-toast-compact</h2>
+      <div class="comparison">
+        <figure>
+          <figcaption>expected</figcaption>
+          <a href="27/expected.png"><img loading="lazy" src="27/expected.png" alt="expected" /></a>
+        </figure>
+        <figure>
+          <figcaption>actual</figcaption>
+          <a href="27/actual.png"><img loading="lazy" src="27/actual.png" alt="actual" /></a>
+        </figure>
+        <figure>
+          <figcaption>diff</figcaption>
+          <a href="27/diff.png"><img loading="lazy" src="27/diff.png" alt="diff" /></a>
+        </figure>
+      </div>
+    </section>
+  </body>
+</html>

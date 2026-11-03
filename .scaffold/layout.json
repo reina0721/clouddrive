@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "roots": {
+    "webui": "frontend",
+    "modules": "internal/module",
+    "tools": ".tools/bin",
+    "release": "dist"
+  },
+  "webui": {
+    "moduleFacet": "binding/webui/web",
+    "source": "frontend/apps/web/src",
+    "platformStyles": "frontend/packages/design-system/src/tokens.css",
+    "registryOutput": "frontend/surfaces/generated/catalog/catalog.ts",
+    "specOutput": "frontend/apps/web/src/generated/native-openapi.json"
+  },
+  "generatedArtifacts": {
+    "openapi": "api/openapi.yaml",
+    "operationInventory": "internal/transport/http/api/operation_inventory.gen.go"
+  }
+}

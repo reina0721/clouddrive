@@ -1,0 +1,35 @@
+schema_version: 1
+id: R089-001
+title: "当前方案产物结构缺口"
+question: "如何确保每个新方案都有面向客户的需求、面向技术人员的详细设计和可勾选任务清单，并支持大量内容按目录扩展？"
+research_type: governance
+topics: ["scheme-artifacts", "requirements", "detailed-design", "task-checklist"]
+keywords: ["requirements directory", "design directory", "customer-facing requirements", "detailed design", "markdown checkbox"]
+applicable_scenarios: ["新建任务级方案", "需求或详细设计需要拆分", "记录方案实施完成状态"]
+non_applicable_scenarios: ["无副作用且不形成方案的只读问答", "历史变更文档的批量迁移"]
+status: active
+summary: "现行规则把需求和设计固定为单文件，且 tasks 状态未强制 checkbox；新方案应改用 requirements/、design/ 和 checkbox tasks.md。"
+evidence:
+  types: ["repository-rules", "change-records", "user-decision", "git-state"]
+  primary_sources:
+    - title: "当前方案产物规则"
+      locator: "AGENTS.md；docs/changes/README.md"
+      snapshot: "ccea826bc156163f862904bdbb33d54d65fb0861，2026-08-28 复核"
+    - title: "012 大型方案拆分案例"
+      locator: "docs/changes/012-business-module-architecture"
+      snapshot: "ccea826bc156163f862904bdbb33d54d65fb0861，2026-08-28 复核"
+    - title: "用户对方案产物受众与结构的明确要求"
+      locator: "2026-08-28 当前会话"
+      snapshot: "需求面向客户；设计面向技术人员且需要详细设计；任务为完成清单；需求和设计应使用文件夹承载大量内容"
+researched_at: "2026-08-28"
+verified_at: "2026-08-28"
+validity:
+  mode: snapshot
+  review_after: "2027-02-28"
+  refresh_triggers: ["任务级变更目录 authority 迁移", "方案产物受众或固定类型发生变化", "文档系统引入结构化方案生成器"]
+relations:
+  extends: ["R001-012-research-workflow-gap"]
+  related: ["R088-001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

@@ -1,0 +1,44 @@
+schema_version: 1
+id: R002
+title: "后端真实能力清单"
+question: "当前后端为管理控制台提供了哪些真实能力?"
+research_type: current-project
+topics: ["backend", "capability-map", "iam", "organization", "ops"]
+keywords: ["operation", "permission", "rbac", "management", "openapi"]
+applicable_scenarios: ["WebUI 产品架构重构的后端能力基线", "前端页面与后端能力映射"]
+non_applicable_scenarios: ["外部系统接入评估", "历史 old-backend/ 目录"]
+status: active
+summary: "后端能力由 auth/iam/organization/navigation/todo 五个 HTTP 契约模块与 ops 管理面组成,共 55 个 operation;IAM(账号/角色/权限/会话/API-Token/MFA)、Organization(部门/岗位/分配)、Navigation(菜单策略)承担管理控制台全部数据能力,Auth 提供低敏审计与 management scope,WebUI 本身是声明式托管组件(manifest + SPA),配置入口为 webui.hosting 与 iam.local 等节。"
+evidence:
+  types: ["source-code", "openapi", "docs"]
+  primary_sources:
+    - title: "OpenAPI 契约与模块 binding"
+      locator: "api/openapi.yaml, internal/module"
+      snapshot: "c3a23c0"
+    - title: "operation inventory 生成物"
+      locator: "internal/transport/http/api/operation_inventory.gen.go"
+      snapshot: "c3a23c0"
+    - title: "权限目录汇总点与 composition"
+      locator: "internal/composition/http_contracts.go, internal/permission/catalog.go"
+      snapshot: "c3a23c0"
+    - title: "运行能力矩阵"
+      locator: "docs/operations/runtime-capabilities.md"
+      snapshot: "c3a23c0"
+    - title: "迁移集汇总点"
+      locator: "internal/composition/migration.go, internal/module/*/binding/migration"
+      snapshot: "c3a23c0"
+    - title: "配置示例与 WebUI 托管"
+      locator: "config.example.yaml, internal/webuihost, internal/webui"
+      snapshot: "c3a23c0"
+researched_at: "2026-08-27"
+verified_at: "2026-08-27"
+validity:
+  mode: snapshot
+  review_after: "2026-09-27"
+  refresh_triggers: ["新增/删除模块或 operation", "权限键目录变化", "迁移集新增"]
+relations:
+  extends: []
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

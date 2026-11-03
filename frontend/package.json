@@ -1,0 +1,53 @@
+{
+  "name": "clouddrive-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.22.0",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "dev": "node tooling/plugin-codegen/dev.mjs",
+    "build": "pnpm codegen:plugins && pnpm codegen:backend && pnpm codegen:contracts && pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "test:browser": "playwright test",
+    "test:visual:update": "playwright test --update-snapshots",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "architecture:check": "node tooling/check-boundaries-fixtures.mjs && node tooling/check-boundaries.mjs",
+    "foundation:check": "node tooling/check-foundation-fixtures.mjs && node tooling/check-foundation-governance.mjs && node tooling/check-tailwind-sources.mjs",
+    "dependency:check": "node tooling/check-dependencies.mjs",
+    "performance:check": "node tooling/check-performance-budget.mjs",
+    "codegen:plugins": "node tooling/plugin-codegen/codegen.mjs",
+    "codegen:plugins:check": "node tooling/plugin-codegen/codegen.mjs --check",
+    "codegen:plugins:watch": "node tooling/plugin-codegen/watch.mjs",
+    "codegen:design": "node tooling/runtime-codegen/codegen.mjs",
+    "codegen:design:check": "node tooling/runtime-codegen/codegen.mjs --check",
+    "codegen:design:watch": "node tooling/runtime-codegen/watch.mjs",
+    "docs:check": "node tooling/check-docs.mjs",
+    "check": "pnpm foundation:check && pnpm architecture:check && pnpm dependency:check && pnpm codegen:plugins:check && pnpm codegen:backend:check && pnpm codegen:contracts:check && pnpm codegen:design:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm performance:check && pnpm test:browser && pnpm format:check && pnpm docs:check",
+    "codegen:backend": "node tooling/backend-catalog.mjs",
+    "codegen:backend:check": "node tooling/backend-catalog.mjs --check",
+    "codegen:contracts": "node --experimental-transform-types tooling/console-contracts.mjs",
+    "codegen:contracts:check": "node --experimental-transform-types tooling/console-contracts.mjs --check"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@clouddrive/config": "workspace:*",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^10.9.1",
+    "eslint-plugin-jsx-a11y-x": "^0.2.0",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.5",
+    "globals": "^17.11.0",
+    "prettier": "^3.7.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.0"
+  }
+}

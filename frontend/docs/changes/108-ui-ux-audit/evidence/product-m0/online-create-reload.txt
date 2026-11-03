@@ -1,0 +1,67 @@
+- alert
+- link "跳到主要内容 / Skip to content":
+  - /url: "#main-content"
+- complementary:
+  - generic: C
+  - paragraph: Community
+  - paragraph: 统一前端基座
+  - navigation "主导航":
+    - paragraph: Universal Foundation
+    - list "Universal Foundation":
+      - link "总览":
+        - /url: /
+        - generic: 总览
+    - paragraph: 系统
+    - list "系统":
+      - link "设置":
+        - /url: /settings
+        - generic: 设置
+      - link "Icon 大全":
+        - /url: /system-tools/icons
+        - generic: Icon 大全
+    - paragraph: 参考资源
+    - list "参考资源":
+      - link "参考资源":
+        - /url: /reference-resources
+        - generic: 参考资源
+    - paragraph: 开发
+    - list "开发":
+      - link "基座能力":
+        - /url: /foundations
+        - generic: 基座能力
+      - link "Motion":
+        - /url: /motion
+        - generic: Motion
+      - button "展开或收起Page Archetypes":
+        - generic: Page Archetypes
+      - button "展开或收起Page Patterns":
+        - generic: Page Patterns
+      - link "状态体系":
+        - /url: /states
+        - generic: 状态体系
+      - button "展开或收起UI Elements":
+        - generic: UI Elements
+  - generic: Architecture Preview
+  - paragraph: React 19 · HeroUI · Tailwind CSS v4
+- banner:
+  - button "收起侧栏":
+  - button "按 Ctrl K 搜索"
+  - button "切换语言":
+  - button "切换主题":
+  - button "通知":
+  - button "当前用户":
+    - generic "Rin": RI
+    - generic: Rin
+- main:
+  - list "面包屑":
+    - link "参考资源":
+      - link "参考资源":
+        - /url: /reference-resources
+    - generic: /
+    - link "参考资源详情" [disabled]
+  - paragraph: 本地演示 · 刷新后恢复示例数据
+  - heading "参考资源详情" [level=1]
+  - paragraph: 详情页从 canonical hierarchy 自动继承列表导航。
+  - link "返回列表":
+    - /url: /reference-resources
+  - generic: 未找到此资源. 资源标识缺失或无效，请返回列表选择资源。

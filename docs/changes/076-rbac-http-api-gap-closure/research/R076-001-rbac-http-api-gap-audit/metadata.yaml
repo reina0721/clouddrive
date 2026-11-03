@@ -1,0 +1,44 @@
+schema_version: 1
+id: R076-001
+title: "RBAC/HTTP API 未闭环缺口核实：org security 断点、反向查询、分页、过滤与密码策略配置"
+question: "当前 IAM RBAC 管理与 HTTP API 相对「可运营闭环」存在的五类未闭环/缺口（org 模块认证断点、角色/权限反向查询、会话分页、账号过滤、密码策略配置）事实如何、消费方是谁、改动面多大，以及各自应采取的修复路径与不采纳项是什么？"
+research_type: current-project
+topics: ["iam", "rbac", "http-api", "organization", "webui", "auth", "security"]
+keywords: ["bearerAuth", "webuiSession", "OperationGate", "reverse-query", "pagination", "filter", "password-policy", "CSRF", "乐观锁"]
+applicable_scenarios: ["IAM RBAC 管理 HTTP API 闭环补齐设计", "org 模块托管会话认证断点修复", "角色/权限反向影响分析 API", "会话列表分页与过滤", "账号列表多维过滤", "密码策略配置化"]
+non_applicable_scenarios: ["多实例一致性验证", "MFA/外部身份/OIDC/LDAP", "数据权限（部门数据范围）", "角色继承/deny/SoD/domain", "自助找回密码与 IP 限流（非本批）", "改动物理删除/恢复流程"]
+status: active
+summary: "核实结论：Gap1 为真实运行断点——org 全部 operation 声明 bearerAuth（internal/module/organization/binding/http/huma.go:140,143），operation gate 对 bearerAuth 仅映射 Bearer 来源（internal/composition/http_api.go:28），而默认托管模式（060/061）下浏览器前端 requestJSON 以 credentials:include 只携带 Session Cookie（webui/src/contracts/index.tsx:105-125），org 页面真实 API 请求会被 401 拒绝；且 org mutation 无任何 CSRF/Origin 中间件（与 navigation 的 mutationGuard 先例不一致），迁移 webuiSession 必须同步补齐。Gap2 的 role→accounts 底层查询 ListAccountRolesByRole 已存在（iam/repo/unit.go:244），permission→roles 可基于 ListActiveRolePermissions 新增过滤查询；与 IAM/navigation/auth 一致的只读 API 可复用 iam:role:read/iam:permission:read，不新增权限键。Gap3 会话接口 ListSessionsByAccount 无 offset/limit/count，HTTP 返回全量且分页字段为伪值；Gap4 账号过滤仅关键字 LIKE。Gap5 密码最小/最大长度硬编码（iam/model/model.go:17-18），configbinding.Local 已有安全预算配置先例，可将策略字段并入并默认保持 15/128，复杂度开关默认关闭以免破坏存量密码兼容。全部改动落在既有模块边界、不改变 Casbin model/授权 authority、不新增权限键。"
+evidence:
+  types: ["source-code", "tests", "generated-artifact", "prior-research"]
+  primary_sources:
+    - title: "Organization HTTP 契约与 WebUI 页面"
+      locator: "internal/module/organization/binding/http/huma.go; internal/module/organization/binding/webui/web/api.ts"
+      snapshot: "3505352 验证 2026-09"
+    - title: "IAM 模型/服务/repo/HTTP 契约/config binding"
+      locator: "internal/module/iam/{model/model.go,service/service.go,repo/unit.go,binding/http/{contract.go,huma.go},binding/config/config.go}"
+      snapshot: "3505352 验证 2026-09"
+    - title: "operation gate 与 security 来源映射"
+      locator: "internal/composition/{identity_access.go,http_api.go,iam.go,generation.go}; internal/transport/http/{huma.go,routes.go}; internal/transport/http/humabinding/binding.go"
+      snapshot: "3505352 验证 2026-09"
+    - title: "WebUI 前端请求身份与 CSRF 模式"
+      locator: "webui/src/contracts/index.tsx; internal/module/iam/binding/webui/web/api.ts; internal/module/navigation/binding/http/huma.go"
+      snapshot: "3505352 验证 2026-09"
+    - title: "公开 HTTP 契约产物"
+      locator: "api/openapi.yaml"
+      snapshot: "3505352 验证 2026-09"
+    - title: "既有研究与变更判定"
+      locator: "docs/changes/{055,058,060,061,064,066}/README.md 与 requirements/design；docs/operations/security.md；docs/architecture/technology-selection.md"
+      snapshot: "复核 2026-09"
+researched_at: "2026-09"
+verified_at: "2026-09"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-10"
+  refresh_triggers: ["operation gate 的 security 来源映射变化", "org/navigation 模块 HTTP 契约 security profile 变化", "IAM repo 查询或 migration 变化", "密码策略进入配置或迁移", "WebUI 前端请求身份（cookie/CSRF）机制变化", "多实例/外部身份立项"]
+relations:
+  extends: ["053/R002", "053/R005", "054/R001", "055/R001", "056/R001", "058/R001", "058/R003", "064/R064-001", "066/R066-001", "075/R075-008"]
+  related: ["022/R006"]
+  supersedes: []
+  superseded_by: []
+report: report.md

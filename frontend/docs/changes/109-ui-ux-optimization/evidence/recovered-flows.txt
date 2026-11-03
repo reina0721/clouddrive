@@ -1,0 +1,60 @@
+
+Running 12 tests using 1 worker
+
+
+
+(node:29880) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/12] [chromium] › apps\web\e2e\confirm-reset.spec.ts:11:1 › 重置前确认默认开：点重置弹确认，取消保留修改，确认恢复初始
+[2/12] [chromium] › apps\web\e2e\confirm-reset.spec.ts:32:1 › 关闭 重置前确认：点重置直接恢复初始
+[3/12] [chromium] › apps\web\e2e\create-destination.spec.ts:12:1 › 创建成功去向默认返回列表（操作偏好 → createSuccessDestination）
+[4/12] [chromium] › apps\web\e2e\create-destination.spec.ts:20:1 › 创建成功去向=继续创建：提交后留在本页并清空表单
+[5/12] [chromium] › apps\web\e2e\leave-confirm.spec.ts:12:1 › 参考资源编辑：未保存修改离开时弹出确认；取消留在原地，确认后离开
+  1) [chromium] › apps\web\e2e\leave-confirm.spec.ts:12:1 › 参考资源编辑：未保存修改离开时弹出确认；取消留在原地，确认后离开 ───────
+
+    Error: locator.click: Error: strict mode violation: getByRole('button', { name: '取消', exact: true }) resolved to 2 elements:
+        1) <button tabindex="-1" aria-label="取消" id="react-aria5627790476-_r_1d_"></button> aka locator('#react-aria5627790476-_r_1d_')
+        2) <button data-rac="" tabindex="0" slot="close" type="button" aria-label="取消" data-react-aria-pressable="true" id="react-aria5627790476-_r_1g_" data-slot="alert-dialog-close-trigger" class="close-button close-button--default alert-dialog__close-trigger static inline-flex min-h-control w-auto min-w-20 items-center justify-center rounded-control border border-border bg-surface px-4 text-sm font-semibold leading-none text-ink shadow-sm hover:bg-surface-muted">取消</button> aka getByRole('alertdialog', { name: '离开当前页面？' }).getByLabel('取消')
+
+    Call log:
+      - waiting for getByRole('button', { name: '取消', exact: true })
+
+
+      20 |   await expect(page.getByRole('heading', { name: '离开当前页面？' })).toBeVisible();
+      21 |   // 取消 → 留在编辑页（URL 未变、无导航）。
+    > 22 |   await page.getByRole('button', { name: '取消', exact: true }).click();
+         |                                                               ^
+      23 |   await expect(page).toHaveURL(/\/reference-resources\/edit/);
+      24 |   // 再次离开 → 确认 → 导航到详情页。
+      25 |   await page.getByRole('link', { name: '返回详情' }).click();
+        at D:\coder\i721\console-web\apps\web\e2e\leave-confirm.spec.ts:22:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\leave-confirm-参考资源编辑：未保存修改离开时弹出确认；取消留在原地，确认后离开-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\leave-confirm-参考资源编辑：未保存修改离开时弹出确认；取消留在原地，确认后离开-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\leave-confirm-参考资源编辑：未保存修改离开时弹出确认；取消留在原地，确认后离开-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\leave-confirm-参考资源编辑：未保存修改离开时弹出确认；取消留在原地，确认后离开-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:31492) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[6/12] [chromium] › apps\web\e2e\leave-confirm.spec.ts:30:1 › 操作偏好关闭「离开未保存内容时提醒」后，dirty 离开不再弹确认
+[7/12] [chromium] › apps\web\e2e\navigation-noop.spec.ts:32:1 › 当前 Route 再次点击自身：URL 不变、页面不重新导航、Progress 不出现
+[8/12] [chromium] › apps\web\e2e\navigation-noop.spec.ts:69:1 › 同一 Leaf 重复点击不触发 RSC 重新导航请求
+[9/12] [chromium] › apps\web\e2e\navigation-noop.spec.ts:99:1 › A → B 真实导航：Progress 正常开始并最终收敛为 0
+[10/12] [chromium] › apps\web\e2e\navigation-noop.spec.ts:111:1 › 快速连点不同路由（A→B→C）：最终 URL 正确且 Progress 收敛为 0
+[11/12] [chromium] › apps\web\e2e\navigation-noop.spec.ts:132:1 › 移动端导航抽屉：同路由 Leaf 关闭抽屉但不改变 URL、不出现 Progress
+[12/12] [chromium] › apps\web\e2e\navigation-noop.spec.ts:150:1 › Compact Flyout：同路由 Leaf 关闭 Flyout 且不触发导航
+  1 failed
+    [chromium] › apps\web\e2e\leave-confirm.spec.ts:12:1 › 参考资源编辑：未保存修改离开时弹出确认；取消留在原地，确认后离开 ────────
+  11 passed (1.0m)

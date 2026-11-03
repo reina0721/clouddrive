@@ -1,0 +1,41 @@
+schema_version: 1
+id: R002
+title: "全仓可配置化候选审计"
+question: "除 WebUI 布局外，当前根 Go 工程与交付工具还有哪些值应集中声明或配置化，哪些字面量应保留在语义 owner 内？"
+research_type: current-project
+topics: ["configuration", "hardcoded-values", "build-artifacts", "development-endpoints", "runtime-policy"]
+keywords: ["config.yaml", "api/openapi.yaml", "operation_inventory.gen.go", ".tools/bin", "dist", "5173", "8080", "9090"]
+applicable_scenarios: ["052 设计计划", "构建路径迁移", "复制脚手架", "WebUI 本地联调", "配置 ownership 审查"]
+non_applicable_scenarios: ["old-backend", "独立 frontend 集成", "修改业务协议", "立即改变安全策略"]
+status: active
+summary: "除 WebUI 布局外，生成产物、工具/release 目录、WebUI 开发 endpoint 与默认 config path 存在重复 authority；身份值、安全策略、health/JWKS 调优和独立 frontend 需要后续独立研究，协议与局部字面量不应机械外置。"
+evidence:
+  types: ["source-code", "configuration", "scripts", "workflow", "project-documentation", "prior-research"]
+  primary_sources:
+    - title: "应用与 config init 默认路径"
+      locator: ".scaffold/identity.yaml; cmd/app/main.go; internal/kernel/cli/config.go"
+      snapshot: "HEAD 9368cefd3ca7c8a45d21ca0798ce217ee54cffd4, verified 2026-08-21"
+    - title: "API 生成物路径"
+      locator: "internal/tools/contract-gen/main.go; internal/transport/http/api/generate.go; scripts/Verify-Quality.ps1; scripts/verify-quality.sh; .github/workflows/quality.yml; .goreleaser.yaml"
+      snapshot: "HEAD 9368cefd3ca7c8a45d21ca0798ce217ee54cffd4, verified 2026-08-21"
+    - title: "工具与 release 目录"
+      locator: "scripts/{Install-Tools.ps1,install-tools.sh,Release-Local.ps1,release-local.sh}; .github/workflows/{quality,release}.yml; .gitignore; .dockerignore"
+      snapshot: "HEAD 9368cefd3ca7c8a45d21ca0798ce217ee54cffd4, verified 2026-08-21"
+    - title: "运行配置与内部策略候选"
+      locator: "internal/kernel/host.go; internal/module/auth/{binding/config/config.go,webuiauth/service.go,adapter/jwt/verifier.go}; config.example.yaml"
+      snapshot: "HEAD 9368cefd3ca7c8a45d21ca0798ce217ee54cffd4, verified 2026-08-21"
+    - title: "项目范围 authority"
+      locator: "docs/repository-scope.md; docs/configuration/README.md; docs/changes/032-i18n-config-boundary/research/R001-current-i18n-defaults-and-path/report.md"
+      snapshot: "current authority, rechecked 2026-08-21"
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-09-21"
+  refresh_triggers: ["构建或 release 目录变化", "身份迁移开始", "Auth 安全策略变化", "Kernel Host 配置变化", "frontend 接入根质量链"]
+relations:
+  extends: ["032/R001", "050/R001"]
+  related: ["021/R001", "048/R003", "051/R001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

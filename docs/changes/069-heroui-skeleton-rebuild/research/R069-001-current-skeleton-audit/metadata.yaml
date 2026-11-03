@@ -1,0 +1,30 @@
+schema_version: 1
+id: R069-001
+title: "当前 Web UI 骨架是否已由 HeroUI 拼装（068 后的现状复核）"
+question: "用户主张「当前已全量使用 HeroUI 组件库，但 Web UI 骨架是否也由 HeroUI 组件拼装完成？如果没有请替换」。需要回答：（a）068 之后哪些 UI 元素已 HeroUI 化？（b）Shell/页面骨架与遮罩容器哪些仍是旧自绘实现？（c）HeroUI v3 对骨架拼装的组件面与关键装配机制（Modal/Drawer 的 DialogTrigger 客户端渲染、Switch/Checkbox 无交互 input）是什么？"
+research_type: current-project
+topics: ["webui", "heroui", "skeleton", "shell", "app-shell", "sidebar", "tabs", "dialog", "switch", "checkbox"]
+keywords: ["AppShell", "AppSidebar", "AppHeader", "WorkspaceTabs", "RouteSearch", "ThemeDrawer", "ConfirmDialog", "Drawer", "PageHeader", "DialogTrigger", "rac", "isOpen"]
+applicable_scenarios:
+  - "判定 068 后的骨架组件拼装现状并规划替换范围"
+  - "为「骨架由 HeroUI/RAC 拼装」的迁移确定组件面与测试影响"
+non_applicable_scenarios:
+  - "把 068 已完成的工作重复评估"
+status: active
+summary: "068 只替换了控件层（Button/Input/Select/Table/Pagination/Card 区块/提示/Toast 等）；骨架仍未 HeroUI 拼装：AppShell/AppSidebar（品牌+递归菜单+移动抽屉）、AppHeader（topbar 布局）、WorkspaceTabs（自绘 tablist）、RouteSearch 遮罩、ThemeDrawer 遮罩、ConfirmDialog/SDK Drawer（自绘 backdrop+dialog）、PageHeader 及 `.page-sections/.toolbar` 等页面布局容器均为自绘 HTML+CSS。HeroUI v3 事实：Modal/Drawer Root 内部是 RAC DialogTrigger（触发式、客户端插入，受控 isOpen 时 SSR 输出为空是有意设计）；Switch/Checkbox 复合不含交互 input（纯展示 Field）；Header/Surface/Toolbar/Tabs/TextField/Kbd/Avatar/Dropdown/Menu/Link/Tooltip/Separator/Alert/Spinner/CloseButton/EmptyState 可用于骨架拼装。结论：骨架拼装需「HeroUI 控件 + RAC 受控交互底座（Modal/Switch/Checkbox，HeroUI 自身依赖）+ Tailwind 布局原语」的组合路径。"
+evidence:
+  types: ["source-code", "package-source", "tests"]
+  primary_sources:
+    - title: "Shell 组件源码结构"
+      locator: "webui/src/components/{AppShell,RouteSearch,ThemeDrawer}.tsx 与 shell/{AppSidebar,AppHeader,WorkspaceTabs,AccountMenu,SidebarMenu}.tsx"
+      snapshot: "d1b3004"
+    - title: "SDK 遮罩与页面原语"
+      locator: "webui/src/ui/index.tsx（ConfirmDialog/Drawer/PageSection/StatCard/DataCard 的自绘容器与 HeroUI 控件混排）"
+      snapshot: "d1b3004"
+    - title: "HeroUI v3 装配机制（package 源码）"
+      locator: "webui/node_modules/@heroui/react/dist/components/{modal,drawer,switch,checkbox}/**（DialogTrigger 客户端渲染；Switch/Checkbox 无 input）"
+      snapshot: "2026-08-26 本地 node_modules"
+researched_at: "2026-08-26"
+verified_at: "2026-08-26"
+refresh_triggers:
+  - "HeroUI v3 发布 Sidebar/Navbar 或受控 Modal/Drawer 支持"

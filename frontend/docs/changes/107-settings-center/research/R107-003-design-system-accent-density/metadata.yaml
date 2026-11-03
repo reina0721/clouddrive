@@ -1,0 +1,69 @@
+schema_version: 1
+id: R107-003
+title: '107 Design System 主题扩展与视觉校准基线研究'
+question: '外观/可访问性分类要求的「跟随系统/浅色/深色主题、四套强调色（紫/蓝/绿/橙）、三档密度/字号/内容宽度/动效/对比度」如何在现有 design-system（schema→runtime-codegen 生成 tokens.css 受控区段）内表达，语义映射落点是什么，TailAdmin 外部复核范围与触发器是什么？'
+research_type: current-state-audit
+topics:
+  [
+    'design tokens',
+    'theme mode',
+    'accent color',
+    'density',
+    'font scale',
+    'contrast',
+    'content width',
+    'motion policy',
+    'reduced motion',
+    'tailadmin calibration',
+  ]
+keywords:
+  [
+    'design-system.schema.json',
+    'tokens.css',
+    'data-theme',
+    '--ds-brand',
+    '--motion-duration-*',
+    'data-motion-mode',
+    'codegen:design',
+    'ui-visual-calibration.md',
+    'ResizableContainer',
+    'ColumnResizer',
+    'firstDayOfWeek',
+  ]
+applicable_scenarios:
+  [
+    '107 设置中心外观/可访问性语义映射、四强调色、密度/字号/对比度 token 扩展、日期选择器 locale/weekStart、表格 Resizable/列能力、TailAdmin 复核门禁',
+  ]
+non_applicable_scenarios:
+  ['把 HEX/CSS Token 暴露给普通用户、任意键位编辑器、自定义圆角/阴影/间距设计器']
+status: active
+summary: '现状只有 light/dark + 单套 brand 紫；外观/可访问性所需的强调色×对比度×密度×字号/内容宽度语义映射需在 design-system.schema.json 受控区段增补并由 codegen:design 生成；四套强调色（紫=现 --ds-brand 系列，蓝/绿/橙从受控色板新增）以语义 token（--ds-accent-* 或 --color-brand 系列切换）表达；DataTable 列宽复用 HeroUI v3 ResizableContainer/ColumnResizer 经 ui-adapter 语义封装；DatePicker locale/weekStart 需装配 RAC I18nProvider 或透传 firstDayOfWeek；TailAdmin 外部复核是 SET-002 硬门禁（表格/Tabs/表单/通知四组 + 状态矩阵），网络不可达必须记录 blocker 不得标完成。'
+evidence:
+  types: ['project-source', 'tests', 'official-documentation']
+  primary_sources:
+    - title: 'design-system 现状'
+      locator: 'packages/design-system/src/tokens.css（@theme 映射、:root light、[data-theme=dark]、reduced-motion policy）；motion.css；design-system.schema.json；tooling/runtime-codegen/codegen.mjs'
+      snapshot: '77740c19；唯一事实源 schema → createSchemaRuntime → tokens.css 受控区段 + motion.css 整文件；light/dark + 单套 brand 紫；motion token 齐备'
+    - title: '主题应用链路'
+      locator: 'apps/web/src/host/providers.tsx（html.dataset.theme/lang）；apps/web/src/app/layout.tsx（data-theme=light 初始）；apps/web/src/host/motion-policy.tsx（data-motion-mode + --motion-debug-scale，dev sessionStorage motion-inspector）'
+      snapshot: '77740c19；data-theme 切换 + motion policy 已有'
+    - title: '表格/日期能力'
+      locator: 'packages/ui-adapter/src/data-display.tsx（DataTable 无 Resizable/列设置）；@heroui/react/table d.ts（Table.ResizableContainer/ColumnResizer 存在）；packages/ui-adapter/src/date-picker-field.tsx（DatePicker 无 locale/weekStart 透传）；@heroui/react/calendar d.ts（firstDayOfWeek: sun|mon|…）；react-aria I18nProvider 未装配'
+      snapshot: 'HeroUI 3.2.4；RAC 1.20.0'
+    - title: 'TailAdmin 校准基线'
+      locator: 'docs/ui-visual-calibration.md（外部基准 react-demo.tailadmin.com、矩阵、复核触发器与步骤）；docs/changes/094…/research/R094-001-tailadmin-ui-elements-refresh/'
+      snapshot: '最近复核 2026-09；22 个 UI Elements 页面；四组需复核：basic-tables/data-tables（表格）、tabs（Tabs）、form elements（表单）、notifications（通知）'
+  researched_at: '2026-09-06'
+  verified_at: '2026-09-06'
+validity:
+  mode: revision-bounded
+  refresh_triggers:
+    [
+      'design-system.schema.json/生成器、tokens.css 受控区段、@heroui 版本、TailAdmin 外部样本变化、或 ui-adapter data-display/date-picker-field 契约变化时需定向复核',
+    ]
+relations:
+  extends: ['R107-001', 'R094-001']
+  related: ['R107-002']
+  supersedes: []
+  superseded_by: []
+report: report.md

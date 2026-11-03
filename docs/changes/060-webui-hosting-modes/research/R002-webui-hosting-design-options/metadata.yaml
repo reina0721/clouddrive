@@ -1,0 +1,35 @@
+schema_version: 1
+id: R002
+title: "WebUI 托管模式与构建脚本设计方案"
+question: "托管路径与前置构建脚本应如何建模，静态托管采用哪种承载策略，会触碰哪些现有边界，各候选取舍依据是什么？"
+research_type: design
+topics: ["webui", "static-hosting", "build-script", "config", "delivery"]
+keywords: ["vite", "SPA fallback", "go:embed", "AcceptJSON", "goreleaser", "docker", "layout-consistency"]
+applicable_scenarios: ["当前仓库的 Go 服务托管 WebUI 单进程模式", "前置构建脚本（node/bash）与 CLI 设计", "Docker/release 产物纳入"]
+non_applicable_scenarios: ["单二进制且路径不可配置的强约束", "子路径部署", "生产容器内执行 node 构建"]
+status: active
+summary: "以运行期目录托管为主轨（满足托管路径与前置脚本两项配置需求），go:embed 列为后续 ADR 候选；静态处理器需收窄 AcceptJSON 边界并保持 /api 404 语义；前置脚本由 os/exec 直启（不拼 shell），CLI + 缺失产物时启动前一次构建，production 缺产物快速失败；新增 webui 配置节并加入 layout 一致性门禁。"
+evidence:
+  types: ["source-code", "official-docs", "configuration"]
+  primary_sources:
+    - title: "当前 HTTP 组成与中间件"
+      locator: "internal/composition/generation.go、service.go、pkg/httpx/production_middleware.go"
+      snapshot: "e641206"
+    - title: "layout 与配置治理决策"
+      locator: "docs/changes/052-declarative-project-layout/design.md、docs/configuration/README.md、internal/tools/project-layout/main.go"
+      snapshot: "e641206"
+    - title: "交付链"
+      locator: "Dockerfile、.goreleaser.yaml、.github/workflows/release.yml、scripts/container-smoke.sh"
+      snapshot: "e641206"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: snapshot
+  review_after: "2026-11-22"
+  refresh_triggers: ["引入 go:embed 或子路径部署决策", "AcceptJSON/路由中间件边界变化", "交付链开始独立打包 webui"]
+relations:
+  extends: ["R001"]
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

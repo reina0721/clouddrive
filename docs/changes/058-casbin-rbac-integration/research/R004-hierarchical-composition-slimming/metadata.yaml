@@ -1,0 +1,37 @@
+schema_version: 1
+id: R004
+title: "分级显式装配与根 composition 瘦身"
+question: "怎样让根 composition 不知道 IAM/Casbin 内部构造细节，又保持跨模块依赖显式、可验证和无运行时查找？"
+research_type: current-project-architecture
+topics: ["composition root", "module-local assembly", "identity-access slice", "narrow output facets", "dependency injection"]
+keywords: ["generation.go", "iam.NewHTTP", "auth.NewHTTP", "Service exposure", "subcomposition", "Builder"]
+technologies: ["Go explicit composition", "Application Generation", "Casbin v3"]
+applicable_scenarios: ["058 composition 瘦身", "IAM/Auth 跨模块装配", "减少根层注入", "模块局部第三方 Adapter"]
+non_applicable_scenarios: ["自动扫描", "反射 DI", "Service Locator", "万能 ApplicationContext", "运行时插件"]
+status: active
+summary: "当前 generation.go 直接知道 IAM/Auth 配置、IAM Service、多个 adapter、Auth、operation gate 与 mutation guard，且 IAM Module 暴露整个 Service。目标使用三级显式装配：根层只编排 Generation，identity-access 子装配只连接跨模块 port，IAM/Auth module.go 各自装配内部 Adapter；完成品暴露窄 facet 而非内部 Service。"
+evidence:
+  types: ["source-code", "call-graph", "package-boundary", "architecture-analysis"]
+  primary_sources:
+    - title: "Generation 直接模块装配链"
+      locator: "internal/composition/generation.go:307-370"
+      snapshot: "f83a58534c949a636a3a1b10f31c047fdeacf4af"
+    - title: "IAM/Auth 模块局部装配"
+      locator: "internal/module/{iam,auth}/module.go"
+      snapshot: "f83a58534c949a636a3a1b10f31c047fdeacf4af"
+    - title: "IAM 跨模块 composition adapters"
+      locator: "internal/composition/iam.go; internal/composition/http_api.go"
+      snapshot: "f83a58534c949a636a3a1b10f31c047fdeacf4af"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: code-snapshot
+  review_after: "2026-09-22"
+  refresh_triggers: ["Generation composition 变化", "Module output 契约变化", "引入代码生成/DI", "identity-access 边界变化", "新增跨模块 authorization 消费者"]
+relations:
+  extends: ["058/R001", "057/R011"]
+  related: ["025/Auth-Todo-boundary", "027/third-party-isolation", "033/module-contract-alignment"]
+  supersedes: []
+  superseded_by: []
+report: report.md
+

@@ -1,0 +1,106 @@
+
+[WebServer] (node:31740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:25108) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:14660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:24004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:33072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/2] [chromium] › apps\web\e2e\sidebar-design.spec.ts:229:1 › Icon navigation hint and flyout use the same primitives in the Overlay authority
+  1) [chromium] › apps\web\e2e\sidebar-design.spec.ts:229:1 › Icon navigation hint and flyout use the same primitives in the Overlay authority 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('tooltip', { name: '组合提示', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByRole('tooltip', { name: '组合提示', exact: true })
+
+
+      233 |   const hint = page.getByRole('link', { name: '组合提示', exact: true });
+      234 |   await hint.focus();
+    > 235 |   await expect(page.getByRole('tooltip', { name: '组合提示', exact: true })).toBeVisible();
+          |                                                                          ^
+      236 |   await hint.press('Escape');
+      237 |   await expect(page.getByRole('tooltip')).toBeHidden();
+      238 |   const trigger = page.getByRole('button', { name: 'Overlay 与 Floating Layer', exact: true });
+        at D:\coder\i721\console-web\apps\web\e2e\sidebar-design.spec.ts:235:74
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\sidebar-design-Icon-naviga-75798-es-in-the-Overlay-authority-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\sidebar-design-Icon-naviga-75798-es-in-the-Overlay-authority-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\sidebar-design-Icon-naviga-75798-es-in-the-Overlay-authority-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\sidebar-design-Icon-naviga-75798-es-in-the-Overlay-authority-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:33500) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[2/2] [chromium] › apps\web\e2e\sidebar-design.spec.ts:252:1 › Standard motion changes width monotonically and keeps header/content naturally aligned
+  2) [chromium] › apps\web\e2e\sidebar-design.spec.ts:252:1 › Standard motion changes width monotonically and keeps header/content naturally aligned 
+
+    Error: page.evaluate: Error: Shell geometry missing
+        at eval (eval at evaluate (:311:30), <anonymous>:6:45)
+        at UtilityScript.evaluate (<anonymous>:313:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at eval (eval at evaluate (:311:30), <anonymous>:6:45)
+        at UtilityScript.evaluate (<anonymous>:313:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at D:\coder\i721\console-web\apps\web\e2e\sidebar-design.spec.ts:256:24
+
+    Error: locator.click: Test ended.
+    Call log:
+      - waiting for getByRole('button', { name: '收起侧栏', exact: true })
+
+
+      272 |     return frames;
+      273 |   });
+    > 274 |   await page.getByRole('button', { name: '收起侧栏', exact: true }).click();
+          |                                                                 ^
+      275 |   const frames = await samples;
+      276 |   expect(frames.at(-1)?.rail).toBe(80);
+      277 |   expect(frames.some((frame) => frame.rail > 80 && frame.rail < 264)).toBe(true);
+        at D:\coder\i721\console-web\apps\web\e2e\sidebar-design.spec.ts:274:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\sidebar-design-Standard-mo-ec1c0-r-content-naturally-aligned-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\sidebar-design-Standard-mo-ec1c0-r-content-naturally-aligned-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\sidebar-design-Standard-mo-ec1c0-r-content-naturally-aligned-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\sidebar-design-Standard-mo-ec1c0-r-content-naturally-aligned-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  2 failed
+    [chromium] › apps\web\e2e\sidebar-design.spec.ts:229:1 › Icon navigation hint and flyout use the same primitives in the Overlay authority 
+    [chromium] › apps\web\e2e\sidebar-design.spec.ts:252:1 › Standard motion changes width monotonically and keeps header/content naturally aligned 

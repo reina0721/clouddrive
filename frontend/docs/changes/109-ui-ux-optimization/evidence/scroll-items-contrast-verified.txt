@@ -1,0 +1,329 @@
+
+> clouddrive-frontend@0.1.0 test:browser C:\rin\coder\i0721\console-web
+> playwright test "apps/web/e2e/reference-resources.spec.ts" "apps/web/e2e/settings-product-review.spec.ts" "apps/web/e2e/ui-ux-109.spec.ts" "--grep" "Axe|Shared controls preserve high contrast: data|Dialog confirmation uses|Critical mobile paths" "--output" "test-results/scroll-contrast-verified" "--repeat-each=3"
+
+
+Running 30 tests using 1 worker
+
+(node:8892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 (4.1s)
+  ok  2 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop (1.9s)
+  ok  3 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, dark narrow English (1.7s)
+  ok  4 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: blue, light (1.9s)
+  ok  5 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: blue, dark (1.5s)
+  ok  6 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: green, light (1.8s)
+  ok  7 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: green, dark (1.5s)
+  ok  8 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: orange, light (1.8s)
+  ok  9 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: orange, dark (1.5s)
+  x  10 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:96:1 › Critical mobile paths meet WCAG AA automated checks (3.4s)
+(node:26752) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 11 [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 (3.8s)
+  ok 12 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop (1.9s)
+  ok 13 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, dark narrow English (1.7s)
+  ok 14 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: blue, light (1.8s)
+  ok 15 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: blue, dark (1.5s)
+  ok 16 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: green, light (1.9s)
+  ok 17 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: green, dark (1.5s)
+  ok 18 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: orange, light (2.1s)
+  ok 19 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: orange, dark (1.5s)
+  ok 20 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:96:1 › Critical mobile paths meet WCAG AA automated checks (3.0s)
+(node:25332) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  21 [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 (2.4s)
+(node:22080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 22 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop (2.1s)
+  ok 23 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, dark narrow English (1.8s)
+  ok 24 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: blue, light (1.7s)
+  ok 25 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: blue, dark (1.5s)
+  ok 26 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: green, light (1.8s)
+  ok 27 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: green, dark (1.5s)
+  ok 28 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: orange, light (1.9s)
+  ok 29 [chromium] › apps\web\e2e\settings-product-review.spec.ts:224:5 › Dialog confirmation uses the accent foreground: orange, dark (1.6s)
+  x  30 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:96:1 › Critical mobile paths meet WCAG AA automated checks (3.5s)
+
+
+  1) [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 
+
+    Error: /reference-resources/detail?id=resource-alpha axe violations
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#f6f7fb",
+    +               "contrastRatio": 4.44,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#72727b",
+    +               "fontSize": "10.5pt (14px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.44 (foreground color: #72727b, background color: #f6f7fb, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<div class=\"surface-shell-grid min-h-screen bg-canvas text-ink\" data-sidebar=\"expanded\">",
+    +                 "target": Array [
+    +                   ".surface-shell-grid",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.44 (foreground color: #72727b, background color: #f6f7fb, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<a href=\"/reference-resources\">参考资源</a>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".link.breadcrumbs__link[data-slot=\"link\"] > a[href$=\"reference-resources\"]",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      69 |       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      70 |       .analyze();
+    > 71 |     expect(accessibility.violations, `${route} axe violations`).toEqual([]);
+         |                                                                 ^
+      72 |   }
+      73 | });
+      74 |
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\reference-resources.spec.ts:71:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\scroll-contrast-verified\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium-repeat2\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\scroll-contrast-verified\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium-repeat2\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\scroll-contrast-verified\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium-repeat2\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\scroll-contrast-verified\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium-repeat2\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:96:1 › Critical mobile paths meet WCAG AA automated checks 
+
+    Error: /reference-resources/detail?id=resource-beta
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#f6f7fb",
+    +               "contrastRatio": 4.44,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#72727b",
+    +               "fontSize": "10.5pt (14px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.44 (foreground color: #72727b, background color: #f6f7fb, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<div class=\"surface-shell-grid min-h-screen bg-canvas text-ink\" data-sidebar=\"expanded\">",
+    +                 "target": Array [
+    +                   ".surface-shell-grid",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.44 (foreground color: #72727b, background color: #f6f7fb, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<a href=\"/reference-resources\">参考资源</a>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".link.breadcrumbs__link[data-slot=\"link\"] > a[href$=\"reference-resources\"]",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      106 |       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      107 |       .analyze();
+    > 108 |     expect(results.violations, href).toEqual([]);
+          |                                      ^
+      109 |   }
+      110 | });
+      111 |
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\ui-ux-109.spec.ts:108:38
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\scroll-contrast-verified\ui-ux-109-Critical-mobile--a209d-et-WCAG-AA-automated-checks-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\scroll-contrast-verified\ui-ux-109-Critical-mobile--a209d-et-WCAG-AA-automated-checks-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\scroll-contrast-verified\ui-ux-109-Critical-mobile--a209d-et-WCAG-AA-automated-checks-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\scroll-contrast-verified\ui-ux-109-Critical-mobile--a209d-et-WCAG-AA-automated-checks-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:96:1 › Critical mobile paths meet WCAG AA automated checks 
+
+    Error: /reference-resources/detail?id=resource-beta
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#f6f7fb",
+    +               "contrastRatio": 4.44,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#72727b",
+    +               "fontSize": "10.5pt (14px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 4.44 (foreground color: #72727b, background color: #f6f7fb, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<div class=\"surface-shell-grid min-h-screen bg-canvas text-ink\" data-sidebar=\"expanded\">",
+    +                 "target": Array [
+    +                   ".surface-shell-grid",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 4.44 (foreground color: #72727b, background color: #f6f7fb, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<a href=\"/reference-resources\">参考资源</a>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".link.breadcrumbs__link[data-slot=\"link\"] > a[href$=\"reference-resources\"]",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      106 |       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      107 |       .analyze();
+    > 108 |     expect(results.violations, href).toEqual([]);
+          |                                      ^
+      109 |   }
+      110 | });
+      111 |
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\ui-ux-109.spec.ts:108:38
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\scroll-contrast-verified\ui-ux-109-Critical-mobile--a209d-et-WCAG-AA-automated-checks-chromium-repeat2\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\scroll-contrast-verified\ui-ux-109-Critical-mobile--a209d-et-WCAG-AA-automated-checks-chromium-repeat2\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\scroll-contrast-verified\ui-ux-109-Critical-mobile--a209d-et-WCAG-AA-automated-checks-chromium-repeat2\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\scroll-contrast-verified\ui-ux-109-Critical-mobile--a209d-et-WCAG-AA-automated-checks-chromium-repeat2\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规 
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:96:1 › Critical mobile paths meet WCAG AA automated checks 
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:96:1 › Critical mobile paths meet WCAG AA automated checks 
+  27 passed (1.1m)
+ ELIFECYCLE  Command failed with exit code 1.

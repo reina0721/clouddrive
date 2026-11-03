@@ -1,0 +1,27 @@
+schema_version: 1
+change: 063-webui-sidebar-menu-hierarchy
+areas:
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+      - docs/development/webui.md
+    reason: 菜单层级分类落地于模块 Binding 声明；webui 局部 README 补充「侧边栏菜单层级分类（063）」节（菜单树完全由模块 Navigation 声明决定、当前分类结构、新增父节点需同步 locale/mock/生成物），webui 开发指南补充「菜单层级分类（063）」节（分类父节点 + 落地页路由语义、父不可加载则整组隐藏的既有门禁、三处同步说明），并明确本变更不修改 webui 宿主代码。
+  - id: module
+    decision: reviewed-no-change
+    reason: 应用模块开发指南的 WebUI binding 表格与接入步骤不因本变更改变；Navigation 声明仍由各模块在 binding/webui 内维护，接入路径不变。
+  - id: api
+    decision: reviewed-no-change
+    reason: 不新增路由/operation，api/openapi.yaml 与 operation inventory 不变；菜单层级只影响 WebUI manifest 的 menu 树形结构。
+  - id: operations
+    decision: reviewed-no-change
+    reason: 启动、托管、数据源环境、安全与发布边界不变；新父节点继续由既有 NavigationPolicy/Manifest 门禁投影。
+  - id: startup
+    decision: reviewed-no-change
+    reason: 宿主 boot（manifest → registry → Shell → route）与 revision 门禁不变；重新生成 webui-registry.ts 使 catalogRevision 与 webuiRevision 保持一致。
+  - id: docs
+    decision: updated
+    documents:
+      - docs/changes/063-webui-sidebar-menu-hierarchy/README.md
+      - docs/changes/README.md
+    reason: 变更记录（研究/需求/设计/任务）与变更索引记录本任务状态（已确认、实施完成）与结论。

@@ -1,0 +1,96 @@
+- log:
+- log
+- alert
+- link "跳到主要内容 / Skip to content":
+  - /url: "#main-content"
+- complementary:
+  - generic: C
+  - paragraph: Community
+  - paragraph: 统一前端基座
+  - navigation "主导航":
+    - paragraph: Universal Foundation
+    - list "Universal Foundation":
+      - link "总览":
+        - /url: /
+        - generic: 总览
+    - paragraph: 系统
+    - list "系统":
+      - link "设置":
+        - /url: /settings
+        - generic: 设置
+      - link "Icon 大全":
+        - /url: /system-tools/icons
+        - generic: Icon 大全
+    - paragraph: 参考资源
+    - list "参考资源":
+      - link "参考资源":
+        - /url: /reference-resources
+        - generic: 参考资源
+    - paragraph: 开发
+    - list "开发":
+      - link "基座能力":
+        - /url: /foundations
+        - generic: 基座能力
+      - link "Motion":
+        - /url: /motion
+        - generic: Motion
+      - button "展开或收起Page Archetypes":
+        - generic: Page Archetypes
+      - button "展开或收起Page Patterns":
+        - generic: Page Patterns
+      - link "状态体系":
+        - /url: /states
+        - generic: 状态体系
+      - button "展开或收起UI Elements":
+        - generic: UI Elements
+  - generic: Architecture Preview
+  - paragraph: React 19 · HeroUI · Tailwind CSS v4
+- banner:
+  - button "收起侧栏":
+  - button "按 Ctrl K 搜索"
+  - button "切换语言":
+  - button "切换主题":
+  - button "通知，1 条未读":
+    - generic: "1"
+  - button "当前用户":
+    - generic "Rin": RI
+    - generic: Rin
+- main:
+  - paragraph: 本地演示 · 刷新后恢复示例数据
+  - heading "参考资源" [level=1]
+  - paragraph: 通过 File Route 与 Route Target 驱动的确定性参考资源列表。
+  - link "新建资源":
+    - /url: /reference-resources/create
+  - list:
+    - paragraph: resource-alpha
+    - heading "Alpha 示例资源" [level=2]
+    - paragraph: 第一个确定性参考资源，用于验证列表、详情与编辑的路由。
+    - generic: 进行中
+    - link "查看":
+      - /url: /reference-resources/detail?id=resource-alpha
+    - link "编辑":
+      - /url: /reference-resources/edit?id=resource-alpha
+    - paragraph: resource-beta
+    - heading "Beta 引导指南" [level=2]
+    - paragraph: 展示静态路由装配与受控导航目标的确定性链路。
+    - generic: 进行中
+    - link "查看":
+      - /url: /reference-resources/detail?id=resource-beta
+    - link "编辑":
+      - /url: /reference-resources/edit?id=resource-beta
+    - paragraph: resource-gamma
+    - heading "Gamma 模板" [level=2]
+    - paragraph: 草稿资源，用于验证状态展示与编辑场景。
+    - generic: 草稿
+    - link "查看":
+      - /url: /reference-resources/detail?id=resource-gamma
+    - link "编辑":
+      - /url: /reference-resources/edit?id=resource-gamma
+    - paragraph: resource-d6314bf5-6d4f-4378-ba31-b6a236ac1e88
+    - heading "M0 审计演示资源 20261012" [level=2]
+    - paragraph: 本地演示 · 刷新后恢复示例数据
+    - generic: 草稿
+    - link "查看":
+      - /url: /reference-resources/detail?id=resource-d6314bf5-6d4f-4378-ba31-b6a236ac1e88
+    - link "编辑":
+      - /url: /reference-resources/edit?id=resource-d6314bf5-6d4f-4378-ba31-b6a236ac1e88

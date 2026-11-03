@@ -1,0 +1,76 @@
+schema_version: 1
+change: 051-documentation-system-governance-closure
+areas:
+  - id: repository
+    decision: updated
+    documents:
+      - README.md
+      - docs/repository-scope.md
+      - docs/scaffold-baseline.md
+      - docs/changes/README.md
+    reason: 明确当前构建范围、排除目录、导入基线和仓库身份状态。
+  - id: startup
+    decision: updated
+    documents:
+      - README.md
+      - docs/getting-started/first-use.md
+    reason: 补齐后端、全栈 WebUI 和首次验收入口。
+  - id: webui
+    decision: updated
+    documents:
+      - README.md
+      - webui/README.md
+      - docs/getting-started/webui.md
+      - docs/getting-started/first-use.md
+    reason: 公开真实的 Vite 启动、Setup、登录、质量和生产交付边界。
+  - id: frontend
+    decision: updated
+    documents:
+      - frontend/README.md
+      - docs/repository-scope.md
+    reason: 修正不可验证的 backend/脚本集成声明，保留独立子项目状态。
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/README.md
+      - internal/module/auth/README.md
+      - internal/module/ops/README.md
+      - internal/module/todo/README.md
+    reason: 补齐模块索引、Auth 局部说明并移除当前文档中的历史任务前置。
+  - id: capability
+    decision: updated
+    documents:
+      - pkg/README.md
+      - docs/operations/runtime-capabilities.md
+    reason: 让所有通用能力可达，并集中声明资源与验证边界。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+      - docs/getting-started/first-use.md
+    reason: 清理 code-first 当前说明中的历史任务编号并补充生成验收路径。
+  - id: configuration
+    decision: updated
+    documents:
+      - docs/getting-started/webui.md
+      - docs/operations/runtime-capabilities.md
+    reason: 使 WebUI migration/config 和运行能力状态与当前入口一致。
+  - id: operations
+    decision: updated
+    documents:
+      - docs/operations/security.md
+      - docs/operations/runtime-capabilities.md
+      - docs/operations/README.md
+    reason: 补齐 WebUI、外部资源、诊断和未验证运行边界。
+  - id: delivery
+    decision: updated
+    documents:
+      - docs/operations/build-and-container.md
+      - docs/operations/release.md
+    reason: quality/release 增加 Docs 静态门禁，交付文档需要说明完整质量入口。
+  - id: documentation
+    decision: updated
+    documents:
+      - docs/development/documentation-governance.md
+      - docs/documentation.yaml
+    reason: 新增机器可读 authority 映射、impact schema 和 docs guard 实现。

@@ -1,0 +1,35 @@
+id: R004
+title: "Ops Dashboard 概览层与 Soybean 工作台对照"
+question: "如何把 Soybean 工作台先总览后详情的信息层级映射到当前 Ops 已有真实 management 查询，而不生成示例业务数据？"
+status: passed
+snapshot:
+  date: "2026-08-21"
+  commit: "b88b081"
+evidence:
+  - path: "https://soybeanjs.cn/home"
+    location: "browser DOM snapshot"
+    fact: "The current page exposes a welcome block, project/todo/message summary, metric cards, project activity, and footer in that order."
+  - path: "internal/module/ops/binding/webui/web/api.ts"
+    location: "management query functions"
+    fact: "Ops WebUI already reads build, probes, diagnostics, and metrics from existing endpoints."
+  - path: "internal/module/ops/model/model.go"
+    location: "BuildInfo and RuntimeSnapshot"
+    fact: "The backend exposes typed build and sanitized runtime fields suitable for a read-only overview."
+facts:
+  - "There is no current backend contract for weather, todos, messages, project activity, or business statistics."
+  - "Diagnostics includes process, generation, traffic, dependency readiness, and health fields."
+inferences:
+  - "The smallest truthful parity is to reuse the information hierarchy while replacing example content with real build/runtime/dependency surfaces."
+limitations:
+  - "Local project screenshots remain blocked by the self-signed Vite HTTPS certificate."
+applicable_scenarios:
+  - "Ops Dashboard overview"
+  - "Soybean workbench visual calibration"
+non_applicable_scenarios:
+  - "New management API"
+  - "Business dashboard statistics"
+  - "Simulated activity feed"
+refresh_triggers:
+  - "Ops BuildInfo or RuntimeSnapshot fields change"
+  - "Management endpoint contract changes"
+  - "Soybean workbench information hierarchy changes"

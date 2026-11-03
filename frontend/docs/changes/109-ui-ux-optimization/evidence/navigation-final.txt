@@ -1,0 +1,12 @@
+
+Running 4 tests using 1 worker
+
+
+
+(node:28320) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/4] [chromium] › apps\web\e2e\leave-confirm.spec.ts:12:1 › 参考资源编辑：未保存修改离开时弹出确认；取消留在原地，确认后离开
+[2/4] [chromium] › apps\web\e2e\leave-confirm.spec.ts:30:1 › 操作偏好关闭「离开未保存内容时提醒」后，dirty 离开不再弹确认
+[3/4] [chromium] › apps\web\e2e\new-page-open-mode.spec.ts:11:1 › 新页面打开方式默认当前页：点击链接同页导航
+[4/4] [chromium] › apps\web\e2e\new-page-open-mode.spec.ts:19:1 › 新页面打开方式=浏览器新标签页：声明允许入口在新标签打开
+  4 passed (25.9s)

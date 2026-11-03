@@ -1,0 +1,41 @@
+schema_version: 1
+id: R001
+title: "当前 WebUI 交付链与 Go 服务托管缺口"
+question: "当前 WebUI 构建产物由谁产出与消费，Go Service 是否有静态托管能力，前后端分离模式依赖哪些机制，新增托管模式会触碰哪些现有契约？"
+research_type: current-project
+topics: ["webui", "static-hosting", "delivery", "http-composition", "config-ownership"]
+keywords: ["vite", "dist", "AcceptJSON", "SPA", "goreleaser", "docker", "layout", "cookie"]
+applicable_scenarios: ["为当前仓库设计 Go 服务托管 WebUI 的单进程模式"]
+non_applicable_scenarios: ["多前端根场景", "子路径部署", "runtime 镜像内运行 node", "运行期热更新构建产物"]
+status: active
+summary: "当前 webui/dist 仅由本地 Vite build 产出、Docker/release 均不托管；Go 业务 Router 无任何静态能力，且 AcceptJSON 中间件会误伤浏览器静态请求；同源模式下 CORS/Origin/Session 语义可复用，需文档化 Secure Cookie 的 loopback/TLS 前提。"
+evidence:
+  types: ["source-code", "tests", "configuration", "workflow"]
+  primary_sources:
+    - title: "webui 构建与开发配置"
+      locator: "webui/package.json、webui/vite.config.ts、webui/.env.example、webui/scripts/*"
+      snapshot: "e641206"
+    - title: "Go HTTP 组成与中间件"
+      locator: "internal/composition/generation.go、service.go、internal/transport/http/routes.go、pkg/httpx/production_middleware.go"
+      snapshot: "e641206"
+    - title: "交付链"
+      locator: "Dockerfile、.goreleaser.yaml、.github/workflows/quality.yml、release.yml、scripts/verify-webui.sh"
+      snapshot: "e641206"
+    - title: "配置与布局 ownership"
+      locator: "internal/composition/configuration.go、internal/tools/project-layout/main.go、.scaffold/layout.json、docs/configuration/README.md"
+      snapshot: "e641206"
+    - title: "Session/Origin 语义"
+      locator: "internal/module/iam/binding/http/huma.go、contract.go、pkg/httpx/production_middleware.go"
+      snapshot: "e641206"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: snapshot
+  review_after: "2026-11-22"
+  refresh_triggers: ["Dockerfile/release 开始托管 webui/dist 之后", "HTTP 中间件链或 AcceptJSON 语义变化", "Session Cookie 属性变化"]
+relations:
+  extends: []
+  related: ["R002"]
+  supersedes: []
+  superseded_by: []
+report: report.md

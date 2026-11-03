@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><title>Sidebar 补充视觉对照</title
+  ><style>
+    body {
+      font-family: system-ui;
+      margin: 24px;
+      background: #f6f7fb;
+      color: #172033;
+    }
+    section {
+      margin-bottom: 40px;
+    }
+    .images {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    figure {
+      margin: 0;
+    }
+    img {
+      width: 100%;
+      border: 1px solid #cfd5df;
+    }
+    figcaption {
+      padding: 8px;
+    }
+  </style>
+  <h1>Sidebar 补充视觉对照：2 张已确认</h1>
+  <p>
+    先前已确认的 6 张不在本次范围。此次只复核 Dialog 打开态与 UI Elements 桌面页，用户确认后已校验
+    hash 并限定更新这两张基线，阈值保持 1%。左：旧基线；中：当前结果；右：差异。原图与 SHA-256 见
+    manifest.json。
+  </p>
+  <section>
+    <h2>ui-elements-dialog-open</h2>
+    <p>
+      Dialog 文字、输入焦点框与边缘存在约 1px 差异；3 次原断言复验均失败。焦点、Escape、Drawer 与
+      Axe 流程通过。未修改 Dialog 契约；动效关闭仍有差异，原因尚未确定。
+    </p>
+    <div class="images">
+      <figure>
+        <figcaption>expected</figcaption>
+        <a href="01/expected.png"
+          ><img src="01/expected.png" alt="ui-elements-dialog-open expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="01/actual.png"><img src="01/actual.png" alt="ui-elements-dialog-open actual" /></a>
+      </figure>
+      <figure>
+        <figcaption>diff</figcaption>
+        <a href="01/diff.png"><img src="01/diff.png" alt="ui-elements-dialog-open diff" /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>ui-elements-desktop</h2>
+    <p>
+      Sidebar 轴线、Header 图标与目录摘要文字有差异。最近 3
+      次原断言通过，完整回归曾失败；保留对照供确认，不将偶发通过表述为全量通过。
+    </p>
+    <div class="images">
+      <figure>
+        <figcaption>expected</figcaption>
+        <a href="02/expected.png"
+          ><img src="02/expected.png" alt="ui-elements-desktop expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="02/actual.png"><img src="02/actual.png" alt="ui-elements-desktop actual" /></a>
+      </figure>
+      <figure>
+        <figcaption>diff</figcaption>
+        <a href="02/diff.png"><img src="02/diff.png" alt="ui-elements-desktop diff" /></a>
+      </figure>
+    </div>
+  </section>
+</html>

@@ -1,0 +1,49 @@
+schema_version: 1
+id: R087-001
+title: "Settings 页内导航与自动 Workspace mounted panel 冲突"
+question: "为什么 Settings 分区点击出现无响应或生硬加载，并可能在点击后回到带筛选条件的 Accounts URL；当前自动页面标签模型是否仍适合普通列表页和分组设置页？"
+research_type: current-project
+topics: ["webui", "settings", "workspace-tabs", "mounted-panels", "react-router", "query-state", "section-nav"]
+keywords: ["settings.layout", "SectionNav", "WorkspaceOutlet", "openWorkspace", "activateAndNavigate", "useSearchParams", "admin/accounts", "groupLayoutId"]
+applicable_scenarios:
+  - "Settings 八分区页内 SPA 导航"
+  - "普通列表页与带 query URL 的 workspace 隔离"
+  - "自动页面标签资格与 mounted panel 边界修正"
+non_applicable_scenarios:
+  - "IAM Accounts 筛选字段或服务端列表 API 改造"
+  - "数据库、账号数据、权限或 migration 变更"
+status: active
+summary: "当前 085 Rev.2 对所有正式 app route 自动 openWorkspace，使 Settings 八分区各自成为固定 location 的 mounted panel，直接覆盖 073 的共享固定布局不变量；Accounts 也常驻并保存内存 location，标签激活会精确重放 pathname+search。源码未发现任意 body click 或 history.back 监听，当前 8080 又不可用，因此任意位置误触的具体 hit target 尚需带认证运行态测试确认。推荐恢复显式 WorkspaceTabPolicy：普通 Settings/Accounts 默认 disabled，走单 Router Outlet；仅真实独立工作台 opt-in mounted workspace。"
+evidence:
+  types: ["source-code", "tests", "documentation", "runtime-probe"]
+  primary_sources:
+    - title: "当前自动 workspace 打开与 location 重放"
+      locator: "webui/src/components/AppShell.tsx；webui/src/workspace/WorkspaceProvider.tsx；webui/src/workspace/WorkspaceOutlet.tsx"
+      snapshot: "bf78f1b472399c6af9b031234f846fcdb4d17432，2026-08-28"
+    - title: "Settings group layout 与页内导航"
+      locator: "webui/src/routes.tsx；internal/module/settings/binding/webui/web/SettingsLayout.tsx；internal/module/settings/binding/webui/binding.go"
+      snapshot: "bf78f1b472399c6af9b031234f846fcdb4d17432，2026-08-28"
+    - title: "现有 E2E 对 Settings 独立面板的显式断言"
+      locator: "webui/e2e/webui.spec.ts（071/072 settings tests）"
+      snapshot: "bf78f1b472399c6af9b031234f846fcdb4d17432，2026-08-28"
+    - title: "历史研究与设计冲突"
+      locator: "docs/changes/072-settings-suite-refine/research；docs/changes/073-two-level-settings-menu；docs/changes/085-workspace-tabs/research/R085-001-current-workspace-tab-boundary"
+      snapshot: "2026-08-28 重新核对"
+    - title: "本地运行态探测"
+      locator: "http://localhost:8080/settings/profile"
+      snapshot: "2026-08-28 复核时 ERR_CONNECTION_REFUSED；未启动服务"
+researched_at: "2026-08-28"
+verified_at: "2026-08-28"
+validity:
+  mode: snapshot
+  review_after: "2026-09-28"
+  refresh_triggers:
+    - "AppShell、WorkspaceProvider、WorkspaceOutlet 或 route contract 变化"
+    - "Settings groupLayoutId、SectionNav 或 query SDK 变化"
+    - "重新获得带认证且可复现问题的 8080 运行态"
+relations:
+  extends: ["R072-001", "R072-002", "R073-001", "R085-001"]
+  related: ["R086-001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

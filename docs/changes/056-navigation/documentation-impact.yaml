@@ -1,0 +1,34 @@
+schema_version: 1
+change: 056-navigation
+areas:
+  - id: repository
+    decision: updated
+    documents:
+      - README.md
+    reason: 说明 Navigation 已成为默认应用的菜单策略垂直切片。
+  - id: startup
+    decision: updated
+    documents:
+      - docs/getting-started/first-use.md
+    reason: fresh database 增加 Navigation set，首次验收增加菜单策略与 Manifest 刷新。
+  - id: webui
+    decision: updated
+    documents:
+      - docs/getting-started/webui.md
+      - docs/getting-started/first-use.md
+    reason: 冻结静态 Catalog 与数据库策略双层 authority、每请求快照及宿主刷新契约。
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/README.md
+    reason: 冻结 Navigation 所有权、Catalog port 和无后台生命周期边界。
+  - id: capability
+    decision: updated
+    documents:
+      - docs/operations/runtime-capabilities.md
+    reason: 记录第四个 migration set、菜单策略能力与共用 Origin/CSRF 守卫。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+    reason: 生成菜单读取与策略修改 typed HTTP 契约。

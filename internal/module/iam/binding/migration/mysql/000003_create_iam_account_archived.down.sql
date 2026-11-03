@@ -1,0 +1,1 @@
+ALTER TABLE iam_accounts DROP COLUMN archived;

@@ -1,0 +1,40 @@
+schema_version: 1
+id: R002
+title: "Casbin 选型、policy persistence 与中介注入设计"
+question: "成熟 RBAC 库应如何接入当前 IAM/Auth 架构，既真正接管 evaluation，又不形成第二套存储 authority 或旧 policy 放行窗口？"
+research_type: technology-selection
+topics: ["Casbin", "RBAC", "policy evaluation", "persistence", "concurrency", "dependency injection"]
+keywords: ["casbin v3", "SyncedEnforcer", "gorm-adapter", "Watcher", "authorization revision", "DecisionPoint", "immutable snapshot"]
+technologies: ["Apache Casbin v3.10.0", "OpenFGA", "OPA Go SDK", "GORM"]
+applicable_scenarios: ["058 Casbin 接入", "单体 Core RBAC", "IAM policy evaluation", "跨 Generation policy consistency"]
+non_applicable_scenarios: ["资源关系型 ReBAC", "多租户 domain RBAC", "外部集中 PDP", "动态 Rego policy", "角色继承"]
+status: active
+summary: "采用 Apache Casbin v3.10.0 core SyncedEnforcer 作为 IAM 内存 evaluator；拒绝 gorm-adapter/casbin_rule、AutoLoad、Watcher 与 Casbin Management API 写入。IAM transaction 产出稳定 policy snapshot 与 revision，Auth 通过 composition 注入的 DecisionPoint 消费，revision 不匹配同步刷新且失败关闭。"
+evidence:
+  types: ["official-source", "official-documentation", "release", "license", "current-project-source", "architecture-analysis"]
+  primary_sources:
+    - title: "Apache Casbin v3.10.0 release, module and license"
+      locator: "https://github.com/apache/casbin/releases/tag/v3.10.0; https://raw.githubusercontent.com/apache/casbin/v3.10.0/go.mod; https://raw.githubusercontent.com/apache/casbin/v3.10.0/LICENSE"
+      snapshot: "stable v3.10.0, verified 2026-08-22"
+    - title: "Casbin Enforcer, SyncedEnforcer and Adapter source"
+      locator: "https://github.com/apache/casbin/blob/v3.10.0/enforcer.go; https://github.com/apache/casbin/blob/v3.10.0/enforcer_synced.go; https://github.com/apache/casbin/blob/v3.10.0/persist/adapter.go"
+      snapshot: "v3.10.0 source, verified 2026-08-22"
+    - title: "Casbin RBAC, model storage, adapters and watchers"
+      locator: "https://casbin.org/docs/rbac; https://casbin.org/docs/model-storage; https://v3.casbin.org/docs/adapters; https://v3.casbin.org/docs/watchers"
+      snapshot: "official current docs, verified 2026-08-22"
+    - title: "OpenFGA and OPA official scope"
+      locator: "https://openfga.dev/docs/modeling/getting-started; https://www.openpolicyagent.org/docs/integration"
+      snapshot: "official current docs, verified 2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: dated-primary-source
+  review_after: "2026-11-22"
+  refresh_triggers: ["Casbin 新稳定版或安全公告", "需要 domain/deny/role hierarchy", "引入多实例部署", "要求外部 PDP", "IAM transaction/schema 变化"]
+relations:
+  extends: ["053/R002", "058/R001"]
+  related: ["057/R002", "057/R011"]
+  supersedes: []
+  superseded_by: []
+report: report.md
+

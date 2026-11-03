@@ -1,0 +1,229 @@
+
+> clouddrive-frontend@0.1.0 test:browser D:\coder\i721\console-web
+> playwright test "apps/web/e2e/product-system-settings.spec.ts" "apps/web/e2e/product-management-backend.spec.ts" "apps/web/e2e/authentication-backend.spec.ts"
+
+[WebServer] (node:34876) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:31056) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:19808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:12992) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:19512) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:25328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › apps\web\e2e\product-system-settings.spec.ts:4:1 › Registration policy controls public signup and the resulting account role (2.0m)
+(node:31092) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  ok 2 [backend-contract] › apps\web\e2e\authentication-backend.spec.ts:6:1 › Backend mode uses CSRF/session API for login, restore and logout without Mock persistence (9.7s)
+  ok 3 [backend-contract] › apps\web\e2e\authentication-backend.spec.ts:89:1 › Backend restore failure stays closed, supports retry and never supplies a demo identity (3.0s)
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  ok 4 [backend-contract] › apps\web\e2e\authentication-backend.spec.ts:112:1 › Backend registration reports pending/success and failed logout keeps all private content hidden (5.2s)
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+  x  5 [backend-contract] › apps\web\e2e\product-management-backend.spec.ts:4:1 › Backend M2–M5 uses proposed REST/CSRF contracts, preserves conflict drafts and synchronizes notifications (1.5m)
+
+
+  1) [chromium] › apps\web\e2e\product-system-settings.spec.ts:4:1 › Registration policy controls public signup and the resulting account role 
+
+    Test timeout of 120000ms exceeded.
+
+    Error: locator.click: Test timeout of 120000ms exceeded.
+    Call log:
+      - waiting for getByRole('switch', { name: '开放公开注册', exact: true })
+        - locator resolved to <input checked title="" tabindex="0" role="switch" type="checkbox" aria-label="开放公开注册" aria-describedby="_r_1l_" data-react-aria-pressable="true"/>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <span class="min-w-0 flex-1">…</span> intercepts pointer events
+      - retrying click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <label data-rac="" data-selected="true" data-slot="switch-content" data-react-aria-pressable="true" class="switch__content ui-switch-content rounded-panel border border-border bg-surface p-4">…</label> intercepts pointer events
+      - retrying click action
+        - waiting 20ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <span class="min-w-0 flex-1">…</span> intercepts pointer events
+      2 × retrying click action
+          - waiting 100ms
+          - waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <span id="_r_1l_" class="mt-1 block text-xs leading-5 text-ink-muted">关闭后拒绝新的公开注册，已有账号仍可登录。</span> from <span class="min-w-0 flex-1">…</span> subtree intercepts pointer events
+      52 × retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <label data-rac="" data-selected="true" data-slot="switch-content" data-react-aria-pressable="true" class="switch__content ui-switch-content rounded-panel border border-border bg-surface p-4">…</label> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <span class="min-w-0 flex-1">…</span> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <span id="_r_1l_" class="mt-1 block text-xs leading-5 text-ink-muted">关闭后拒绝新的公开注册，已有账号仍可登录。</span> from <span class="min-w-0 flex-1">…</span> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <span id="_r_1l_" class="mt-1 block text-xs leading-5 text-ink-muted">关闭后拒绝新的公开注册，已有账号仍可登录。</span> from <span class="min-w-0 flex-1">…</span> subtree intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <label data-rac="" data-selected="true" data-slot="switch-content" data-react-aria-pressable="true" class="switch__content ui-switch-content rounded-panel border border-border bg-surface p-4">…</label> intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <span class="min-w-0 flex-1">…</span> intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+
+
+      29 |     ).violations,
+      30 |   ).toEqual([]);
+    > 31 |   await registrationSwitch.click();
+         |                            ^
+      32 |   await savePolicy();
+      33 |   await page.reload();
+      34 |   await expect(registrationSwitch).not.toBeChecked();
+        at D:\coder\i721\console-web\apps\web\e2e\product-system-settings.spec.ts:31:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\product-system-settings-Re-d6826--the-resulting-account-role-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\product-system-settings-Re-d6826--the-resulting-account-role-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\product-system-settings-Re-d6826--the-resulting-account-role-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\product-system-settings-Re-d6826--the-resulting-account-role-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [backend-contract] › apps\web\e2e\product-management-backend.spec.ts:4:1 › Backend M2–M5 uses proposed REST/CSRF contracts, preserves conflict drafts and synchronizes notifications 
+
+    Test timeout of 90000ms exceeded.
+
+    Error: locator.click: Test timeout of 90000ms exceeded.
+    Call log:
+      - waiting for getByRole('switch', { name: '开放公开注册', exact: true })
+        - locator resolved to <input checked title="" tabindex="0" role="switch" type="checkbox" aria-label="开放公开注册" aria-describedby="_r_2d_" data-react-aria-pressable="true"/>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+        - waiting 20ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <span class="min-w-0 flex-1">…</span> intercepts pointer events
+      2 × retrying click action
+          - waiting 100ms
+          - waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <span id="_r_2d_" class="mt-1 block text-xs leading-5 text-ink-muted">关闭后拒绝新的公开注册，已有账号仍可登录。</span> from <span class="min-w-0 flex-1">…</span> subtree intercepts pointer events
+      31 × retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <label data-rac="" data-selected="true" data-slot="switch-content" data-react-aria-pressable="true" class="switch__content ui-switch-content rounded-panel border border-border bg-surface p-4">…</label> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <span class="min-w-0 flex-1">…</span> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <span id="_r_2d_" class="mt-1 block text-xs leading-5 text-ink-muted">关闭后拒绝新的公开注册，已有账号仍可登录。</span> from <span class="min-w-0 flex-1">…</span> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <span id="_r_2d_" class="mt-1 block text-xs leading-5 text-ink-muted">关闭后拒绝新的公开注册，已有账号仍可登录。</span> from <span class="min-w-0 flex-1">…</span> subtree intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+
+
+      53 |   const registrationSwitch = page.getByRole('switch', { name: '开放公开注册', exact: true });
+      54 |   await expect(registrationSwitch).toBeChecked();
+    > 55 |   await registrationSwitch.press('Space');
+         |                            ^
+      56 |   await page.getByRole('button', { name: '保存策略', exact: true }).click();
+      57 |   await page
+      58 |     .getByRole('alertdialog', { name: '确认注册策略变更', exact: true })
+        at D:\coder\i721\console-web\apps\web\e2e\product-management-backend.spec.ts:55:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\product-management-backend-71920--synchronizes-notifications-backend-contract\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\product-management-backend-71920--synchronizes-notifications-backend-contract\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\product-management-backend-71920--synchronizes-notifications-backend-contract\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\product-management-backend-71920--synchronizes-notifications-backend-contract\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › apps\web\e2e\product-system-settings.spec.ts:4:1 › Registration policy controls public signup and the resulting account role 
+    [backend-contract] › apps\web\e2e\product-management-backend.spec.ts:4:1 › Backend M2–M5 uses proposed REST/CSRF contracts, preserves conflict drafts and synchronizes notifications 
+  3 passed (4.1m)
+ ELIFECYCLE  Command failed with exit code 1.

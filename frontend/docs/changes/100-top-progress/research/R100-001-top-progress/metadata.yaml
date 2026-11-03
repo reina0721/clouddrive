@@ -1,0 +1,21 @@
+id: R100-001-top-progress
+title: 应用级顶部进度条（Top Progress）现状与生命周期事实
+status: approved
+version: 1
+validated: 2026-01-01
+supersedes: []
+superseded_by: []
+refresh_triggers:
+  - Next.js 版本升级且 App Router 导航生命周期 API 发生实质变化
+  - 新增进入顶部进度条的全局任务类型（Global Pending Contract 扩展）
+scope:
+  - apps/admin-web/src/host
+  - packages/design-system/src/tokens.css
+  - packages/design-system/src/motion.css
+questions:
+  - 应用级导航"开始/完成/取消/失败"生命周期由谁提供、信号源是什么
+  - 顶部进度条属于哪一层，如何复用现有 Design System / Motion
+conclusions:
+  - Router / Host 负责提供 Global Pending 生命周期；完成信号来自 pathname 提交，固定超时仅作异常兜底。
+  - Top Progress 属 Host 层，不进入 Universal / UI Adapter / Admin Surface。
+  - 顶部进度条视觉采用固定定位 + 语义 Token + Motion Recipe，不进入文档流、不产生 Layout Shift。

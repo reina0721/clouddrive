@@ -1,0 +1,156 @@
+
+Running 35 tests using 1 worker
+
+(node:29012) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\accessibility-effects.spec.ts:18:1 › 增强焦点轮廓：开启写入 data-enhance-focus 且焦点环 Token 加强 (3.0s)
+  ok  2 [chromium] › apps\web\e2e\accessibility-effects.spec.ts:31:1 › 增强交互区域尺寸：开启写入 data-enhance-target 且控件 spacing 放大 (2.1s)
+  ok  3 [chromium] › apps\web\e2e\accessibility-effects.spec.ts:42:1 › 跟随系统辅助设置：开启写入 data-follow-system 并同步系统对比度 (4.8s)
+  ok  4 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: appearance (8.5s)
+  ok  5 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: navigation (7.0s)
+  ok  6 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: data-display (6.6s)
+  ok  7 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: actions (7.5s)
+  ok  8 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: locale (8.3s)
+  ok  9 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: notifications (8.2s)
+  ok 10 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: accessibility (5.9s)
+  ok 11 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: shortcuts (5.6s)
+  ok 12 [chromium] › apps\web\e2e\settings-product-review.spec.ts:118:5 › Shared controls preserve high contrast: forms, light desktop (4.9s)
+  ok 13 [chromium] › apps\web\e2e\settings-product-review.spec.ts:118:5 › Shared controls preserve high contrast: forms, dark narrow English (4.5s)
+  ok 14 [chromium] › apps\web\e2e\settings-product-review.spec.ts:118:5 › Shared controls preserve high contrast: actions-selection, light desktop (3.8s)
+  ok 15 [chromium] › apps\web\e2e\settings-product-review.spec.ts:118:5 › Shared controls preserve high contrast: actions-selection, dark narrow English (3.2s)
+  ok 16 [chromium] › apps\web\e2e\settings-product-review.spec.ts:118:5 › Shared controls preserve high contrast: data, light desktop (3.5s)
+  ok 17 [chromium] › apps\web\e2e\settings-product-review.spec.ts:118:5 › Shared controls preserve high contrast: data, dark narrow English (3.1s)
+  ok 18 [chromium] › apps\web\e2e\settings-product-review.spec.ts:118:5 › Shared controls preserve high contrast: overlays, light desktop (3.7s)
+  ok 19 [chromium] › apps\web\e2e\settings-product-review.spec.ts:118:5 › Shared controls preserve high contrast: overlays, dark narrow English (3.4s)
+  x  20 [chromium] › apps\web\e2e\settings-product-review.spec.ts:157:1 › Collapsed desktop sidebar releases its grid column on mobile and restores it on desktop (8.0s)
+(node:2804) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 21 [chromium] › apps\web\e2e\settings-product-review.spec.ts:192:5 › Dialog confirmation uses the accent foreground: blue, light (4.0s)
+  ok 22 [chromium] › apps\web\e2e\settings-product-review.spec.ts:192:5 › Dialog confirmation uses the accent foreground: blue, dark (3.1s)
+  ok 23 [chromium] › apps\web\e2e\settings-product-review.spec.ts:192:5 › Dialog confirmation uses the accent foreground: green, light (3.7s)
+  ok 24 [chromium] › apps\web\e2e\settings-product-review.spec.ts:192:5 › Dialog confirmation uses the accent foreground: green, dark (3.1s)
+  ok 25 [chromium] › apps\web\e2e\settings-product-review.spec.ts:192:5 › Dialog confirmation uses the accent foreground: orange, light (3.7s)
+  ok 26 [chromium] › apps\web\e2e\settings-product-review.spec.ts:192:5 › Dialog confirmation uses the accent foreground: orange, dark (3.1s)
+  x  27 [chromium] › apps\web\e2e\settings-product-review.spec.ts:211:3 › Settings search discovers previously missing fields and focuses their destination: desktop (30.4s)
+(node:24936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  28 [chromium] › apps\web\e2e\settings-product-review.spec.ts:211:3 › Settings search discovers previously missing fields and focuses their destination: mobile (30.3s)
+(node:17364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 29 [chromium] › apps\web\e2e\settings-semantic.spec.ts:5:3 › Comparison choices adapt to their container and retain long labels at 1440 (2.9s)
+  ok 30 [chromium] › apps\web\e2e\settings-semantic.spec.ts:5:3 › Comparison choices adapt to their container and retain long labels at 320 (2.7s)
+  ok 31 [chromium] › apps\web\e2e\settings-semantic.spec.ts:49:1 › System contrast responds independently of the assistive-settings toggle (6.0s)
+  ok 32 [chromium] › apps\web\e2e\settings-semantic.spec.ts:85:1 › Mobile category navigation honors scroll preference after drawer focus restoration (5.8s)
+  ok 33 [chromium] › apps\web\e2e\settings-semantic.spec.ts:127:3 › Semantic appearance choices preserve preview, selection and persistence at 1440 (6.8s)
+  ok 34 [chromium] › apps\web\e2e\settings-semantic.spec.ts:127:3 › Semantic appearance choices preserve preview, selection and persistence at 390 (6.4s)
+  ok 35 [chromium] › apps\web\e2e\settings-semantic.spec.ts:127:3 › Semantic appearance choices preserve preview, selection and persistence at 320 (5.8s)
+
+
+  1) [chromium] › apps\web\e2e\settings-product-review.spec.ts:157:1 › Collapsed desktop sidebar releases its grid column on mobile and restores it on desktop 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('.surface-shell-grid')
+    Expected: "collapsed"
+    Received: "expanded"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 5000ms
+      - waiting for locator('.surface-shell-grid')
+        13 × locator resolved to <div data-sidebar="expanded" class="surface-shell-grid min-h-screen bg-canvas text-ink">…</div>
+           - unexpected value "expanded"
+
+
+      175 |         .toBe(width);
+      176 |       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    > 177 |       await expect(shell).toHaveAttribute('data-sidebar', 'collapsed');
+          |                           ^
+      178 |     }
+      179 |   }
+      180 |   await page.screenshot({ path: `${evidence}/collapsed-sidebar-320.png`, animations: 'disabled' });
+        at D:\coder\i721\console-web\apps\web\e2e\settings-product-review.spec.ts:177:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-product-review-Co-1507e--and-restores-it-on-desktop-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-product-review-Co-1507e--and-restores-it-on-desktop-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-product-review-Co-1507e--and-restores-it-on-desktop-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-product-review-Co-1507e--and-restores-it-on-desktop-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\settings-product-review.spec.ts:211:3 › Settings search discovers previously missing fields and focuses their destination: desktop 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('textbox', { name: '搜索设置项', exact: true })
+
+
+      218 |     await page
+      219 |       .getByRole('searchbox', { name: '搜索设置项', exact: true })
+    > 220 |       .fill(narrow ? 'timezone' : '提示时长');
+          |        ^
+      221 |     const link = page.getByRole('link', {
+      222 |       name: narrow ? '时区' : '非关键成功提示时长',
+      223 |       exact: true,
+        at D:\coder\i721\console-web\apps\web\e2e\settings-product-review.spec.ts:220:8
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-product-review-Se-f6c2e-s-their-destination-desktop-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-product-review-Se-f6c2e-s-their-destination-desktop-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-product-review-Se-f6c2e-s-their-destination-desktop-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-product-review-Se-f6c2e-s-their-destination-desktop-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › apps\web\e2e\settings-product-review.spec.ts:211:3 › Settings search discovers previously missing fields and focuses their destination: mobile 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('textbox', { name: '搜索设置项', exact: true })
+
+
+      218 |     await page
+      219 |       .getByRole('searchbox', { name: '搜索设置项', exact: true })
+    > 220 |       .fill(narrow ? 'timezone' : '提示时长');
+          |        ^
+      221 |     const link = page.getByRole('link', {
+      222 |       name: narrow ? '时区' : '非关键成功提示时长',
+      223 |       exact: true,
+        at D:\coder\i721\console-web\apps\web\e2e\settings-product-review.spec.ts:220:8
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-product-review-Se-eb652-es-their-destination-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-product-review-Se-eb652-es-their-destination-mobile-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-product-review-Se-eb652-es-their-destination-mobile-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-product-review-Se-eb652-es-their-destination-mobile-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › apps\web\e2e\settings-product-review.spec.ts:157:1 › Collapsed desktop sidebar releases its grid column on mobile and restores it on desktop 
+    [chromium] › apps\web\e2e\settings-product-review.spec.ts:211:3 › Settings search discovers previously missing fields and focuses their destination: desktop 
+    [chromium] › apps\web\e2e\settings-product-review.spec.ts:211:3 › Settings search discovers previously missing fields and focuses their destination: mobile 
+  32 passed (4.0m)

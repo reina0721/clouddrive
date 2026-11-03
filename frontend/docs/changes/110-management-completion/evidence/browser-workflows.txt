@@ -1,0 +1,222 @@
+
+[WebServer] (node:6600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:7064) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:31076) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[WebServer] (node:12468) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+
+(node:23788) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/9] [chromium] › apps\web\e2e\management-completion.spec.ts:7:1 › Home has only recents and never redirects to a saved draft
+[2/9] [chromium] › apps\web\e2e\management-completion.spec.ts:28:1 › Bulk status preserves protected users and reports partial results
+  1) [chromium] › apps\web\e2e\management-completion.spec.ts:28:1 › Bulk status preserves protected users and reports partial results 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      52 |         record.result === 'failure' && record.operation === 'users.status',
+      53 |     ),
+    > 54 |   ).toBe(true);
+         |     ^
+      55 |   await page.reload();
+      56 |   await expect(
+      57 |     page.getByRole('heading', { name: '用户管理', exact: true, level: 1 }),
+        at D:\coder\i721\console-web\apps\web\e2e\management-completion.spec.ts:54:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Bulk-97315-and-reports-partial-results-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\management-completion-Bulk-97315-and-reports-partial-results-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Bulk-97315-and-reports-partial-results-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\management-completion-Bulk-97315-and-reports-partial-results-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:29444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[3/9] [chromium] › apps\web\e2e\management-completion.spec.ts:61:1 › Role members change only the selected role and audit filters survive detail return
+  2) [chromium] › apps\web\e2e\management-completion.spec.ts:61:1 › Role members change only the selected role and audit filters survive detail return 
+
+    Test timeout of 120000ms exceeded.
+
+    Error: locator.click: Test timeout of 120000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '添加成员', exact: true }).first()
+        - locator resolved to <button disabled data-rac="" type="button" data-slot="button" data-disabled="true" id="react-aria166062211-_r_36_" data-react-aria-pressable="true" class="button button--md button--ghost inline-flex rounded-control font-semibold outline-none transition-colors h-control gap-2 px-4 text-sm bg-brand text-on-brand shadow-sm hover:bg-brand-strong">…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        214 × waiting for element to be visible, enabled and stable
+            - element is not enabled
+          - retrying click action
+            - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+
+
+      71 |   const roleId = new URL(page.url()).searchParams.get('id');
+      72 |   await page.getByRole('searchbox', { name: '搜索待添加用户' }).fill('Member 01');
+    > 73 |   await page.getByRole('button', { name: '添加成员', exact: true }).first().click();
+         |                                                                         ^
+      74 |   await page.getByRole('option', { name: /Member 01/ }).click();
+      75 |   await page.getByRole('button', { name: '添加成员', exact: true }).last().click();
+      76 |   await page
+        at D:\coder\i721\console-web\apps\web\e2e\management-completion.spec.ts:73:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Role-86ffd-lters-survive-detail-return-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\management-completion-Role-86ffd-lters-survive-detail-return-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\management-completion-Role-86ffd-lters-survive-detail-return-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\management-completion-Role-86ffd-lters-survive-detail-return-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:20720) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[4/9] [chromium] › apps\web\e2e\management-completion.spec.ts:105:1 › Account password changes reject bad credentials then revoke sessions and require sign-in
+[5/9] [chromium] › apps\web\e2e\product-workbench.spec.ts:5:1 › Product IA retains old links, search targets, page tabs and history
+[6/9] [chromium] › apps\web\e2e\product-workbench.spec.ts:41:1 › Home contains only recents while drafts and notification actions remain available in their owners
+  3) [chromium] › apps\web\e2e\product-workbench.spec.ts:41:1 › Home contains only recents while drafts and notification actions remain available in their owners 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('button', { name: /^通知(?:，|$)/ })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" with timeout 5000ms
+      - waiting for getByRole('button', { name: /^通知(?:，|$)/ })
+        14 × locator resolved to <button type="button" aria-label="通知" aria-expanded="true" aria-controls="notification-center" class="relative shrink-0 rounded-control border border-border bg-surface text-ink-muted outline-none transition-colors hover:bg-surface-muted hover:text-ink focus-visible:ring-2 focus-visible:ring-brand grid size-control min-w-control place-items-center">…</button>
+           - unexpected value "inactive"
+
+
+      64 |   await expect(page.getByRole('dialog', { name: '通知中心' }).getByRole('button', { name: '全部标为已读' })).toHaveCount(0);
+      65 |   await page.keyboard.press('Escape');
+    > 66 |   await expect(page.getByRole('button', { name: /^通知(?:，|$)/ })).toBeFocused();
+         |                                                                  ^
+      67 | });
+      68 |
+      69 | test('English dark workbench is usable at mobile, tablet, desktop and wide widths', async ({
+        at D:\coder\i721\console-web\apps\web\e2e\product-workbench.spec.ts:66:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\product-workbench-Home-con-bbfcc-n-available-in-their-owners-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\product-workbench-Home-con-bbfcc-n-available-in-their-owners-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\product-workbench-Home-con-bbfcc-n-available-in-their-owners-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\product-workbench-Home-con-bbfcc-n-available-in-their-owners-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:22488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[7/9] [backend-contract] › apps\web\e2e\management-completion-backend.spec.ts:4:1 › Backend completion sends bounded bulk and paginated notification contracts with CSRF
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+[8/9] [backend-contract] › apps\web\e2e\management-completion-backend.spec.ts:38:1 › Backend account security revokes other sessions and changes password without Mock fallback
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[9/9] [backend-contract] › apps\web\e2e\product-management-backend.spec.ts:4:1 › Backend M2–M6 uses proposed REST/CSRF contracts, preserves conflict drafts and synchronizes notifications
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+[WebServer] [browser] A PressResponder was rendered without a pressable child. Either call the usePress hook, or wrap your DOM node with <Pressable> component.
+
+  4) [backend-contract] › apps\web\e2e\product-management-backend.spec.ts:4:1 › Backend M2–M6 uses proposed REST/CSRF contracts, preserves conflict drafts and synchronizes notifications 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    Expected: ArrayContaining ["/users", "/me", "/roles", "/notifications/read"]
+    Received: ["/users", "/me", "/me", "/roles", "/notifications/read-all"]
+
+      45 |   await expect(page.getByRole('main')).toContainText('Backend Audit');
+      46 |   await expect(page.getByRole('main')).toContainText('Backend Updated');
+    > 47 |   expect(fixture.writes.map((item) => item.path)).toEqual(
+         |                                                   ^
+      48 |     expect.arrayContaining(['/users', '/me', '/roles', '/notifications/read']),
+      49 |   );
+      50 |   expect(fixture.writes.every((item) => item.csrf === 'product-csrf')).toBe(true);
+        at D:\coder\i721\console-web\apps\web\e2e\product-management-backend.spec.ts:47:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\product-management-backend-cae43--synchronizes-notifications-backend-contract\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\product-management-backend-cae43--synchronizes-notifications-backend-contract\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\product-management-backend-cae43--synchronizes-notifications-backend-contract\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\product-management-backend-cae43--synchronizes-notifications-backend-contract\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  4 failed
+    [chromium] › apps\web\e2e\management-completion.spec.ts:28:1 › Bulk status preserves protected users and reports partial results 
+    [chromium] › apps\web\e2e\management-completion.spec.ts:61:1 › Role members change only the selected role and audit filters survive detail return 
+    [chromium] › apps\web\e2e\product-workbench.spec.ts:41:1 › Home contains only recents while drafts and notification actions remain available in their owners 
+    [backend-contract] › apps\web\e2e\product-management-backend.spec.ts:4:1 › Backend M2–M6 uses proposed REST/CSRF contracts, preserves conflict drafts and synchronizes notifications 
+  5 passed (4.0m)

@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:3216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Sticky consumers resolve actual chrome height across live tabs and viewport changes (6.3s)
+  ok 2 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:93:1 › Split detail shares the dynamic sticky contract without settings-specific offsets (1.0s)
+
+  2 passed (8.2s)

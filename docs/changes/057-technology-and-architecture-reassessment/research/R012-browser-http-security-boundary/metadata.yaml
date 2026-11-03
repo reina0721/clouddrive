@@ -1,0 +1,42 @@
+schema_version: 1
+id: R012
+title: "浏览器 HTTP 安全边界与成熟中间件复核"
+question: "当前 CORS、安全响应头、Same-Origin 与 CSRF 的职责是否应由 rs/cors、unrolled/secure 或 Go CrossOriginProtection 替换，哪些项目语义必须保留？"
+research_type: current-project-and-external-primary-source
+topics: ["CORS", "CSRF", "security headers", "browser security", "HTTP middleware"]
+keywords: ["SecureHeaders", "CORS", "SameOrigin", "CrossOriginProtection", "rs/cors", "unrolled/secure"]
+technologies: ["github.com/rs/cors", "net/http.CrossOriginProtection", "github.com/unrolled/secure"]
+applicable_scenarios: ["SEC-057-002", "HTTP browser boundary", "WebUI Session", "cross-origin API"]
+non_applicable_scenarios: ["JWT validation", "password hashing", "WAF/CDN", "TLS termination configuration"]
+status: active
+summary: "采用 rs/cors v1.11.1 处理标准 CORS headers/Vary/preflight，并用 Go CrossOriginProtection 加固 unsafe cross-site 请求；项目保留 fail-closed allowlist、Problem、IAM Session CSRF token 与严格 Origin。安全头继续显式保留，不引入 unrolled/secure。"
+evidence:
+  types: ["source-code", "call-site-search", "tests", "official-source", "standard-library-doc", "release-metadata", "vulnerability-database"]
+  primary_sources:
+    - title: "当前 CORS、安全头、IAM CSRF 与 composition"
+      locator: "pkg/httpx/production_middleware.go; pkg/httpx/production_middleware_test.go; internal/module/iam/binding/http/contract.go; internal/composition/iam.go; internal/composition/service.go"
+      snapshot: "4ad496c2f36044f8f4a8a9273685a5666ed5c87b"
+    - title: "rs/cors v1.11.1 source and metadata"
+      locator: "https://github.com/rs/cors/tree/v1.11.1; https://pkg.go.dev/github.com/rs/cors@v1.11.1"
+      snapshot: "2026-08-22"
+    - title: "Go CrossOriginProtection documentation"
+      locator: "https://pkg.go.dev/net/http@go1.26.6#CrossOriginProtection"
+      snapshot: "2026-08-22"
+    - title: "unrolled/secure v1.17.0 source and metadata"
+      locator: "https://github.com/unrolled/secure/tree/v1.17.0"
+      snapshot: "2026-08-22"
+    - title: "OSV version-specific Go package query"
+      locator: "https://api.osv.dev/v1/query"
+      snapshot: "2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: time-sensitive
+  review_after: "2026-10-22"
+  refresh_triggers: ["rs/cors release or advisory", "Go CrossOriginProtection semantics change", "WebUI hosting/TLS termination changes", "cross-origin credential requirement", "CSP asset model changes"]
+relations:
+  extends: ["057-R001", "057-R002", "057-R005", "057-R006"]
+  related: ["057-R009"]
+  supersedes: []
+  superseded_by: []
+report: report.md

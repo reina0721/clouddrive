@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:26788) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Theme tiles retain horizontal hierarchy, pointer and keyboard selection and persistence (20.5s)
+  ok 2 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:134:1 › Choice tiles authority retains disabled state and keyboard focus on the card (2.6s)
+
+  2 passed (24.1s)

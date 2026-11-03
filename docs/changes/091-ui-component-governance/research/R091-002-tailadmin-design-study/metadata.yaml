@@ -1,0 +1,14 @@
+id: R091-002
+title: TailAdmin 设计规律研究
+status: superseded
+verified_at: "2026-08-30"
+snapshot_commit: de1e2d9
+scope: 设计原则（不涉及具体代码文件）
+trigger: 用户要求参考 TailAdmin 研究"布局稳定/页面舒适"的设计规律；web_search 因 API key 无效不可用，本档案为内部复核
+supersedes: []
+superseded_by: [R093-001]
+summary: |
+  将 TailAdmin 的稳定感归纳为"统一组件来源 + 克制表面层级 + 一致控件度量 +
+  稳定内容边界"，并对照本项目现状：Token 已较完善，差距在组件来源不统一
+  （原生 select 与 HeroUI Select 并存、自研 popover 与 HeroUI Popover 并存）。
+files: []

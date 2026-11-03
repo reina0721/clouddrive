@@ -1,0 +1,8 @@
+
+> clouddrive-frontend@0.1.0 foundation:check C:\rin\coder\i0721\console-web
+> node tooling/check-foundation-fixtures.mjs && node tooling/check-foundation-governance.mjs && node tooling/check-tailwind-sources.mjs
+
+Foundation fixtures passed: 14 cases.
+Tailwind source coverage fixtures passed: 8 cases.
+Foundation governance passed for 12 workspaces and 11 contract owners.
+Tailwind source coverage passed: entry + 2 @source roots cover all TSX-bearing workspaces.

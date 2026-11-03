@@ -1,0 +1,8 @@
+
+Running 3 tests using 1 worker
+
+  ✓  1 [chromium] › apps/web/e2e/navigation.spec.ts:152:1 › 移动侧栏使用同一树并在选择叶子后关闭 (4.6s)
+  ✓  2 [chromium] › apps/web/e2e/navigation.spec.ts:167:1 › Shell NavigationViewport 隐藏原生 scrollbar 且保留滚动能力 (3.7s)
+  ✓  3 [chromium] › apps/web/e2e/navigation.spec.ts:248:1 › UI Elements 根路径进入默认子级且旧 Showcase 不再匹配 (8.4s)
+
+  3 passed (17.9s)

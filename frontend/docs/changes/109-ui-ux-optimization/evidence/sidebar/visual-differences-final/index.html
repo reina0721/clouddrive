@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><title>Sidebar 视觉差异复核</title>
+  <style>
+    body {
+      font-family: system-ui;
+      margin: 24px;
+      background: #f6f7fb;
+      color: #172033;
+    }
+    section {
+      margin-bottom: 40px;
+    }
+    div {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    figure {
+      margin: 0;
+    }
+    img {
+      width: 100%;
+      border: 1px solid #cfd5df;
+    }
+    figcaption {
+      padding: 8px;
+    }
+  </style>
+  <h1>Sidebar 视觉差异复核</h1>
+  <p>
+    左：更新前基线；中：已确认结果；右：原像素差异。用户已确认 6 项并限定更新；前后 SHA-256 见
+    approved-baselines.json，原图与 SHA-256 见
+    manifest.json。已复验通过的偶发截图也保留，并明确标记为无需更新。
+  </p>
+  <section>
+    <h2>01 · surface-shell-parent-navigation</h2>
+    <p>用户已确认本轮设计变化，限定更新对应基线；原图与差异保留。</p>
+    <div>
+      <figure>
+        <figcaption>expected</figcaption>
+        <a href="01/expected.png"
+          ><img loading="lazy" src="01/expected.png" alt="surface-shell-parent-navigation expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="01/actual.png"
+          ><img loading="lazy" src="01/actual.png" alt="surface-shell-parent-navigation actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>diff</figcaption>
+        <a href="01/diff.png"
+          ><img loading="lazy" src="01/diff.png" alt="surface-shell-parent-navigation diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>02 · surface-shell-compact-sibling-swap</h2>
+    <p>用户已确认本轮设计变化，限定更新对应基线；原图与差异保留。</p>
+    <div>
+      <figure>
+        <figcaption>expected</figcaption>
+        <a href="02/expected.png"
+          ><img
+            loading="lazy"
+            src="02/expected.png"
+            alt="surface-shell-compact-sibling-swap expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="02/actual.png"
+          ><img loading="lazy" src="02/actual.png" alt="surface-shell-compact-sibling-swap actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>diff</figcaption>
+        <a href="02/diff.png"
+          ><img loading="lazy" src="02/diff.png" alt="surface-shell-compact-sibling-swap diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>03 · surface-shell-compact-flyout</h2>
+    <p>用户已确认本轮设计变化，限定更新对应基线；原图与差异保留。</p>
+    <div>
+      <figure>
+        <figcaption>expected</figcaption>
+        <a href="03/expected.png"
+          ><img loading="lazy" src="03/expected.png" alt="surface-shell-compact-flyout expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="03/actual.png"
+          ><img loading="lazy" src="03/actual.png" alt="surface-shell-compact-flyout actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>diff</figcaption>
+        <a href="03/diff.png"
+          ><img loading="lazy" src="03/diff.png" alt="surface-shell-compact-flyout diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>04 · ui-elements-destructive-confirm</h2>
+    <p>用户已确认本轮设计变化，限定更新对应基线；原图与差异保留。</p>
+    <div>
+      <figure>
+        <figcaption>expected</figcaption>
+        <a href="04/expected.png"
+          ><img loading="lazy" src="04/expected.png" alt="ui-elements-destructive-confirm expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="04/actual.png"
+          ><img loading="lazy" src="04/actual.png" alt="ui-elements-destructive-confirm actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>diff</figcaption>
+        <a href="04/diff.png"
+          ><img loading="lazy" src="04/diff.png" alt="ui-elements-destructive-confirm diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>05 · ui-elements-family-forms</h2>
+    <p>不属于本轮设计基线更新范围；截图稳定性及原断言复验见 sidebar-verification.md。</p>
+    <div>
+      <figure>
+        <figcaption>expected</figcaption>
+        <a href="05/expected.png"
+          ><img loading="lazy" src="05/expected.png" alt="ui-elements-family-forms expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="05/actual.png"
+          ><img loading="lazy" src="05/actual.png" alt="ui-elements-family-forms actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>diff</figcaption>
+        <a href="05/diff.png"
+          ><img loading="lazy" src="05/diff.png" alt="ui-elements-family-forms diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>06 · ui-elements-family-overlays</h2>
+    <p>用户已确认本轮设计变化，限定更新对应基线；原图与差异保留。</p>
+    <div>
+      <figure>
+        <figcaption>expected</figcaption>
+        <a href="06/expected.png"
+          ><img loading="lazy" src="06/expected.png" alt="ui-elements-family-overlays expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="06/actual.png"
+          ><img loading="lazy" src="06/actual.png" alt="ui-elements-family-overlays actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>diff</figcaption>
+        <a href="06/diff.png"
+          ><img loading="lazy" src="06/diff.png" alt="ui-elements-family-overlays diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>07 · reference-ultrawide</h2>
+    <p>不属于本轮设计基线更新范围；截图稳定性及原断言复验见 sidebar-verification.md。</p>
+    <div>
+      <figure>
+        <figcaption>expected</figcaption>
+        <a href="07/expected.png"
+          ><img loading="lazy" src="07/expected.png" alt="reference-ultrawide expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="07/actual.png"
+          ><img loading="lazy" src="07/actual.png" alt="reference-ultrawide actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>diff</figcaption>
+        <a href="07/diff.png"
+          ><img loading="lazy" src="07/diff.png" alt="reference-ultrawide diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>08 · mobile-navigation-open</h2>
+    <p>用户已确认本轮设计变化，限定更新对应基线；原图与差异保留。</p>
+    <div>
+      <figure>
+        <figcaption>expected</figcaption>
+        <a href="08/expected.png"
+          ><img loading="lazy" src="08/expected.png" alt="mobile-navigation-open expected"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>actual</figcaption>
+        <a href="08/actual.png"
+          ><img loading="lazy" src="08/actual.png" alt="mobile-navigation-open actual"
+        /></a>
+      </figure>
+      <figure>
+        <figcaption>diff</figcaption>
+        <a href="08/diff.png"
+          ><img loading="lazy" src="08/diff.png" alt="mobile-navigation-open diff"
+        /></a>
+      </figure>
+    </div>
+  </section>
+</html>

@@ -1,0 +1,27 @@
+id: R091-001
+title: 组件来源审计与原生控件排查
+status: active
+verified_at: "2026-08-30"
+snapshot_commit: de1e2d9
+scope: webui/src、internal/module/*/binding/webui/web、webui/package.json
+trigger: 用户要求对 Web UI 做系统性组件审计与重构（不再接受“给原生 select 调样式”的局部修复）
+supersedes: []
+superseded_by: []
+summary: |
+  盘点业务页面与宿主中每个基础交互组件的来源（成熟组件库 / 项目统一层 / 自研 /
+  原生 HTML），定位 FilterBar/Pagination/语言切换/若干页面仍使用原生
+  select、原生 checkbox、自研 popover 的治理缺口，为 091 组件体系重构提供基线。
+files:
+  - webui/package.json
+  - webui/src/ui/index.tsx
+  - webui/src/ui/forms.tsx
+  - webui/src/ui/feedback.tsx
+  - webui/src/ui/data.tsx
+  - webui/src/ui/layout.tsx
+  - webui/src/ui/patterns.tsx
+  - webui/src/components/AppShell.tsx
+  - webui/src/components/shell/AppHeader.tsx
+  - webui/src/components/shell/WorkspaceTabs.tsx
+  - webui/src/components/ThemeDrawer.tsx
+  - webui/src/components/RouteSearch.tsx
+  - internal/module/*/binding/webui/web/*.tsx

@@ -1,0 +1,8 @@
+CREATE TABLE console_events (id VARCHAR(36) PRIMARY KEY, actor_id VARCHAR(36) NOT NULL, actor_name VARCHAR(128) NOT NULL, object_id VARCHAR(100) NOT NULL, object_name VARCHAR(128) NOT NULL, operation VARCHAR(100) NOT NULL, created_at TIMESTAMPTZ NOT NULL, result VARCHAR(16) NOT NULL, error_code VARCHAR(64) NOT NULL);
+CREATE INDEX ix_console_events_time ON console_events(created_at);
+CREATE TABLE console_notifications (id VARCHAR(36) PRIMARY KEY, owner_id VARCHAR(36) NOT NULL, operation VARCHAR(100) NOT NULL, object_id VARCHAR(100) NOT NULL, object_name VARCHAR(128) NOT NULL, category VARCHAR(16) NOT NULL, created_at TIMESTAMPTZ NOT NULL, "read" BOOLEAN NOT NULL);
+CREATE INDEX ix_console_notifications_owner ON console_notifications(owner_id);
+CREATE TABLE console_dictionaries (id VARCHAR(36) PRIMARY KEY, name VARCHAR(80) NOT NULL, code VARCHAR(40) NOT NULL UNIQUE, status VARCHAR(16) NOT NULL, remark VARCHAR(200) NOT NULL, updated_at BIGINT NOT NULL, version BIGINT NOT NULL);
+CREATE TABLE console_dictionary_items (id VARCHAR(36) PRIMARY KEY, type_id VARCHAR(36) NOT NULL, label VARCHAR(40) NOT NULL, value VARCHAR(200) NOT NULL, sort_order INTEGER NOT NULL, status VARCHAR(16) NOT NULL, tone VARCHAR(16) NOT NULL, version BIGINT NOT NULL, UNIQUE(type_id,value), FOREIGN KEY(type_id) REFERENCES console_dictionaries(id) ON DELETE CASCADE);
+CREATE TABLE console_workspaces (owner_id VARCHAR(36) PRIMARY KEY, snapshot TEXT NOT NULL, version BIGINT NOT NULL, updated_at TIMESTAMPTZ NOT NULL);
+CREATE TABLE console_tasks (id VARCHAR(36) PRIMARY KEY, owner_id VARCHAR(36) NOT NULL, definition TEXT NOT NULL, next_run_at TIMESTAMPTZ NULL, version BIGINT NOT NULL, updated_at TIMESTAMPTZ NOT NULL);

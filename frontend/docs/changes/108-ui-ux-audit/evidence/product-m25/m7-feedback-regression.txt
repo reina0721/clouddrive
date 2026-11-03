@@ -1,0 +1,29 @@
+
+> clouddrive-frontend@0.1.0 test:browser D:\coder\i721\console-web
+> playwright test "apps/web/e2e/leave-confirm.spec.ts" "apps/web/e2e/confirm-bulk.spec.ts" "apps/web/e2e/toast-duration.spec.ts" "apps/web/e2e/copy-feedback.spec.ts" "apps/web/e2e/collect-noncritical.spec.ts"
+
+[WebServer] (node:24424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:2892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:34900) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:31664) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 10 tests using 1 worker
+
+(node:9048) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\collect-noncritical.spec.ts:3:1 › 收纳非关键通知默认开：复制反馈同时进通知中心 (4.5s)
+  ok  2 [chromium] › apps\web\e2e\collect-noncritical.spec.ts:18:1 › 关闭 收纳非关键通知：复制反馈仅 toast 不进中心 (5.9s)
+  ok  3 [chromium] › apps\web\e2e\confirm-bulk.spec.ts:21:1 › 批量操作前确认默认开：导出所选弹二次确认，取消不导出 (10.5s)
+  ok  4 [chromium] › apps\web\e2e\confirm-bulk.spec.ts:61:1 › 关闭 批量操作前确认：导出所选直接执行（无确认） (7.6s)
+  ok  5 [chromium] › apps\web\e2e\copy-feedback.spec.ts:15:1 › 复制后反馈（copyFeedback 默认开）：复制 ID → 成功 Toast (3.6s)
+  ok  6 [chromium] › apps\web\e2e\copy-feedback.spec.ts:24:1 › 关闭 复制后显示反馈：复制 ID 不再弹 Toast (4.9s)
+  ok  7 [chromium] › apps\web\e2e\leave-confirm.spec.ts:12:1 › 参考资源编辑：未保存修改离开时弹出确认；取消留在原地，确认后离开 (5.0s)
+  ok  8 [chromium] › apps\web\e2e\leave-confirm.spec.ts:30:1 › 操作偏好关闭「离开未保存内容时提醒」后，dirty 离开不再弹确认 (4.8s)
+  ok  9 [chromium] › apps\web\e2e\toast-duration.spec.ts:15:1 › 提示时长偏好流入 Toast（长=8s：toast 在 6.5s 仍可见） (11.3s)
+  ok 10 [chromium] › apps\web\e2e\toast-duration.spec.ts:27:1 › 提示时长偏好流入 Toast（短=3s：toast 在 4.5s 消失） (8.8s)
+
+  10 passed (1.4m)

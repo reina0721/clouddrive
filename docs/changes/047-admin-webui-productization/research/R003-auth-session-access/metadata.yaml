@@ -1,0 +1,38 @@
+id: R003
+title: "Auth Session WebUI 访问边界与导航装配"
+question: "已有 WebUISession 页面如何沿 Binding、Composition 和 Auth operation gate 形成可发现且 fail-closed 的访问闭环，而不新增 Session wire 或业务写操作？"
+status: passed
+snapshot:
+  date: "2026-08-21"
+  commit: "2402f96"
+evidence:
+  - path: "internal/module/auth/binding/webui/binding.go"
+    location: "Binding"
+    fact: "Auth module owns the auth.session route and locale resources."
+  - path: "internal/module/auth/webuiauth/http.go"
+    location: "NewHTTPHandler / session"
+    fact: "Session wire already resolves and returns a WebUISession; no new endpoint is required."
+  - path: "internal/composition/webui_http.go"
+    location: "newWebUIManifestHandler"
+    fact: "Manifest access is resolved through the existing Auth operation authorizer."
+  - path: "docs/changes/047-admin-webui-productization/evidence/visual/2026-08-21-shell-i18n-baseline.md"
+    location: "Auth Session 页面补充校准"
+    fact: "Soybean user-center remains a placeholder in the observed session; no user-center write flow is copied."
+facts:
+  - "The existing setup user carries management:read, which is the current read scope used by management WebUI diagnostics."
+  - "The Session page is read-only and consumes the existing WebUISession contract."
+inferences:
+  - "A module-owned auth.webui.session operation is the smallest way to make the route protected without coupling the host to Auth internals or inventing a second permission system."
+limitations:
+  - "The local Vite HTTPS certificate still prevents browser screenshots of the project page; reference-site evidence remains separate from local visual acceptance."
+applicable_scenarios:
+  - "Auth Session route access"
+  - "Module-owned WebUI navigation"
+non_applicable_scenarios:
+  - "Password change"
+  - "User/role CRUD"
+  - "New Session API or database migration"
+refresh_triggers:
+  - "Auth scope or operation policy changes"
+  - "Session wire contract changes"
+  - "Auth Binding route or locale ownership changes"

@@ -1,0 +1,49 @@
+{
+  "confirmation": "Human user: 确认",
+  "confirmedAt": "2026-10-10T20:20:05.3384211Z",
+  "scope": "Only the six reviewed Sidebar visual changes; thresholds and remaining goldens untouched.",
+  "baselines": [
+    {
+      "name": "surface-shell-parent-navigation",
+      "baseline": "apps\\web\\e2e\\navigation.spec.ts-snapshots\\surface-shell-parent-navigation-chromium-win32.png",
+      "before": "ee7b267d8873a77ee224b4b06f2bce5c2a725e7bef8180e908e76cabdd8db88a",
+      "after": "486d6fa07141387ed5ed79e53fded9737fa4272b209ca0842c59f4b67a96cd97",
+      "reviewedImage": "01/actual.png"
+    },
+    {
+      "name": "surface-shell-compact-sibling-swap",
+      "baseline": "apps\\web\\e2e\\navigation.spec.ts-snapshots\\surface-shell-compact-sibling-swap-chromium-win32.png",
+      "before": "6c421fa3232cfd153c304631987242317cda6b99f570cd7011f253c4cfbffe29",
+      "after": "128855d6b7e73a49aa96f1ccca2a08ee53e29e63eff90e08b9320c06dca4f913",
+      "reviewedImage": "02/actual.png"
+    },
+    {
+      "name": "surface-shell-compact-flyout",
+      "baseline": "apps\\web\\e2e\\navigation.spec.ts-snapshots\\surface-shell-compact-flyout-chromium-win32.png",
+      "before": "c9ebc2e53cf613e3041afd8e434d0fcf6cf91646fb7c1cefdc24604aa99cbd23",
+      "after": "bd55b988c1a0a3973010957abd0a59c700a40e7ed9b7a8a26460d69dbf46bc5f",
+      "reviewedImage": "03/actual.png"
+    },
+    {
+      "name": "ui-elements-destructive-confirm",
+      "baseline": "apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-destructive-confirm-chromium-win32.png",
+      "before": "eab9eeb238534964a73bb6ce9d038043fd1e2d9604ff95dbc9ed10b70467922c",
+      "after": "a39d9a9c745222c0725b3cdbdc5fffd76cfb9dffa299254bffeb534ccaca9fd0",
+      "reviewedImage": "04/actual.png"
+    },
+    {
+      "name": "ui-elements-family-overlays",
+      "baseline": "apps\\web\\e2e\\visual.spec.ts-snapshots\\ui-elements-family-overlays-chromium-win32.png",
+      "before": "2957f0f8afb766b4e9d75b105012395620060d6b0d3cd6ece40686c3de4ff0a1",
+      "after": "dac5a7b783ffa2c64846b83a89bd4e91262bc2ab609b5f2f69d1c1109a205a4c",
+      "reviewedImage": "06/actual.png"
+    },
+    {
+      "name": "mobile-navigation-open",
+      "baseline": "apps\\web\\e2e\\visual.spec.ts-snapshots\\mobile-navigation-open-chromium-win32.png",
+      "before": "df1854a11657ea2f00e39a807b7147c029d61087e61a3382d29829f0ac300c35",
+      "after": "732b51a7ad997b17c44f28e0839be56edc75a8fe7b36fb1c463b372cf64ae008",
+      "reviewedImage": "08/actual.png"
+    }
+  ]
+}

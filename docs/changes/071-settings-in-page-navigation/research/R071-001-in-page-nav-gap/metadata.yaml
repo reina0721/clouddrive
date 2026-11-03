@@ -1,0 +1,30 @@
+schema_version: 1
+id: R071-001
+title: "菜单层级多形态：全局菜单树 vs 页内侧边栏（shadcn-admin settings 形态）"
+question: "用户指出当前 WebUI 菜单分类层级设计单一：只实现了「全局菜单树」（host.center→settings.center→四子页），而参考站 shadcn-admin settings 展示的是第二种形态——「菜单与页面内共持的页内侧边栏」：全局菜单只保留 Settings 入口，四个分区（Profile/Account/Appearance/Notifications）在设置页面内部以垂直导航切换。需要回答：（a）两种形态各自的适用场景与并存方式；（b）shadcn-admin settings 页内导航的交互/语义形态；（c）平台需要什么原语（页内分区导航）让业务模块复用；（d）settings 模块如何改造以体现「页内侧边栏」形态。"
+research_type: current-project
+topics: ["webui", "menu-hierarchy", "in-page-navigation", "settings", "shadcn-admin", "sdk-ui", "section-nav"]
+keywords: ["SectionNav", "页内侧边栏", "navlist", "settings layout", "global menu", "in-page nav"]
+applicable_scenarios:
+  - "为设置中心实现页内侧边栏形态（第二类菜单层级）"
+  - "抽象平台原语供多分区页面复用（账号中心/运营中心等）"
+non_applicable_scenarios:
+  - "移除现有全局菜单树形态（两类并存）"
+status: active
+summary: "现状（070）：settings 为纯全局菜单树（管理中心→设置→四子页）+ 四路由，页面无页内导航。参考形态（shadcn-admin settings）：全局菜单仅保留设置入口，页面内部提供垂直分区导航（Profile/Account/Appearance/Notifications）切换内容，URL 仍可深链分区；适合「分区多但整体入口单一」的场景，与全局菜单树（子页各自可导航）并列构成两类层级。平台需提供「页内分区导航」原语：SDK `SectionNav`（navlist 语义 + active 高亮 + 键盘导航 + 响应式横向折叠），并给 settings 模块提供共享布局（左侧 SectionNav + 内容区），四 /settings/* 路由共用。全局菜单（host.center→settings.center→四子页）保留，以同时展示两类形态的并存能力。"
+evidence:
+  types: ["source-code", "tests", "documentation"]
+  primary_sources:
+    - title: "070 设置中心现状"
+      locator: "docs/changes/070-settings-center-and-menu-hierarchy/README.md；internal/module/settings/binding/webui/web/*.tsx（PageHeader+PageSection，无页内导航）"
+      snapshot: "f4966e2"
+    - title: "参考形态（外部样本）"
+      locator: "https://shadcn-admin.netlify.app/settings（Settings 入口 + 页内 Profile/Account/Appearance/Notifications 分区导航）"
+      snapshot: "2026-08-26 公开 demo"
+    - title: "页面模板与 SDK 原语"
+      locator: "docs/development/webui.md（页面模板 069/070 章节）；webui/src/ui/index.tsx（PageHeader/PageSection/SelectField/Switch）"
+      snapshot: "f4966e2"
+researched_at: "2026-08-26"
+verified_at: "2026-08-26"
+refresh_triggers:
+  - "参考站设置分区形态变化"

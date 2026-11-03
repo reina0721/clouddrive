@@ -1,0 +1,19 @@
+[WebServer] (node:24440) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:35124) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:8908) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:34096) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:2852) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\authentication.spec.ts:195:3 › English dark authentication respects reduced motion at 1440 (4.8s)
+  ok 2 [chromium] › apps\web\e2e\product-workbench.spec.ts:5:1 › Product IA retains old links, search targets, page tabs and history (8.9s)
+  ok 3 [chromium] › apps\web\e2e\product-workbench.spec.ts:73:1 › English dark workbench is usable at mobile, tablet, desktop and wide widths (10.8s)
+  ok 4 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:277:1 › Sticky consumers resolve actual chrome height across live tabs and viewport changes (22.7s)
+
+  4 passed (1.5m)

@@ -1,0 +1,80 @@
+schema_version: 1
+id: R096-001
+title: '当前动效资产盘点与 Motion Foundation / Semantic Transition 分层映射'
+question: '现有 frontend 架构（design-system → ui-adapter → Application/Feature → Host）应如何把"动效"正式化为两层模型（Motion Foundation 管怎么动、Semantic Transition 管为什么/何时动），并落实"禁止万能动画容器、业务层不得填写动画参数、动画层与空间层分离"等治理红线？'
+research_type: current-state-audit-and-guidance-mapping
+topics:
+  [
+    'frontend',
+    'motion foundation',
+    'semantic transition',
+    'design tokens',
+    'animation governance',
+    'reduced motion',
+  ]
+keywords:
+  [
+    'motion duration tokens',
+    'presence transition',
+    'overlay motion',
+    'navigation transition',
+    'View Transitions API',
+    'HeroUI disclosure',
+    'Tailwind default-transition-duration',
+  ]
+applicable_scenarios:
+  [
+    'frontend Motion 治理、动效 Token 语义化、语义转场容器目录、加载/折叠/内容切换动画的未来落地决策',
+  ]
+non_applicable_scenarios:
+  [
+    '为动画新建万能容器或跨语义 Wrapper',
+    '业务页面直接选择 fade/slide/scale 等实现型动画契约',
+    '在 Overlay（Modal/Drawer/Popover 等）外叠加动画容器',
+    '自研 HeroUI 已提供的 Disclosure/Accordion 能力',
+  ]
+status: active
+summary: '现有架构已具备 Motion 治理的大部分基础（Token 单源、reduced-motion 块、motion.css 配方、HeroUI Overlay 契约），缺口在于：用途语义 Token 层、配方登记表、合同条款（AGENTS）与语义容器目录。HeroUI 3.2.4 已提供 disclosure/accordion/disclosure-group，折叠能力无需自研；productMotion（motion.ts）无调用方应退役；PageTransition 归属应为 Layout 层而非 Host 基础设施目录。'
+evidence:
+  types: ['installed-package-manifest', 'project-source', 'previous-change-record']
+  primary_sources:
+    - title: '动效 Token 现状'
+      locator: 'frontend/packages/design-system/src/tokens.css'
+      snapshot: '3b401600，--motion-duration-fast/standard/slow、--ease-product、全局 reduced-motion 块；@theme --transition-duration-* 生成 duration-* utility'
+    - title: 'motion.ts 无调用方'
+      locator: 'frontend/packages/design-system/src/motion.ts; frontend/apps/web/src（grep productMotion / design-system/motion）'
+      snapshot: '3b401600，productMotion 仅定义处命中，无任何消费方；package.json exports "./motion"'
+    - title: '页面转场配方'
+      locator: 'frontend/packages/design-system/src/motion.css; frontend/apps/web/src/host/page-transition.tsx'
+      snapshot: '3b401600，nav-forward 转场、锚定、pointer-events、reduced-motion 块；translateX(±3.75rem) 为裸值未 token 化（095 落地）'
+    - title: 'HeroUI Disclosure 能力'
+      locator: 'frontend/node_modules/.pnpm/@heroui+react@3.2.4/node_modules/@heroui/react/package.json exports'
+      snapshot: '3b401600，exports 含 ./accordion、./disclosure、./disclosure-group'
+    - title: 'ui-adapter 现有动效'
+      locator: 'frontend/packages/ui-adapter/src（skeleton/busy-indicator/action/icon-action/progress-meter）'
+      snapshot: '3b401600，animate-pulse/animate-spin/transition-all duration-standard，均为简单 CSS，无 Presence/Transition 原语'
+    - title: 'Tailwind v4 默认过渡时长'
+      locator: 'frontend/node_modules/tailwindcss 默认主题 --default-transition-duration'
+      snapshot: '3b401600，未显式 duration 的 transition-* 使用默认 150ms，未纳入项目 Token 治理'
+    - title: '上一变更 095 的转场落地与验证结论'
+      locator: 'frontend/docs/changes/095-page-transitions-and-motion'
+      snapshot: '3b401600，ViewTransition 不渲染 DOM、转场类名语义化、reduced-motion 无 !important 手法、验证以 CI=1 全新 server 为准'
+  researched_at: '2026-09-12'
+  verified_at: '2026-09-12'
+validity:
+  mode: version-and-date-bounded
+  review_after: '2026-11-12'
+  refresh_triggers:
+    [
+      'design-system 动效 Token 数值或结构变化',
+      'Tailwind 默认过渡时长机制变化',
+      'HeroUI/React Aria 的 Disclosure/Accordion API 变化',
+      '出现第一个语义容器真实用例（uidadapter Motion Primitive 触发条件）',
+      '出现第二个 Runtime Host（共享层下沉评估触发条件）',
+    ]
+relations:
+  extends: ['R095-001']
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

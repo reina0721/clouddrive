@@ -1,0 +1,57 @@
+schema_version: 1
+id: R075-008
+title: "openapi 页面未登录可访问的原因与修复：路由绑定 ViewOperationID"
+question: "用户发现 openapi 模块的四个页面（/openapi、/openapi/tags、/openapi/operation、/openapi/models）未登录也能访问。原因是什么？平台是否有成熟的『未登录必须跳登录页』机制？如何在不给 openapi 模块引入后端 HTTP operation 的前提下修复？"
+research_type: current-project
+topics: ["访问控制", "ViewOperationID", "manifest 投影", "authentication-required", "登录跳转"]
+keywords: ["AccessAllowed", "AccessAuthenticationRequired", "iam.session.read", "unauthenticatedDefault", "EnforceOperation", "PolicyPublic", "PolicyProtected"]
+applicable_scenarios:
+  - "WebUI-only 模块（无后端 HTTP operation）需要『必须登录才能浏览』的页面门槛"
+  - "复用既有已认证即放行的 operation 作为路由 ViewOperationID，不新增 HTTP 端点"
+  - "确认宿主对 authentication-required 路由的菜单隐藏与直接访问跳转行为"
+non_applicable_scenarios:
+  - "为 WebUI-only 模块凭空新增无后端 handler 的 operation（违反 operation inventory 的 HTTP 语义）"
+  - "在宿主 manifest handler 里按 URL 前缀特判 openapi（transport 不硬编码 URL）"
+status: active
+summary: "根因：WebUI 路由访问门槛由 manifest 投影决定——路由声明 ViewOperationID 才走认证/授权判定，未声明则默认 AccessAllowed（internal/webui/contract.go ManifestForWithNavigation：access := AccessAllowed; if route.ViewOperationID != \"\" { access = accessLookup(...) }）。openapi 四个路由均未声明，故未登录即放行。修复：给四个路由绑定一个『已认证即可访问』的既有 operation（候选 iam.session.read，PolicyProtected + scope iam:account:self:read，任何已登录用户都持有该 self 权限）：宿主 manifest handler 对 operation != \"\" 时先查登录（未认证返回 AccessAuthenticationRequired），宿主 ManifestPage 对 authentication-required 路由跳转 unauthenticatedDefault（/login）并隐藏菜单；mock 构建的 webuiMockManifest 仍然全 allowed，不影响零后端演示。此修复无需新增 HTTP operation，也不改宿主 URL 特判。"
+evidence:
+  types: ["source-code"]
+  primary_sources:
+    - title: "Manifest 投影：无 ViewOperationID 默认 allowed"
+      locator: "internal/webui/contract.go ManifestForWithNavigation（access := AccessAllowed; if route.ViewOperationID != \"\" { access = accessLookup(route.ViewOperationID) }）"
+      snapshot: "2026-08-25 HEAD 32d3477"
+    - title: "宿主 manifest handler：operation 非空先要求登录"
+      locator: "internal/composition/webui_http.go newWebUIManifestHandler（operation == \"\" → AccessAllowed；未认证 → AccessAuthenticationRequired；已认证 → authorizer.EnforceOperation）"
+      snapshot: "2026-08-25 HEAD 32d3477"
+    - title: "宿主跳转与菜单隐藏"
+      locator: "webui/src/App.tsx ManifestPage（route.access === \"authentication-required\" → Navigate 到 unauthenticatedDefault /login）；loadableRoutes 只对 allowed 路由置位，authentication-required 路由不进菜单"
+      snapshot: "2026-08-25 HEAD 32d3477"
+    - title: "候选 operation iam.session.read"
+      locator: "internal/module/iam/binding/http/huma.go（protected(opSession, GET /api/v1/iam/session, SelfRead)）；iampermission.SelfRead = iam:account:self:read"
+      snapshot: "2026-08-25 HEAD 32d3477"
+    - title: "mock manifest 恒 allowed"
+      locator: "internal/composition/webui_registry.go projectWebUIMockManifest（accessLookup 恒 AccessAllowed）"
+      snapshot: "2026-08-25 HEAD 32d3477"
+    - title: "operation inventory 校验与 webui route 权限引用"
+      locator: "internal/composition/http_contracts.go buildApplicationWebUICatalog（operations map 来自 HTTP definitions；路由 ViewOperationID 为 protected 时登记 webui route 权限引用）"
+      snapshot: "2026-08-25 HEAD 32d3477"
+    - title: "用户要求（075 第七轮）"
+      locator: "会话记录"
+      snapshot: "2026-08-25"
+researched_at: "2026-08-25"
+verified_at: "2026-08-25"
+validity:
+  mode: snapshot
+  review_after: "2026-11-25"
+  refresh_triggers:
+    - "宿主 manifest 访问门禁语义或登录跳转机制变化时重新评估"
+    - "iam.session.read policy/scope 变更时检查绑定是否仍等价于『已认证即可访问』"
+relations:
+  extends:
+    - R075-006
+    - R075-007
+  related:
+    - R075-002
+  supersedes: []
+  superseded_by: []
+report: report.md

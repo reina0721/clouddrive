@@ -1,0 +1,19 @@
+[WebServer] (node:28036) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:32584) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:13480) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:33392) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\navigation.spec.ts:4:1 › 展开侧栏用同一递归能力呈现 Page Archetypes 与 UI Elements（Active Path Anchored Accordion） (5.7s)
+  ok 2 [chromium] › apps\web\e2e\navigation.spec.ts:46:1 › 收缩侧栏的 Hover Flyout 保持稳定并支持键盘进入 (5.7s)
+  ok 3 [chromium] › apps\web\e2e\navigation.spec.ts:80:1 › 收缩侧栏切换兄弟菜单时同一时刻只有一个 Flyout 且旧菜单不残留 (5.2s)
+  ok 4 [chromium] › apps\web\e2e\visual.spec.ts:40:1 › 九个 UI Element Family 页面均有独立视觉基线 (21.8s)
+  ok 5 [chromium] › apps\web\e2e\visual.spec.ts:86:1 › 移动侧栏打开状态纳入视觉回归 (2.6s)
+  ok 6 [chromium] › apps\web\e2e\visual.spec.ts:127:1 › Toast、Destructive Confirm 与 Compact Density 开启态进入视觉矩阵 (5.3s)
+
+  6 passed (53.7s)

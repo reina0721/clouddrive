@@ -1,0 +1,41 @@
+schema_version: 1
+id: R101-001
+title: 'Admin Surface 文件路由、确定性 codegen 与 Static Export Host 承载边界研究'
+question: '如何在「Next.js App Router 是唯一真实 Router」的前提下，为 Admin Surface 建立插件化文件路由、确定性生成与可执行的承载边界，同时不复制 Next Route Runtime？'
+research_type: design-feasibility
+topics: ['admin surface', 'file routes', 'route registry', 'codegen', 'static export capability']
+keywords: ['AdminRouteTarget', 'route.meta', 'page.tsx', 'generateStaticParams', 'output export']
+applicable_scenarios:
+  ['101 Admin Framework/Surface File Routes 实施、后续 Migration Phase 的既有页面迁移与 Shell 重构']
+non_applicable_scenarios: ['后端路由、权限引擎、API、非静态 Host、Server Components 动态数据源']
+status: active
+summary: 'Framework 只定义静态契约与纯 Registry 模型，Generator 只做 discovery/静态描述/编目/桥梁/薄入口，Host capability 在生成入口前硬失败；Node 24 type-stripping 可静态加载 route.meta.ts，确定性 freshness 可用逐文件重建比较实现。'
+evidence:
+  types: ['project-source', 'official-documentation', 'tooling-verification']
+  primary_sources:
+    - title: 'Next 16 App Router page 契约'
+      locator: 'apps/admin-web/node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/page.md'
+      snapshot: 'params 为 Promise，必须 await 或 use()；generateStaticParams 面向动态段静态化'
+    - title: '当前 Host 静态导出配置'
+      locator: 'apps/admin-web/next.config.ts'
+      snapshot: "output: 'export'；transpilePackages 已含 7 个 workspace 包"
+    - title: 'Node 24 type-stripping 可加载 route.meta.ts'
+      locator: 'node -e 动态 import 临时 route.meta.ts'
+      snapshot: '含 import type + satisfies 的 .ts 元数据可被 Node 24 原生 type-stripping 加载，无需 tsx'
+    - title: '现有导航/Shell/治理实现'
+      locator: 'packages/admin-foundation/src/shell-navigation.tsx；apps/admin-web/src/shell/navigation.ts；tooling/check-boundaries.mjs；tooling/check-foundation-governance.mjs'
+      snapshot: 'AdminShellNavigation 消费 NavigationGroup + Router Port；boundary/foundation 门禁只扫描 apps/ 与 packages/'
+  researched_at: '2026-09-01'
+  verified_at: '2026-09-01'
+validity:
+  mode: revision-bounded
+  refresh_triggers:
+    [
+      'Next App Router 文件契约、pnpm/Node 版本、workspace 分类门禁、Host 静态导出配置或新 Runtime 出现时需定向复核',
+    ]
+relations:
+  extends: ['R098-001', 'R098-002']
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

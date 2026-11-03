@@ -1,0 +1,55 @@
+schema_version: 1
+id: R083-002
+title: "样式权威与布局骨架事实基线"
+question: "083 方案 11b/11c 声称的样式污染（122 处 :global 泄漏、平台类被模块私有覆盖、camelCase 命名分裂）与布局骨架缺陷（100vh 固定工作区、居中限宽 max-width、滚动模型、Tab Bar、Footer）在 HEAD 5a3def3 的真实代码事实是什么？每项缺陷的修复需触及哪些文件与契约面，现有 lint 是否能守护？"
+research_type: current-project
+topics: ["webui", "css-modules", "styles-authority", "layout-skeleton", "scroll-model", "stylesheet"]
+keywords: [":global", "styles.css", "module.css", "app-shell", "app-workspace", "page-viewport", "workspace-tabs", "100vh", "lint-architecture", "AppShell", "ScrollExperience"]
+applicable_scenarios:
+  - "083 样式权威重建（11b）与布局骨架重写（11c）的任务输入"
+  - "新增模块样式/平台原语的归属裁决"
+  - "移动端视口与滚动模型的后续修复"
+non_applicable_scenarios:
+  - "后端 API 契约审计"
+  - "非 webui/ 的前端样式（如 Playwright 测试夹具样式）"
+status: active
+summary: "HEAD 实测 6 个模块 CSS 共 137 处 :global(（auth 9 / iam 25 / navigation 15 / openapi 0 / ops 75 / organization 5 / settings 8），webui/src 及其余仓库零 :global；083 README 声称的 122 与实测不符（两个快照均为 137）；137 处中仅 ops.module.css 的 :global(.header-zone-action) 为无模块根前缀的真全局，其余全部以 .moduleRoot 前缀收口但仍使用裸类名/裸元素选择器（form-error/fieldset/dl 等），其中 auth audit-*（9）、iam session-*（7）、navigation policy-grid/policy-card（5）共 21 处为无 tsx 消费方的死代码；平台 .toolbar 在 iam/organization 移动断点被模块私有覆盖；openapi.module.css 零 :global 但以 camelCase 局部类（pageMeta/formHint/workspaceTabs）与平台 kebab-case 命名分裂。布局骨架：.app-shell grid 双列 + min-height 100vh（L263-269）、.app-sidebar min-height 100vh + overflow hidden（L273-284）、.app-workspace 第二定义 height 100vh + overflow hidden 固定（L474-478）、.topbar 64px（L480-488）、.workspace-tabs 44px（L742-749）、.page-viewport overflow auto + max-width var(--shell-content-max)=1600px 居中限宽（L820-828）；页面滚动发生在 .page-viewport 元素级（ScrollExperience panel 模式），window 不承担 app 布局滚动；全仓无 dvh 单位，11 处 100vh；main 滚动模型与 8 个 720px/900px/1000px/1050px/1100px 模块断点已列全；Tab Bar 由 AppShell.tsx 按 theme.layout.showTabs 装配（visitedRoutes 状态 + WorkspaceTabs.tsx），Footer 由 showFooter 装配并固定占用工作区底部；lint-architecture.mjs 与 lint-modules.mjs 均不检查 :global 泄漏、平台类重复、私有覆盖，现有 eslint 仅 ts/tsx 且只查 no-unused-vars，修复无 lint 守护缺口已确认。"
+evidence:
+  types: ["source-code", "tests", "scripts", "docs"]
+  primary_sources:
+    - title: "模块 WebUI CSS Modules"
+      locator: "internal/module/{auth,iam,navigation,openapi,ops,organization,settings}/binding/webui/web/*.module.css"
+      snapshot: "5a3def3"
+    - title: "平台样式 authority"
+      locator: "webui/src/styles.css（2934 行，分区 1 token / 3 Shell / 5.1 布局原语 / 7 响应式 / 7.1 滚动体验）"
+      snapshot: "5a3def3"
+    - title: "壳层装配与滚动运行时"
+      locator: "webui/src/components/AppShell.tsx、shell/WorkspaceTabs.tsx、shell/AppSidebar.tsx、scroll/ScrollExperience.tsx、theme.ts、App.tsx"
+      snapshot: "5a3def3"
+    - title: "lint 与构建脚本"
+      locator: "webui/scripts/lint-architecture.mjs、lint-modules.mjs、eslint.config.js、package.json"
+      snapshot: "5a3def3"
+    - title: "083 方案与既有研究"
+      locator: "docs/changes/temp-new-changes.md（11b/11c）、docs/changes/083-production-fullstack-reactor/README.md"
+      snapshot: "5a3def3"
+    - title: "082 基线快照对账"
+      locator: "c3a23c0（082 研究 R001 记录的快照）"
+      snapshot: "c3a23c0"
+  secondary_sources: []
+researched_at: "2026-08-28"
+verified_at: "2026-08-28"
+validity:
+  mode: snapshot
+  review_after: "2026-09-28"
+  refresh_triggers:
+    - "任一模块 *.module.css 或 styles.css 的 :global/布局规则发生增减"
+    - "AppShell/WorkspaceTabs/ScrollExperience 装配点或 theme.layout 契约变化"
+    - "新增模块 CSS 或平台布局原语"
+relations:
+  extends: []
+  related:
+    - id: R083-001
+      title: "新方案 vs 082 现状差异"
+  supersedes: []
+  superseded_by: []
+report: report.md

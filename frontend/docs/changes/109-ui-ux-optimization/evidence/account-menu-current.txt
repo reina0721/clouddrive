@@ -1,0 +1,230 @@
+
+Running 14 tests using 1 worker
+
+(node:28420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\account-menu.spec.ts:54:3 › Account menu keeps identity, groups and language selection usable at 320 (2.9s)
+  ok  2 [chromium] › apps\web\e2e\account-menu.spec.ts:54:3 › Account menu keeps identity, groups and language selection usable at 390 (2.8s)
+  ok  3 [chromium] › apps\web\e2e\account-menu.spec.ts:54:3 › Account menu keeps identity, groups and language selection usable at 1440 (3.0s)
+  ok  4 [chromium] › apps\web\e2e\account-menu.spec.ts:54:3 › Account menu keeps identity, groups and language selection usable at 2048 (3.0s)
+  ok  5 [chromium] › apps\web\e2e\account-menu.spec.ts:91:1 › Account submenu keyboard returns focus; theme supports system and persisted choices (3.6s)
+  ok  6 [chromium] › apps\web\e2e\account-menu.spec.ts:140:1 › Dark English expanded text and Reduced Motion keep preference overlays accessible (1.8s)
+  ok  7 [chromium] › apps\web\e2e\account-menu.spec.ts:180:1 › Hover crosses into submenu safely; a sticky header remains anchored after scrolling (1.8s)
+  ok  8 [chromium] › apps\web\e2e\account-menu.spec.ts:200:1 › Touch selection and short viewport use the same nested overlay lifecycle (1.9s)
+  ok  9 [chromium] › apps\web\e2e\account-menu.spec.ts:222:1 › Overlay authority uses the same grouped menu with selection and disabled semantics (2.1s)
+  x  10 [chromium] › apps\web\e2e\overlays.spec.ts:638:1 › Dropdown、Popover 与 Tooltip 展开面进入视觉回归 (3.5s)
+(node:24636) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 11 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: compact (8.2s)
+  ok 12 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: standard (7.8s)
+  ok 13 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: comfortable (7.3s)
+  x  14 [chromium] › apps\web\e2e\visual.spec.ts:40:1 › 九个 UI Element Family 页面均有独立视觉基线 (15.7s)
+
+
+  1) [chromium] › apps\web\e2e\overlays.spec.ts:638:1 › Dropdown、Popover 与 Tooltip 展开面进入视觉回归 ───────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      16876 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-menu-open.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-menu-open.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 16876 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 16876 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      641 |   await menuTrigger.click();
+      642 |   await expect(page.getByRole('menu')).toBeVisible();
+    > 643 |   await expect.soft(page).toHaveScreenshot('ui-elements-menu-open.png');
+          |                           ^
+      644 |   await page.keyboard.press('Escape');
+      645 |   await expect(menuTrigger).toBeFocused();
+      646 |
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\overlays.spec.ts:643:27
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      19212 pixels (ratio 0.03 of all image pixels) are different.
+
+      Snapshot: ui-elements-popover-open.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-popover-open.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 19212 pixels (ratio 0.03 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 19212 pixels (ratio 0.03 of all image pixels) are different.
+
+
+      673 |     .evaluate((element) => element.scrollHeight);
+      674 |   expect(pageHeightAfterOpen).toBe(pageHeightBeforeOpen);
+    > 675 |   await expect.soft(page).toHaveScreenshot('ui-elements-popover-open.png');
+          |                           ^
+      676 |   await page.keyboard.press('Escape');
+      677 |   await expect(popover).toBeHidden();
+      678 |   await expect(popoverTrigger).toBeFocused();
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\overlays.spec.ts:675:27
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      27287 pixels (ratio 0.03 of all image pixels) are different.
+
+      Snapshot: ui-elements-tooltip-open.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-tooltip-open.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 27287 pixels (ratio 0.03 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 27287 pixels (ratio 0.03 of all image pixels) are different.
+
+
+      681 |   await tooltipTrigger.focus();
+      682 |   await expect(page.getByRole('tooltip')).toBeVisible();
+    > 683 |   await expect.soft(page).toHaveScreenshot('ui-elements-tooltip-open.png');
+          |                           ^
+      684 | });
+      685 |
+      686 | test('DatePicker 与 Command 展开面支持键盘及无障碍扫描', async ({ page }) => {
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\overlays.spec.ts:683:27
+
+    attachment #1: ui-elements-menu-open (image/png) ───────────────────────────────────────────────
+    Expected: apps\web\e2e\overlays.spec.ts-snapshots\ui-elements-menu-open-chromium-win32.png
+    Received: test-results\account-visual-current\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\ui-elements-menu-open-actual.png
+    Diff:     test-results\account-visual-current\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\ui-elements-menu-open-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: ui-elements-popover-open (image/png) ────────────────────────────────────────────
+    Expected: apps\web\e2e\overlays.spec.ts-snapshots\ui-elements-popover-open-chromium-win32.png
+    Received: test-results\account-visual-current\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\ui-elements-popover-open-actual.png
+    Diff:     test-results\account-visual-current\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\ui-elements-popover-open-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: ui-elements-tooltip-open (image/png) ────────────────────────────────────────────
+    Expected: apps\web\e2e\overlays.spec.ts-snapshots\ui-elements-tooltip-open-chromium-win32.png
+    Received: test-results\account-visual-current\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\ui-elements-tooltip-open-actual.png
+    Diff:     test-results\account-visual-current\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\ui-elements-tooltip-open-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\account-visual-current\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\account-visual-current\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\error-context.md
+
+    attachment #6: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\account-visual-current\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\account-visual-current\overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\visual.spec.ts:40:1 › 九个 UI Element Family 页面均有独立视觉基线 ───────────────
+
+    Error: expect(locator).toHaveScreenshot(expected) failed
+
+    Locator: locator('#overlays')
+      Expected an image 1112px by 867px, received 1112px by 1074px. 38941 pixels (ratio 0.04 of all image pixels) are different.
+
+      Snapshot: ui-elements-family-overlays.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-family-overlays.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - waiting for locator('#overlays')
+        - locator resolved to <div id="overlays" class="surface-route-region scroll-mt-24">…</div>
+      - taking element screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - attempting scroll into view action
+        - waiting for element to be stable
+      - Expected an image 1112px by 867px, received 1112px by 1074px. 43124 pixels (ratio 0.04 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - waiting for locator('#overlays')
+        - locator resolved to <div id="overlays" class="surface-route-region scroll-mt-24">…</div>
+      - taking element screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - attempting scroll into view action
+        - waiting for element to be stable
+      - 36366 pixels (ratio 0.04 of all image pixels) are different.
+      - waiting 250ms before taking screenshot
+      - waiting for locator('#overlays')
+        - locator resolved to <div id="overlays" class="surface-route-region scroll-mt-24">…</div>
+      - taking element screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - attempting scroll into view action
+        - waiting for element to be stable
+      - captured a stable screenshot
+      - Expected an image 1112px by 867px, received 1112px by 1074px. 38941 pixels (ratio 0.04 of all image pixels) are different.
+
+
+      62 |     await expect
+      63 |       .soft(page.locator(`#${sectionId}`))
+    > 64 |       .toHaveScreenshot(`ui-elements-family-${family}.png`);
+         |        ^
+      65 |   }
+      66 | });
+      67 |
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\visual.spec.ts:64:8
+
+    attachment #1: ui-elements-family-overlays (image/png) ─────────────────────────────────────────
+    Expected: apps\web\e2e\visual.spec.ts-snapshots\ui-elements-family-overlays-chromium-win32.png
+    Received: test-results\account-visual-current\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\ui-elements-family-overlays-actual.png
+    Diff:     test-results\account-visual-current\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\ui-elements-family-overlays-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\account-visual-current\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\account-visual-current\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\account-visual-current\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\account-visual-current\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › apps\web\e2e\overlays.spec.ts:638:1 › Dropdown、Popover 与 Tooltip 展开面进入视觉回归 ────────
+    [chromium] › apps\web\e2e\visual.spec.ts:40:1 › 九个 UI Element Family 页面均有独立视觉基线 ────────────────
+  12 passed (1.1m)

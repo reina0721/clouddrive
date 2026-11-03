@@ -1,0 +1,45 @@
+schema_version: 1
+change: 083-production-fullstack-reactor
+areas:
+  - id: webui
+    decision: updated
+    documents:
+      - webui/src/styles.css
+      - webui/src/components/AppShell.tsx
+      - webui/src/components/shell/AppHeader.tsx
+      - webui/src/components/shell/AppSidebar.tsx
+      - webui/scripts/lint-architecture.mjs
+      - docs/development/webui.md
+      - webui/README.md
+    reason: 计划样式权威重建（lint CSS 扫描 + 137 处 :global 清理 + 命名唯一）、布局骨架重写（100dvh/独立滚动/宽度档接线/移除 Tab Bar 与 Footer）、页面产品化（按 R083-003 优先序迁移、危险确认、状态组件统一）与设计基线视觉校准；实施后需同步 webui 指南样式权威规则与布局规范。
+  - id: api
+    decision: updated
+    documents:
+      - api/openapi.yaml
+    reason: 计划为 iam accounts/roles/sessions/api-tokens list operation 补充 sort 查询参数（BACKEND-083-001），走 code-first 契约生成链同步；不改变认证/授权语义。
+  - id: module
+    decision: updated
+    documents:
+      - internal/module/iam/binding/http/*
+      - internal/module/iam/binding/webui/web/*
+      - internal/module/auth/binding/webui/web/*
+      - internal/module/ops/binding/webui/web/*
+      - internal/module/organization/binding/webui/web/*
+      - internal/module/navigation/binding/webui/web/*
+      - internal/module/settings/binding/webui/web/*
+    reason: IAM 后端 sort 参数；各模块页面按 R083-003 优先序产品化迁移（FilterBar 接线/时间戳格式化/危险确认/操作列折叠）；样式 :global 收敛到平台或模块局部类；Settings 双导航收敛。
+  - id: startup
+    decision: reviewed-no-change
+    reason: 全部改动为前端呈现、样式权威与列表查询参数；无新运行组件/配置节/生命周期变化；认证授权 fail closed 语义不变。
+  - id: configuration
+    decision: reviewed-no-change
+    reason: 无新配置节；宽度档/样式规则为前端 token 与 lint 规则。
+  - id: docs
+    decision: updated
+    documents:
+      - docs/changes/083-production-fullstack-reactor/README.md
+      - docs/changes/083-production-fullstack-reactor/requirements.md
+      - docs/changes/083-production-fullstack-reactor/design.md
+      - docs/changes/083-production-fullstack-reactor/tasks.md
+      - docs/changes/README.md
+    reason: 083 变更记录（研究/需求/设计/任务）与变更索引记录本任务状态（计划待确认→实施完成）与结论。

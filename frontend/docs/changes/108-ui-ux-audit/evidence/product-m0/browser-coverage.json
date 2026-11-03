@@ -1,0 +1,8 @@
+{
+  "listedCount": 341,
+  "uniquePassedCount": 341,
+  "missing": [],
+  "unexpected": [],
+  "sources": ["check-interrupted.txt", "browser-remaining.txt"],
+  "note": "Coverage union, not a successful uninterrupted pnpm check. Surface Foundation first test ran twice."
+}

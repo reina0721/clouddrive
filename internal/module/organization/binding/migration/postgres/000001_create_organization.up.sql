@@ -1,0 +1,7 @@
+CREATE TABLE organization_departments (id VARCHAR(36) PRIMARY KEY, code VARCHAR(64) NOT NULL UNIQUE, name VARCHAR(128) NOT NULL, parent_id VARCHAR(36) NULL REFERENCES organization_departments(id) ON DELETE RESTRICT, active BOOLEAN NOT NULL, archived BOOLEAN NOT NULL, version BIGINT NOT NULL DEFAULT 1, created_at TIMESTAMPTZ NOT NULL, updated_at TIMESTAMPTZ NOT NULL);
+CREATE INDEX ix_organization_departments_parent ON organization_departments(parent_id);
+CREATE TABLE organization_positions (id VARCHAR(36) PRIMARY KEY, code VARCHAR(64) NOT NULL UNIQUE, name VARCHAR(128) NOT NULL, active BOOLEAN NOT NULL, archived BOOLEAN NOT NULL, version BIGINT NOT NULL DEFAULT 1, created_at TIMESTAMPTZ NOT NULL, updated_at TIMESTAMPTZ NOT NULL);
+CREATE TABLE organization_account_departments (account_id VARCHAR(36) PRIMARY KEY, department_id VARCHAR(36) NOT NULL REFERENCES organization_departments(id) ON DELETE RESTRICT, assigned BOOLEAN NOT NULL, updated_at TIMESTAMPTZ NOT NULL);
+CREATE INDEX ix_organization_account_departments_department ON organization_account_departments(department_id);
+CREATE TABLE organization_account_positions (account_id VARCHAR(36) NOT NULL, position_id VARCHAR(36) NOT NULL REFERENCES organization_positions(id) ON DELETE RESTRICT, assigned BOOLEAN NOT NULL, updated_at TIMESTAMPTZ NOT NULL, PRIMARY KEY(account_id, position_id));
+CREATE INDEX ix_organization_account_positions_position ON organization_account_positions(position_id);

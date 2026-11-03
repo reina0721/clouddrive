@@ -1,0 +1,383 @@
+[WebServer] (node:18980) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:31264) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:28128) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:31884) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:18396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 27 tests using 1 worker
+
+(node:28052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\account-menu.spec.ts:54:3 › Account menu keeps identity, groups and language selection usable at 320 (8.2s)
+  ok  2 [chromium] › apps\web\e2e\account-menu.spec.ts:54:3 › Account menu keeps identity, groups and language selection usable at 390 (7.1s)
+  ok  3 [chromium] › apps\web\e2e\account-menu.spec.ts:54:3 › Account menu keeps identity, groups and language selection usable at 1440 (7.3s)
+  ok  4 [chromium] › apps\web\e2e\account-menu.spec.ts:54:3 › Account menu keeps identity, groups and language selection usable at 2048 (7.1s)
+  ok  5 [chromium] › apps\web\e2e\account-menu.spec.ts:91:1 › Account submenu keyboard returns focus; theme supports system and persisted choices (8.2s)
+  ok  6 [chromium] › apps\web\e2e\account-menu.spec.ts:140:1 › Dark English expanded text and Reduced Motion keep preference overlays accessible (4.0s)
+  ok  7 [chromium] › apps\web\e2e\account-menu.spec.ts:189:1 › Hover crosses into submenu safely; a sticky header remains anchored after scrolling (3.6s)
+  ok  8 [chromium] › apps\web\e2e\account-menu.spec.ts:209:1 › Touch selection and short viewport use the same nested overlay lifecycle (3.8s)
+  ok  9 [chromium] › apps\web\e2e\account-menu.spec.ts:231:1 › Overlay authority uses the same grouped menu with selection and disabled semantics (6.9s)
+  ok 10 [chromium] › apps\web\e2e\auto-restore.spec.ts:34:1 › 自动恢复未完成工作默认关：有草稿时进入首页不重定向 (12.5s)
+  ok 11 [chromium] › apps\web\e2e\auto-restore.spec.ts:48:1 › 开启 自动恢复未完成工作：有草稿时首页重定向回草稿页 (8.6s)
+  ok 12 [chromium] › apps\web\e2e\menu-memory.spec.ts:12:1 › 导航默认不记忆展开菜单（menuMemory 关）：SPA 换路由后展开状态重置 (3.7s)
+  x  13 [chromium] › apps\web\e2e\menu-memory.spec.ts:34:1 › 导航记忆展开菜单（menuMemory 开）：SPA 导航后手动展开仍保留 (11.1s)
+(node:21796) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 14 [chromium] › apps\web\e2e\navigation-protection.spec.ts:3:1 › 同路由 no-op：点击当前页侧栏链接不重复导航（URL 不变） (5.7s)
+  ok 15 [chromium] › apps\web\e2e\navigation-protection.spec.ts:15:1 › 浏览器返回：SPA 导航后返回上一页且内容正确 (4.5s)
+  ok 16 [chromium] › apps\web\e2e\page-tabs.spec.ts:14:1 › 顶部页面标签默认关：不显示标签条 (4.2s)
+  x  17 [chromium] › apps\web\e2e\page-tabs.spec.ts:24:1 › 开启 顶部页面标签：访问页面显示标签、可切换与关闭 (10.8s)
+(node:12532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 18 [chromium] › apps\web\e2e\page-tabs.spec.ts:62:1 › 关闭当前激活标签按策略导航到最近其他标签（默认 recent） (6.6s)
+  ok 19 [chromium] › apps\web\e2e\page-tabs.spec.ts:98:1 › 关闭后跳转策略选择器存在并持久化（右邻优先） (5.6s)
+  x  20 [chromium] › apps\web\e2e\page-tabs.spec.ts:114:1 › 恢复上次打开的标签：重载后标签保持（默认关时清除） (12.6s)
+(node:34772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  21 [chromium] › apps\web\e2e\product-workbench.spec.ts:4:1 › Product IA retains old links, search targets, page tabs and history (30.5s)
+(node:26648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  22 [chromium] › apps\web\e2e\product-workbench.spec.ts:40:1 › Workbench resumes a real draft; save feedback and unread state share the header source (30.6s)
+(node:26248) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  23 [chromium] › apps\web\e2e\product-workbench.spec.ts:69:1 › English dark workbench is usable at mobile, tablet, desktop and wide widths (30.4s)
+(node:12924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 24 [chromium] › apps\web\e2e\rapid-navigation.spec.ts:3:1 › 连续导航：快速依次跳转多个页面全部成功且无错误边界 (3.5s)
+  ok 25 [chromium] › apps\web\e2e\rapid-navigation.spec.ts:20:1 › 连续导航含离开确认：快速导航不被脏表单残留卡死 (3.7s)
+  ok 26 [chromium] › apps\web\e2e\workbench-home.spec.ts:14:1 › 收藏：详情页收藏 → 首页"收藏"区段展示并可跳转 (3.9s)
+  ok 27 [chromium] › apps\web\e2e\workbench-home.spec.ts:28:1 › 最近访问：访问参考列表后首页"最近访问"区段展示（默认开） (3.5s)
+
+
+  1) [chromium] › apps\web\e2e\menu-memory.spec.ts:34:1 › 导航记忆展开菜单（menuMemory 开）：SPA 导航后手动展开仍保留 ────
+
+    Error: expect(page).toHaveURL(expected) failed
+
+    Expected pattern: /\/$/
+    Received string:  "http://127.0.0.1:4173/settings/navigation"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveURL" with timeout 5000ms
+        13 × locator resolved to <html lang="zh-CN" data-theme="light" data-accent="purple" data-hydrated="true" data-motion-swap="on" data-motion-async="on" data-motion-media="on" data-contrast="system" data-motion-screen="on" data-motion-reveal="on" data-density="standard" data-follow-system="on" data-enhance-focus="off" data-motion-mode="system" data-motion-feedback="on" data-content-width="auto" data-enhance-target="off" data-font-scale="standard" data-route-intent="forward" data-system-contrast="standard">…</html>
+           - unexpected value "http://127.0.0.1:4173/settings/navigation"
+
+
+      48 |     .first()
+      49 |     .click();
+    > 50 |   await expect(page).toHaveURL(/\/$/);
+         |                      ^
+      51 |   // 手动展开 Page Archetypes。
+      52 |   const branch = page.getByRole('button', { name: '展开或收起Page Archetypes' });
+      53 |   await branch.click();
+        at D:\coder\i721\console-web\apps\web\e2e\menu-memory.spec.ts:50:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\menu-memory-导航记忆展开菜单（menuMemory-开）：SPA-导航后手动展开仍保留-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\menu-memory-导航记忆展开菜单（menuMemory-开）：SPA-导航后手动展开仍保留-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\menu-memory-导航记忆展开菜单（menuMemory-开）：SPA-导航后手动展开仍保留-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\menu-memory-导航记忆展开菜单（menuMemory-开）：SPA-导航后手动展开仍保留-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\page-tabs.spec.ts:24:1 › 开启 顶部页面标签：访问页面显示标签、可切换与关闭 ──────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('navigation', { name: '页面标签' }).getByRole('button', { name: '外观', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByRole('navigation', { name: '页面标签' }).getByRole('button', { name: '外观', exact: true })
+
+
+      48 |   await page.waitForURL(/\/settings/);
+      49 |   const strip2 = page.getByRole('navigation', { name: '页面标签' });
+    > 50 |   await expect(strip2.getByRole('button', { name: '外观', exact: true })).toBeVisible();
+         |                                                                         ^
+      51 |   await expect(strip2.getByRole('button', { name: '参考资源', exact: true })).toBeVisible();
+      52 |
+      53 |   // 关闭参考资源标签 → 消失。
+        at D:\coder\i721\console-web\apps\web\e2e\page-tabs.spec.ts:50:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\page-tabs-开启-顶部页面标签：访问页面显示标签、可切换与关闭-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\page-tabs-开启-顶部页面标签：访问页面显示标签、可切换与关闭-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\page-tabs-开启-顶部页面标签：访问页面显示标签、可切换与关闭-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\page-tabs-开启-顶部页面标签：访问页面显示标签、可切换与关闭-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › apps\web\e2e\page-tabs.spec.ts:114:1 › 恢复上次打开的标签：重载后标签保持（默认关时清除） ─────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('navigation', { name: '页面标签' }).getByRole('button', { name: '外观', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByRole('navigation', { name: '页面标签' }).getByRole('button', { name: '外观', exact: true })
+
+
+      149 |   await expect(strip).toBeVisible();
+      150 |   await expect(strip.getByRole('button', { name: '参考资源', exact: true })).toBeVisible();
+    > 151 |   await expect(strip.getByRole('button', { name: '外观', exact: true })).toBeVisible();
+          |                                                                        ^
+      152 | });
+      153 |
+        at D:\coder\i721\console-web\apps\web\e2e\page-tabs.spec.ts:151:72
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\page-tabs-恢复上次打开的标签：重载后标签保持（默认关时清除）-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\page-tabs-恢复上次打开的标签：重载后标签保持（默认关时清除）-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\page-tabs-恢复上次打开的标签：重载后标签保持（默认关时清除）-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\page-tabs-恢复上次打开的标签：重载后标签保持（默认关时清除）-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › apps\web\e2e\product-workbench.spec.ts:4:1 › Product IA retains old links, search targets, page tabs and history 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.setChecked: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('switch', { name: '启用页面标签' })
+
+
+      23 |   await page.getByRole('button', { name: '按 Ctrl K 搜索' }).click();
+      24 |   await page.getByRole('searchbox').fill('Icon');
+    > 25 |   await page.getByRole('option', { name: /Icon 大全/ }).click();
+         |                    ^
+      26 |   await expect(page).toHaveURL(/\/system-tools\/icons$/);
+      27 |   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      28 |   await page.goBack();
+        at D:\coder\i721\console-web\apps\web\e2e\product-workbench.spec.ts:25:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\product-workbench-Product--99518-rgets-page-tabs-and-history-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\product-workbench-Product--99518-rgets-page-tabs-and-history-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\product-workbench-Product--99518-rgets-page-tabs-and-history-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\product-workbench-Product--99518-rgets-page-tabs-and-history-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › apps\web\e2e\product-workbench.spec.ts:40:1 › Workbench resumes a real draft; save feedback and unread state share the header source 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.setChecked: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('switch', { name: '本地草稿自动保存' })
+        - locator resolved to <input title="" tabindex="0" role="switch" type="checkbox" aria-label="本地草稿自动保存" data-react-aria-pressable="true"/>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <span class="block text-sm font-semibold text-ink">本地草稿自动保存</span> from <span class="min-w-0 flex-1">…</span> subtree intercepts pointer events
+      - retrying click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <label data-rac="" data-slot="switch-content" data-react-aria-pressable="true" class="switch__content ui-switch-content px-3 py-2">…</label> intercepts pointer events
+      - retrying click action
+        - waiting 20ms
+        - waiting for element to be visible, enabled and stable
+        - element is not stable
+      2 × retrying click action
+          - waiting 100ms
+          - waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      13 × retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <label data-rac="" data-slot="switch-content" data-react-aria-pressable="true" class="switch__content ui-switch-content px-3 py-2">…</label> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <span class="block text-sm font-semibold text-ink">本地草稿自动保存</span> from <span class="min-w-0 flex-1">…</span> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+
+
+      42 |   await page.getByRole('switch', { name: '本地草稿自动保存' }).setChecked(true);
+      43 |   await page.goto('/reference-resources/create');
+    > 44 |   await page.getByLabel('名称', { exact: true }).fill('M1 工作台恢复验证');
+         |                                                        ^
+      45 |   await page.goto('/');
+      46 |   const drafts = page.locator('#workbench-drafts');
+      47 |   await expect(drafts).toContainText('M1 工作台恢复验证');
+        at D:\coder\i721\console-web\apps\web\e2e\product-workbench.spec.ts:44:56
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\product-workbench-Workbenc-66f49-ate-share-the-header-source-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\product-workbench-Workbenc-66f49-ate-share-the-header-source-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\product-workbench-Workbenc-66f49-ate-share-the-header-source-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\product-workbench-Workbenc-66f49-ate-share-the-header-source-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › apps\web\e2e\product-workbench.spec.ts:69:1 › English dark workbench is usable at mobile, tablet, desktop and wide widths 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('radio', { name: 'English', exact: true })
+        - locator resolved to <input title="" value="en" type="radio" tabindex="-1" aria-label="English" data-react-aria-pressable="true" name="react-aria1142000780-_r_2s_"/>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+        - waiting 20ms
+        - waiting for element to be visible, enabled and stable
+        - element is not stable
+      2 × retrying click action
+          - waiting 100ms
+          - waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      12 × retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <label data-rac="" data-slot="radio-content" data-react-aria-pressable="true" class="radio__content ui-choice-content border border-border bg-surface group-data-[selected]:border-brand group-data-[selected]:bg-brand-soft rounded-control px-3 py-2">…</label> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <label data-rac="" data-slot="radio-content" data-react-aria-pressable="true" class="radio__content ui-choice-content border border-border bg-surface group-data-[selected]:border-brand group-data-[selected]:bg-brand-soft rounded-control px-3 py-2">…</label> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+           - waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      2 × retrying click action
+          - waiting 500ms
+          - waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <label data-rac="" data-slot="radio-content" data-react-aria-pressable="true" class="radio__content ui-choice-content border border-border bg-surface group-data-[selected]:border-brand group-data-[selected]:bg-brand-soft rounded-control px-3 py-2">…</label> intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <header class="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">…</header> from <div class="sticky top-0 z-sticky">…</div> subtree intercepts pointer events
+      - retrying click action
+        - waiting 500ms
+
+
+      71 |   await page.getByRole('radio', { name: 'English', exact: true }).click();
+      72 |   await page.goto('/settings');
+    > 73 |   await page.getByRole('radio', { name: 'Dark theme', exact: true }).click();
+         |                                                                   ^
+      74 |   await page.goto('/');
+      75 |   await expect(page.getByRole('heading', { name: 'Workbench', exact: true })).toBeVisible();
+      76 |   for (const width of [390, 768, 1440, 2560]) {
+        at D:\coder\i721\console-web\apps\web\e2e\product-workbench.spec.ts:73:67
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\product-workbench-English--26588-let-desktop-and-wide-widths-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\product-workbench-English--26588-let-desktop-and-wide-widths-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\product-workbench-English--26588-let-desktop-and-wide-widths-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\product-workbench-English--26588-let-desktop-and-wide-widths-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    [chromium] › apps\web\e2e\menu-memory.spec.ts:34:1 › 导航记忆展开菜单（menuMemory 开）：SPA 导航后手动展开仍保留 ─────
+    [chromium] › apps\web\e2e\page-tabs.spec.ts:24:1 › 开启 顶部页面标签：访问页面显示标签、可切换与关闭 ───────────────────
+    [chromium] › apps\web\e2e\page-tabs.spec.ts:114:1 › 恢复上次打开的标签：重载后标签保持（默认关时清除） ──────────────────
+    [chromium] › apps\web\e2e\product-workbench.spec.ts:4:1 › Product IA retains old links, search targets, page tabs and history 
+    [chromium] › apps\web\e2e\product-workbench.spec.ts:40:1 › Workbench resumes a real draft; save feedback and unread state share the header source 
+    [chromium] › apps\web\e2e\product-workbench.spec.ts:69:1 › English dark workbench is usable at mobile, tablet, desktop and wide widths 
+  21 passed (4.7m)

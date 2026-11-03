@@ -1,0 +1,258 @@
+
+Running 11 tests using 1 worker
+
+
+
+(node:31208) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/11] [chromium] › apps\web\e2e\page-tabs.spec.ts:14:1 › 顶部页面标签默认关：不显示标签条
+[2/11] [chromium] › apps\web\e2e\page-tabs.spec.ts:21:1 › 开启 顶部页面标签：访问页面显示标签、可切换与关闭
+[3/11] [chromium] › apps\web\e2e\page-tabs.spec.ts:56:1 › 关闭当前激活标签按策略导航到最近其他标签（默认 recent）
+[4/11] [chromium] › apps\web\e2e\page-tabs.spec.ts:86:1 › 关闭后跳转策略选择器存在并持久化（右邻优先）
+[5/11] [chromium] › apps\web\e2e\page-tabs.spec.ts:102:1 › 恢复上次打开的标签：重载后标签保持（默认关时清除）
+  1) [chromium] › apps\web\e2e\page-tabs.spec.ts:102:1 › 恢复上次打开的标签：重载后标签保持（默认关时清除） ─────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('navigation', { name: '页面标签' }).getByRole('button', { name: '参考资源', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByRole('navigation', { name: '页面标签' }).getByRole('button', { name: '参考资源', exact: true })
+
+
+      125 |   const strip = page.getByRole('navigation', { name: '页面标签' });
+      126 |   await expect(strip).toBeVisible();
+    > 127 |   await expect(strip.getByRole('button', { name: '参考资源', exact: true })).toBeVisible();
+          |                                                                          ^
+      128 |   await expect(strip.getByRole('button', { name: '外观', exact: true })).toBeVisible();
+      129 | });
+      130 |
+        at D:\coder\i721\console-web\apps\web\e2e\page-tabs.spec.ts:127:74
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\page-tabs-恢复上次打开的标签：重载后标签保持（默认关时清除）-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\page-tabs-恢复上次打开的标签：重载后标签保持（默认关时清除）-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\page-tabs-恢复上次打开的标签：重载后标签保持（默认关时清除）-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\page-tabs-恢复上次打开的标签：重载后标签保持（默认关时清除）-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:12284) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[6/11] [chromium] › apps\web\e2e\reference-resources.spec.ts:10:1 › Reference Resources 列表经 Registry 派生 Navigation 进入侧栏并可直接验收
+[7/11] [chromium] › apps\web\e2e\reference-resources.spec.ts:29:1 › Route Target Link 导航：列表 → 详情 → 编辑，编辑 canonical parent 为详情
+[8/11] [chromium] › apps\web\e2e\reference-resources.spec.ts:46:1 › 创建页提交通过 imperative navigation 返回列表
+  2) [chromium] › apps\web\e2e\reference-resources.spec.ts:46:1 › 创建页提交通过 imperative navigation 返回列表
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '创建' })
+        - locator resolved to <button data-rac="" tabindex="0" type="submit" data-slot="button" data-react-aria-pressable="true" id="react-aria2844752246-_r_11_" class="button button--md button--ghost inline-flex rounded-control font-semibold outline-none transition-colors h-control gap-2 px-4 text-sm bg-brand text-on-brand shadow-sm hover:bg-brand-strong">…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <nextjs-portal></nextjs-portal> from <script data-nextjs-dev-overlay="true">…</script> subtree intercepts pointer events
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <nextjs-portal></nextjs-portal> from <script data-nextjs-dev-overlay="true">…</script> subtree intercepts pointer events
+        - retrying click action
+          - waiting 100ms
+        52 × waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <nextjs-portal></nextjs-portal> from <script data-nextjs-dev-overlay="true">…</script> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+
+
+      51 |
+      52 |   await page.getByLabel('名称').fill('本地新增资源');
+    > 53 |   await page.getByRole('button', { name: '创建' }).click();
+         |                                                  ^
+      54 |   await expect(page).toHaveURL(/\/reference-resources$/);
+      55 |   await expect(page.getByRole('heading', { level: 1, name: '参考资源' })).toBeVisible();
+      56 | });
+        at D:\coder\i721\console-web\apps\web\e2e\reference-resources.spec.ts:53:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\reference-resources-创建页提交通过-imperative-navigation-返回列表-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\reference-resources-创建页提交通过-imperative-navigation-返回列表-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\reference-resources-创建页提交通过-imperative-navigation-返回列表-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\reference-resources-创建页提交通过-imperative-navigation-返回列表-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:15648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[9/11] [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规
+  3) [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('html')
+    Expected: "true"
+    Received: ""
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 5000ms
+      - waiting for locator('html')
+        13 × locator resolved to <html>…</html>
+           - unexpected value "null"
+
+
+       5 |
+       6 | async function expectHydrated(page: Page) {
+    >  7 |   await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
+         |                                      ^
+       8 | }
+       9 |
+      10 | test('Reference Resources 列表经 Registry 派生 Navigation 进入侧栏并可直接验收', async ({
+        at expectHydrated (D:\coder\i721\console-web\apps\web\e2e\reference-resources.spec.ts:7:38)
+        at D:\coder\i721\console-web\apps\web\e2e\reference-resources.spec.ts:67:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\reference-resources-Reference-Resources-页面-Axe-WCAG-AA-无违规-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:30808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[10/11] [chromium] › apps\web\e2e\reference-resources.spec.ts:75:1 › Reference Resources 视觉基线（桌面全页）
+  4) [chromium] › apps\web\e2e\reference-resources.spec.ts:75:1 › Reference Resources 视觉基线（桌面全页） ───
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('html')
+    Expected: "true"
+    Received: ""
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 5000ms
+      - waiting for locator('html')
+        13 × locator resolved to <html>…</html>
+           - unexpected value "null"
+
+
+       5 |
+       6 | async function expectHydrated(page: Page) {
+    >  7 |   await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
+         |                                      ^
+       8 | }
+       9 |
+      10 | test('Reference Resources 列表经 Registry 派生 Navigation 进入侧栏并可直接验收', async ({
+        at expectHydrated (D:\coder\i721\console-web\apps\web\e2e\reference-resources.spec.ts:7:38)
+        at D:\coder\i721\console-web\apps\web\e2e\reference-resources.spec.ts:78:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\reference-resources-Reference-Resources-视觉基线（桌面全页）-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\reference-resources-Reference-Resources-视觉基线（桌面全页）-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\reference-resources-Reference-Resources-视觉基线（桌面全页）-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\reference-resources-Reference-Resources-视觉基线（桌面全页）-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:32196) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[11/11] [chromium] › apps\web\e2e\reference-resources.spec.ts:82:1 › 窄屏与英文扩张下 Reference Resources 无横向溢出
+  5) [chromium] › apps\web\e2e\reference-resources.spec.ts:82:1 › 窄屏与英文扩张下 Reference Resources 无横向溢出
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('html')
+    Expected: "true"
+    Received: ""
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 5000ms
+      - waiting for locator('html')
+        13 × locator resolved to <html>…</html>
+           - unexpected value "null"
+
+
+       5 |
+       6 | async function expectHydrated(page: Page) {
+    >  7 |   await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
+         |                                      ^
+       8 | }
+       9 |
+      10 | test('Reference Resources 列表经 Registry 派生 Navigation 进入侧栏并可直接验收', async ({
+        at expectHydrated (D:\coder\i721\console-web\apps\web\e2e\reference-resources.spec.ts:7:38)
+        at D:\coder\i721\console-web\apps\web\e2e\reference-resources.spec.ts:85:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\reference-resources-窄屏与英文扩张下-Reference-Resources-无横向溢出-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\reference-resources-窄屏与英文扩张下-Reference-Resources-无横向溢出-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\reference-resources-窄屏与英文扩张下-Reference-Resources-无横向溢出-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\reference-resources-窄屏与英文扩张下-Reference-Resources-无横向溢出-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  5 failed
+    [chromium] › apps\web\e2e\page-tabs.spec.ts:102:1 › 恢复上次打开的标签：重载后标签保持（默认关时清除） ──────────────────
+    [chromium] › apps\web\e2e\reference-resources.spec.ts:46:1 › 创建页提交通过 imperative navigation 返回列表
+    [chromium] › apps\web\e2e\reference-resources.spec.ts:58:1 › Reference Resources 页面 Axe WCAG AA 无违规
+    [chromium] › apps\web\e2e\reference-resources.spec.ts:75:1 › Reference Resources 视觉基线（桌面全页） ────
+    [chromium] › apps\web\e2e\reference-resources.spec.ts:82:1 › 窄屏与英文扩张下 Reference Resources 无横向溢出
+  6 passed (1.6m)

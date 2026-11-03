@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS iam_sessions;
+DROP TABLE IF EXISTS iam_role_permissions;
+DROP TABLE IF EXISTS iam_account_roles;
+DROP TABLE IF EXISTS iam_roles;
+DROP TABLE IF EXISTS iam_local_credentials;
+DROP TABLE IF EXISTS iam_accounts;

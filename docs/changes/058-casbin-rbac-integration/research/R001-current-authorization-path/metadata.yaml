@@ -1,0 +1,40 @@
+schema_version: 1
+id: R001
+title: "当前权限调用链、数据 authority 与注入边界"
+question: "当前 Core RBAC 怎样从 Permission Catalog、IAM 关系表流向 Auth/HTTP decision，哪些职责适合由第三方引擎替换？"
+research_type: current-project-architecture
+topics: ["authorization", "Core RBAC", "IAM", "Auth", "composition", "Application Generation"]
+keywords: ["permissionsFor", "SessionIdentity.Permissions", "Principal.Scopes", "HasScope", "operationGateAdapter", "SecurityRevision", "Binding"]
+technologies: ["Go", "Huma v2", "GORM", "explicit composition"]
+applicable_scenarios: ["058 Casbin 接入", "权限模块注入", "Auth/IAM 分责", "Generation authorization consistency"]
+non_applicable_scenarios: ["old-backend", "OIDC 身份提供方", "多租户 domain RBAC", "ReBAC"]
+status: active
+summary: "当前 IAM 关系表、owner、Session revision 与事务撤销是唯一业务 authority；IAM 每请求手写展开权限并经 composition 转为 Principal.Scopes，Auth 再手写精确集合判断。现有显式 composition 可承载窄 DecisionPoint 注入，但 Kernel Binding 只属构建期，request context 也不应携带服务。"
+evidence:
+  types: ["source-code", "call-graph", "tests", "architecture-docs"]
+  primary_sources:
+    - title: "Permission Catalog、Auth policy 与 operation gate"
+      locator: "internal/permission/catalog.go; internal/module/auth/{model,service}; internal/composition/{blueprint,http_api}.go"
+      snapshot: "f83a58534c949a636a3a1b10f31c047fdeacf4af"
+    - title: "IAM Session、RBAC mutation 与 repository"
+      locator: "internal/module/iam/{model,service,repo}; internal/composition/iam.go"
+      snapshot: "f83a58534c949a636a3a1b10f31c047fdeacf4af"
+    - title: "Application Generation 与 Kernel App Binding"
+      locator: "internal/composition/generation.go; internal/kernel/app/binding.go"
+      snapshot: "f83a58534c949a636a3a1b10f31c047fdeacf4af"
+    - title: "Auth/IAM/composition 定向测试"
+      locator: "go test ./internal/module/auth/... ./internal/module/iam/... ./internal/composition/..."
+      snapshot: "passed 2026-08-22"
+researched_at: "2026-08-22"
+verified_at: "2026-08-22"
+validity:
+  mode: code-snapshot
+  review_after: "2026-09-22"
+  refresh_triggers: ["Auth/IAM owner 变化", "Principal 契约变化", "Generation 架构变化", "新增多租户/ABAC/ReBAC", "权限持久化表变化"]
+relations:
+  extends: ["053/R001", "053/R002", "057/R011"]
+  related: ["054/IAM", "025/Auth-Todo-boundary"]
+  supersedes: []
+  superseded_by: []
+report: report.md
+

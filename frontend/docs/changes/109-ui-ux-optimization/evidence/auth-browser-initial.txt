@@ -1,0 +1,50 @@
+
+Running 2 tests using 1 worker
+
+(node:12876) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\authentication.spec.ts:12:1 › Anonymous deep link preserves destination; login restores identity; logout protects content (4.5s)
+  x  2 [chromium] › apps\web\e2e\authentication.spec.ts:37:1 › Registration validates confirmation, displays success and persists only salted password digest (2.2s)
+
+
+  1) [chromium] › apps\web\e2e\authentication.spec.ts:37:1 › Registration validates confirmation, displays success and persists only salted password digest 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Auth Review', { exact: true })
+    Expected: visible
+    Error: strict mode violation: getByText('Auth Review', { exact: true }) resolved to 2 elements:
+        1) <span class="block truncate text-sm font-semibold text-ink">Auth Review</span> aka getByRole('button', { name: '当前用户' })
+        2) <p class="truncate text-sm font-semibold text-ink">Auth Review</p> aka getByLabel('ARAuth Reviewreview@example.').getByText('Auth Review')
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByText('Auth Review', { exact: true })
+
+
+      54 |   await page.getByRole('button', { name: '继续进入工作台', exact: true }).click();
+      55 |   await page.getByRole('button', { name: '当前用户', exact: true }).click();
+    > 56 |   await expect(page.getByText('Auth Review', { exact: true })).toBeVisible();
+         |                                                                ^
+      57 |   await page.getByRole('menuitem', { name: '退出登录', exact: true }).click();
+      58 |   await page.getByRole('textbox', { name: '邮箱', exact: true }).fill('review@example.test');
+      59 |   await page.getByLabel('密码', { exact: true }).fill('UniqueDemoPass2026!');
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\authentication.spec.ts:56:64
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\authentication-Registratio-3c3f5-only-salted-password-digest-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\authentication-Registratio-3c3f5-only-salted-password-digest-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\authentication-Registratio-3c3f5-only-salted-password-digest-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\authentication-Registratio-3c3f5-only-salted-password-digest-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\authentication.spec.ts:37:1 › Registration validates confirmation, displays success and persists only salted password digest 
+  1 passed (8.3s)

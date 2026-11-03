@@ -1,0 +1,34 @@
+schema_version: 1
+id: R068-002
+title: "全量采用 HeroUI 的迁移方案与承载边界（Tailwind 主题 vs 保留既有 token；整层替换 vs 分层适配）"
+question: "用户要求「全量使用 HeroUI 组件库」。需要回答：（a）存在哪些可行的引入形态（方案）与各自收益/成本？（b）如何与本仓库既有平台契约（ActionTrigger 权限呈现、zone 分区注入、reveal/滚动体验、reduced-motion、experience 派生配置）共存？（c）样式 authority（styles.css）与 HeroUI theme 如何安排？（d）共享层替换的工作量与验证矩阵是什么？结论的证据阈值是什么？"
+research_type: external-comparison
+topics: ["webui", "heroui", "tailwind", "component-library-adoption", "design-tokens", "migration-path", "styling-authority"]
+keywords: ["@heroui/react", "@heroui/theme", "tailwindcss v4", "extendTheme", "data-theme", "aria-disabled", "ActionTrigger", "zone", "reduced-motion", "bundle-size"]
+applicable_scenarios:
+  - "把 Button/Input/Select/Table/Pagination/Modal/Drawer/Tabs/Switch/Avatar/Dropdown/Alert 等基础原语替换为 HeroUI"
+  - "把 Shell（Sidebar/Header/Tabs/Search/AccountMenu/ThemeDrawer）迁移到 HeroUI 组件"
+  - "HeroUI theme 与既有 data-color-scheme/data-motion/experience 派生配置共存"
+non_applicable_scenarios:
+  - "把动作级权限、manifest zone、路由权限门禁等平台契约交给组件库（属于项目自有契约）"
+  - "引入运行时插件/远程模块（048/056/059 边界保持）"
+  - "保留新旧两套 UI 实现双轨（3.8 单轨演进）"
+status: active
+summary: "推荐方案：单轨整层替换——新增 @heroui/react@^3.2 / @heroui/theme / @heroui/toast 与 tailwindcss@^4（Vite 集成 @tailwindcss/vite），用 @heroui/theme 的 extendTheme 接入既有 light/dark/preset 语义（data-color-scheme -> HeroUI .dark/自定义 variants），styles.css 保留 reset/design token/reduced-motion/scroll/experience 分区，UI 组件视觉与排版移交 Tailwind v4 + HeroUI 主题层；平台契约层（ActionTrigger 的 pending/denied 与防重复、zone 分区注入、Reveal/滚动运行时、experience 配置）以 HeroUI 组件为底座在其上保留薄契约（ActionTrigger 内部用 HeroUI Button 渲染，禁用/忙碌揉和 HeroUI disabled 语义，权限 denied 逻辑仍归平台）。SDK 导出名保持稳定（@webui/sdk/ui 同一组 API），模块页面迁移仅在少量布局/类名断言处校准；单元测试与 e2e 以 role/语义断言为主、class 断言同步更新。收益：react-aria 底座带来的键盘/焦点/无障碍一致性、受维护的组件面（Button/Table/Modal/Drawer/Tabs/Select/Sidebar/Navbar 等）与 TailAdmin 参考站同生态；成本：新增 Tailwind 依赖与构建层、bundle 增大、样式 authority 重构与视觉回归风险、既有 class 断言需更新。"
+evidence:
+  types: ["package-registry", "documentation", "source-code", "tests"]
+  primary_sources:
+    - title: "HeroUI 官方文档与组件面"
+      locator: "https://heroui.com/（components/theming/guide；v3 基于 react-aria + Tailwind v4，.dark 模式、extendTheme、@heroui/theme 插件；Sidebar/Navbar/Table/Pagination/Modal/Drawer/Tabs/Dropdown/Select/Input/Button/Alert/Toast 等组件）"
+      snapshot: "2026-08-26 公开文档"
+    - title: "本仓库既有平台契约层"
+      locator: "webui/src/ui/index.tsx（ActionTrigger/ZoneSlot/PageSection/StatCard/DataCard/Reveal）、webui/src/sdk/zone、webui/src/scroll/*、webui/src/theme.ts（experience/reduced-motion）、webui/src/styles.css 分区"
+      snapshot: "f7ca5ca"
+    - title: "既有质量门禁与断言面"
+      locator: "webui/src/ui.test.ts、webui/src/theme.test.ts、webui/playwright.config.ts、webui/e2e/webui.spec.ts（role 为主 + 少量 class 断言）"
+      snapshot: "f7ca5ca"
+researched_at: "2026-08-26"
+verified_at: "2026-08-26"
+refresh_triggers:
+  - "HeroUI v3 组件面或 Tailwind 集成方式变化"
+  - "用户确认采用分层适配而非整层替换"

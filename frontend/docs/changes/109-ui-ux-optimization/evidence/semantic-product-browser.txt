@@ -1,0 +1,129 @@
+
+Running 26 tests using 1 worker
+
+(node:14892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\accessibility-effects.spec.ts:18:1 › 增强焦点轮廓：开启写入 data-enhance-focus 且焦点环 Token 加强 (2.8s)
+  ok  2 [chromium] › apps\web\e2e\accessibility-effects.spec.ts:31:1 › 增强交互区域尺寸：开启写入 data-enhance-target 且控件 spacing 放大 (2.0s)
+  ok  3 [chromium] › apps\web\e2e\accessibility-effects.spec.ts:42:1 › 跟随系统辅助设置：开启写入 data-follow-system 并同步系统对比度 (3.9s)
+  ok  4 [chromium] › apps\web\e2e\settings-product-review.spec.ts:56:3 › All settings fields remain readable and accessible: appearance (7.1s)
+  ok  5 [chromium] › apps\web\e2e\settings-product-review.spec.ts:56:3 › All settings fields remain readable and accessible: navigation (6.4s)
+  ok  6 [chromium] › apps\web\e2e\settings-product-review.spec.ts:56:3 › All settings fields remain readable and accessible: data-display (6.3s)
+  ok  7 [chromium] › apps\web\e2e\settings-product-review.spec.ts:56:3 › All settings fields remain readable and accessible: actions (6.8s)
+  ok  8 [chromium] › apps\web\e2e\settings-product-review.spec.ts:56:3 › All settings fields remain readable and accessible: locale (6.5s)
+  ok  9 [chromium] › apps\web\e2e\settings-product-review.spec.ts:56:3 › All settings fields remain readable and accessible: notifications (5.9s)
+  ok 10 [chromium] › apps\web\e2e\settings-product-review.spec.ts:56:3 › All settings fields remain readable and accessible: accessibility (5.6s)
+  ok 11 [chromium] › apps\web\e2e\settings-product-review.spec.ts:56:3 › All settings fields remain readable and accessible: shortcuts (5.6s)
+  ok 12 [chromium] › apps\web\e2e\settings-product-review.spec.ts:99:5 › Shared controls preserve high contrast: forms, light desktop (4.6s)
+  ok 13 [chromium] › apps\web\e2e\settings-product-review.spec.ts:99:5 › Shared controls preserve high contrast: forms, dark narrow English (4.2s)
+  ok 14 [chromium] › apps\web\e2e\settings-product-review.spec.ts:99:5 › Shared controls preserve high contrast: actions-selection, light desktop (3.4s)
+  ok 15 [chromium] › apps\web\e2e\settings-product-review.spec.ts:99:5 › Shared controls preserve high contrast: actions-selection, dark narrow English (3.4s)
+  ok 16 [chromium] › apps\web\e2e\settings-product-review.spec.ts:99:5 › Shared controls preserve high contrast: data, light desktop (3.4s)
+  ok 17 [chromium] › apps\web\e2e\settings-product-review.spec.ts:99:5 › Shared controls preserve high contrast: data, dark narrow English (3.0s)
+  ok 18 [chromium] › apps\web\e2e\settings-product-review.spec.ts:99:5 › Shared controls preserve high contrast: overlays, light desktop (3.8s)
+  x  19 [chromium] › apps\web\e2e\settings-product-review.spec.ts:99:5 › Shared controls preserve high contrast: overlays, dark narrow English (3.0s)
+(node:3612) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 20 [chromium] › apps\web\e2e\settings-semantic.spec.ts:5:3 › Comparison choices adapt to their container and retain long labels at 1440 (2.7s)
+  ok 21 [chromium] › apps\web\e2e\settings-semantic.spec.ts:5:3 › Comparison choices adapt to their container and retain long labels at 320 (2.5s)
+  ok 22 [chromium] › apps\web\e2e\settings-semantic.spec.ts:49:1 › System contrast responds independently of the assistive-settings toggle (4.9s)
+  ok 23 [chromium] › apps\web\e2e\settings-semantic.spec.ts:85:1 › Mobile category navigation honors scroll preference after drawer focus restoration (5.4s)
+  ok 24 [chromium] › apps\web\e2e\settings-semantic.spec.ts:127:3 › Semantic appearance choices preserve preview, selection and persistence at 1440 (5.7s)
+  ok 25 [chromium] › apps\web\e2e\settings-semantic.spec.ts:127:3 › Semantic appearance choices preserve preview, selection and persistence at 390 (5.3s)
+  ok 26 [chromium] › apps\web\e2e\settings-semantic.spec.ts:127:3 › Semantic appearance choices preserve preview, selection and persistence at 320 (5.3s)
+
+
+  1) [chromium] › apps\web\e2e\settings-product-review.spec.ts:99:5 › Shared controls preserve high contrast: overlays, dark narrow English 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#9b8cff",
+    +               "contrastRatio": 2.76,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#ffffff",
+    +               "fontSize": "11.8pt (15.75px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 2.76 (foreground color: #ffffff, background color: #9b8cff, font size: 11.8pt (15.75px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<button data-slot=\"button\" class=\"button button--md bu...\" data-rac=\"\" type=\"button\" tabindex=\"0\" data-react-aria-pres...=\"true\" id=\"react-aria9686905545...\">",
+    +                 "target": Array [
+    +                   "#react-aria9686905545-_r_2e_",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 2.76 (foreground color: #ffffff, background color: #9b8cff, font size: 11.8pt (15.75px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<button data-slot=\"button\" class=\"button button--md bu...\" data-rac=\"\" type=\"button\" tabindex=\"0\" data-react-aria-pres...=\"true\" id=\"react-aria9686905545...\">",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           "#react-aria9686905545-_r_2e_",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      35 |     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      36 |     .analyze();
+    > 37 |   expect(result.violations).toEqual([]);
+         |                             ^
+      38 |   expect(
+      39 |     await page.evaluate(
+      40 |       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        at expectAccessible (D:\coder\i721\console-web\apps\web\e2e\settings-product-review.spec.ts:37:29)
+        at D:\coder\i721\console-web\apps\web\e2e\settings-product-review.spec.ts:120:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-product-review-Sh-5f549-verlays-dark-narrow-English-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-product-review-Sh-5f549-verlays-dark-narrow-English-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-product-review-Sh-5f549-verlays-dark-narrow-English-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-product-review-Sh-5f549-verlays-dark-narrow-English-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\settings-product-review.spec.ts:99:5 › Shared controls preserve high contrast: overlays, dark narrow English 
+  25 passed (2.1m)

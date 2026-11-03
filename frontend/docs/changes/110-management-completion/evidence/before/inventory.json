@@ -1,0 +1,100 @@
+[
+  {
+    "path": "/",
+    "width": 1440,
+    "title": "工作台",
+    "overflow": false,
+    "text": "COMMUNITY CONSOLE\n\n工作台\n\nRin，从常用页面继续工作，查看未完成草稿与最近应用事件。\n\n个人偏好\n收藏\n\n常用页面与资源的快捷入口。\n\n还没有收藏。可在支持收藏的详情页添加常用入口。\n\n最近访问\n\n当前账户在此浏览器的最近页面。\n\n访问页面后，最近记录会显示在这里。\n\n最近应用事件\n\n来自当前账户的实际操作反馈，保留在此浏览器。\n\n打开通知中心\n\n0 条未读\n\n暂无应用事件。完成操作后，反馈会显示在这里。\n\n工作偏好\n\n调整当前账户在此浏览器的工作体验。\n\n外观\n\n主题、密度与阅读宽度。\n\n导航与工作恢复\n\n页签、最近记录与草稿恢复。\n\n语言与地区\n\n界面语言、日期与时间格式。\n\n操作与草稿\n\n保存去向、离开确认与自动草稿。\n\n开发中心\n\n组件规范、示例流程与工具，用于开发和验证。\n\n组件规范\n参考资源示例\n图标工具"
+  },
+  {
+    "path": "/users",
+    "width": 1440,
+    "title": "用户管理",
+    "overflow": false,
+    "text": "身份与访问\n\n用户管理\n\n查找用户、维护资料与状态，并分配已有角色。\n\n创建用户\n\n演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n\n用户目录\n\n共 24 位用户\n\n搜索\n清除筛选\n刷新\n状态\n全部\n \n全部\n启用\n停用\n角色\n全部\n \n全部\n管理员\n操作员\n受限成员\n排序字段\n姓名\n \n姓名\n邮箱\n创建时间\n排序方向\n升序\n \n升序\n降序\n姓名\n\t\n邮箱\n\t\n状态\n\t\n角色\n\t\n创建时间\n\nAlex Chen\toperator@community.test\t\n启用\t操作员\t2026/10/1\nMember 01\tmember1@community.test\t\n启用\t受限成员\t2026/10/1\nMember 02\tmember2@community.test\t\n启用\t操作员\t2026/10/1\nMember 03\tmember3@community.test\t\n启用\t受限成员\t2026/10/1\nMember 04\tmember4@community.test\t\n启用\t操作员\t2026/10/1\nMember 05\tmember5@community.test\t\n停用\t受限成员\t2026/10/1\nMember 06\tmember6@community.test\t\n启用\t操作员\t2026/10/1\nMember 07\tmember7@community.test\t\n启用\t受限成员\t2026/10/1\nMember 08\tmember8@community.test\t\n启用\t操作员\t2026/10/1\nMember 09\tmember9@community.test\t\n启用\t受限成员\t2026/10/1\nMember 10\tmember10@community.test\t\n停用\t操作员\t2026/10/1\nMember 11\tmember11@community.test\t\n启用\t受限成员\t2026/10/1\nMember 12\tmember12@community.test\t\n启用\t操作员\t2026/10/1\nMember 13\tmember13@community.test\t\n启用\t受限成员\t2026/10/1\nMember 14\tmember14@community.test\t\n启用\t操作员\t2026/10/1\nMember 15\tmember15@community.test\t\n停用\t受限成员\t2026/10/1\nMember 16\tmember16@community.test\t\n启用\t操作员\t2026/10/1\nMember 17\tmember17@community.test\t\n启用\t受限成员\t2026/10/1\nMember 18\tmember18@community.test\t\n启用\t操作员\t2026/10/1\nMember 19\tmember19@community.test\t\n启用\t受限成员\t2026/10/1\n第 1 / 2 页\n每页条数\n20\n \n10\n20\n50\n上一页\n下一页"
+  },
+  {
+    "path": "/roles",
+    "width": 1440,
+    "title": "角色管理",
+    "overflow": false,
+    "text": "角色管理\n\n按资源与操作授予权限，角色成员共同继承授权。\n\n创建角色\n\n演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n\n角色目录\n资源与操作权限\n管理员\n系统角色\n\n12 项权限\n\n操作员\n系统角色\n\n4 项权限\n\n受限成员\n系统角色\n\n1 项权限"
+  },
+  {
+    "path": "/audit-logs",
+    "width": 1440,
+    "title": "审计日志",
+    "overflow": false,
+    "text": "审计日志\n\n只读记录管理操作的时间、主体、对象和结果。不会收集密码或表单内容。\n\n刷新\n\n演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n\n审计日志\n\n审计记录不可编辑。Mock 记录保存在当前浏览器；生产审计必须由后端可信写入并保留。\n\n搜索\n操作类型\n全部\n \n全部\n创建用户\n编辑用户\n修改用户状态\n修改用户角色\n更新个人资料\n创建角色\n修改角色授权\n修改注册策略\n操作结果\n全部\n \n全部\n成功\n失败\n\n暂无符合条件的审计记录\n\n上一页\n\n第 1 / 1 页 · 0 条\n\n下一页"
+  },
+  {
+    "path": "/system-settings",
+    "width": 1440,
+    "title": "注册策略",
+    "overflow": false,
+    "text": "注册策略\n\n管理新账号的注册入口与默认角色；已有账号保持原有授权。\n\n演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n\n注册策略\n\n管理新账号的注册入口与默认角色；已有账号保持原有授权。\n\n开放公开注册\n关闭后拒绝新的公开注册，已有账号仍可登录。\n注册账号默认角色\nViewer\n仅可选择不含授权管理或系统写权限的角色，实际角色在提交注册时分配。\n \nAdministrator\nOperator\nViewer\n恢复已保存值\n保存策略"
+  },
+  {
+    "path": "/account",
+    "width": 1440,
+    "title": "个人账户",
+    "overflow": false,
+    "text": "个人\n\n个人账户\n\n查看当前账户，维护姓名和邮箱。权限与角色由管理员分配。\n\n演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n\n账户信息\n\n角色和状态只读；你不能通过个人资料更改自己的授权。\n\n账户 ID\nmock-demo\n状态\n启用\n角色\n管理员\n个人资料\n姓名\n邮箱\n重置\n保存"
+  },
+  {
+    "path": "/notifications",
+    "width": 1440,
+    "title": "通知中心",
+    "overflow": false,
+    "text": "通知中心\n\n管理事件与应用事件集中查看；顶部通知入口使用同一份已读状态。\n\n全部标为已读\n\n演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n\n0 条未读\n\n刷新\n通知中心\n搜索\n通知分类\n全部\n \n全部\n系统\n成功\n失败\n警告\n任务\n阅读状态\n全部\n \n全部\n未读\n已读\n清除筛选\n将本页通知标为已读\n\n暂无通知\n\n上一页\n\n第 1 / 1 页 · 0 条\n\n下一页"
+  },
+  {
+    "path": "/",
+    "width": 390,
+    "title": "工作台",
+    "overflow": false,
+    "text": "COMMUNITY CONSOLE\n\n工作台\n\nRin，从常用页面继续工作，查看未完成草稿与最近应用事件。\n\n个人偏好\n收藏\n\n常用页面与资源的快捷入口。\n\n还没有收藏。可在支持收藏的详情页添加常用入口。\n\n最近访问\n\n当前账户在此浏览器的最近页面。\n\n通知中心\n2026/10/13 · 13:36\n个人账户\n2026/10/13 · 13:36\n系统配置\n2026/10/13 · 13:36\n审计日志\n2026/10/13 · 13:36\n角色管理\n2026/10/13 · 13:36\n用户管理\n2026/10/13 · 13:36\n最近应用事件\n\n来自当前账户的实际操作反馈，保留在此浏览器。\n\n打开通知中心\n\n0 条未读\n\n暂无应用事件。完成操作后，反馈会显示在这里。\n\n工作偏好\n\n调整当前账户在此浏览器的工作体验。\n\n外观\n\n主题、密度与阅读宽度。\n\n导航与工作恢复\n\n页签、最近记录与草稿恢复。\n\n语言与地区\n\n界面语言、日期与时间格式。\n\n操作与草稿\n\n保存去向、离开确认与自动草稿。\n\n开发中心\n\n组件规范、示例流程与工具，用于开发和验证。\n\n组件规范\n参考资源示例\n图标工具"
+  },
+  {
+    "path": "/users",
+    "width": 390,
+    "title": "用户管理",
+    "overflow": false,
+    "text": "身份与访问\n\n用户管理\n\n查找用户、维护资料与状态，并分配已有角色。\n\n创建用户\n\n演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n\n用户目录\n\n共 24 位用户\n\n搜索\n清除筛选\n刷新\n状态\n全部\n \n全部\n启用\n停用\n角色\n全部\n \n全部\n管理员\n操作员\n受限成员\n排序字段\n姓名\n \n姓名\n邮箱\n创建时间\n排序方向\n升序\n \n升序\n降序\nAlex Chen\n启用\n\noperator@community.test\n\n操作员\n\nMember 01\n启用\n\nmember1@community.test\n\n受限成员\n\nMember 02\n启用\n\nmember2@community.test\n\n操作员\n\nMember 03\n启用\n\nmember3@community.test\n\n受限成员\n\nMember 04\n启用\n\nmember4@community.test\n\n操作员\n\nMember 05\n停用\n\nmember5@community.test\n\n受限成员\n\nMember 06\n启用\n\nmember6@community.test\n\n操作员\n\nMember 07\n启用\n\nmember7@community.test\n\n受限成员\n\nMember 08\n启用\n\nmember8@community.test\n\n操作员\n\nMember 09\n启用\n\nmember9@community.test\n\n受限成员\n\nMember 10\n停用\n\nmember10@community.test\n\n操作员\n\nMember 11\n启用\n\nmember11@community.test\n\n受限成员\n\nMember 12\n启用\n\nmember12@community.test\n\n操作员\n\nMember 13\n启用\n\nmember13@community.test\n\n受限成员\n\nMember 14\n启用\n\nmember14@community.test\n\n操作员\n\nMember 15\n停用\n\nmember15@community.test\n\n受限成员\n\nMember 16\n启用\n\nmember16@community.test\n\n操作员\n\nMember 17\n启用\n\nmember17@community.test\n\n受限成员\n\nMember 18\n启用\n\nmember18@community.test\n\n操作员\n\nMember 19\n启用\n\nmember19@community.test\n\n受限成员\n\n第 1 / 2 页\n每页条数\n20\n \n10\n20\n50\n上一页\n下一页"
+  },
+  {
+    "path": "/roles",
+    "width": 390,
+    "title": "角色管理",
+    "overflow": false,
+    "text": "角色管理\n\n按资源与操作授予权限，角色成员共同继承授权。\n\n创建角色\n\n演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n\n角色目录\n资源与操作权限\n管理员\n系统角色\n\n12 项权限\n\n操作员\n系统角色\n\n4 项权限\n\n受限成员\n系统角色\n\n1 项权限"
+  },
+  {
+    "path": "/audit-logs",
+    "width": 390,
+    "title": "审计日志",
+    "overflow": false,
+    "text": "审计日志\n\n只读记录管理操作的时间、主体、对象和结果。不会收集密码或表单内容。\n\n刷新\n\n演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n\n审计日志\n\n审计记录不可编辑。Mock 记录保存在当前浏览器；生产审计必须由后端可信写入并保留。\n\n搜索\n操作类型\n全部\n \n全部\n创建用户\n编辑用户\n修改用户状态\n修改用户角色\n更新个人资料\n创建角色\n修改角色授权\n修改注册策略\n操作结果\n全部\n \n全部\n成功\n失败\n\n暂无符合条件的审计记录\n\n上一页\n\n第 1 / 1 页 · 0 条\n\n下一页"
+  },
+  {
+    "path": "/system-settings",
+    "width": 390,
+    "title": "注册策略",
+    "overflow": false,
+    "text": "注册策略\n\n管理新账号的注册入口与默认角色；已有账号保持原有授权。\n\n演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n\n注册策略\n\n管理新账号的注册入口与默认角色；已有账号保持原有授权。\n\n开放公开注册\n关闭后拒绝新的公开注册，已有账号仍可登录。\n注册账号默认角色\nViewer\n仅可选择不含授权管理或系统写权限的角色，实际角色在提交注册时分配。\n \nAdministrator\nOperator\nViewer\n恢复已保存值\n保存策略"
+  },
+  {
+    "path": "/account",
+    "width": 390,
+    "title": "个人账户",
+    "overflow": false,
+    "text": "个人\n\n个人账户\n\n查看当前账户，维护姓名和邮箱。权限与角色由管理员分配。\n\n演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n\n账户信息\n\n角色和状态只读；你不能通过个人资料更改自己的授权。\n\n账户 ID\nmock-demo\n状态\n启用\n角色\n管理员\n个人资料\n姓名\n邮箱\n重置\n保存"
+  },
+  {
+    "path": "/notifications",
+    "width": 390,
+    "title": "通知中心",
+    "overflow": false,
+    "text": "通知中心\n\n管理事件与应用事件集中查看；顶部通知入口使用同一份已读状态。\n\n全部标为已读\n\n演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n\n0 条未读\n\n刷新\n通知中心\n搜索\n通知分类\n全部\n \n全部\n系统\n成功\n失败\n警告\n任务\n阅读状态\n全部\n \n全部\n未读\n已读\n清除筛选\n将本页通知标为已读\n\n暂无通知\n\n上一页\n\n第 1 / 1 页 · 0 条\n\n下一页"
+  }
+]

@@ -1,0 +1,42 @@
+schema_version: 1
+id: R119-001
+title: "日常验证入口与重复门禁"
+question: "如何避免日常更新重复执行全量验证，并保留依赖调用方与完整回归覆盖？"
+research_type: current-project
+topics: [validation, developer-workflow, ci]
+keywords: ["增量验证", "全量测试", "Go test cache", "pnpm filter", "reverse dependencies"]
+applicable_scenarios: ["本仓库 Go 与 pnpm 日常功能更新", "PR 验证", "完整回归入口"]
+non_applicable_scenarios: ["发布部署授权", "用户数据库迁移", "自动证明浏览器业务链路正确"]
+status: active
+summary: "使用原生 Go 与 pnpm 范围能力加薄编排，消除日常强制全量规则；未知影响显式扩大验证。"
+evidence:
+  types: [source-code, repository-rules, workflows, official-documentation, local-environment]
+  primary_sources:
+    - title: "当前文件证据快照"
+      locator: evidence-snapshot.md
+      snapshot: "2026-11-03；main 尚无 Commit；关键文件 SHA256 见快照"
+    - title: "Go 1.26.6 原生 list 与测试缓存"
+      locator: "https://pkg.go.dev/cmd/go@go1.26.6"
+      snapshot: "2026-11-03 核验"
+    - title: "pnpm 10 工作区过滤"
+      locator: "https://pnpm.io/10.x/filtering"
+      snapshot: "2026-11-03 核验"
+    - title: "GitHub Actions 工作流语法"
+      locator: "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax"
+      snapshot: "2026-11-03 核验"
+researched_at: "2026-11-03"
+verified_at: "2026-11-03"
+validity:
+  mode: snapshot
+  review_after: "2027-02-03"
+  refresh_triggers:
+    - "验证脚本、frontend/package.json 或工作区配置的职责发生变化"
+    - "AGENTS 或提交 skill 的验证要求发生冲突性变化"
+    - "CI 触发方式、基线获取或生成契约来源改变"
+    - "Go/pnpm 版本变化导致 list/filter/cache 语义改变"
+relations:
+  extends: []
+  related: [R088-001, R001-source-integration]
+  supersedes: []
+  superseded_by: []
+report: report.md

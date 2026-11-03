@@ -1,0 +1,44 @@
+schema_version: 1
+id: R005
+title: "主流 Admin 产物与三模块边界"
+question: "053 的功能产物是否与主流 Admin 一致，账号、RBAC、组织和导航应归入一个 Account 模块、四五个页面级模块，还是按业务不变量划分？"
+research_type: comparative-current-project
+topics: ["admin", "iam", "rbac", "organization", "navigation", "module-boundary", "permission-catalog"]
+keywords: ["Gin-Vue-Admin", "RuoYi-Vue-Plus", "go-admin", "system module", "account", "authorization", "department", "position", "menu"]
+applicable_scenarios: ["053 模块边界", "Admin 核心产物", "IAM 与 Auth 分责", "组织与导航 owner", "Permission Catalog"]
+non_applicable_scenarios: ["完整企业级 Admin 路线图", "部门数据权限", "多租户", "外部 IAM", "微服务拆分"]
+status: active
+summary: "用户、角色、权限、菜单、部门、岗位产物与主流 Admin 核心基本一致；页面数量不等于顶层模块数量。Account 单模块语义过宽，Account/Authorization 四模块拆分又破坏安全事务边界；总体目标采用 IAM、Organization、Navigation 三模块，并按 053 平台基础、054 IAM、055 Organization、056 Navigation 分批交付。"
+evidence:
+  types: ["official-documentation", "official-source", "source-code", "tests", "project-documentation", "user-decision"]
+  primary_sources:
+    - title: "Gin-Vue-Admin 权限系统"
+      locator: "https://www.gin-vue-admin.com/guide/server/authorization.html"
+      snapshot: "RBAC、菜单/API 权限、部门、岗位与数据权限说明；verified 2026-08-21"
+    - title: "Gin-Vue-Admin system API group"
+      locator: "https://github.com/flipped-aurora/gin-vue-admin/blob/main/server/api/v1/system/enter.go"
+      snapshot: "user/menu/authority/department/position 等位于 system API group；verified 2026-08-21"
+    - title: "RuoYi-Vue-Plus ruoyi-system"
+      locator: "https://github.com/dromara/RuoYi-Vue-Plus/tree/6.X/ruoyi-modules/ruoyi-system/src/main/java/org/dromara/system"
+      snapshot: "system 模块内部按 controller/domain/mapper/service 分层；verified 2026-08-21"
+    - title: "go-admin app/admin"
+      locator: "https://github.com/go-admin-team/go-admin/tree/master/app/admin"
+      snapshot: "admin 领域内部按 apis/models/router/service 分层；verified 2026-08-21"
+    - title: "当前模块、WebUI、Migration 与 Auth 聚合契约"
+      locator: "internal/module/{README.md,contracts.go,auth,todo}; internal/composition/{generation.go,http_contracts.go,webui_http.go}; internal/webui/contract.go; pkg/database/types.go"
+      snapshot: "working tree based on commit 5927f2a116ba6b689473fde49e7790b03773c675; read-only rechecked 2026-08-21"
+    - title: "用户确认的三模块方案方向"
+      locator: "current conversation and attached plan: 053 foundation, 054 IAM, 055 Organization, 056 Navigation"
+      snapshot: "latest plan revision requested 2026-08-21"
+researched_at: "2026-08-21"
+verified_at: "2026-08-21"
+validity:
+  mode: mixed-snapshot
+  review_after: "2026-09-21"
+  refresh_triggers: ["主流样本大版本改变模块归属", "当前模块聚合契约改变", "要求部门数据权限或多租户", "IAM 与 Auth 边界改变", "用户改变三模块或 053-056 分批决策"]
+relations:
+  extends: ["053/R002", "053/R004", "012/R001", "048/R003"]
+  related: ["053/R001", "053/R003", "052/R002"]
+  supersedes: ["053/R001", "053/R003"]
+  superseded_by: []
+report: report.md

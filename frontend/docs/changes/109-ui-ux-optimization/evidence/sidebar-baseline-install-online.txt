@@ -1,0 +1,105 @@
+Scope: all 13 workspace projects
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +378
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 378, reused 81, downloaded 0, added 64
+Progress: resolved 378, reused 81, downloaded 3, added 80
+
+   ╭──────────────────────────────────────────╮
+   │                                          │
+   │   Update available! 10.22.0 → 12.11.2.   │
+   │   Changelog: https://pnpm.io/v/12.11.2   │
+   │     To update, run: pnpm add -g pnpm     │
+   │                                          │
+   ╰──────────────────────────────────────────╯
+
+Progress: resolved 378, reused 81, downloaded 30, added 106
+Progress: resolved 378, reused 81, downloaded 47, added 124
+Progress: resolved 378, reused 81, downloaded 52, added 131
+Progress: resolved 378, reused 81, downloaded 58, added 136
+Progress: resolved 378, reused 81, downloaded 70, added 143
+Progress: resolved 378, reused 81, downloaded 81, added 152
+Progress: resolved 378, reused 81, downloaded 85, added 161
+Progress: resolved 378, reused 81, downloaded 94, added 166
+Progress: resolved 378, reused 81, downloaded 97, added 168
+Progress: resolved 378, reused 81, downloaded 101, added 175
+Progress: resolved 378, reused 81, downloaded 104, added 181
+Progress: resolved 378, reused 81, downloaded 109, added 185
+Progress: resolved 378, reused 81, downloaded 115, added 192
+Progress: resolved 378, reused 81, downloaded 122, added 199
+Progress: resolved 378, reused 81, downloaded 132, added 209
+Progress: resolved 378, reused 81, downloaded 143, added 218
+Progress: resolved 378, reused 81, downloaded 154, added 225
+Progress: resolved 378, reused 81, downloaded 163, added 229
+Progress: resolved 378, reused 81, downloaded 174, added 240
+Progress: resolved 378, reused 81, downloaded 181, added 258
+Progress: resolved 378, reused 81, downloaded 191, added 264
+Progress: resolved 378, reused 81, downloaded 200, added 278
+Progress: resolved 378, reused 81, downloaded 209, added 288
+Progress: resolved 378, reused 81, downloaded 217, added 294
+Progress: resolved 378, reused 81, downloaded 221, added 300
+Progress: resolved 378, reused 81, downloaded 226, added 303
+Progress: resolved 378, reused 81, downloaded 228, added 307
+Progress: resolved 378, reused 81, downloaded 234, added 312
+Progress: resolved 378, reused 81, downloaded 239, added 316
+Progress: resolved 378, reused 81, downloaded 241, added 317
+Progress: resolved 378, reused 81, downloaded 244, added 320
+Progress: resolved 378, reused 81, downloaded 251, added 325
+Progress: resolved 378, reused 81, downloaded 258, added 333
+Progress: resolved 378, reused 81, downloaded 261, added 335
+Progress: resolved 378, reused 81, downloaded 263, added 336
+Progress: resolved 378, reused 81, downloaded 267, added 338
+Progress: resolved 378, reused 81, downloaded 273, added 342
+Progress: resolved 378, reused 81, downloaded 274, added 343
+Progress: resolved 378, reused 81, downloaded 276, added 344
+Progress: resolved 378, reused 81, downloaded 278, added 344
+Progress: resolved 378, reused 81, downloaded 281, added 345
+Progress: resolved 378, reused 81, downloaded 283, added 347
+Progress: resolved 378, reused 81, downloaded 285, added 353
+Progress: resolved 378, reused 81, downloaded 285, added 356
+Progress: resolved 378, reused 81, downloaded 287, added 358
+Progress: resolved 378, reused 81, downloaded 287, added 362
+Progress: resolved 378, reused 81, downloaded 288, added 364
+Progress: resolved 378, reused 81, downloaded 288, added 366
+Progress: resolved 378, reused 81, downloaded 288, added 367
+Progress: resolved 378, reused 81, downloaded 288, added 368
+Progress: resolved 378, reused 81, downloaded 289, added 368
+Progress: resolved 378, reused 81, downloaded 290, added 368
+Progress: resolved 378, reused 81, downloaded 290, added 369
+Progress: resolved 378, reused 81, downloaded 290, added 370
+Progress: resolved 378, reused 81, downloaded 290, added 371
+Progress: resolved 378, reused 81, downloaded 291, added 371
+Progress: resolved 378, reused 81, downloaded 292, added 371
+Progress: resolved 378, reused 81, downloaded 292, added 372
+Progress: resolved 378, reused 81, downloaded 292, added 373
+Progress: resolved 378, reused 81, downloaded 293, added 373
+Progress: resolved 378, reused 81, downloaded 294, added 373
+Progress: resolved 378, reused 81, downloaded 294, added 374
+Progress: resolved 378, reused 81, downloaded 294, added 375
+Progress: resolved 378, reused 81, downloaded 295, added 375
+Progress: resolved 378, reused 81, downloaded 296, added 375
+Progress: resolved 378, reused 81, downloaded 297, added 375
+Progress: resolved 378, reused 81, downloaded 297, added 376
+Progress: resolved 378, reused 81, downloaded 297, added 377
+Progress: resolved 378, reused 81, downloaded 297, added 378, done
+.../node_modules/msw postinstall$ node -e "import('./config/scripts/postinstall.js').catch(() => void 0)"
+.../node_modules/msw postinstall: Done
+
+devDependencies:
++ @axe-core/playwright 4.13.0
++ @eslint/js 10.0.1
++ @playwright/test 1.62.1
++ @types/node 24.13.3
++ @types/react 19.2.18
++ @types/react-dom 19.2.5
++ eslint 10.9.1
++ eslint-plugin-jsx-a11y-x 0.2.0
++ eslint-plugin-react-hooks 7.1.1
++ eslint-plugin-react-refresh 0.5.5
++ globals 17.11.0
++ prettier 3.9.6
++ typescript 5.9.3
++ typescript-eslint 8.68.0
+
+Done in 2m 41.1s using pnpm v10.22.0

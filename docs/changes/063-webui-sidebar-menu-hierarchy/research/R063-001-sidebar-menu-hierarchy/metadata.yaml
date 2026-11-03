@@ -1,0 +1,41 @@
+schema_version: 1
+id: R063-001
+title: "侧边栏菜单层级分类的契约现状与可行路径"
+question: "当前各业务模块（Ops/IAM/Organization/Navigation）如何在 webui 契约中声明侧边栏菜单，Manifest 如何投影、宿主如何渲染；用户要求不修改 webui 代码、在 webui 契约中对当前业务模块的侧边栏进行菜单层级分类，最小可行改动是什么？"
+research_type: current-project
+topics: ["webui", "menu", "navigation", "sidebar", "binding", "manifest"]
+keywords: ["Binding.Navigation", "Navigation.ParentID", "ManifestMenu", "ParentID", "菜单层级", "侧边栏", "webui contract"]
+applicable_scenarios: ["当前应用 WebUI 侧边栏菜单层级分类", "新增父级菜单组", "mock 菜单同步", "localenavigation 契约演进"]
+non_applicable_scenarios: ["运行时动态菜单", "远程模块/插件菜单", "数据库驱动的任意菜单树", "跨模块自定义父节点（当前契约不允许）"]
+status: active
+summary: "webui 契约 Navigation 已支持 ParentID 多级菜单，宿主 SidebarMenu 递归渲染、ManifestMenu 携带 parentId；Ops 已示范两级结构。对当前业务模块做菜单层级分类无需修改 webui 代码与契约核心，只需在既有契约能力内调整模块 Navigation 声明（父节点 + ParentID + 顺序），并同步 locale/mock/生成 registry 与测试。"
+evidence:
+  types: ["source-code", "tests", "generated-artifact", "prior-research"]
+  primary_sources:
+    - title: "webui 契约 Navigation/Manifest 定义与校验"
+      locator: "internal/webui/contract.go"
+      snapshot: "e059a1638ab88b2ee0664931d7272b5c4ed11e76 验证 2026-08-24"
+    - title: "宿主递归菜单渲染与 manifest 消费"
+      locator: "webui/src/components/shell/SidebarMenu.tsx; webui/src/components/AppShell.tsx; webui/src/menu.test.ts"
+      snapshot: "e059a1638ab88b2ee0664931d7272b5c4ed11e76 验证 2026-08-24"
+    - title: "模块 WebUI Binding 当前声明"
+      locator: "internal/module/{iam,organization,navigation,ops}/binding/webui/binding.go"
+      snapshot: "e059a1638ab88b2ee0664931d7272b5c4ed11e76 验证 2026-08-24"
+    - title: "Navigation 策略与 mock 数据"
+      locator: "internal/module/navigation/{binding/webui/web/mock.ts,service/service.go,model/model.go}; internal/composition/navigation.go"
+      snapshot: "e059a1638ab88b2ee0664931d7272b5c4ed11e76 验证 2026-08-24"
+    - title: "既有研究档案"
+      locator: "docs/changes/056/R001、059/R003、062/R062-001"
+      snapshot: "复核 2026-08-24"
+researched_at: "2026-08-24"
+verified_at: "2026-08-24"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-09-24"
+  refresh_triggers: ["webui 契约 Navigation/Manifest 变化", "宿主菜单渲染变化", "新增业务模块或系统级分类需求", "Navigation 策略模型变化"]
+relations:
+  extends: ["056/R001", "059/R003", "062/R062-001"]
+  related: ["053/R005"]
+  supersedes: []
+  superseded_by: []
+report: report.md

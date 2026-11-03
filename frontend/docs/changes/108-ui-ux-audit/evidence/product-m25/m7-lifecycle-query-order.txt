@@ -1,0 +1,127 @@
+ExpectError: expect(page).toHaveURL(expected) failed
+
+Expected pattern: /\/notifications\/detail\?id=/
+Received string:  "http://127.0.0.1:4173/notifications/detail?q=M7%20role%20lifecycle&category=all&read=all&page=1&id=product%3Ainbox-2881e229-02e0-475b-908d-f6fbb6205381"
+Timeout: 5000ms
+
+Call log:
+  - Expect "to.have.url" with timeout 5000ms
+    3 × locator resolved to <html lang="zh-CN" data-theme="light" data-accent="purple" data-hydrated="true" data-motion-swap="on" data-motion-async="on" data-motion-media="on" data-contrast="system" data-motion-screen="on" data-motion-reveal="on" data-density="standard" data-follow-system="on" data-enhance-focus="off" data-motion-mode="system" data-motion-feedback="on" data-content-width="auto" data-enhance-target="off" data-font-scale="standard" data-route-intent="forward" data-system-contrast="standard">…</html>
+      - unexpected value "http://127.0.0.1:4173/notifications?q=M7%20role%20lifecycle&category=all&read=all&page=1"
+    11 × locator resolved to <html lang="zh-CN" data-theme="light" data-accent="purple" data-hydrated="true" data-motion-swap="on" data-motion-async="on" data-motion-media="on" data-contrast="system" data-motion-screen="on" data-motion-reveal="on" data-density="standard" data-follow-system="on" data-enhance-focus="off" data-motion-mode="system" data-motion-feedback="on" data-content-width="auto" data-enhance-target="off" data-font-scale="standard" data-system-contrast="standard">…</html>
+       - unexpected value "http://127.0.0.1:4173/notifications/detail?q=M7%20role%20lifecycle&category=all&read=all&page=1&id=product%3Ainbox-2881e229-02e0-475b-908d-f6fbb6205381"
+
+    at captureRawStack (D:\coder\i721\console-web\node_modules\.pnpm\playwright-core@1.62.1\node_modules\playwright-core\lib\coreBundle.js:9681:17)
+    at callMatcherAsStep (D:\coder\i721\console-web\node_modules\.pnpm\playwright@1.62.1\node_modules\playwright\lib\matchers\expect.js:13310:57)
+    at Object.toHaveURL (D:\coder\i721\console-web\node_modules\.pnpm\playwright@1.62.1\node_modules\playwright\lib\matchers\expect.js:13300:23)
+    at C:\Users\xiaol\AppData\Local\Temp\m7-lifecycle-browser-audit.cjs:67:22 {
+  matcherResult: {
+    name: 'toHaveURL',
+    expected: /\/notifications\/detail\?id=/,
+    message: 'expect(page).toHaveURL(expected) failed\n' +
+      '\n' +
+      'Expected pattern: /\\/notifications\\/detail\\?id=/\n' +
+      'Received string:  "http://127.0.0.1:4173/notifications/detail?q=M7%20role%20lifecycle&category=all&read=all&page=1&id=product%3Ainbox-2881e229-02e0-475b-908d-f6fbb6205381"\n' +
+      'Timeout: 5000ms\n' +
+      '\n' +
+      'Call log:\n' +
+      '  - Expect "to.have.url" with timeout 5000ms\n' +
+      '    3 × locator resolved to <html lang="zh-CN" data-theme="light" data-accent="purple" data-hydrated="true" data-motion-swap="on" data-motion-async="on" data-motion-media="on" data-contrast="system" data-motion-screen="on" data-motion-reveal="on" data-density="standard" data-follow-system="on" data-enhance-focus="off" data-motion-mode="system" data-motion-feedback="on" data-content-width="auto" data-enhance-target="off" data-font-scale="standard" data-route-intent="forward" data-system-contrast="standard">…</html>\n' +
+      '      - unexpected value "http://127.0.0.1:4173/notifications?q=M7%20role%20lifecycle&category=all&read=all&page=1"\n' +
+      '    11 × locator resolved to <html lang="zh-CN" data-theme="light" data-accent="purple" data-hydrated="true" data-motion-swap="on" data-motion-async="on" data-motion-media="on" data-contrast="system" data-motion-screen="on" data-motion-reveal="on" data-density="standard" data-follow-system="on" data-enhance-focus="off" data-motion-mode="system" data-motion-feedback="on" data-content-width="auto" data-enhance-target="off" data-font-scale="standard" data-system-contrast="standard">…</html>\n' +
+      '       - unexpected value "http://127.0.0.1:4173/notifications/detail?q=M7%20role%20lifecycle&category=all&read=all&page=1&id=product%3Ainbox-2881e229-02e0-475b-908d-f6fbb6205381"\n',
+    pass: false,
+    actual: 'http://127.0.0.1:4173/notifications/detail?q=M7%20role%20lifecycle&category=all&read=all&page=1&id=product%3Ainbox-2881e229-02e0-475b-908d-f6fbb6205381',
+    log: [
+      '  - Expect "to.have.url" with timeout 5000ms',
+      '    3 × locator resolved to <html lang="zh-CN" data-theme="light" data-accent="purple" data-hydrated="true" data-motion-swap="on" data-motion-async="on" data-motion-media="on" data-contrast="system" data-motion-screen="on" data-motion-reveal="on" data-density="standard" data-follow-system="on" data-enhance-focus="off" data-motion-mode="system" data-motion-feedback="on" data-content-width="auto" data-enhance-target="off" data-font-scale="standard" data-route-intent="forward" data-system-contrast="standard">…</html>',
+      '      - unexpected value "http://127.0.0.1:4173/notifications?q=M7%20role%20lifecycle&category=all&read=all&page=1"',
+      '    11 × locator resolved to <html lang="zh-CN" data-theme="light" data-accent="purple" data-hydrated="true" data-motion-swap="on" data-motion-async="on" data-motion-media="on" data-contrast="system" data-motion-screen="on" data-motion-reveal="on" data-density="standard" data-follow-system="on" data-enhance-focus="off" data-motion-mode="system" data-motion-feedback="on" data-content-width="auto" data-enhance-target="off" data-font-scale="standard" data-system-contrast="standard">…</html>',
+      '       - unexpected value "http://127.0.0.1:4173/notifications/detail?q=M7%20role%20lifecycle&category=all&read=all&page=1&id=product%3Ainbox-2881e229-02e0-475b-908d-f6fbb6205381"'
+    ],
+    timeout: 5000,
+    ariaSnapshot: '- alert\n' +
+      '- link "跳到主要内容 / Skip to content":\n' +
+      '  - /url: "#main-content"\n' +
+      '- complementary:\n' +
+      '  - paragraph: clouddrive\n' +
+      '  - paragraph: 管理工作空间\n' +
+      '  - navigation "主导航":\n' +
+      '    - paragraph: 工作空间\n' +
+      '    - list "工作空间":\n' +
+      '      - listitem:\n' +
+      '        - link "工作台":\n' +
+      '          - /url: /\n' +
+      '    - paragraph: 身份与访问\n' +
+      '    - list "身份与访问":\n' +
+      '      - listitem:\n' +
+      '        - link "用户管理":\n' +
+      '          - /url: /users\n' +
+      '      - listitem:\n' +
+      '        - link "角色管理":\n' +
+      '          - /url: /roles\n' +
+      '      - listitem:\n' +
+      '        - link "审计日志":\n' +
+      '          - /url: /audit-logs\n' +
+      '      - listitem:\n' +
+      '        - link "系统配置":\n' +
+      '          - /url: /system-settings\n' +
+      '    - paragraph: 个人\n' +
+      '    - list "个人":\n' +
+      '      - listitem:\n' +
+      '        - link "个人账户":\n' +
+      '          - /url: /account\n' +
+      '      - listitem:\n' +
+      '        - link "通知中心":\n' +
+      '          - /url: /notifications\n' +
+      '      - listitem:\n' +
+      '        - link "个人偏好":\n' +
+      '          - /url: /settings\n' +
+      '    - paragraph: 开发中心\n' +
+      '    - list "开发中心":\n' +
+      '      - listitem:\n' +
+      '        - button "展开或收起UI Elements": UI Elements\n' +
+      '      - listitem:\n' +
+      '        - button "展开或收起Page Patterns": Page Patterns\n' +
+      '      - listitem:\n' +
+      '        - button "展开或收起Page Archetypes": Page Archetypes\n' +
+      '      - listitem:\n' +
+      '        - link "参考资源":\n' +
+      '          - /url: /reference-resources\n' +
+      '      - listitem:\n' +
+      '        - link "Icon 大全":\n' +
+      '          - /url: /system-tools/icons\n' +
+      '      - listitem:\n' +
+      '        - link "基座能力":\n' +
+      '          - /url: /foundations\n' +
+      '      - listitem:\n' +
+      '        - link "Motion":\n' +
+      '          - /url: /motion\n' +
+      '      - listitem:\n' +
+      '        - link "状态体系":\n' +
+      '          - /url: /states\n' +
+      '- banner:\n' +
+      '  - button "收起侧栏"\n' +
+      '  - button "按 Ctrl K 搜索"\n' +
+      '  - button "切换语言"\n' +
+      '  - button "切换主题"\n' +
+      '  - button "通知，6 条未读": "6"\n' +
+      '  - button "当前用户": RI Rin\n' +
+      '- main:\n' +
+      '  - heading "修改角色授权：M7 role lifecycle revised" [level=1]\n' +
+      '  - paragraph: 管理事件与应用事件集中查看；顶部通知入口使用同一份已读状态。\n' +
+      '  - link "返回通知列表":\n' +
+      '    - /url: /notifications?q=M7%20role%20lifecycle&category=all&read=all&page=1\n' +
+      '  - paragraph: 演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。\n' +
+      '  - paragraph: 6 条未读\n' +
+      '  - button "刷新"\n' +
+      '  - heading "修改角色授权：M7 role lifecycle revised" [level=2]\n' +
+      '  - paragraph: 2026/10/13 · 08:35\n' +
+      '  - paragraph: 管理事件\n' +
+      '  - text: 成功\n' +
+      '  - paragraph: 未读\n' +
+      '  - button "标记已读"\n' +
+      '  - link "查看关联记录":\n' +
+      '    - /url: /roles/detail?id=role-6e73014a-50c8-43b7-89a7-33870685e0bd'
+  }
+}

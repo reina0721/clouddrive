@@ -1,0 +1,64 @@
+schema_version: 1
+id: R094-003
+title: 'HeroUI v3 与 Tailwind CSS v4 官方互补模型'
+question: 'HeroUI v3 与 Tailwind CSS v4 的官方说明如何界定两者的原生组合关系；当前项目应怎样充分利用双方能力而不重复实现、不泄露 vendor 契约？'
+research_type: official-documentation-and-installed-version-audit
+topics: ['frontend', 'HeroUI v3', 'Tailwind CSS v4', 'React Aria', 'design tokens', 'styling']
+keywords:
+  [
+    'HeroUI 3.2.4',
+    'Tailwind CSS 4.3.3',
+    'React Aria Components',
+    'theme variables',
+    'variants',
+    'compound components',
+  ]
+applicable_scenarios: ['frontend UI Adapter、Design System、Element、Pattern、Showcase 与页面迁移']
+non_applicable_scenarios:
+  [
+    '在 UI Adapter 外直接依赖 HeroUI',
+    '穿透 HeroUI 内部 DOM',
+    '复制 HeroUI 状态机',
+    '用 Tailwind 代替业务语义契约',
+  ]
+status: active
+summary: 'HeroUI v3 官方本身建立在 Tailwind CSS v4 与 React Aria Components 上；项目应复用其交互与可访问 primitive，同时用 Tailwind v4 theme variables、utilities 和 variants 映射自己的 Semantic Token、响应式、主题和视觉组合。'
+evidence:
+  types: ['official-documentation', 'installed-package-manifest', 'lockfile']
+  primary_sources:
+    - title: 'HeroUI v3 Introduction'
+      locator: 'https://heroui.com/en/docs/react/getting-started'
+      snapshot: '2026-08-30，官方说明 HeroUI v3 built on Tailwind CSS v4 and React Aria Components'
+    - title: 'HeroUI v3 Styling'
+      locator: 'https://heroui.com/en/docs/react/getting-started/styling'
+      snapshot: '2026-08-30，官方列出 Tailwind utility、className、data attribute 与 render props 等定制入口'
+    - title: 'HeroUI v3 Migration'
+      locator: 'https://heroui.com/en/docs/react/migration'
+      snapshot: '2026-08-30，官方说明 v3 compound component 与 React Aria collection identity/accessibility 模型'
+    - title: 'Tailwind CSS Theme Variables'
+      locator: 'https://tailwindcss.com/docs/theme'
+      snapshot: '2026-08-30，官方说明 @theme 把 design token 映射为 utilities 和 variants'
+    - title: 'Tailwind CSS States and Variants'
+      locator: 'https://tailwindcss.com/docs/hover-focus-and-other-states'
+      snapshot: '2026-08-30，官方说明 state、responsive、dark、reduced-motion、attribute 与 container variants'
+    - title: '当前安装版本'
+      locator: 'frontend/apps/web/package.json; frontend/packages/ui-adapter/package.json; frontend/pnpm-lock.yaml'
+      snapshot: '22bf5d786ece18cd9ad5913deca4d4706f3e6508，HeroUI 3.2.4 与 Tailwind CSS 4.3.3'
+researched_at: '2026-08-30'
+verified_at: '2026-08-30'
+validity:
+  mode: version-and-date-bounded
+  review_after: '2026-10-30'
+  refresh_triggers:
+    [
+      'HeroUI 或 Tailwind CSS 依赖版本变化',
+      'HeroUI 官方 styling、compound component 或 React Aria 集成方式变化',
+      'Tailwind @theme、variant 或 browser compatibility 约束变化',
+      '项目试图新增深层 selector、vendor slot 透传或自研交互 primitive',
+    ]
+relations:
+  extends: ['R094-002']
+  related: ['R094-001']
+  supersedes: []
+  superseded_by: []
+report: report.md

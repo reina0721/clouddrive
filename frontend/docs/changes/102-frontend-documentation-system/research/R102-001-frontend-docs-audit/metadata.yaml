@@ -1,0 +1,44 @@
+schema_version: 1
+id: R102-001
+title: 'Frontend 文档体系现状审计：入口、authority、同步性与可检查性'
+question: 'frontend/docs 是否构成可用的当前文档体系：是否有统一入口、主题 authority 是否与 101 之后代码一致、变更索引是否完整、是否存在机器可查的文档门禁？'
+research_type: current-state-audit
+topics:
+  ['frontend documentation', 'doc entry chain', 'topic authority', 'changes index', 'doc gate']
+keywords:
+  ['docs/README.md', 'quality-evidence', 'admin-framework', 'surfaces/admin', 'changes index']
+applicable_scenarios: ['102 前端文档体系完善：入口手册、authority 同步、索引修复、docs:check 门禁']
+non_applicable_scenarios:
+  ['功能代码、组件、页面、路由、i18n 文案、generated 产物与 Host 薄入口改动']
+status: active
+summary: 'frontend/docs 缺少统一入口 README，主题 authority（README/AGENTS/frontend-foundation/admin-foundation/quality-evidence）全部早于 101，未反映 admin-framework 与 surfaces/admin；docs/changes/README.md 索引只到 099；quality-evidence 是 098 证据快照却以当前文档存在；前端文档链路无机器检查。'
+evidence:
+  types: ['project-source', 'governance-document', 'tooling-verification']
+  primary_sources:
+    - title: 'frontend/docs 目录清单'
+      locator: 'frontend/docs/**'
+      snapshot: '无 docs/README.md；主题文件 7 个（ui-element-system/ui-visual-calibration/motion-foundation 较完整；frontend-foundation/admin-foundation/foundation-extension-governance/quality-evidence 短小）'
+    - title: 'AGENTS 文档入口要求'
+      locator: 'frontend/AGENTS.md 第 4.3 节'
+      snapshot: '文档入口固定为 AGENTS.md -> README.md -> docs/README.md -> 主题文档；docs/README.md 实际不存在'
+    - title: '根文档治理规范'
+      locator: 'docs/development/documentation-governance.md（仓库根）'
+      snapshot: '入口固定为根 README -> docs/README -> 当前主题文档 -> 局部 README；changes/research 是历史证据不能成为唯一说明'
+    - title: '当前 workspace 与 contract 数量'
+      locator: 'tooling/foundation-policy.json；tooling/foundation-contracts.json'
+      snapshot: '11 workspaces（含 packages/admin-framework、surfaces/admin）；10 个 Contract owner'
+    - title: '101 提交'
+      locator: 'git log --oneline；docs/changes/101-admin-surface-file-routes'
+      snapshot: 'commit c92832d3 feat(frontend): add admin framework and surface file routes；101 目录存在但未进入 changes/README.md 索引'
+  researched_at: '2026-09-02'
+  verified_at: '2026-09-02'
+validity:
+  mode: revision-bounded
+  refresh_triggers:
+    ['workspace 目录、package exports、主题 authority 文档、docs 门禁脚本或前端入口发生相关变更']
+relations:
+  extends: ['R098-001', 'R098-002', 'R101-001']
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

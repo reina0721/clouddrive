@@ -1,0 +1,32 @@
+schema_version: 1
+change: 085-workspace-tabs
+areas:
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+      - docs/development/webui.md
+    reason: Rev.2 需求反转——顶部标签栏改为「自动页面标签」语义：Go/TS contract 移除 WorkspaceTabPolicy（route 不再声明标签资格），宿主对所有正式路由（app+implemented+loadable+allowed）自动生成并保留标签，Dashboard（default route）为 fixedHome 固定首页标签，动态详情按 pathname 派生低敏 contextKey 生成独立标签；Drawer/Modal/Popover 不生成标签。宿主 webui/src/workspace/* 状态机（registry/storage/provider/outlet）扩展为全路由覆盖，42px WorkspaceTabs 适配 fixedHome 语义；单轨清理旧样式与 workspace-tabs zone。改动文件：internal/webui/contract.go、internal/module/openapi/binding/webui/binding.go、webui/src/contracts/index.tsx、webui/src/sdk/runtime/index.tsx、webui/src/App.tsx、webui/src/routes.tsx、webui/src/components/AppShell.tsx、webui/src/components/shell/WorkspaceTabs.tsx、webui/src/workspace/*、webui/src/styles.css、webui/src/scroll/ScrollExperience.tsx、webui/src/i18n/locale/{zh-CN,en-US}.json、webui/e2e/*.ts、webui/src/generated/webui-registry.ts。
+  - id: module
+    decision: updated
+    documents:
+      - docs/development/application-module-development.md
+    reason: 新增正式路由无需任何标签声明；模块不感知标签语义，宿主按 routeIsFormal 判定。openapi binding 不再声明 workspace 字段。
+  - id: api
+    decision: reviewed-no-change
+    reason: 无后端 API/契约变化；标签语义完全在 WebUI manifest 与宿主前端。
+  - id: configuration
+    decision: reviewed-no-change
+    reason: 无新配置节；持久化仅宿主 localStorage（principal 隔离，不写入服务端）。
+  - id: operations
+    decision: reviewed-no-change
+    reason: 标签生命周期全部在浏览器端，无运行组件/进程/外部写入变化。
+  - id: docs
+    decision: updated
+    documents:
+      - docs/changes/README.md
+      - docs/changes/085-workspace-tabs/README.md
+      - docs/changes/085-workspace-tabs/requirements.md
+      - docs/changes/085-workspace-tabs/design.md
+      - docs/changes/085-workspace-tabs/tasks.md
+    reason: 085 变更记录更新为 Rev.2 自动页面标签语义：需求反转记录、Rev.2 决策、逐任务实施证据与剩余风险。

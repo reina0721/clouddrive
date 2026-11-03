@@ -1,0 +1,11 @@
+id: R084-001
+name: product-ux-audit
+status: valid
+verifiedAt: 2026-09-01
+supersedes: []
+supersededBy: []
+applicableTo: ["084-webui-product-ux"]
+refreshTriggers:
+  - 084 相关页面重构完成并通过 codex 复查
+  - 平台 .toolbar / org-tree-inspector 语义变更
+summary: 全 24 路由 mock 截图 + codex 0.150.1 多模态 4 批审计 + 代码核对，定位 P0（menus 截断/原始 key、appearance 错位、openapi 空态）与一批 P1 结构性缺陷；根因含 .toolbar flex 撑宽与 org-tree-inspector 固定右栏。

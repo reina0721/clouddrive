@@ -1,0 +1,32 @@
+schema_version: 1
+id: R079-002
+title: "动态风险控制设计：因子、数据源、与 MFA/告警联动与边界"
+question: "动态风险控制（异常登录/设备/IP 风险）如何在既有体系上设计：因子、数据源、规则与动作、与 MFA/告警联动、首版边界与前置依赖？"
+research_type: current-project
+topics: ["iam", "risk-control", "device-fingerprint", "geoip", "adaptive-auth"]
+keywords: ["RiskControl", "AdaptiveAuth", "DeviceFingerprint", "LoginIP", "DryRun", "MFA联动"]
+applicable_scenarios: ["登录风险分档（通过/提示MFA/拒绝）", "与 078 MFA、R079-001 告警联动", "干跑→灰度上线路径"]
+non_applicable_scenarios: ["把风险当作授权模型的一部分", "无外部 IP 数据源时的强地理判定", "默认开启触发误拒"]
+status: active
+summary: "风险控制可分阶段基于 077/078/079 落地：因子（来源 IP（trustedProxyCIDRs 后）、弱设备指纹摘要、登录频率）+ 保守规则（新设备+异地→要求MFA/拒绝/告警）三档动作，风险只影响认证强度不改变授权权威；前置依赖为登录来源 IP 与环境摘要的最小采集（涉及 065 审计字段域决策与 IP 地理数据源许可评估）；必须干跑观察后再灰度，避免误拒损害可用性。本设计为后续独立立项依据，本批仅归档不做风险规则实施。"
+evidence:
+  types: ["source-code", "prior-research"]
+  primary_sources:
+    - title: "现有认证强度能力（限流/MFA/告警链路）"
+      locator: "docs/changes/{077,078}/README.md; R079-001"
+      snapshot: "复核 2026-09"
+    - title: "trustedProxyCIDRs 与登录/会话边界"
+      locator: "internal/composition/service.go; internal/module/iam/service"
+      snapshot: "6ae9e12 验证 2026-09"
+researched_at: "2026-09"
+verified_at: "2026-09"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-10"
+  refresh_triggers: ["登录来源 IP/环境采集入库", "IP 地理数据源决策", "风险规则立项与产品确认", "审计低敏字段域扩展"]
+relations:
+  extends: ["R077-002", "R079-001", "078/R078-002", "077/R077-001"]
+  related: ["064/R064-001"]
+  supersedes: []
+  superseded_by: []
+report: report.md

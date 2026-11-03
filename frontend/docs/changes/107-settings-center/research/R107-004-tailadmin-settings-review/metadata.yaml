@@ -1,0 +1,64 @@
+schema_version: 1
+id: R107-004
+title: '107 TailAdmin 外部视觉复核证据（SET-002 前置门禁）'
+question: '设置中心涉及表格（密度/分隔/表头/列组合）、Tabs、表单控件、通知四类能力的公共契约扩展。按 ui-visual-calibration.md，扩展前必须复核 TailAdmin 对应页面（外部校准样本，只学视觉规律与完整状态，不复制源码/DOM/数值）。本轮能获取哪些可复核证据？'
+research_type: external-sample-review
+topics:
+  [
+    'tailadmin review',
+    'visual calibration',
+    'tables',
+    'tabs',
+    'form elements',
+    'notifications',
+    'pagination',
+    'date picker',
+  ]
+keywords:
+  [
+    'react-demo.tailadmin.com',
+    'basic-tables',
+    'data-tables',
+    'tabs',
+    'form-elements',
+    'notifications',
+    'WCAG',
+    'accent palette',
+  ]
+applicable_scenarios:
+  [
+    '107 SET-002：外部视觉复核证据与四套强调色选配基准；后续 DataTable/DatePicker/Tabs/通知扩展的视觉输入',
+  ]
+non_applicable_scenarios:
+  ['把 TailAdmin 数值/源码/DOM 当项目规范；用外部样本替代 /ui-elements 内部 authority']
+status: active
+summary: 'react-demo.tailadmin.com 当前可达（HTTP 200，2026-09-06）。四组页面均完成真实浏览器访问与 DOM 结构/控件/文案采集：basic-tables（多张表格、行分隔、5-7 行、复合列如 User/Project/Team）、data-tables（10 行、Search + Previous/Next + 每页 5/8/10 Select、User/Position/Office/Salary 列）、tabs（Default/Underline/line+icon/badge/Vertical 五组）、form-elements（Input/Placeholder/Select/Password/Date Picker/Time Picker/Textarea/Input States/Input Group/File/Checkbox/Radio/Toggle/Dropzone；Checkbox/Radio/Toggle 均含 Checked/Disabled/Default/Selected 状态）、notifications（Announcement Bar + Toast + Success/Info/Warning/Error 四类语义通知）。截图存 test-results/tailadmin-review/（01-08 png）。限制：demo 深色由应用内切换（--color-scheme 无效）、hover/focus/打开态全矩阵与中英长文本三档视口未逐项完成、无法本模型目检像素 —— 视觉基线人工确认属 SET-008 门禁。'
+evidence:
+  types: ['external-website', 'dom-structure', 'screenshots']
+  primary_sources:
+    - title: '四组页面可达性与结构'
+      locator: 'https://react-demo.tailadmin.com/{basic-tables,data-tables,tabs,form-elements,notifications}'
+      snapshot: '2026-09-06 HTTP 200；DOM probe JSON 存 test-results/tailadmin-review/*.json'
+    - title: '交互证据（分页/搜索/每页/表单状态/通知 tone）'
+      locator: 'test-results/tailadmin-review/interaction-evidence.json；notifications-evidence.json（本地只读采集）'
+      snapshot: '2026-09-06；data-tables 有 Search×4、Previous/Next、每页 5/8/10；form-elements 有 Date/Time Picker 与 Checked/Disabled/Selected 状态；notifications 五类标题与 tone 容器'
+    - title: '截图'
+      locator: 'test-results/tailadmin-review/01-basic-tables.png … 08-form-elements-mobile.png（gitignored）'
+      snapshot: '2026-09-06；1440 桌面 6 张 + dark 尝试 2 张（demo 应用内切 dark，--color-scheme 无效）+ 390 移动 1 张'
+    - title: 'WCAG 强调色候选对比度计算'
+      locator: 'test-results/tailadmin-probe/wcag-accent.mjs'
+      snapshot: '2026-09-06；light brand/white 紫 6.20 / 蓝 5.17 / 绿 5.02 / 橙 5.18 均 AA text；dark on-brand/ink 均 AA'
+  researched_at: '2026-09-06'
+  verified_at: '2026-09-06'
+validity:
+  mode: snapshot
+  refresh_triggers:
+    [
+      'TailAdmin 外部样本页面结构/URL 变化、@heroui 或 ui-adapter 表格/Tabs/表单/通知契约变化、或 ui-visual-calibration.md 复核矩阵更新时需定向复核',
+    ]
+relations:
+  extends: ['R094-001', 'R107-003']
+  related: ['R107-001']
+  supersedes: []
+  superseded_by: []
+report: report.md

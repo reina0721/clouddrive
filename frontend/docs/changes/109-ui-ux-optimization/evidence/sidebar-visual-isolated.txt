@@ -1,0 +1,139 @@
+[WebServer] (node:33624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:20404) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:26216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:34244) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\visual.spec.ts:14:1 › 桌面与超宽屏 Reference 布局保持稳定 (7.7s)
+  x  2 [chromium] › apps\web\e2e\visual.spec.ts:40:1 › 九个 UI Element Family 页面均有独立视觉基线 (33.5s)
+(node:12924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 [chromium] › apps\web\e2e\visual.spec.ts:127:1 › Toast、Destructive Confirm 与 Compact Density 开启态进入视觉矩阵 (8.3s)
+
+
+  1) [chromium] › apps\web\e2e\visual.spec.ts:40:1 › 九个 UI Element Family 页面均有独立视觉基线 ───────────────
+
+    Error: expect(locator).toHaveScreenshot(expected) failed
+
+    Locator: locator('#overlays')
+      Expected an image 1112px by 1074px, received 1112px by 1114px. 31366 pixels (ratio 0.03 of all image pixels) are different.
+
+      Snapshot: ui-elements-family-overlays.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-family-overlays.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - waiting for locator('#overlays')
+        - locator resolved to <div id="overlays" class="surface-route-region scroll-mt-24">…</div>
+      - taking element screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - attempting scroll into view action
+        - waiting for element to be stable
+      - Expected an image 1112px by 1074px, received 1112px by 1114px. 31366 pixels (ratio 0.03 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - waiting for locator('#overlays')
+        - locator resolved to <div id="overlays" class="surface-route-region scroll-mt-24">…</div>
+      - taking element screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - attempting scroll into view action
+        - waiting for element to be stable
+      - captured a stable screenshot
+      - Expected an image 1112px by 1074px, received 1112px by 1114px. 31366 pixels (ratio 0.03 of all image pixels) are different.
+
+
+      62 |     await expect
+      63 |       .soft(page.locator(`#${sectionId}`))
+    > 64 |       .toHaveScreenshot(`ui-elements-family-${family}.png`);
+         |        ^
+      65 |   }
+      66 | });
+      67 |
+        at D:\coder\i721\console-web\apps\web\e2e\visual.spec.ts:64:8
+
+    attachment #1: ui-elements-family-overlays (image/png) ─────────────────────────────────────────
+    Expected: apps\web\e2e\visual.spec.ts-snapshots\ui-elements-family-overlays-chromium-win32.png
+    Received: test-results\sidebar-visual-isolated\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\ui-elements-family-overlays-actual.png
+    Diff:     test-results\sidebar-visual-isolated\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\ui-elements-family-overlays-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-visual-isolated\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-visual-isolated\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-visual-isolated\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-visual-isolated\visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\visual.spec.ts:127:1 › Toast、Destructive Confirm 与 Compact Density 开启态进入视觉矩阵 
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      13396 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-destructive-confirm.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-destructive-confirm.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 13396 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 13396 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      136 |   await expectHydrated(page);
+      137 |   await expect(page.getByRole('alertdialog')).toBeVisible();
+    > 138 |   await expect.soft(page).toHaveScreenshot('ui-elements-destructive-confirm.png');
+          |                           ^
+      139 | });
+      140 |
+      141 | test('Reference 多选与分页的真实联动状态进入视觉矩阵', async ({ page }) => {
+        at D:\coder\i721\console-web\apps\web\e2e\visual.spec.ts:138:27
+
+    attachment #1: ui-elements-destructive-confirm (image/png) ─────────────────────────────────────
+    Expected: apps\web\e2e\visual.spec.ts-snapshots\ui-elements-destructive-confirm-chromium-win32.png
+    Received: test-results\sidebar-visual-isolated\visual-Toast、Destructive-Confirm-与-Compact-Density-开启态进入视觉矩阵-chromium\ui-elements-destructive-confirm-actual.png
+    Diff:     test-results\sidebar-visual-isolated\visual-Toast、Destructive-Confirm-与-Compact-Density-开启态进入视觉矩阵-chromium\ui-elements-destructive-confirm-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-visual-isolated\visual-Toast、Destructive-Confirm-与-Compact-Density-开启态进入视觉矩阵-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-visual-isolated\visual-Toast、Destructive-Confirm-与-Compact-Density-开启态进入视觉矩阵-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-visual-isolated\visual-Toast、Destructive-Confirm-与-Compact-Density-开启态进入视觉矩阵-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-visual-isolated\visual-Toast、Destructive-Confirm-与-Compact-Density-开启态进入视觉矩阵-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › apps\web\e2e\visual.spec.ts:40:1 › 九个 UI Element Family 页面均有独立视觉基线 ────────────────
+    [chromium] › apps\web\e2e\visual.spec.ts:127:1 › Toast、Destructive Confirm 与 Compact Density 开启态进入视觉矩阵 
+  1 passed (59.6s)

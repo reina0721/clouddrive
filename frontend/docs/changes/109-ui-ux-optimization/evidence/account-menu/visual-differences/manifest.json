@@ -1,0 +1,22 @@
+[
+  {
+    "folder": "01",
+    "name": "ui-elements-menu-open",
+    "test": "overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium"
+  },
+  {
+    "folder": "02",
+    "name": "ui-elements-popover-open",
+    "test": "overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium"
+  },
+  {
+    "folder": "03",
+    "name": "ui-elements-tooltip-open",
+    "test": "overlays-Dropdown、Popover-与-Tooltip-展开面进入视觉回归-chromium"
+  },
+  {
+    "folder": "04",
+    "name": "ui-elements-family-overlays",
+    "test": "visual-九个-UI-Element-Family-页面均有独立视觉基线-chromium"
+  }
+]

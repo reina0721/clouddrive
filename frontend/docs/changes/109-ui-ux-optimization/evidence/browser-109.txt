@@ -1,0 +1,14 @@
+
+Running 6 tests using 1 worker
+
+
+
+(node:30808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/6] [chromium] › apps\web\e2e\ui-ux-109.spec.ts:5:1 › Shell keeps the main content in its viewport at breakpoint boundaries
+[2/6] [chromium] › apps\web\e2e\ui-ux-109.spec.ts:19:1 › Mobile navigation traps focus, closes with Escape and releases on desktop resize
+[3/6] [chromium] › apps\web\e2e\ui-ux-109.spec.ts:33:1 › Settings search hands focus to the requested field after closing its drawer
+[4/6] [chromium] › apps\web\e2e\ui-ux-109.spec.ts:48:1 › Reference identity, validation and local saves stay consistent
+[5/6] [chromium] › apps\web\e2e\ui-ux-109.spec.ts:67:1 › Routes retain titles and main content on mobile and desktop
+[6/6] [chromium] › apps\web\e2e\ui-ux-109.spec.ts:80:1 › Critical mobile paths meet WCAG AA automated checks
+  6 passed (2.0m)

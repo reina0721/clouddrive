@@ -1,0 +1,162 @@
+
+Running 6 tests using 1 worker
+
+(node:21320) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\column-settings.spec.ts:14:1 › 列设置：隐藏"状态"列后立即消失 (6.5s)
+  ok 2 [chromium] › apps\web\e2e\column-settings.spec.ts:30:1 › 列设置持久化：隐藏"状态"列后重载仍隐藏 (7.7s)
+  x  3 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: compact (2.0m)
+(node:28436) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: standard (2.0m)
+(node:8592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  5 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: comfortable (2.0m)
+(node:12164) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 6 [chromium] › apps\web\e2e\ui-ux-109.spec.ts:340:1 › Saving a restored draft clears its dirty baseline before continuing creation (3.4s)
+
+
+  1) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: compact
+
+    Test timeout of 120000ms exceeded.
+
+    Error: locator.click: Test timeout of 120000ms exceeded.
+    Call log:
+      - waiting for getByRole('radiogroup').first().locator('[role="radio"]:not([aria-disabled="true"])').last()
+        - locator resolved to <button disabled data-rac="" role="radio" type="button" aria-checked="false" data-disabled="true" data-slot="toggle-button" data-react-aria-pressable="true" class="toggle-button toggle-button--md toggle-button--ghost rounded-control border font-semibold text-ink-muted outline-none transition-colors min-h-control gap-2 px-3.5 text-sm border-transparent hover:bg-surface data-[selected]:border-brand/25 data-[selected]:bg-brand-soft data-[selected]:text-brand shrink-0 whitespace-nowrap">…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        221 × waiting for element to be visible, enabled and stable
+            - element is not enabled
+          - retrying click action
+            - waiting 500ms
+
+
+      287 |       if (family === 'actions-selection') {
+      288 |         const group = page.getByRole('radiogroup').first();
+    > 289 |         await group.locator('[role="radio"]:not([aria-disabled="true"])').last().click();
+          |                                                                                  ^
+      290 |         await expect
+      291 |           .poll(() =>
+      292 |             group.evaluate((element) => {
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:289:82
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--babe0--English-large-text-compact-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Public-families--babe0--English-large-text-compact-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--babe0--English-large-text-compact-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Public-families--babe0--English-large-text-compact-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: standard
+
+    Test timeout of 120000ms exceeded.
+
+    Error: locator.click: Test timeout of 120000ms exceeded.
+    Call log:
+      - waiting for getByRole('radiogroup').first().locator('[role="radio"]:not([aria-disabled="true"])').last()
+        - locator resolved to <button disabled data-rac="" role="radio" type="button" aria-checked="false" data-disabled="true" data-slot="toggle-button" data-react-aria-pressable="true" class="toggle-button toggle-button--md toggle-button--ghost rounded-control border font-semibold text-ink-muted outline-none transition-colors min-h-control gap-2 px-3.5 text-sm border-transparent hover:bg-surface data-[selected]:border-brand/25 data-[selected]:bg-brand-soft data-[selected]:text-brand shrink-0 whitespace-nowrap">…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        221 × waiting for element to be visible, enabled and stable
+            - element is not enabled
+          - retrying click action
+            - waiting 500ms
+
+
+      287 |       if (family === 'actions-selection') {
+      288 |         const group = page.getByRole('radiogroup').first();
+    > 289 |         await group.locator('[role="radio"]:not([aria-disabled="true"])').last().click();
+          |                                                                                  ^
+      290 |         await expect
+      291 |           .poll(() =>
+      292 |             group.evaluate((element) => {
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:289:82
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--f5ab9-English-large-text-standard-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Public-families--f5ab9-English-large-text-standard-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--f5ab9-English-large-text-standard-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Public-families--f5ab9-English-large-text-standard-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: comfortable
+
+    Test timeout of 120000ms exceeded.
+
+    Error: locator.click: Test timeout of 120000ms exceeded.
+    Call log:
+      - waiting for getByRole('radiogroup').first().locator('[role="radio"]:not([aria-disabled="true"])').last()
+        - locator resolved to <button disabled data-rac="" role="radio" type="button" aria-checked="false" data-disabled="true" data-slot="toggle-button" data-react-aria-pressable="true" class="toggle-button toggle-button--md toggle-button--ghost rounded-control border font-semibold text-ink-muted outline-none transition-colors min-h-control gap-2 px-3.5 text-sm border-transparent hover:bg-surface data-[selected]:border-brand/25 data-[selected]:bg-brand-soft data-[selected]:text-brand shrink-0 whitespace-nowrap">…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        221 × waiting for element to be visible, enabled and stable
+            - element is not enabled
+          - retrying click action
+            - waiting 500ms
+
+
+      287 |       if (family === 'actions-selection') {
+      288 |         const group = page.getByRole('radiogroup').first();
+    > 289 |         await group.locator('[role="radio"]:not([aria-disabled="true"])').last().click();
+          |                                                                                  ^
+      290 |         await expect
+      291 |           .poll(() =>
+      292 |             group.evaluate((element) => {
+        at D:\coder\i721\console-web\apps\web\e2e\ui-ux-109.spec.ts:289:82
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--cf1f9-lish-large-text-comfortable-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\ui-ux-109-Public-families--cf1f9-lish-large-text-comfortable-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\ui-ux-109-Public-families--cf1f9-lish-large-text-comfortable-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\ui-ux-109-Public-families--cf1f9-lish-large-text-comfortable-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: compact
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: standard
+    [chromium] › apps\web\e2e\ui-ux-109.spec.ts:241:3 › Public families keep their boundaries in dark English large text: comfortable
+  3 passed (6.4m)

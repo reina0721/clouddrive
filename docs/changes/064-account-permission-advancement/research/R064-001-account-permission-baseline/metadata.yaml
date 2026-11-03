@@ -1,0 +1,41 @@
+schema_version: 1
+id: R064-001
+title: "账号与权限体系当前能力边界、已知缺口与进阶候选方向"
+question: "当前账号与权限体系（IAM 身份凭据会话 + Auth 授权审计 + Organization 组织目录 + Navigation 菜单策略 + Permission Catalog + WebUI 权限呈现）的真实能力边界是什么；已有研究与代码把哪些能力标记为缺口或未来项；用户要求对体系进阶设计时，候选方向各自的适用性、耦合面与验证路径如何？"
+research_type: current-project
+topics: ["iam", "auth", "rbac", "organization", "permission", "session", "audit", "webui"]
+keywords: ["Account", "Credential", "Session", "Casbin", "DecisionPoint", "PermissionKey", "数据权限", "审计", "多因素", "密码策略"]
+applicable_scenarios: ["账号与权限体系进阶设计", "新增安全策略（密码/会话/多因素）", "数据权限或对象级授权", "可查询审计", "端点/操作管理"]
+non_applicable_scenarios: ["多租户", "外部 IAM/SSO/OIDC 首发接入", "微服务拆分", "运行时动态加载权限模型", "把前端权限误当作授权"]
+status: active
+summary: "当前体系已闭环 Core RBAC（Casbin evaluator + authorization revision + 乐观并发关系替换）、有状态 Session（安全修订撤销/锁定/禁用）、owner 不变量、低敏审计日志与组织目录（组织关系不进入授权决策）。既有研究多次把部门数据权限、角色层级/deny/ABAC、可查询审计、MFA/TOTP、外部身份接入标记为“需新需求再评估”的未来项；进阶设计应把这些候选按真实收益、模块边界与验证成本分层，避免无收益扩界。"
+evidence:
+  types: ["source-code", "tests", "prior-research", "generated-artifact"]
+  primary_sources:
+    - title: "IAM 模型/服务/Casbin evaluator/HTTP 契约"
+      locator: "internal/module/iam/{model,service,adapter/casbin,binding/http,binding/config,permission}"
+      snapshot: "e059a1638ab88b2ee0664931d7272b5c4ed11e76 验证 2026-08-24"
+    - title: "Auth 模型/服务/审计"
+      locator: "internal/module/auth/{model,service,adapter/audit,adapter/jwt,middleware,binding/config,binding/permission}"
+      snapshot: "e059a1638ab88b2ee0664931d7272b5c4ed11e76 验证 2026-08-24"
+    - title: "Permission Catalog"
+      locator: "internal/permission/catalog.go"
+      snapshot: "e059a1638ab88b2ee0664931d7272b5c4ed11e76 验证 2026-08-24"
+    - title: "Organization 模型与 module"
+      locator: "internal/module/organization/{model,module.go}"
+      snapshot: "e059a1638ab88b2ee0664931d7272b5c4ed11e76 验证 2026-08-24"
+    - title: "既有研究档案"
+      locator: "docs/changes/{053/R001,R002,R003,R005,054/R001,055/R001,056/R001,057/R002,058/R001,R002,R003}"
+      snapshot: "复核 2026-08-24"
+researched_at: "2026-08-24"
+verified_at: "2026-08-24"
+validity:
+  mode: commit-snapshot
+  review_after: "2026-09-24"
+  refresh_triggers: ["授权模型（Casbin/DecisionPoint）变化", "Session/凭据模型变化", "新增多因素/外部身份目标", "数据权限或对象级授权需求出现", "审计存储/查询目标出现", "webui 权限呈现变化"]
+relations:
+  extends: ["053/R002", "053/R005", "054/R001", "055/R001", "056/R001", "057/R002", "058/R001", "058/R002", "058/R003"]
+  related: ["022/R006"]
+  supersedes: []
+  superseded_by: []
+report: report.md

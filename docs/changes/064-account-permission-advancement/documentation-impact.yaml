@@ -1,0 +1,34 @@
+schema_version: 1
+change: 064-account-permission-advancement
+areas:
+  - id: webui
+    decision: updated
+    documents:
+      - webui/README.md
+      - docs/development/webui.md
+    reason: 新增审计日志页（Auth owner，/admin/audit）与会话管理页（IAM owner，/admin/sessions，归入身份与权限管理组），遵循模块接入四步；webui 局部 README 与开发指南同步页面清单与低敏/摘要呈现说明；宿主源码零改动。
+  - id: module
+    decision: updated
+    documents:
+      - docs/development/application-module-development.md
+    reason: Auth 新增审计查询 HTTP 面与 `auth:audit:read` 权限键、IAM 新增会话列表/吊销 HTTP 面与 `iam:session:*` 权限键；模块开发指南 `binding/http`/`binding/permission` 接入说明增加 064 实例（含 Auth 审计持久化由模块内部装配、composition 只注入数据库租约）。
+  - id: api
+    decision: updated
+    documents:
+      - api/README.md
+    reason: 新增 `auth.audit.list`、`iam.sessions.list/revoke` operation 与权限键；api/openapi.yaml 与 operation inventory 随 contract-gen 更新。
+  - id: operations
+    decision: updated
+    documents:
+      - docs/operations/security.md
+      - docs/operations/runtime-capabilities.md
+    reason: 审计持久化低敏/保留上限、会话集中管理权限与安全修订语义同步 security 文档；运行能力矩阵补充可查询审计与会话集中管理能力行。
+  - id: startup
+    decision: reviewed-no-change
+    reason: 宿主 boot、manifest/registry 与 revision 门禁不变；新增页面走模块 Binding → 生成 registry → Manifest 投影既有链路。
+  - id: docs
+    decision: updated
+    documents:
+      - docs/changes/064-account-permission-advancement/README.md
+      - docs/changes/README.md
+    reason: 变更记录（研究/需求/设计/任务）与变更索引记录本任务状态（已确认、实施完成）与结论。

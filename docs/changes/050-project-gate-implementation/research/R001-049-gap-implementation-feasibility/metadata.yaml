@@ -1,0 +1,18 @@
+id: R001-049-gap-implementation-feasibility
+title: 049 缺口实施可行性
+status: completed
+verified_at: 2026-08-21
+snapshot: adb7959
+question: 049 已确认的动态 WebUI 扫描、WebUI 静态质量链和 OCI license label 缺口能否在现有边界内实施？
+evidence:
+  - webui/scripts/lint-architecture.mjs
+  - webui/scripts/lint-modules.mjs
+  - webui/scripts/lint-i18n-contract.mjs
+  - webui/package.json
+  - webui/pnpm-lock.yaml
+  - .github/workflows/quality.yml
+  - .github/workflows/release.yml
+  - Dockerfile
+  - docs/changes/049-project-rule-gate-context/report.md
+supersedes: null
+superseded_by: null

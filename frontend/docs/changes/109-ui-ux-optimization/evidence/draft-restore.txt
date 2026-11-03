@@ -1,0 +1,12 @@
+
+Running 4 tests using 1 worker
+
+
+
+(node:33416) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/4] [chromium] › apps\web\e2e\auto-restore.spec.ts:34:1 › 自动恢复未完成工作默认关：有草稿时进入首页不重定向
+[2/4] [chromium] › apps\web\e2e\auto-restore.spec.ts:48:1 › 开启 自动恢复未完成工作：有草稿时首页重定向回草稿页
+[3/4] [chromium] › apps\web\e2e\draft-autosave.spec.ts:14:1 › 本地草稿自动保存并恢复（操作偏好 autosaveDrafts 开）：输入 → 刷新恢复
+[4/4] [chromium] › apps\web\e2e\draft-autosave.spec.ts:49:1 › autosaveDrafts 关（默认）：输入不写草稿
+  4 passed (36.7s)

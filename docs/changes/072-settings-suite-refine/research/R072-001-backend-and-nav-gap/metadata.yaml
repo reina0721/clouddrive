@@ -1,0 +1,34 @@
+schema_version: 1
+id: R072-001
+title: "设置套件细化：分区重组、用户资料/软注销后端缺口、SPA 页内导航缺陷"
+question: "用户提出设置模块细化：1) 管理中心直接变更为设置模块，设置下为 profile（用户主页设置：昵称/介绍/出生日期等，需用户/权限体系提供接口）、account（用户名/注销=软注销，需接口）、security（密码/认证）、appearance、notifications、language、about（项目介绍/技术栈/仓库地址）、acknowledgement（鸣谢）；2) 修复页内侧边栏点击路由整页刷新缺陷。需要回答：（a）IAM 现有资料字段与归档语义是否支撑资料/软注销；（b）是否需要新增自服务端点；（c）页内导航 SPA 切换的注入途径；（d）语言偏好切换机制；（e）分区与页面重组的最小路径。"
+research_type: current-project
+topics: ["webui", "iam", "profile", "soft-delete", "settings", "section-nav", "spa-navigation", "language"]
+keywords: ["IAM Account", "DisplayName", "ArchiveAccount", "self/archive", "updateProfile", "HostRuntime.navigate", "SectionNav", "languageStorageKey"]
+applicable_scenarios:
+  - "设置模块 8 分区重组（profile/account/security/appearance/notifications/language/about/acknowledgement）"
+  - "IAM 资料字段与自服务软注销接口新增"
+  - "修复 SectionNav 整页刷新（SPA 内导航）"
+non_applicable_scenarios:
+  - "物理删除账号（注销采用软注销：归档语义）"
+status: active
+summary: "IAM 现状：iam_accounts 仅 username/display_name/status/archived/must_change_password/security_revision/version，无昵称/介绍/出生日期资料字段；ArchiveAccount 已是软归档语义（阻塞登录/分配、吊销会话，TestArchiveAccountBlocksLoginAssignmentAndRevokesSessions），但只有管理端 {id}/archive 端点，缺自服务注销；缺资料更新端点。SPA 导航：HostRuntime（@webui/sdk/runtime）无 navigate，App.tsx 持有 react-router navigate 且组装 HostRuntime（可注入 navigate(path) 回调；zone 组件已有 navigate 注入先例）——新增 runtime navigate 即可让模块页面做 SPA 内分区切换，替换 071 的整页默认导航（单轨）。语言：webui/src/i18n.ts 用 localStorage 键 community-go-webui-language + 重载切换（language 分区写同键并 reload）。分区重组：settings 现 4 路由 → 8 分区（profile 增强、account/security 拆分、新增 language/about/acknowledgement）；全 8 项进页内 SectionNav；全局菜单含量身定夺（推荐 settings.center 收纳分区数与页内一致）。"
+evidence:
+  types: ["source-code", "tests", "documentation"]
+  primary_sources:
+    - title: "IAM Account 字段与归档语义"
+      locator: "internal/module/iam/model/model.go（NewAccount）、service/service.go（ArchiveAccount）、iam 三方言 migration、service_test.go TestArchiveAccountBlocksLoginAssignmentAndRevokesSessions"
+      snapshot: "f4966e2"
+    - title: "宿主 runtime 与 navigate 注入途径"
+      locator: "webui/src/sdk/runtime/index.tsx（HostRuntime 无 navigate）、webui/src/App.tsx（useNavigate + HostRuntime 组装）、webui/src/zone/ZoneRenderer.tsx（navigate 注入先例）"
+      snapshot: "f4966e2"
+    - title: "语言机制"
+      locator: "webui/src/i18n.ts（languageStorageKey 'community-go-webui-language'、resolveLanguage）"
+      snapshot: "f4966e2"
+    - title: "070/071 设置中心与页内导航现状"
+      locator: "internal/module/settings/binding/webui/web/*.tsx（SettingsNavLayout、四页面）；docs/changes/070**,071**"
+      snapshot: "cbb6c4b"
+researched_at: "2026-08-26"
+verified_at: "2026-08-26"
+refresh_triggers:
+  - "IAM 资料/归档契约变化；runtime SDK 导航能力变化"

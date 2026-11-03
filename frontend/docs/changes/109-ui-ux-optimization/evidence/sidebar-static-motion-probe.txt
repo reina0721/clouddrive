@@ -1,0 +1,360 @@
+[WebServer] (node:19888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:26048) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:10936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:13652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\overlays.spec.ts:718:5 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger (7.2s)
+(node:16792) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\visual.spec.ts:29:5 › 桌面 UI Elements Family 保持基础组件权威面稳定 (4.8s)
+(node:3508) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\overlays.spec.ts:718:5 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger (6.8s)
+(node:31056) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\visual.spec.ts:29:5 › 桌面 UI Elements Family 保持基础组件权威面稳定 (4.4s)
+(node:23284) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  5 [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\overlays.spec.ts:718:5 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger (6.6s)
+(node:21020) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  6 [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\visual.spec.ts:29:5 › 桌面 UI Elements Family 保持基础组件权威面稳定 (4.3s)
+
+
+  1) [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\overlays.spec.ts:718:5 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger 
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      10424 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-dialog-open.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-dialog-open.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 10424 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 10424 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      725 |   await expect(dialog.locator(':focus')).toHaveCount(1);
+      726 |   await waitForVisualReadiness(page);
+    > 727 |   await expect.soft(page).toHaveScreenshot('ui-elements-dialog-open.png');
+          |                           ^
+      728 |   await page.keyboard.press('Escape');
+      729 |   await expect(dialogTrigger).toBeFocused();
+      730 |
+        at C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\overlays.spec.ts:727:27
+
+    attachment #1: ui-elements-dialog-open (image/png) ─────────────────────────────────────────────
+    Expected: apps\web\e2e\overlays.spec.ts-snapshots\ui-elements-dialog-open-chromium-win32.png
+    Received: test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium\ui-elements-dialog-open-actual.png
+    Diff:     test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium\ui-elements-dialog-open-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\overlays.spec.ts:718:5 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger 
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      10424 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-dialog-open.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-dialog-open.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 10424 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 10424 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      725 |   await expect(dialog.locator(':focus')).toHaveCount(1);
+      726 |   await waitForVisualReadiness(page);
+    > 727 |   await expect.soft(page).toHaveScreenshot('ui-elements-dialog-open.png');
+          |                           ^
+      728 |   await page.keyboard.press('Escape');
+      729 |   await expect(dialogTrigger).toBeFocused();
+      730 |
+        at C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\overlays.spec.ts:727:27
+
+    attachment #1: ui-elements-dialog-open (image/png) ─────────────────────────────────────────────
+    Expected: apps\web\e2e\overlays.spec.ts-snapshots\ui-elements-dialog-open-chromium-win32.png
+    Received: test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat1\ui-elements-dialog-open-actual.png
+    Diff:     test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat1\ui-elements-dialog-open-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat1\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\overlays.spec.ts:718:5 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger 
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      10424 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-dialog-open.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-dialog-open.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 10424 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 10424 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      725 |   await expect(dialog.locator(':focus')).toHaveCount(1);
+      726 |   await waitForVisualReadiness(page);
+    > 727 |   await expect.soft(page).toHaveScreenshot('ui-elements-dialog-open.png');
+          |                           ^
+      728 |   await page.keyboard.press('Escape');
+      729 |   await expect(dialogTrigger).toBeFocused();
+      730 |
+        at C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\overlays.spec.ts:727:27
+
+    attachment #1: ui-elements-dialog-open (image/png) ─────────────────────────────────────────────
+    Expected: apps\web\e2e\overlays.spec.ts-snapshots\ui-elements-dialog-open-chromium-win32.png
+    Received: test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat2\ui-elements-dialog-open-actual.png
+    Diff:     test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat2\ui-elements-dialog-open-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat2\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat2\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat2\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-static-motion\overlays-Dialog-与-Drawer-锁定焦点并支持-Escape-恢复-Trigger-chromium-repeat2\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\visual.spec.ts:29:5 › 桌面 UI Elements Family 保持基础组件权威面稳定 
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      19801 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-desktop.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-desktop.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 19801 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 19801 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      38 |   await expect(page.getByText('公开 Element 46 / 46')).toBeVisible();
+      39 |   await waitForVisualReadiness(page);
+    > 40 |   await expect.soft(page).toHaveScreenshot('ui-elements-desktop.png', { fullPage: true });
+         |                           ^
+      41 |   expect(consoleErrors).toEqual([]);
+      42 | });
+      43 |
+        at C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\visual.spec.ts:40:27
+
+    attachment #1: ui-elements-desktop (image/png) ─────────────────────────────────────────────────
+    Expected: apps\web\e2e\visual.spec.ts-snapshots\ui-elements-desktop-chromium-win32.png
+    Received: test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium\ui-elements-desktop-actual.png
+    Diff:     test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium\ui-elements-desktop-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\visual.spec.ts:29:5 › 桌面 UI Elements Family 保持基础组件权威面稳定 
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      19801 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-desktop.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-desktop.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 19801 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 19801 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      38 |   await expect(page.getByText('公开 Element 46 / 46')).toBeVisible();
+      39 |   await waitForVisualReadiness(page);
+    > 40 |   await expect.soft(page).toHaveScreenshot('ui-elements-desktop.png', { fullPage: true });
+         |                           ^
+      41 |   expect(consoleErrors).toEqual([]);
+      42 | });
+      43 |
+        at C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\visual.spec.ts:40:27
+
+    attachment #1: ui-elements-desktop (image/png) ─────────────────────────────────────────────────
+    Expected: apps\web\e2e\visual.spec.ts-snapshots\ui-elements-desktop-chromium-win32.png
+    Received: test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium-repeat1\ui-elements-desktop-actual.png
+    Diff:     test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium-repeat1\ui-elements-desktop-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium-repeat1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium-repeat1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium-repeat1\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium-repeat1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\visual.spec.ts:29:5 › 桌面 UI Elements Family 保持基础组件权威面稳定 
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      19801 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: ui-elements-desktop.png
+
+    Call log:
+      - Expect "soft toHaveScreenshot(ui-elements-desktop.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 19801 pixels (ratio 0.02 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 19801 pixels (ratio 0.02 of all image pixels) are different.
+
+
+      38 |   await expect(page.getByText('公开 Element 46 / 46')).toBeVisible();
+      39 |   await waitForVisualReadiness(page);
+    > 40 |   await expect.soft(page).toHaveScreenshot('ui-elements-desktop.png', { fullPage: true });
+         |                           ^
+      41 |   expect(consoleErrors).toEqual([]);
+      42 | });
+      43 |
+        at C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\visual.spec.ts:40:27
+
+    attachment #1: ui-elements-desktop (image/png) ─────────────────────────────────────────────────
+    Expected: apps\web\e2e\visual.spec.ts-snapshots\ui-elements-desktop-chromium-win32.png
+    Received: test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium-repeat2\ui-elements-desktop-actual.png
+    Diff:     test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium-repeat2\ui-elements-desktop-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium-repeat2\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium-repeat2\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium-repeat2\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\sidebar-static-motion\visual-桌面-UI-Elements-Family-保持基础组件权威面稳定-chromium-repeat2\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\overlays.spec.ts:718:5 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger 
+    [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\overlays.spec.ts:718:5 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger 
+    [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\overlays.spec.ts:718:5 › Dialog 与 Drawer 锁定焦点并支持 Escape 恢复 Trigger 
+    [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\visual.spec.ts:29:5 › 桌面 UI Elements Family 保持基础组件权威面稳定 
+    [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\visual.spec.ts:29:5 › 桌面 UI Elements Family 保持基础组件权威面稳定 
+    [chromium] › C:\Users\xiaol\AppData\Local\Temp\community-sidebar-static-motion\visual.spec.ts:29:5 › 桌面 UI Elements Family 保持基础组件权威面稳定 

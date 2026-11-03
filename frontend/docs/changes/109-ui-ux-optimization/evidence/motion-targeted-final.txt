@@ -1,0 +1,23 @@
+
+Running 16 tests using 1 worker
+
+(node:21660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\motion-foundation.spec.ts:3:1 › Motion Inspector 按模式、分类与慢速倍率统一控制 recipe (3.4s)
+  ok  2 [chromium] › apps\web\e2e\motion-foundation.spec.ts:29:1 › ViewportReveal 首次进入后保持 revealed，不因再次滚入而重播 (2.0s)
+  ok  3 [chromium] › apps\web\e2e\motion-foundation.spec.ts:39:1 › ReadyImage 慢加载完成后不改变预留尺寸 (2.0s)
+  ok  4 [chromium] › apps\web\e2e\motion-progressive.spec.ts:7:1 › settings keeps its shell stable and enters semantic regions inside the nested Page (3.0s)
+  ok  5 [chromium] › apps\web\e2e\motion-progressive.spec.ts:40:3 › progressive settings remains usable through long, fast and reverse scrolling at 1440 (6.0s)
+  ok  6 [chromium] › apps\web\e2e\motion-progressive.spec.ts:40:3 › progressive settings remains usable through long, fast and reverse scrolling at 390 (4.2s)
+  ok  7 [chromium] › apps\web\e2e\motion-progressive.spec.ts:40:3 › progressive settings remains usable through long, fast and reverse scrolling at 320 (4.5s)
+  ok  8 [chromium] › apps\web\e2e\motion-progressive.spec.ts:107:3 › content is immediately available with missing motion observation (3.4s)
+  ok  9 [chromium] › apps\web\e2e\motion-progressive.spec.ts:107:3 › content is immediately available with silent motion observation (3.1s)
+  ok 10 [chromium] › apps\web\e2e\motion-progressive.spec.ts:107:3 › content is immediately available with reduced motion observation (3.5s)
+  ok 11 [chromium] › apps\web\e2e\motion-progressive.spec.ts:141:1 › anchor refresh and browser return never leave reading content hidden (4.2s)
+  ok 12 [chromium] › apps\web\e2e\motion-progressive.spec.ts:159:1 › master detail swaps locally while preserving selection focus (1.8s)
+  ok 13 [chromium] › apps\web\e2e\transition.spec.ts:111:1 › 无 Suspense 页面深入导航播放方向进入并恢复稳定 (3.1s)
+  ok 14 [chromium] › apps\web\e2e\transition.spec.ts:147:1 › Family 页面导航在拆帧场景下保持功能正确且动画不失控 (4.3s)
+  ok 15 [chromium] › apps\web\e2e\transition.spec.ts:164:1 › 减弱动态效果时方向过渡时长接近零 (4.0s)
+  ok 16 [chromium] › apps\web\e2e\transition.spec.ts:180:1 › 浏览器后退不播放方向进入并正确恢复页面 (4.2s)
+
+  16 passed (1.0m)

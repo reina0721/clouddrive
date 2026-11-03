@@ -1,0 +1,8 @@
+{
+  "visual_names_match_previous_review": true,
+  "entries": 27,
+  "complete_png_triplets": 27,
+  "expected_matches_previous_and_current_goldens": 27,
+  "actual_byte_identical_to_previous_review": 20,
+  "baseline_update_approval_received": false
+}

@@ -1,0 +1,31 @@
+schema_version: 1
+id: R072-002
+title: "页内导航 SPA 修复与设置套件分区的实施路径"
+question: "如何在保持模块边界的前提下修复 071 页内导航整页刷新，并把 settings 重组为 8 分区？候选。（a）导航：HostRuntime 增加 navigate（App 注入 react-router navigate）vs 其他注入途径；（b）SettingsNavLayout 接 SectionNav onSelect（navigate(path)）并移除 href 默认导航；（c）后端：资料字段 migration 004（三方言）+ IAM 自服务 updateProfile（PATCH /api/v1/iam/self/profile，含 version 乐观锁）与 self/archive（POST /api/v1/iam/self/archive，复用归档语义并强制两步确认）；account 分区注销流程；（d）分区与菜单：8 分区进页内 SectionNav；全局菜单 settings.center 子项保持精简（推荐 profile/account/security/appearance/notifications 五项，language/about/acknowledgement 仅页内——避免菜单过深，文档说明）。"
+research_type: external-comparison
+topics: ["webui", "runtime", "navigation", "iam", "self-profile", "self-archive", "soft-delete", "settings", "section-nav"]
+keywords: ["HostRuntime.navigate", "react-router", "updateProfile", "self/archive", "migration 004", "SectionNav onSelect", "settings 8 partitions"]
+applicable_scenarios:
+  - "模块页面做 SPA 内导航（不整页刷新）"
+  - "设置中心 8 分区重组与 IAM 自服务资料/软注销"
+non_applicable_scenarios:
+  - "物理删除账号（保持软注销：归档 + 会话吊销）"
+  - "语言分区绕过宿主 i18n（沿用同键 + 重载语义）"
+status: active
+summary: "推荐：a) HostRuntime 增加 navigate(path)（App.tsx 注入 react-router navigate；SDK runtime 类型加字段、向后兼容；zone 注入先例支持）；SettingsNavLayout 改用 SectionNav onSelect → navigate(path)，删除 071 的 href 整页默认导航（单轨）；b) IAM：migration 004 三方言加 profile 资料列（nickname/bio/birth_date/text）；新增 PATCH /api/v1/iam/self/profile（expectedVersion 乐观锁，返回新版本）与 POST /api/v1/iam/self/archive（两步：首调返回确认 token/或复用 confirm 语义，再调归档并吊销会话）；c) settings 8 分区：SettingsNavLayout 扩为 8 分区（页内全列）；全局菜单 settings.center 子项保留主要五项（页内列全 8，避免菜单过深）；d) language 分区写 community-go-webui-language 并重载；about/acknowledgement 静态内容（仓库地址/技术栈/鸣谢文案，i18n 双语文案）。风险：IAM 契约新增端点与 migration 需要全量 Go 门禁；软注销端点需防误触（两步确认 UI）。"
+evidence:
+  types: ["source-code", "tests", "documentation"]
+  primary_sources:
+    - title: "runtime 与 navigate 注入"
+      locator: "webui/src/sdk/runtime/index.tsx、webui/src/App.tsx（HostRuntime 组装）、webui/src/zone/ZoneRenderer.tsx（navigate 先例）"
+      snapshot: "f4966e2"
+    - title: "IAM archive 语义与字段"
+      locator: "internal/module/iam/service/service.go（ArchiveAccount）、model/model.go、migration 000001、service_test.go 存档用例"
+      snapshot: "f4966e2"
+    - title: "语言键与 settings 现状"
+      locator: "webui/src/i18n.ts（languageStorageKey）、internal/module/settings/binding/webui/web/*.tsx"
+      snapshot: "cbb6c4b"
+researched_at: "2026-08-26"
+verified_at: "2026-08-26"
+refresh_triggers:
+  - "IAM 自服务端点或资料契约变化"

@@ -1,0 +1,73 @@
+schema_version: 1
+id: R062-001
+title: "当前 WebUI 骨架、注入面、导航与交互规范的事实与差距"
+question: "用户要求建立以「骨架 + 注入点」为核心的 Web UI 设计体系：业务模块除页面外还要承载多级导航与 Shell 布局衔接（菜单图标、层级缩进、激活态），骨架各核心区域（顶栏、侧边栏、内容容器、页头、标签页栏、底部状态栏）都要有统一注入钩子，全部可交互元素要有统一状态链（悬停/点击/禁用/加载/成功失败）与权限控制。当前 WebUI 的注入面、骨架分区、导航能力和交互契约分别处于什么状态，差距在哪里？"
+research_type: current-project
+topics: ["webui", "shell", "binding", "manifest", "navigation", "interaction", "permission", "sdk-ui", "registry-generation"]
+keywords: ["webui.Binding", "Manifest", "ViewOperationID", "NavigationPolicy", "SidebarMenu", "AppHeader", "WorkspaceTabs", "ActionTrigger", "iconId", "scopes"]
+applicable_scenarios:
+  - "为当前仓库设计骨架分区与类型化注入点体系"
+  - "评审交互元素状态链与动作级权限的呈现契约"
+  - "评估多级导航、图标目录和层级缩进是否需要升级"
+  - "评估轻量接入（新模块声明注入面不改宿主）的目标是否在现有结构上可达"
+non_applicable_scenarios:
+  - "运行时下载/热安装远程模块或动态插件（048/056/059 已明确排除）"
+  - "改变服务端授权模型或把呈现权限冒充真实授权"
+  - "为未来微前端或多前端独立发布设计承载（不在本变更范围）"
+status: active
+summary: "当前 WebUI 只是 route（内容区页面）+ menu（导航）+ locale + mock 四类静态注入面，且 route 仅 app/blank 两种布局、menu 图标目录硬编码两个 icon、页面交互全部手写 useState 且无统一 pending/禁用/反馈状态链、无动作级权限投影（只有 route 级 ViewOperationID）。骨架分区组件（AppSidebar/AppHeader/WorkspaceTabs/Footer）已存在但没有类型化注入点，PageHeader/DataToolbar 等原语已具备但缺少 zone 化与交互契约。差距是结构性的：需要把单一注入面升级为分区注入点模型，并补齐交互状态链与动作权限契约；静态插拔主线无需改变。"
+evidence:
+  types: ["source-code", "tests", "configuration", "documentation"]
+  primary_sources:
+    - title: "WebUI Binding/Catalog/Manifest 契约与校验"
+      locator: "internal/webui/contract.go（Binding/Route/Navigation/Manifest/ManifestForWithNavigation/validateBindings/ValidateOperationReferences）"
+      snapshot: "eb895e0"
+    - title: "模块 Binding 声明示例"
+      locator: "internal/module/iam/binding/webui/binding.go"
+      snapshot: "eb895e0"
+    - title: "生成器与生成产物"
+      locator: "internal/composition/webui_registry.go、webui/src/generated/webui-registry.ts"
+      snapshot: "eb895e0"
+    - title: "宿主路由装配与 Manifest 门禁"
+      locator: "webui/src/App.tsx（ManifestPage/routeIsLoadable/RouteResourceBoundary）"
+      snapshot: "eb895e0"
+    - title: "宿主骨架组件"
+      locator: "webui/src/components/AppShell.tsx、components/shell/{AppSidebar,AppHeader,SidebarMenu,WorkspaceTabs,AccountMenu,ShellSkeleton}.tsx"
+      snapshot: "eb895e0"
+    - title: "公共 UI 原语"
+      locator: "webui/src/ui/index.tsx（PageHeader/Surface/Button/Field/DataTable/DataToolbar/Pagination/EmptyState/InlineAlert/Toast/ConfirmDialog/Drawer）"
+      snapshot: "eb895e0"
+    - title: "SDK 公开契约面"
+      locator: "webui/src/sdk/{runtime,navigation,http,i18n,query,ui,feedback,mock}/index.*"
+      snapshot: "eb895e0"
+    - title: "平台样式与 motion/overlay"
+      locator: "webui/src/styles.css、webui/src/theme.ts、webui/src/motion.ts、webui/src/components/shell/overlay.ts"
+      snapshot: "eb895e0"
+    - title: "模块页面现状（交互手写模式）"
+      locator: "internal/module/iam/binding/webui/web/AccountsPage.tsx（未使用动作级权限与 pending 状态）"
+      snapshot: "eb895e0"
+    - title: "布局声明与项目布局清单"
+      locator: ".scaffold/layout.json（webui.moduleFacet/platformStyles/registryOutput）"
+      snapshot: "eb895e0"
+    - title: "WebUI 开发指南"
+      locator: "docs/development/webui.md（模块/SDK/样式/i18n/manifest 边界）"
+      snapshot: "eb895e0"
+    - title: "既有变更结论"
+      locator: "docs/changes/{048,053,056,059,060,061}（模块 owner、NavigationPolicy、骨架升级、托管/数据源）"
+      snapshot: "20a634c..eb895e0"
+researched_at: "2026-08-24"
+verified_at: "2026-08-24"
+validity:
+  mode: snapshot
+  review_after: "2026-11-24"
+  refresh_triggers:
+    - "internal/webui.Binding/Manifest 契约或生成器发生变化"
+    - "宿主骨架组件（AppShell/shell/*）重构或改名"
+    - "SDK capability 主版本变更或新增 capability"
+    - "新增/移除业务模块页面或恢复跨模块导入"
+relations:
+  extends: []
+  related: ["R062-002"]
+  supersedes: []
+  superseded_by: []
+report: report.md

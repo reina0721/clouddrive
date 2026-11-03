@@ -1,0 +1,54 @@
+schema_version: 1
+id: R094-001
+title: 'TailAdmin React Demo UI Elements 逐页复核'
+question: 'TailAdmin 当前 UI Elements 全菜单分别展示了哪些后台场景、结构、Variant 与组合规律；哪些适合转化为项目自己的语义，哪些只是 Demo 或 Feature Composition？'
+research_type: external-reference-and-visual-audit
+topics: ['frontend', 'TailAdmin', 'UI Elements', 'component anatomy', 'visual calibration']
+keywords:
+  [
+    'Alerts',
+    'Avatar',
+    'Badge',
+    'Breadcrumb',
+    'Buttons',
+    'Cards',
+    'Dropdowns',
+    'Modals',
+    'Pagination',
+    'Tabs',
+    'Tooltips',
+  ]
+applicable_scenarios: ['frontend UI Adapter、UI Element、Showcase 与后台管理页面组合']
+non_applicable_scenarios:
+  ['复制 TailAdmin 源码或视觉', '把 TailAdmin 加为依赖', '后端业务与 API 设计']
+status: active
+summary: '当前侧栏 22 个 UI Elements 页面已逐页实际访问；参考价值在场景覆盖、结构和状态矩阵，不能把其颜色枚举、Demo 分组或简单交互直接当成项目契约。'
+evidence:
+  types: ['running-web-page', 'visible-dom', 'interactive-state', 'current-project-documentation']
+  primary_sources:
+    - title: 'TailAdmin React Demo UI Elements'
+      locator: 'https://react-demo.tailadmin.com/'
+      snapshot: '2026-08-30，实际读取侧栏并逐页访问 22 个当前页面'
+    - title: 'TailAdmin Dropdown 打开态'
+      locator: 'https://react-demo.tailadmin.com/dropdowns'
+      snapshot: '2026-08-30，实际打开 Default Account Menu，观察 Trigger 与四项操作列表'
+    - title: '当前项目 UI 视觉校准矩阵'
+      locator: 'frontend/docs/ui-visual-calibration.md'
+      snapshot: '22bf5d786ece18cd9ad5913deca4d4706f3e6508，2026-08-30'
+researched_at: '2026-08-30'
+verified_at: '2026-08-30'
+validity:
+  mode: snapshot
+  review_after: '2026-10-30'
+  refresh_triggers:
+    [
+      'TailAdmin UI Elements 菜单或页面结构显著变化',
+      '项目新增当前矩阵未覆盖的公共 UI Element',
+      '用户改变外部视觉校准基准',
+    ]
+relations:
+  extends: []
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

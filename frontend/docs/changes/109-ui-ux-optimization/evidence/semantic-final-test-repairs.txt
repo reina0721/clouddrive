@@ -1,0 +1,96 @@
+
+Running 17 tests using 1 worker
+
+(node:24360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:41:5 › Theme tiles adapt while retaining pointer, keyboard and persistence: 1440, zh-CN (7.6s)
+  ok  2 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:41:5 › Theme tiles adapt while retaining pointer, keyboard and persistence: 1440, en (8.7s)
+  ok  3 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:41:5 › Theme tiles adapt while retaining pointer, keyboard and persistence: 390, zh-CN (6.1s)
+  ok  4 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:41:5 › Theme tiles adapt while retaining pointer, keyboard and persistence: 390, en (7.9s)
+  ok  5 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:41:5 › Theme tiles adapt while retaining pointer, keyboard and persistence: 320, zh-CN (6.0s)
+  ok  6 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:41:5 › Theme tiles adapt while retaining pointer, keyboard and persistence: 320, en (7.8s)
+  ok  7 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:236:5 › Switch row hover encloses text and control with clickable inset: 1440, 紧凑 (4.3s)
+  ok  8 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:236:5 › Switch row hover encloses text and control with clickable inset: 1440, 标准 (4.0s)
+  ok  9 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:236:5 › Switch row hover encloses text and control with clickable inset: 1440, 宽松 (4.2s)
+  ok 10 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:236:5 › Switch row hover encloses text and control with clickable inset: 390, 紧凑 (4.3s)
+  ok 11 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:236:5 › Switch row hover encloses text and control with clickable inset: 390, 标准 (3.9s)
+  x  12 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:236:5 › Switch row hover encloses text and control with clickable inset: 390, 宽松 (4.5s)
+(node:18380) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 13 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:236:5 › Switch row hover encloses text and control with clickable inset: 320, 紧凑 (4.0s)
+  ok 14 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:236:5 › Switch row hover encloses text and control with clickable inset: 320, 标准 (3.9s)
+  ok 15 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:236:5 › Switch row hover encloses text and control with clickable inset: 320, 宽松 (3.9s)
+  ok 16 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:393:1 › Radio indicator and card edge select the same option and arrows retain selection (2.9s)
+  x  17 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:467:1 › Pinned page tabs track the header; unpinned tabs scroll and persist after reload (8.3s)
+
+
+  1) [chromium] › apps\web\e2e\settings-ux-review.spec.ts:236:5 › Switch row hover encloses text and control with clickable inset: 390, 宽松 
+
+    Error: UNKNOWN: unknown error, open 'D:\coder\i721\console-web\docs\changes\109-ui-ux-optimization\evidence\review-2026-10-08\switch-row-hover-390-宽松.png'
+
+      265 |       await page.getByRole('heading', { level: 1, name: '导航', exact: true }).click();
+      266 |       await row.hover();
+    > 267 |       await page.screenshot({
+          |       ^
+      268 |         animations: 'disabled',
+      269 |         path: `docs/changes/109-ui-ux-optimization/evidence/review-2026-10-08/switch-row-hover-${width}-${density}.png`,
+      270 |       });
+        at D:\coder\i721\console-web\apps\web\e2e\settings-ux-review.spec.ts:267:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Switch--06aaf-with-clickable-inset-390-宽松-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-ux-review-Switch--06aaf-with-clickable-inset-390-宽松-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Switch--06aaf-with-clickable-inset-390-宽松-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-ux-review-Switch--06aaf-with-clickable-inset-390-宽松-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\settings-ux-review.spec.ts:467:1 › Pinned page tabs track the header; unpinned tabs scroll and persist after reload 
+
+    Error: expect(locator).not.toBeChecked() failed
+
+    Locator:  getByRole('switch', { name: '固定页面标签', exact: true })
+    Expected: not checked
+    Received: checked
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "not toBeChecked" with timeout 5000ms
+      - waiting for getByRole('switch', { name: '固定页面标签', exact: true })
+        14 × locator resolved to <input checked title="" tabindex="0" role="switch" type="checkbox" aria-label="固定页面标签" aria-describedby="_r_1p_" data-react-aria-pressable="true"/>
+           - unexpected value "checked"
+
+
+      486 |   expect((await tabs.boundingBox())?.y).toBeLessThan(0);
+      487 |   await page.reload();
+    > 488 |   await expect(pinned).not.toBeChecked();
+          |                            ^
+      489 | });
+      490 |
+      491 | test('All page tabs stay manageable on desktop and closing active restores useful focus', async ({
+        at D:\coder\i721\console-web\apps\web\e2e\settings-ux-review.spec.ts:488:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Pinned--85a52-ll-and-persist-after-reload-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\settings-ux-review-Pinned--85a52-ll-and-persist-after-reload-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\settings-ux-review-Pinned--85a52-ll-and-persist-after-reload-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\settings-ux-review-Pinned--85a52-ll-and-persist-after-reload-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › apps\web\e2e\settings-ux-review.spec.ts:236:5 › Switch row hover encloses text and control with clickable inset: 390, 宽松 
+    [chromium] › apps\web\e2e\settings-ux-review.spec.ts:467:1 › Pinned page tabs track the header; unpinned tabs scroll and persist after reload 
+  15 passed (1.7m)

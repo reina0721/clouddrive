@@ -1,0 +1,23 @@
+
+Running 16 tests using 1 worker
+
+(node:18560) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: appearance (9.3s)
+  ok  2 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: navigation (7.3s)
+  ok  3 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: data-display (6.8s)
+  ok  4 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: actions (7.5s)
+  ok  5 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: locale (6.5s)
+  ok  6 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: notifications (6.2s)
+  ok  7 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: accessibility (5.9s)
+  ok  8 [chromium] › apps\web\e2e\settings-product-review.spec.ts:65:3 › All settings fields remain readable and accessible: shortcuts (5.4s)
+  ok  9 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: forms, light desktop (4.3s)
+  ok 10 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: forms, dark narrow English (4.2s)
+  ok 11 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: actions-selection, light desktop (3.3s)
+  ok 12 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: actions-selection, dark narrow English (3.0s)
+  ok 13 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, light desktop (3.7s)
+  ok 14 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: data, dark narrow English (3.0s)
+  ok 15 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: overlays, light desktop (3.5s)
+  ok 16 [chromium] › apps\web\e2e\settings-product-review.spec.ts:145:5 › Shared controls preserve high contrast: overlays, dark narrow English (3.1s)
+
+  16 passed (1.4m)

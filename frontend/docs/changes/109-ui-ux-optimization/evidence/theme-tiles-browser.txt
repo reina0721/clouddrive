@@ -1,0 +1,78 @@
+
+Running 2 tests using 1 worker
+
+(node:12284) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Theme tiles retain horizontal hierarchy, pointer and keyboard selection and persistence (30.1s)
+(node:16028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [chromium] › apps\web\e2e\settings-ux-review.spec.ts:126:1 › Choice tiles authority retains disabled state and keyboard focus on the card (30.2s)
+
+
+  1) [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Theme tiles retain horizontal hierarchy, pointer and keyboard selection and persistence 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test ended.
+    Call log:
+      - waiting for getByRole('radiogroup', { name: '主题模式', exact: true }).locator('label').filter({ has: getByRole('radiogroup', { name: '主题模式', exact: true }).getByRole('radio', { name: '深色主题', exact: true }) }).locator('svg')
+
+
+      85 |       }
+      86 |       const dark = group.getByRole('radio', { name: names[1], exact: true });
+    > 87 |       await group.locator('label').filter({ has: dark }).locator('svg').click();
+         |                                                                         ^
+      88 |       await expect(dark).toBeChecked();
+      89 |       await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+      90 |       expect(
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\settings-ux-review.spec.ts:87:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\theme-tiles\settings-ux-review-Theme-t-16ccd-d-selection-and-persistence-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\theme-tiles\settings-ux-review-Theme-t-16ccd-d-selection-and-persistence-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\theme-tiles\settings-ux-review-Theme-t-16ccd-d-selection-and-persistence-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\theme-tiles\settings-ux-review-Theme-t-16ccd-d-selection-and-persistence-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › apps\web\e2e\settings-ux-review.spec.ts:126:1 › Choice tiles authority retains disabled state and keyboard focus on the card 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('radiogroup', { name: '图标选择卡片', exact: true }).locator('label').filter({ has: getByRole('radiogroup', { name: '图标选择卡片', exact: true }).getByRole('radio', { name: '仅观察', exact: true }) }).locator('svg')
+
+
+      132 |   await expect(disabled).toBeDisabled();
+      133 |   const observe = group.getByRole('radio', { name: '仅观察', exact: true });
+    > 134 |   await group.locator('label').filter({ has: observe }).locator('svg').click();
+          |                                                                        ^
+      135 |   await expect(observe).toBeChecked();
+      136 |   await observe.focus();
+      137 |   await page.keyboard.press('ArrowRight');
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\settings-ux-review.spec.ts:134:72
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\theme-tiles\settings-ux-review-Choice--47fb6--keyboard-focus-on-the-card-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\theme-tiles\settings-ux-review-Choice--47fb6--keyboard-focus-on-the-card-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\theme-tiles\settings-ux-review-Choice--47fb6--keyboard-focus-on-the-card-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\theme-tiles\settings-ux-review-Choice--47fb6--keyboard-focus-on-the-card-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › apps\web\e2e\settings-ux-review.spec.ts:39:1 › Theme tiles retain horizontal hierarchy, pointer and keyboard selection and persistence 
+    [chromium] › apps\web\e2e\settings-ux-review.spec.ts:126:1 › Choice tiles authority retains disabled state and keyboard focus on the card 

@@ -1,0 +1,74 @@
+{
+  "approved": true,
+  "sourceLog": "auth-browser-pre-visual-review.txt",
+  "entries": [
+    {
+      "name": "Authentication login-320",
+      "golden": "apps/web/e2e/authentication.spec.ts-snapshots/authentication-login-320-chromium-win32.png",
+      "actual": "authentication-login-320-actual.png",
+      "actualSha256": "eaa737282711c3cad0e64507f5cf73b21a8ee051d2bc593e41d84e5cf8564f62",
+      "expected": null,
+      "expectedSha256": null,
+      "diff": null
+    },
+    {
+      "name": "Authentication login-1440",
+      "golden": "apps/web/e2e/authentication.spec.ts-snapshots/authentication-login-1440-chromium-win32.png",
+      "actual": "authentication-login-1440-actual.png",
+      "actualSha256": "5d47e74b97ec753a52b4b0c37bd71a036581938b484bdfc77b2fae9da1a147b9",
+      "expected": null,
+      "expectedSha256": null,
+      "diff": null
+    },
+    {
+      "name": "Authentication register-320",
+      "golden": "apps/web/e2e/authentication.spec.ts-snapshots/authentication-register-320-chromium-win32.png",
+      "actual": "authentication-register-320-actual.png",
+      "actualSha256": "cb48c0cff619d40e7337689b166ca0d656c5d1c9ccddcd8379e8b13c771e29d7",
+      "expected": null,
+      "expectedSha256": null,
+      "diff": null
+    },
+    {
+      "name": "Authentication register-1440",
+      "golden": "apps/web/e2e/authentication.spec.ts-snapshots/authentication-register-1440-chromium-win32.png",
+      "actual": "authentication-register-1440-actual.png",
+      "actualSha256": "3080e99eaf0bbbd22884e579afb34f21a5a0f00a5599d3864098e80d63f048db",
+      "expected": null,
+      "expectedSha256": null,
+      "diff": null
+    },
+    {
+      "name": "Authentication register-320-en-dark-large",
+      "golden": "apps/web/e2e/authentication.spec.ts-snapshots/authentication-register-320-en-dark-large-chromium-win32.png",
+      "actual": "authentication-register-320-en-dark-large-actual.png",
+      "actualSha256": "7d725359629194d4dcbc9c722a916b3668870a0778636f0138060ecc4ec88657",
+      "expected": null,
+      "expectedSha256": null,
+      "diff": null
+    },
+    {
+      "name": "ui-elements-family-forms",
+      "golden": "apps/web/e2e/visual.spec.ts-snapshots/ui-elements-family-forms-chromium-win32.png",
+      "actual": "ui-elements-family-forms-actual.png",
+      "actualSha256": "903ea3263f69538ea5b2b75ce0bcb8cdfc5b37bb805dc5f39463fe7b87b9607c",
+      "expected": "ui-elements-family-forms-expected.png",
+      "expectedSha256": "1c37e55e869996def7218d992b0c533abd9311bd4fdea1e2c183917eb4577407",
+      "diff": "ui-elements-family-forms-diff.png"
+    },
+    {
+      "name": "ui-elements-mobile-dark-en",
+      "golden": "apps/web/e2e/visual.spec.ts-snapshots/ui-elements-mobile-dark-en-chromium-win32.png",
+      "actual": "ui-elements-mobile-dark-en-actual.png",
+      "actualSha256": "c35988d19edeba89bca92b1b733ffb83ee2ddf9fd3c257aa34f79c4176ee3047",
+      "expected": "ui-elements-mobile-dark-en-expected.png",
+      "expectedSha256": "30b77c41c4628525625c50e3821c8ff399d7a26e2e2f32f55da431fade07434c",
+      "diff": "ui-elements-mobile-dark-en-diff.png"
+    }
+  ],
+  "approval": {
+    "userResponse": "确认",
+    "scope": "当前 Authentication 视觉对照全部 7 项",
+    "date": "2026-10-09"
+  }
+}

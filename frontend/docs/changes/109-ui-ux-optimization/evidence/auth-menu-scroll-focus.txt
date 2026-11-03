@@ -1,0 +1,105 @@
+[WebServer] (node:18584) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:30252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:11276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4880) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:3868) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › apps\web\e2e\account-menu.spec.ts:91:1 › Account submenu keyboard returns focus; theme supports system and persisted choices (5.2s)
+  x  2 [chromium] › apps\web\e2e\account-menu.spec.ts:140:1 › Dark English expanded text and Reduced Motion keep preference overlays accessible (2.4s)
+(node:9848) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [chromium] › apps\web\e2e\account-menu.spec.ts:200:1 › Touch selection and short viewport use the same nested overlay lifecycle (2.5s)
+
+
+  1) [chromium] › apps\web\e2e\account-menu.spec.ts:140:1 › Dark English expanded text and Reduced Motion keep preference overlays accessible 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 50
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure elements with an ARIA role that require child roles contain them",
+    +     "help": "Certain ARIA roles must contain particular children",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-required-children?application=playwright",
+    +     "id": "aria-required-children",
+    +     "impact": "critical",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "messageKey": "unallowed",
+    +               "values": "[role=presentation]",
+    +             },
+    +             "id": "aria-required-children",
+    +             "impact": "critical",
+    +             "message": "Element has children which are not allowed: [role=presentation]",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<header class=\"header px-3 pb-1 pt-2 text-xs font-semibold text-ink-muted outline-none focus-visible:ring-2 focus-visible:ring-focus-ring\" id=\"react-aria2897410623-_r_9o_\" role=\"presentation\" data-slot=\"header\" tabindex=\"0\">",
+    +                 "target": Array [
+    +                   "#react-aria2897410623-_r_9o_",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has children which are not allowed: [role=presentation]",
+    +         "html": "<div id=\"react-aria2897410623-_r_9i_\" data-slot=\"dropdown-menu\" class=\"dropdown__menu min-h-0 overflow-auto outline-none\" data-rac=\"\" aria-labelledby=\"react-aria2897410623-_r_9h_\" aria-label=\"Current user\" role=\"menu\" tabindex=\"-1\" data-collection=\"react-aria2897410623-_r_9m_\">",
+    +         "impact": "critical",
+    +         "none": Array [],
+    +         "target": Array [
+    +           "#react-aria2897410623-_r_9i_",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.aria",
+    +       "wcag2a",
+    +       "wcag131",
+    +       "EN-301-549",
+    +       "EN-9.1.3.1",
+    +       "RGAAv4",
+    +       "RGAA-9.3.1",
+    +     ],
+    +   },
+    + ]
+
+      174 |     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      175 |     .analyze();
+    > 176 |   expect(result.violations).toEqual([]);
+          |                             ^
+      177 |   await page.screenshot({ path: `${evidence}/dark-en-expanded-reduced.png` });
+      178 | });
+      179 |
+        at C:\rin\coder\i0721\console-web\apps\web\e2e\account-menu.spec.ts:176:29
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\account-menu-Dark-English--ce630-ference-overlays-accessible-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\account-menu-Dark-English--ce630-ference-overlays-accessible-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\account-menu-Dark-English--ce630-ference-overlays-accessible-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\account-menu-Dark-English--ce630-ference-overlays-accessible-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › apps\web\e2e\account-menu.spec.ts:140:1 › Dark English expanded text and Reduced Motion keep preference overlays accessible 
+  2 passed (14.3s)

@@ -1,0 +1,114 @@
+
+[WebServer] (node:31580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:14540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:32624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:31804) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:31432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:12:1 › Compact rail uses coherent geometry, current route, named groups and focus/hover hints
+[2/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:45:1 › Hover bridge, click pin, second click close and keyboard focus survive pointer departure
+  1) [chromium] › apps\web\e2e\sidebar-design.spec.ts:45:1 › Hover bridge, click pin, second click close and keyboard focus survive pointer departure 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('dialog', { name: 'UI Elements', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'UI Elements', exact: true })
+
+
+      62 |   // Wait past the close corridor to prove press-open is durable.
+      63 |   await page.waitForTimeout(400);
+    > 64 |   await expect(flyout).toBeVisible();
+         |                        ^
+      65 |   await trigger.click();
+      66 |   await expect(flyout).toBeHidden();
+      67 |   await page.mouse.move(700, 200);
+        at D:\coder\i721\console-web\apps\web\e2e\sidebar-design.spec.ts:64:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\sidebar-design-Hover-bridg-9d46c-s-survive-pointer-departure-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\sidebar-design-Hover-bridg-9d46c-s-survive-pointer-departure-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\sidebar-design-Hover-bridg-9d46c-s-survive-pointer-departure-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\sidebar-design-Hover-bridg-9d46c-s-survive-pointer-departure-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:29472) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[3/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:88:1 › Mode round trip retains exploration and closes old portal; expanded layout remains intact
+  2) [chromium] › apps\web\e2e\sidebar-design.spec.ts:88:1 › Mode round trip retains exploration and closes old portal; expanded layout remains intact 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '展开或收起Page Patterns' })
+    Expected: "true"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 5000ms
+      - waiting for getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '展开或收起Page Patterns' })
+
+
+       97 |   await page.getByRole('button', { name: '展开侧栏' }).click();
+       98 |   await expect(page.getByRole('dialog', { name: 'UI Elements' })).toBeHidden();
+    >  99 |   await expect(nav.getByRole('button', { name: '展开或收起Page Patterns' })).toHaveAttribute(
+          |                                                                         ^
+      100 |     'aria-expanded',
+      101 |     'true',
+      102 |   );
+        at D:\coder\i721\console-web\apps\web\e2e\sidebar-design.spec.ts:99:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\playwright\sidebar-design-Mode-round--df6d2-anded-layout-remains-intact-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\playwright\sidebar-design-Mode-round--df6d2-anded-layout-remains-intact-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\playwright\sidebar-design-Mode-round--df6d2-anded-layout-remains-intact-chromium\trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results\playwright\sidebar-design-Mode-round--df6d2-anded-layout-remains-intact-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:1472) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[4/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:111:1 › Compact rail stays usable at 1024/1440/2560, dark English, short height and text zoom
+[5/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:149:1 › Mobile Drawer remains expanded, traps focus and restores desktop collapse preference
+[6/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:191:3 › Touch desktop rail › Tap opens a full submenu and selecting a child navigates and dismisses it
+[7/7] [chromium] › apps\web\e2e\sidebar-design.spec.ts:204:1 › Reduced motion and repeated mode changes keep header and content in their grid column
+  2 failed
+    [chromium] › apps\web\e2e\sidebar-design.spec.ts:45:1 › Hover bridge, click pin, second click close and keyboard focus survive pointer departure 
+    [chromium] › apps\web\e2e\sidebar-design.spec.ts:88:1 › Mode round trip retains exploration and closes old portal; expanded layout remains intact 
+  5 passed (1.3m)
