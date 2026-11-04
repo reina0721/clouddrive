@@ -99,3 +99,5 @@
 - [118 clouddrive 前后端整合](118-clouddrive-integration/README.md)：本地实现及功能验证完成，视觉基线待人工确认。
 
 下一个任务序号为 `119`。已完成记录只保存历史证据；当前行为必须回到根 [README](../../README.md) 和对应主题文档确认。
+
+- [124 分享快捷方式与侧栏固定](124-share-shortcuts/README.md)：第五批 F81–F100，研究、实现、集中验收及交付证据。

@@ -1,4 +1,6 @@
 const zh = {
+  saveShortcut: '保存分享快捷方式',
+  shortcutUnavailable: '快捷方式不授予嵌套分享访问权',
   showPassword: '显示密码',
   hidePassword: '隐藏密码',
   title: '文件分享',
@@ -21,6 +23,8 @@ const zh = {
   },
 };
 const en = {
+  saveShortcut: 'Save share shortcut',
+  shortcutUnavailable: 'Nested share access is not granted',
   showPassword: 'Show password',
   hidePassword: 'Hide password',
   title: 'Shared files',

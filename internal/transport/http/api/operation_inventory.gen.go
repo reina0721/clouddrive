@@ -27,6 +27,10 @@ const (
 	OperationFilesDetail                    OperationID = "files.detail"
 	OperationFilesFolder                    OperationID = "files.folder"
 	OperationFilesList                      OperationID = "files.list"
+	OperationFilesPinsCreate                OperationID = "files.pins.create"
+	OperationFilesPinsList                  OperationID = "files.pins.list"
+	OperationFilesPinsOrder                 OperationID = "files.pins.order"
+	OperationFilesPinsRemove                OperationID = "files.pins.remove"
 	OperationFilesPublicContent             OperationID = "files.public.content"
 	OperationFilesPublicContentHead         OperationID = "files.public.content.head"
 	OperationFilesPublicDownloadContent     OperationID = "files.public.download.content"
@@ -39,6 +43,10 @@ const (
 	OperationFilesSharesCreate              OperationID = "files.shares.create"
 	OperationFilesSharesList                OperationID = "files.shares.list"
 	OperationFilesSharesRevoke              OperationID = "files.shares.revoke"
+	OperationFilesShortcutsCreate           OperationID = "files.shortcuts.create"
+	OperationFilesShortcutsList             OperationID = "files.shortcuts.list"
+	OperationFilesShortcutsOpen             OperationID = "files.shortcuts.open"
+	OperationFilesShortcutsPurge            OperationID = "files.shortcuts.purge"
 	OperationFilesTextCreate                OperationID = "files.text.create"
 	OperationFilesTextReplace               OperationID = "files.text.replace"
 	OperationFilesTransfersCancel           OperationID = "files.transfers.cancel"
@@ -133,6 +141,10 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesDetail, Method: "GET", Path: "/api/v1/files/{id}", Policy: "protected", Scope: "files:read", Action: "files.detail"},
 	{ID: OperationFilesFolder, Method: "POST", Path: "/api/v1/files/folders", Policy: "protected", Scope: "files:write", Action: "files.folder"},
 	{ID: OperationFilesList, Method: "GET", Path: "/api/v1/files", Policy: "protected", Scope: "files:read", Action: "files.list"},
+	{ID: OperationFilesPinsCreate, Method: "POST", Path: "/api/v1/files/pins", Policy: "protected", Scope: "files:write", Action: "files.pins.create"},
+	{ID: OperationFilesPinsList, Method: "GET", Path: "/api/v1/files/pins", Policy: "protected", Scope: "files:read", Action: "files.pins.list"},
+	{ID: OperationFilesPinsOrder, Method: "PUT", Path: "/api/v1/files/pins/order", Policy: "protected", Scope: "files:write", Action: "files.pins.order"},
+	{ID: OperationFilesPinsRemove, Method: "DELETE", Path: "/api/v1/files/pins/{pinId}", Policy: "protected", Scope: "files:write", Action: "files.pins.remove"},
 	{ID: OperationFilesPublicContent, Method: "GET", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicContentHead, Method: "HEAD", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicDownloadContent, Method: "GET", Path: "/api/v1/file-downloads/{ticket}", Policy: "public", Scope: "", Action: ""},
@@ -145,6 +157,10 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesSharesCreate, Method: "POST", Path: "/api/v1/files/shares", Policy: "protected", Scope: "files:write", Action: "files.shares.create"},
 	{ID: OperationFilesSharesList, Method: "GET", Path: "/api/v1/files/shares", Policy: "protected", Scope: "files:read", Action: "files.shares.list"},
 	{ID: OperationFilesSharesRevoke, Method: "POST", Path: "/api/v1/files/shares/{shareId}/revoke", Policy: "protected", Scope: "files:write", Action: "files.shares.revoke"},
+	{ID: OperationFilesShortcutsCreate, Method: "POST", Path: "/api/v1/files/shortcuts", Policy: "protected", Scope: "files:write", Action: "files.shortcuts.create"},
+	{ID: OperationFilesShortcutsList, Method: "GET", Path: "/api/v1/files/shortcuts", Policy: "protected", Scope: "files:read", Action: "files.shortcuts.list"},
+	{ID: OperationFilesShortcutsOpen, Method: "GET", Path: "/api/v1/files/shortcuts/{shortcutId}/open", Policy: "protected", Scope: "files:read", Action: "files.shortcuts.open"},
+	{ID: OperationFilesShortcutsPurge, Method: "DELETE", Path: "/api/v1/files/shortcuts/{shortcutId}", Policy: "protected", Scope: "files:write", Action: "files.shortcuts.purge"},
 	{ID: OperationFilesTextCreate, Method: "POST", Path: "/api/v1/files/text", Policy: "protected", Scope: "files:write", Action: "files.text.create"},
 	{ID: OperationFilesTextReplace, Method: "PUT", Path: "/api/v1/files/{id}/text", Policy: "protected", Scope: "files:write", Action: "files.text.replace"},
 	{ID: OperationFilesTransfersCancel, Method: "POST", Path: "/api/v1/files/transfers/{id}/cancel", Policy: "protected", Scope: "files:write", Action: "files.transfers.cancel"},

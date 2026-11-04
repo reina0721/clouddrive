@@ -1,0 +1,11 @@
+# 持久导航与事务
+
+files新增导航Model/Service/Repository窄契约。导航记录包含owner、全局revision和有序Pin集合；Pin有独立ID、TargetKind（folder/shared-view/shortcut）、TargetID、position、createdAt。标题与可用性读取当前自有Entry派生，不复制易过时名称，不缓存share权限。folder允许自有根，shared-view只有具名共享视图；不保存任意URL或query作为导航目标。
+
+Repository沿用storage位置/owner锁、GORM借用租约与同一事务。ReadNavigation返回有界自有目录项和pin；ChangePins要求expectedRevision，检查集合一致性、唯一目标及最多20项，修改后一次递增revision。顺序调整必须提供完整无重复的现有ID排列；并发变化返回Conflict，不静默丢失条目。取消固定和重排不要求目标仍然可用。元数据扫描超过10000项时，仍允许取消固定，目标显示不可用，不以隐藏默认值成功。
+
+永久移除已回收引用时，同时删除其对应Pin并递增导航revision；只有真实删除pin才修改该revision，事务失败全部回滚。回收目录保留Pin记录，目标恢复后可重新使用；无法从过期缓存链接越过文件/分享接口的当前权限。
+
+默认引用总数100（包括已回收，永久移除可释放），Pin20、目录扫描10000、列表页20，可调小且不得超过默认硬上界；`files.navigation`拥有默认/校验，RestartRequired。copyTree计入新引用，不能通过复制目录绕过上限；正常内容配额仍以字节计，不给元数据伪造文件大小。
+
+数据结构属于files业务，不新增连接、goroutine、订阅、worker或运行资源。现有IAM会话及files:read/write通过Huma独立管理operation执行。没有新的外部系统副作用，也不扩大WebDAV Basic凭据或PublicShare票据权限。

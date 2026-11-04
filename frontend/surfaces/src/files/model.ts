@@ -27,7 +27,7 @@ export class FilesError extends Error {
 export const fileEntrySchema = z.object({
   id: z.string(),
   parentId: z.string(),
-  kind: z.enum(['file', 'folder']),
+  kind: z.enum(['file', 'folder', 'shortcut']),
   name: z.string(),
   sizeBytes: z.number().int().nonnegative(),
   mediaType: z.string(),
@@ -78,14 +78,17 @@ export type FileViewPreferences = Readonly<{
 export type FileShortcut =
   'search' | 'refresh' | 'selectAll' | 'clearSelection' | 'rename' | 'trash' | 'newFolder' | 'open';
 export type FilesDestination =
-  'files' | 'shares' | 'transfers' | 'connections' | 'workspace' | 'account';
+  'files' | 'shares' | 'shared' | 'transfers' | 'connections' | 'workspace' | 'account';
 export type FilesPort = Readonly<{
   navigate(destination: FilesDestination): void;
   destinationHref(destination: FilesDestination): string;
   openFolder(parentId: string): void;
   list(query: FileQuery, signal?: AbortSignal): Promise<FileListing>;
   folder(parentId: string, name: string): Promise<FileEntry>;
-  update(id: string, change: { name?: string; parentId?: string }): Promise<FileEntry>;
+  update(
+    id: string,
+    change: { name?: string; parentId?: string; expectedRevision?: number },
+  ): Promise<FileEntry>;
   trash(id: string): Promise<FileEntry>;
   restore(id: string, parentId?: string): Promise<FileEntry>;
   copy(id: string, parentId: string, name: string): Promise<FileEntry>;
@@ -132,7 +135,7 @@ export const shareDownloadGrantSchema = z.object({
 export const publicFileEntrySchema = z.object({
   id: z.string(),
   name: z.string(),
-  kind: z.enum(['file', 'folder']),
+  kind: z.enum(['file', 'folder', 'shortcut']),
   sizeBytes: z.number().int().nonnegative(),
   mediaType: z.string(),
   updatedAt: z.string(),
@@ -149,6 +152,7 @@ export const publicFileListingSchema = z.object({
 });
 export const shareUnlockSchema = z.object({ ticket: z.string(), expiresAt: z.string() });
 export type PublicFilesPort = Readonly<{
+  saveShortcutHref(): string;
   metadata(signal?: AbortSignal): Promise<z.infer<typeof publicShareSchema>>;
   unlock(password: string, signal?: AbortSignal): Promise<void>;
   entries(parent: string, signal?: AbortSignal): Promise<z.infer<typeof publicFileListingSchema>>;

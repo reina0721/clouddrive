@@ -347,6 +347,11 @@ files:
     lockRetryInterval: 100ms
     networkTimeout: 30s
     completionTimeout: 5s
+  navigation:
+    shortcutLimit: 100
+    pinLimit: 20
+    treeEntries: 10000
+    pageSize: 20
   connections:
     # 留空使用管理请求直达API的scheme/Host；HTTPS反向代理应显式配置公网origin。
     publicOrigin: ''

@@ -41,6 +41,7 @@ type Dependencies struct {
 	StorageIdentity     string
 	Passwords           service.PasscodeHasher
 	SharePolicy         service.SharePolicy
+	NavigationPolicy    service.NavigationPolicy
 	ConnectionPolicy    service.ConnectionPolicy
 	ConnectionOrigin    string
 	ConnectionAuthority service.ConnectionAuthorizer
@@ -60,6 +61,14 @@ func New(deps Dependencies) (*handler.Handler, error) {
 		return nil, err
 	}
 	sharing, err := service.NewSharing(useCases, repository, deps.Passwords, deps.SharePolicy)
+	if err != nil {
+		return nil, err
+	}
+	navigationRepository, err := repo.NewNavigation(deps.Database, deps.StorageIdentity, deps.NavigationPolicy.TreeEntries)
+	if err != nil {
+		return nil, err
+	}
+	navigation, err := service.NewNavigation(useCases, navigationRepository, sharing, deps.NavigationPolicy)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +101,7 @@ func New(deps Dependencies) (*handler.Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	boundary := &handler.Handler{Service: useCases, Sharing: sharing, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
+	boundary := &handler.Handler{Service: useCases, Sharing: sharing, Navigation: navigation, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
 	boundary.WebDAV, err = webdavbinding.New(boundary, davFiles, deps.ConnectionPolicy, deps.Policy.MaxFileBytes)
 	if err != nil {
 		return nil, err

@@ -94,9 +94,19 @@ export default function PublicSharePage() {
             </a>
           }
           secondary={
-            <Action variant="secondary" onPress={refresh}>
-              {t('publicFiles.refresh')}
-            </Action>
+            <>
+              {!loading && !failure ? (
+                <a
+                  className="rounded-control border border-border px-4 py-2 text-sm"
+                  href={port.saveShortcutHref()}
+                >
+                  {t('publicFiles.saveShortcut')}
+                </a>
+              ) : null}
+              <Action variant="secondary" onPress={refresh}>
+                {t('publicFiles.refresh')}
+              </Action>
+            </>
           }
         />
         <section className="rounded-panel border border-border bg-surface p-6">
@@ -162,10 +172,16 @@ export default function PublicSharePage() {
                     <Action
                       variant="secondary"
                       loading={downloading === entry.id}
-                      disabled={downloading !== ''}
+                      disabled={downloading !== '' || entry.kind === 'shortcut'}
                       onPress={() => (entry.kind === 'folder' ? browse(entry.id) : download(entry))}
                     >
-                      {t(entry.kind === 'folder' ? 'publicFiles.open' : 'publicFiles.download')}
+                      {t(
+                        entry.kind === 'shortcut'
+                          ? 'publicFiles.shortcutUnavailable'
+                          : entry.kind === 'folder'
+                            ? 'publicFiles.open'
+                            : 'publicFiles.download',
+                      )}
                     </Action>
                   </div>
                 ))}

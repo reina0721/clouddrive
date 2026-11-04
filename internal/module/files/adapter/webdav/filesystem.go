@@ -49,6 +49,8 @@ func Status(err error) int {
 	switch {
 	case err == nil:
 		return http.StatusOK
+	case errors.Is(err, model.ErrUnsupported):
+		return http.StatusNotImplemented
 	case errors.Is(err, service.ErrCleanup):
 		return http.StatusInternalServerError
 	case errors.Is(err, service.ErrContentPrecondition):

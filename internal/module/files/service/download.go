@@ -19,6 +19,9 @@ func (s *Service) DownloadTo(ctx context.Context, owner, id string, use func(mod
 		return err
 	}
 	entry := detail.Entry
+	if entry.Kind == model.Shortcut {
+		return model.ErrUnsupported
+	}
 	if entry.Kind != model.File {
 		return model.ErrInvalid
 	}

@@ -7,9 +7,9 @@ import {
   type PublicFilesPort,
 } from '@clouddrive/surface/files';
 import { nativeDownload } from './native-download';
+import { shareTokenPattern, saveShareIntentHref } from './share-address';
 
 const requestTimeoutMs = 120_000;
-const shareTokenPattern = /^[A-Za-z0-9_-]{43}$/;
 
 /** createPublicFilesRuntime 的 JSON 请求不带 IAM Cookie，原生下载仅使用单文件 capability。 */
 export function createPublicFilesRuntime(token: string) {
@@ -67,6 +67,7 @@ export function createPublicFilesRuntime(token: string) {
     }
   }
   const port: PublicFilesPort = {
+    saveShortcutHref: () => saveShareIntentHref(token),
     metadata: async (signal) => publicShareSchema.parse(await call('', signal ? { signal } : {})),
     unlock: async (password, signal) => {
       const result = shareUnlockSchema.parse(

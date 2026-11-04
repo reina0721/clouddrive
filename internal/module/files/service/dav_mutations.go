@@ -99,6 +99,9 @@ func (s *DAVFiles) Remove(ctx context.Context, scope DAVScope, relative string, 
 		}
 		now := s.files.clock.Now().UTC()
 		entry.TrashedAt = &now
+		if entry.Kind == model.Shortcut {
+			entry.ContentRevision++
+		}
 		entry.UpdatedAt = now
 		return []model.Entry{entry}, nil
 	})
@@ -182,6 +185,9 @@ func (s *DAVFiles) Move(ctx context.Context, scope DAVScope, relative, destinati
 		source.Name = destinationParts[len(destinationParts)-1]
 		source.NormalizedName = normalized
 		source.UpdatedAt = now
+		if source.Kind == model.Shortcut {
+			source.ContentRevision++
+		}
 		changes = append(changes, source)
 		created = target == nil
 		return changes, nil

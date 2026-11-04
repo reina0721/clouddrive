@@ -77,7 +77,10 @@ export function readSession(value: unknown): AuthSession {
   };
 }
 
-/** Only same-origin paths may be restored; never accept an external login redirect. */
+const returnOrigin = 'https://console.invalid';
+const returnFragmentKey = 'returnFragment';
+
+/** safeReturnTo 只接受同源路径，拒绝外部或循环登录跳转。 */
 export function safeReturnTo(value: string | null): string {
   if (
     !value ||
@@ -88,9 +91,9 @@ export function safeReturnTo(value: string | null): string {
   )
     return '/';
   try {
-    const url = new URL(value, 'https://console.invalid');
+    const url = new URL(value, returnOrigin);
     if (
-      url.origin !== 'https://console.invalid' ||
+      url.origin !== returnOrigin ||
       /^\/(login|register|session-expired)(\/|$)/.test(decodeURIComponent(url.pathname)) ||
       decodeURIComponent(url.pathname).includes('\\')
     )
@@ -99,4 +102,27 @@ export function safeReturnTo(value: string | null): string {
   } catch {
     return '/';
   }
+}
+
+/** authPageHref 将片段留在浏览器端，避免分享标识被编码进登录请求query。 */
+export function authPageHref(
+  page: '/login' | '/register' | '/session-expired',
+  target: string,
+): string {
+  const destination = new URL(safeReturnTo(target), returnOrigin);
+  const query = new URLSearchParams({ returnTo: destination.pathname + destination.search });
+  const fragment = destination.hash
+    ? '#' + new URLSearchParams({ [returnFragmentKey]: destination.hash.slice(1) }).toString()
+    : '';
+  return page + '?' + query.toString() + fragment;
+}
+
+/** authReturnDestination 在客户端实际跳转时恢复独立片段，不改变已校验的路径/query。 */
+export function authReturnDestination(queryTarget: string | null, authHash: string): string {
+  const target = safeReturnTo(queryTarget);
+  const fragment = new URLSearchParams(authHash.replace(/^#/, '')).get(returnFragmentKey);
+  if (fragment === null) return target;
+  const destination = new URL(target, returnOrigin);
+  destination.hash = fragment;
+  return destination.pathname + destination.search + destination.hash;
 }

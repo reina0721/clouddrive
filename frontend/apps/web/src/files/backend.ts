@@ -15,18 +15,14 @@ import { createJsonClient, csrfTokenOf, ApiError } from '../api/json-client';
 import { createTransferRuntime } from './transfer-runtime';
 import { nativeDownload } from './native-download';
 import { createConnectionsPort } from './connections';
+import { createFileNavigationPort } from './navigation';
+import { fileShareAddress } from './share-address';
+import { fileDestinationHrefs } from './destinations';
+export { fileDestinationHrefs } from './destinations';
 
 const transferTimeoutMs = 120_000;
 const preferencesKey = 'clouddrive.files.view.v1';
 const defaultPreferences: FileViewPreferences = { view: 'grid', sort: 'name', desc: false };
-export const fileDestinationHrefs = {
-  files: '/home',
-  shares: '/home/shares',
-  transfers: '/home/transfers',
-  connections: '/home/connections',
-  workspace: '/workspace',
-  account: '/account',
-} as const;
 
 /** createFilesRuntime 将文件句柄、网络、下载及拖拽生命周期留在浏览器 Host。 */
 export function createFilesRuntime(
@@ -105,6 +101,8 @@ export function createFilesRuntime(
         else if (error.status === 410) code = 'expired';
         else if (error.status === 422 && payload?.includes('files_transfer_checksum'))
           code = 'checksum';
+        else if (error.status === 422 && payload?.includes('files_unsupported'))
+          code = 'unsupported';
         else if (error.status === 409)
           code = payload?.includes('files_quota') ? 'quota' : 'conflict';
         else if (error.status === 413) code = 'large';
@@ -136,8 +134,7 @@ export function createFilesRuntime(
     setTimeout(() => URL.revokeObjectURL(url), 0);
   }
   function shareLink(token: string) {
-    if (!/^[A-Za-z0-9_-]{43}$/.test(token)) throw new FilesError('missing');
-    return `${location.origin}/share#${new URLSearchParams({ token })}`;
+    return fileShareAddress(token, location.origin);
   }
   function choose(mode: 'files' | 'directory'): Promise<readonly UploadCandidate[]> {
     if (disposed) return Promise.reject(new FilesError('canceled'));
@@ -443,6 +440,9 @@ export function createFilesRuntime(
   };
   return {
     port,
+    navigation: createFileNavigationPort(call, base + native, () => {
+      if (disposed || !account || owner() !== account) throw new FilesError('canceled');
+    }),
     connections: createConnectionsPort(call, () => {
       if (disposed || !account || owner() !== account) throw new FilesError('canceled');
     }),

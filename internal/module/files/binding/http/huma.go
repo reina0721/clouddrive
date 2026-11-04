@@ -84,6 +84,7 @@ func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 	registerSharing(api, h, operation)
 	registerTransfers(api, h, operation)
 	registerConnections(api, h, operation)
+	registerNavigation(api, h, operation)
 	huma.Register(api, operation("files.list", "GET", "", "files:read", false), func(ctx context.Context, input *listInput) (*listOutput, error) {
 		owner, err := h.Owner(ctx)
 		if err != nil {

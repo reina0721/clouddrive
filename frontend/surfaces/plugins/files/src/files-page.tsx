@@ -10,6 +10,9 @@ import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { ProgressMeter } from '@clouddrive/ui-adapter/progress-meter';
 import { ShareDialog } from './share-dialog';
 import { TransferPanel } from './transfer-panel';
+import { PinnedLinks, PinDialog } from './pinned-links';
+import { SaveShortcutDialog, ShortcutActionDialog } from './shortcut-dialogs';
+import type { PinTarget } from '../../../src/files/navigation';
 import { FileLink } from './file-link';
 import { TextDialog, type TextRequest } from './text-dialog';
 import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
@@ -29,6 +32,7 @@ import {
 } from '../../../src/files/icons';
 import {
   useFiles,
+  useFileNavigation,
   useFileMedia,
   useTransfers,
   useTransferSnapshot,
@@ -64,6 +68,7 @@ function bytes(value: number): string {
 
 export function FilesPage({ parent, category, trash, search, navigate: routeNavigate }: Props) {
   const port = useFiles();
+  const navigation = useFileNavigation();
   const transfers = useTransfers();
   const transferState = useTransferSnapshot();
   const Media = useFileMedia();
@@ -87,6 +92,9 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
   const [failure, setFailure] = useState('');
   const [notice, setNotice] = useState('');
   const [revision, setRevision] = useState(0);
+  const [saveShortcut, setSaveShortcut] = useState(false);
+  const [purgeTarget, setPurgeTarget] = useState<FileEntry>();
+  const [pinTarget, setPinTarget] = useState<PinTarget>();
   const [preferences, setPreferences] = useState(initialPreferences);
   const [selected, setSelected] = useState<string[]>([]);
   const [searchText, setSearchText] = useState(search);
@@ -231,9 +239,17 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
         let lastError: unknown;
         for (const entry of dialog.targets) {
           try {
-            if (dialog.mode === 'rename') await port.update(entry.id, { name });
+            if (dialog.mode === 'rename')
+              await port.update(entry.id, {
+                name,
+                ...(entry.kind === 'shortcut' ? { expectedRevision: entry.contentRevision } : {}),
+              });
             else if (dialog.mode === 'copy') await port.copy(entry.id, destination, name);
-            else if (dialog.mode === 'move') await port.update(entry.id, { parentId: destination });
+            else if (dialog.mode === 'move')
+              await port.update(entry.id, {
+                parentId: destination,
+                ...(entry.kind === 'shortcut' ? { expectedRevision: entry.contentRevision } : {}),
+              });
             else if (dialog.mode === 'remove') await port.trash(entry.id);
             else await port.restore(entry.id, destination);
           } catch (error) {
@@ -270,6 +286,10 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
   }
   const showPreview = useCallback(
     async (entry: FileEntry) => {
+      if (entry.kind === 'shortcut') {
+        navigation.openShortcut(entry.id);
+        return;
+      }
       if (/^(image|audio|video)\//.test(entry.mediaType)) {
         setPreview(undefined);
         setMediaEntry(entry);
@@ -295,7 +315,7 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
           });
       }
     },
-    [port, t, errorText],
+    [port, navigation, t, errorText],
   );
   async function download(entry: FileEntry) {
     try {
@@ -395,6 +415,19 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
             </button>
           </nav>
           <div className="mt-6 flex flex-wrap gap-3 px-4 text-sm text-ink-muted md:flex-col">
+            <FileLink target="shared" className="hover:text-brand">
+              {t('files.navigation.title')}
+            </FileLink>
+            <Action variant="quiet" size="sm" onPress={() => setSaveShortcut(true)}>
+              {t('files.navigation.save')}
+            </Action>
+            <Action
+              variant="quiet"
+              size="sm"
+              onPress={() => setPinTarget({ targetKind: 'folder', targetId: parent })}
+            >
+              {t('files.navigation.pin')}
+            </Action>
             <FileLink target="shares" className="hover:text-brand">
               {t('files.myShares')}
             </FileLink>
@@ -412,6 +445,7 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
               {t('files.account')}
             </FileLink>
           </div>
+          <PinnedLinks refreshKey={revision} />
           {listing ? (
             <div className="mt-8 rounded-panel border border-border bg-surface p-4 text-xs text-ink-muted">
               <div className="mb-3 flex items-center gap-2 font-semibold text-ink">
@@ -606,7 +640,7 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
                         size="sm"
                         variant="secondary"
                         loading={archiving}
-                        disabled={archiving}
+                        disabled={archiving || targets.some((entry) => entry.kind === 'shortcut')}
                         onPress={() => {
                           setArchiving(true);
                           setNotice('');
@@ -739,7 +773,18 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
                           onOpenChange={(open) => setContextEntry(open ? entry.id : undefined)}
                           items={
                             trash
-                              ? [{ id: 'restore', label: t('files.restore') }]
+                              ? [
+                                  { id: 'restore', label: t('files.restore') },
+                                  ...(entry.kind === 'shortcut'
+                                    ? [
+                                        {
+                                          id: 'purge',
+                                          label: t('files.navigation.purge'),
+                                          tone: 'danger' as const,
+                                        },
+                                      ]
+                                    : []),
+                                ]
                               : [
                                   { id: 'details', label: t('files.details') },
                                   { id: 'rename', label: t('files.rename') },
@@ -754,13 +799,24 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
                                           : []),
                                       ]
                                     : []),
-                                  { id: 'share', label: t('files.share') },
+                                  ...(entry.kind === 'shortcut'
+                                    ? []
+                                    : [{ id: 'share', label: t('files.share') }]),
+                                  ...(entry.kind === 'folder' || entry.kind === 'shortcut'
+                                    ? [{ id: 'pin', label: t('files.navigation.pin') }]
+                                    : []),
                                   { id: 'remove', label: t('files.remove'), tone: 'danger' },
                                 ]
                           }
                           onAction={(action) => {
                             setContextEntry(undefined);
                             if (action === 'details') void showDetails(entry);
+                            else if (action === 'purge') setPurgeTarget(entry);
+                            else if (
+                              action === 'pin' &&
+                              (entry.kind === 'folder' || entry.kind === 'shortcut')
+                            )
+                              setPinTarget({ targetKind: entry.kind, targetId: entry.id });
                             else if (action === 'download') void download(entry);
                             else if (action === 'share') setShareTarget(entry);
                             else if (action === 'edit') setTextRequest({ mode: 'edit', entry });
@@ -812,7 +868,11 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
                             {entry.name}
                           </button>
                           <p className="mt-1 text-xs text-ink-muted">
-                            {entry.kind === 'folder' ? t('files.folder') : bytes(entry.sizeBytes)}
+                            {entry.kind === 'folder'
+                              ? t('files.folder')
+                              : entry.kind === 'shortcut'
+                                ? t('files.navigation.shortcut')
+                                : bytes(entry.sizeBytes)}
                           </p>
                           <p className="mt-1 text-xs text-ink-muted">
                             {new Date(entry.trashedAt ?? entry.updatedAt).toLocaleString()}
@@ -942,6 +1002,37 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
       {shareTarget ? (
         <ShareDialog entry={shareTarget} onClose={() => setShareTarget(undefined)} />
       ) : null}
+      {saveShortcut ? (
+        <SaveShortcutDialog
+          parentId={parent}
+          onClose={() => setSaveShortcut(false)}
+          onSaved={() => {
+            setSaveShortcut(false);
+            reload();
+          }}
+        />
+      ) : null}
+      {purgeTarget ? (
+        <ShortcutActionDialog
+          entry={purgeTarget}
+          action="purge"
+          onClose={() => setPurgeTarget(undefined)}
+          onChanged={() => {
+            setPurgeTarget(undefined);
+            reload();
+          }}
+        />
+      ) : null}
+      {pinTarget ? (
+        <PinDialog
+          target={pinTarget}
+          onClose={() => setPinTarget(undefined)}
+          onChanged={() => {
+            setPinTarget(undefined);
+            reload();
+          }}
+        />
+      ) : null}
       {textRequest && listing ? (
         <TextDialog
           request={textRequest}
@@ -997,7 +1088,11 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
             {[
               [
                 t('files.type'),
-                detail.entry.kind === 'folder' ? t('files.folder') : detail.entry.mediaType,
+                detail.entry.kind === 'folder'
+                  ? t('files.folder')
+                  : detail.entry.kind === 'shortcut'
+                    ? t('files.navigation.shortcut')
+                    : detail.entry.mediaType,
               ],
               [t('files.size'), `${detail.entry.sizeBytes} B`],
               [t('files.path'), detail.path],

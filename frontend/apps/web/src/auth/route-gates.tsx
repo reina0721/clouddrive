@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { useAuth } from './context';
-import { safeReturnTo } from './contract';
+import { safeReturnTo, authPageHref, authReturnDestination } from './contract';
 function AuthLoadingSurface() {
   const { t } = useFrontendTranslation();
   return (
@@ -32,7 +32,7 @@ export function ProtectedGate({ children }: Readonly<{ children: ReactNode }>) {
     if (auth.status !== 'anonymous') return;
     const destination = safeReturnTo(location.pathname + location.search + location.hash);
     router.replace(
-      `${auth.endReason === 'expired' ? '/session-expired' : '/login'}?returnTo=${encodeURIComponent(destination)}`,
+      authPageHref(auth.endReason === 'expired' ? '/session-expired' : '/login', destination),
     );
   }, [auth.status, auth.endReason, router]);
   return auth.status === 'authenticated' && auth.session ? (
@@ -49,11 +49,11 @@ export function ProtectedGate({ children }: Readonly<{ children: ReactNode }>) {
 export function GuestGate({ children }: Readonly<{ children: ReactNode }>) {
   const auth = useAuth();
   const params = useSearchParams();
-  const target = safeReturnTo(params.get('returnTo'));
+  const queryTarget = params.get('returnTo');
   useEffect(() => {
     if (auth.status === 'authenticated' && auth.authenticatedFrom === 'restore')
-      window.location.replace(target);
-  }, [auth.status, auth.authenticatedFrom, target]);
+      window.location.replace(authReturnDestination(queryTarget, location.hash));
+  }, [auth.status, auth.authenticatedFrom, queryTarget]);
   return auth.status === 'anonymous' ||
     (auth.status === 'authenticated' && auth.authenticatedFrom !== 'restore') ? (
     children

@@ -49,3 +49,5 @@ HTTP 模块遵循固定的代码优先源头与分层：模块顶层 `handler/` 
 [console](console/README.md) 拥有通知、字典、API 工作台持久化与调度。跨 IAM、组织、导航和 Todo 的连接只在 composition 完成，复用原权限及服务。浏览器代码统一位于 frontend/，Go binding/webui 仅保留菜单、权限和模块元数据。
 
 Files 的 WebDAV Adapter 与协议 binding 复用同一业务文件树、配额和流式发布。IAM 根公开 AccountAuthorizer 窄facet供当前账号状态与权限判断；独立连接凭据不替代网页Session，协议资源保持同步租约所有权。
+
+Files 的分享快捷方式与固定集合属于同一业务目录边界，借用当前分享事实而不复制访问授权；Surface 与 Auth 仅通过各自 Host 契约保存客户端返回片段，不跨模块调用私有实现。

@@ -42,12 +42,16 @@ type Policy struct {
 	MaxThumbnailBytes int64
 	MaxMediaBytes     int64
 	MaxGalleryEntries int
+	ShortcutLimit     int
 }
 
 func DefaultPolicy() Policy {
-	return Policy{MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries}
+	return Policy{MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries, ShortcutLimit: DefaultShortcutLimit}
 }
 func (p Policy) Validate() error {
+	if p.ShortcutLimit < 1 || p.ShortcutLimit > DefaultShortcutLimit {
+		return fmt.Errorf("invalid file shortcut limit")
+	}
 	if p.MaxFileBytes < 1 || p.MaxFileBytes > DefaultMaxFileBytes || p.QuotaBytes < p.MaxFileBytes || p.ConcurrentUploads < 1 || p.ConcurrentUploads > DefaultConcurrentUploads {
 		return fmt.Errorf("invalid files budgets")
 	}
@@ -339,8 +343,9 @@ func previousUpload(entries []model.Entry, key, parent, normalized, hash string)
 }
 
 type Change struct {
-	Name     *string `json:"name,omitempty"`
-	ParentID *string `json:"parentId,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	ParentID         *string `json:"parentId,omitempty"`
+	ExpectedRevision *int64  `json:"expectedRevision,omitempty" minimum:"1"`
 }
 
 func (s *Service) Update(ctx context.Context, owner, id string, change Change) (model.Entry, error) {
@@ -351,6 +356,12 @@ func (s *Service) Update(ctx context.Context, owner, id string, change Change) (
 		}
 		if change.Name == nil && change.ParentID == nil {
 			return model.Entry{}, model.ErrInvalid
+		}
+		if entry.Kind == model.Shortcut {
+			if change.ExpectedRevision == nil || *change.ExpectedRevision != entry.ContentRevision {
+				return model.Entry{}, model.ErrConflict
+			}
+			entry.ContentRevision++
 		}
 		if change.Name != nil {
 			normalized, err := s.normalizedName(*change.Name)
@@ -391,6 +402,9 @@ func (s *Service) Trash(ctx context.Context, owner, id string) (model.Entry, err
 		}
 		now := s.clock.Now().UTC()
 		entry.TrashedAt = &now
+		if entry.Kind == model.Shortcut {
+			entry.ContentRevision++
+		}
 		entry.UpdatedAt = now
 		return entry, nil
 	})
@@ -421,6 +435,9 @@ func (s *Service) Restore(ctx context.Context, owner, id string, parent *string)
 			return model.Entry{}, err
 		}
 		entry.TrashedAt = nil
+		if entry.Kind == model.Shortcut {
+			entry.ContentRevision++
+		}
 		entry.UpdatedAt = s.clock.Now().UTC()
 		return entry, nil
 	})
@@ -459,6 +476,9 @@ func (s *Service) ReadSmall(ctx context.Context, owner, id string, maxBytes int6
 		return model.Entry{}, nil, err
 	}
 	entry := detail.Entry
+	if entry.Kind == model.Shortcut {
+		return model.Entry{}, nil, model.ErrUnsupported
+	}
 	if entry.Kind != model.File {
 		return model.Entry{}, nil, model.ErrInvalid
 	}

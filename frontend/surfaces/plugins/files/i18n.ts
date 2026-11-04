@@ -1,5 +1,7 @@
 import { zhConnections, enConnections } from './connections-i18n';
+import { zhNavigation, enNavigation } from './navigation-i18n';
 const zh = {
+  navigation: zhNavigation,
   create: '创建',
   connections: zhConnections,
   unknownTransferSize: '大小尚未确定，正在接收客户端数据',
@@ -197,6 +199,7 @@ const zh = {
   },
 };
 const en: typeof zh = {
+  navigation: enNavigation,
   create: 'Create',
   connections: enConnections,
   unknownTransferSize: 'Size pending; receiving client data',

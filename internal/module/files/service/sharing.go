@@ -59,6 +59,7 @@ type ShareRepository interface {
 	ReadShares(context.Context, string) ([]model.Share, error)
 	ChangeShare(context.Context, string, func([]model.Entry, []model.Share) (model.Share, error)) (model.Share, error)
 	ReadShare(context.Context, string, string) (ShareSnapshot, error)
+	ReadShareTarget(context.Context, string, int) (ShareSnapshot, error)
 	ReserveShareAttempt(context.Context, string, time.Time, time.Duration, int) error
 	PutShareGrant(context.Context, model.ShareGrant, time.Time) error
 	PutDownloadGrant(context.Context, model.ShareGrant, time.Time, int) error
@@ -94,29 +95,52 @@ func (s *Sharing) acquireKDF(ctx context.Context) (func(), error) {
 	}
 }
 
+// ShareStatus 统一原分享与保存引用的可用性，不代表已获得解锁票据。
+type ShareStatus string
+
+const (
+	ShareActive      ShareStatus = "active"
+	ShareRevoked     ShareStatus = "revoked"
+	ShareExpired     ShareStatus = "expired"
+	ShareUnavailable ShareStatus = "unavailable"
+)
+
 type ShareSummary struct {
-	ID          string    `json:"id"`
-	Token       string    `json:"token"`
-	RootID      string    `json:"rootId"`
-	Name        string    `json:"name"`
-	HasPassword bool      `json:"hasPassword"`
-	CreatedAt   time.Time `json:"createdAt"`
-	ExpiresAt   time.Time `json:"expiresAt"`
-	Status      string    `json:"status"`
+	ID          string      `json:"id"`
+	Token       string      `json:"token"`
+	RootID      string      `json:"rootId"`
+	Name        string      `json:"name"`
+	HasPassword bool        `json:"hasPassword"`
+	CreatedAt   time.Time   `json:"createdAt"`
+	ExpiresAt   time.Time   `json:"expiresAt"`
+	Status      ShareStatus `json:"status"`
 }
 
-func shareStatus(share model.Share, entries []model.Entry, now time.Time) string {
+func shareStatus(share model.Share, entries []model.Entry, now time.Time) ShareStatus {
 	if share.RevokedAt != nil {
-		return "revoked"
+		return ShareRevoked
 	}
 	if !now.Before(share.ExpiresAt) {
-		return "expired"
+		return ShareExpired
 	}
 	root, ok := model.Find(entries, share.RootID)
 	if !ok || !model.Visible(entries, root) {
-		return "unavailable"
+		return ShareUnavailable
 	}
-	return "active"
+	return ShareActive
+}
+
+// InspectShortcutTarget 只返回当前状态，不向保存者复制根名称或签发解锁票据。
+func (s *Sharing) InspectShortcutTarget(ctx context.Context, token string, treeLimit int) (ShortcutTargetState, error) {
+	if !validSecret(token) {
+		return ShortcutTargetState{}, model.ErrMissing
+	}
+	snapshot, err := s.store.ReadShareTarget(ctx, credentialDigest("share", token), treeLimit)
+	if err != nil {
+		return ShortcutTargetState{}, err
+	}
+	status := shareStatus(snapshot.Share, snapshot.Entries, s.files.clock.Now().UTC())
+	return ShortcutTargetState{Status: status, Locked: status == ShareActive && snapshot.Share.PasswordHash != ""}, nil
 }
 func summary(share model.Share, entries []model.Entry, now time.Time) ShareSummary {
 	root, _ := model.Find(entries, share.RootID)
@@ -168,6 +192,9 @@ func (s *Sharing) Create(ctx context.Context, owner, rootID, password string, ex
 		root, ok := model.Find(entries, rootID)
 		if !ok || !model.Visible(entries, root) {
 			return model.Share{}, model.ErrMissing
+		}
+		if root.Kind == model.Shortcut {
+			return model.Share{}, model.ErrUnsupported
 		}
 		for _, old := range shares {
 			if old.ID == id {

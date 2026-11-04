@@ -143,6 +143,36 @@ func (r *Repository) ReadShare(ctx context.Context, digest, grantDigest string) 
 	return snapshot, err
 }
 
+// ReadShareTarget 为引用状态提供独立有界读取，不获取或复用访客解锁票据。
+func (r *Repository) ReadShareTarget(ctx context.Context, digest string, treeLimit int) (service.ShareSnapshot, error) {
+	if treeLimit < 1 || treeLimit > service.DefaultNavigationTreeEntries {
+		return service.ShareSnapshot{}, model.ErrInvalid
+	}
+	var snapshot service.ShareSnapshot
+	err := r.access.Use(ctx, func(client database.Client) error {
+		return database.UseGORM(ctx, client, func(db *gorm.DB) error {
+			if err := r.checkStorage(db); err != nil {
+				return err
+			}
+			var record shareRecord
+			if err := db.Where("token_digest = ?", digest).First(&record).Error; err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return errors.Join(model.ErrMissing, err)
+				}
+				return err
+			}
+			snapshot.Share = model.Share(record)
+			entries, err := loadBoundedEntries(db, record.OwnerID, treeLimit)
+			if err != nil {
+				return err
+			}
+			snapshot.Entries = entries
+			return nil
+		})
+	})
+	return snapshot, err
+}
+
 // ReserveShareAttempt 在 KDF 前占用持久化窗口，多个进程不能绕过每分享预算。
 func (r *Repository) ReserveShareAttempt(ctx context.Context, id string, now time.Time, window time.Duration, limit int) error {
 	return r.access.WithinTx(ctx, func(ctx context.Context, _ database.Client, tx database.Tx) error {

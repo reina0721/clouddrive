@@ -22,6 +22,7 @@ type Config struct {
 	Sharing           ShareConfig      `mapstructure:"sharing"`
 	Transfers         TransferConfig   `mapstructure:"transfers"`
 	Connections       ConnectionConfig `mapstructure:"connections"`
+	Navigation        NavigationConfig `mapstructure:"navigation"`
 }
 
 type ShareConfig struct {
@@ -40,7 +41,7 @@ func (c Config) SharePolicy() service.SharePolicy {
 }
 
 func (c Config) Policy() service.Policy {
-	return service.Policy{MaxFileBytes: c.MaxFileBytes, QuotaBytes: c.QuotaBytes, ConcurrentUploads: c.ConcurrentUploads, MaxTextBytes: c.MaxTextBytes, MaxArchiveBytes: c.MaxArchiveBytes, MaxBatchEntries: c.MaxBatchEntries, MaxThumbnailBytes: c.MaxThumbnailBytes, MaxMediaBytes: c.MaxMediaBytes, MaxGalleryEntries: c.MaxGalleryEntries}
+	return service.Policy{MaxFileBytes: c.MaxFileBytes, QuotaBytes: c.QuotaBytes, ConcurrentUploads: c.ConcurrentUploads, MaxTextBytes: c.MaxTextBytes, MaxArchiveBytes: c.MaxArchiveBytes, MaxBatchEntries: c.MaxBatchEntries, MaxThumbnailBytes: c.MaxThumbnailBytes, MaxMediaBytes: c.MaxMediaBytes, MaxGalleryEntries: c.MaxGalleryEntries, ShortcutLimit: c.Navigation.ShortcutLimit}
 }
 func Decode(snapshot config.Snapshot) (Config, error) {
 	p := service.DefaultPolicy()
@@ -49,10 +50,14 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 	c.Sharing = ShareConfig{MaxAge: share.MaxAge, GrantTTL: share.GrantTTL, AttemptWindow: share.AttemptWindow, AttemptLimit: share.AttemptLimit, KDFConcurrency: share.KDFConcurrency, DownloadTTL: share.DownloadTTL, DownloadLimit: share.DownloadLimit}
 	c.Transfers = defaultTransfers()
 	c.Connections = defaultConnections()
+	c.Navigation = defaultNavigation()
 	if err := snapshot.DecodeSection("files", &c); err != nil {
 		return Config{}, err
 	}
 	if err := c.Policy().Validate(); err != nil {
+		return Config{}, err
+	}
+	if err := c.NavigationPolicy().Validate(); err != nil {
 		return Config{}, err
 	}
 	if err := c.SharePolicy().Validate(); err != nil {
@@ -124,5 +129,10 @@ func (defaults) Defaults(ctx context.Context) (config.Object, config.Control, er
 		return nil, config.Continue, err
 	}
 	fields = append(fields, config.FieldOf("connections", config.ObjectValue(connections)))
+	navigation, err := navigationDefaults(ctx)
+	if err != nil {
+		return nil, config.Continue, err
+	}
+	fields = append(fields, config.FieldOf("navigation", config.ObjectValue(navigation)))
 	return fields, config.Continue, nil
 }

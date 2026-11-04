@@ -9,6 +9,7 @@ import {
 } from 'react';
 import type { TransfersPort } from './transfers';
 import type { ConnectionsPort } from './connections';
+import type { NavigationPort } from './navigation';
 import type { FilesPort, PublicFilesPort, FileEntry } from './model';
 
 export type FileMediaProps = Readonly<{
@@ -21,16 +22,19 @@ const MediaContext = createContext<ComponentType<FileMediaProps> | null>(null);
 const Context = createContext<FilesPort | null>(null);
 const TransfersContext = createContext<TransfersPort | null>(null);
 const ConnectionsContext = createContext<ConnectionsPort | null>(null);
+const NavigationContext = createContext<NavigationPort | null>(null);
 export function FilesProvider({
   port,
   children,
   media: Media,
   transfers,
   connections,
+  navigation,
 }: Readonly<{
   port: FilesPort;
   transfers: TransfersPort;
   connections: ConnectionsPort;
+  navigation: NavigationPort;
   children: ReactNode;
   media: ComponentType<FileMediaProps>;
 }>) {
@@ -38,11 +42,19 @@ export function FilesProvider({
     <Context value={port}>
       <TransfersContext value={transfers}>
         <ConnectionsContext value={connections}>
-          <MediaContext value={Media}>{children}</MediaContext>
+          <NavigationContext value={navigation}>
+            <MediaContext value={Media}>{children}</MediaContext>
+          </NavigationContext>
         </ConnectionsContext>
       </TransfersContext>
     </Context>
   );
+}
+
+export function useFileNavigation() {
+  const port = useContext(NavigationContext);
+  if (!port) throw new Error('File navigation runtime is required');
+  return port;
 }
 
 export function useConnections() {

@@ -10,11 +10,17 @@ import (
 //go:embed sqlite/*.sql postgres/*.sql mysql/*.sql
 var sqlFiles embed.FS
 
-const CurrentVersion uint = 7
+const CurrentVersion uint = 8
 const TableName = "files_schema_migrations"
 
 func Set() dbmigrate.Set {
 	return dbmigrate.Set{Name: "files", FS: sqlFiles, CurrentVersion: CurrentVersion, MigrationsTable: TableName, DriverPaths: map[database.Driver]string{database.DriverSQLite: "sqlite", database.DriverPostgres: "postgres", database.DriverMySQL: "mysql"}, SHA256ByFile: map[string]string{
+		"sqlite/000008_navigation.up.sql":           "507c2e4a3e09aba4d149bb686ffa28b042db2e23f2a2bbaa053b25408e564188",
+		"sqlite/000008_navigation.down.sql":         "9020793223afa3d907bc7a15c7fa8041d896b814915f27e802593e78e3a32451",
+		"postgres/000008_navigation.up.sql":         "ed45d5db0414eae7940b34f1adcfdeb246d8b98824703b0196ca766756ff98fe",
+		"postgres/000008_navigation.down.sql":       "9020793223afa3d907bc7a15c7fa8041d896b814915f27e802593e78e3a32451",
+		"mysql/000008_navigation.up.sql":            "3cf7a8c5a3d5016e1a2bd98ac8d39ed024ea5ef7375d0169f2aff01d56dd0de9",
+		"mysql/000008_navigation.down.sql":          "9020793223afa3d907bc7a15c7fa8041d896b814915f27e802593e78e3a32451",
 		"sqlite/000007_connections.up.sql":          "8b8f2086b136391ec237d03b52b8808fd80dfbf9e920d1bd26121e7f3089d0ed",
 		"sqlite/000007_connections.down.sql":        "878fea3e25fe40fd25202ce95e245b5a79ddd3a2c4ad8885891196d7e1534bf7",
 		"postgres/000007_connections.up.sql":        "ceb77d976f434cf62d18488dd027f644d119de12868ce7e9b071a5ac94134dc3",

@@ -77,6 +77,9 @@ func (s *Service) ReplaceText(ctx context.Context, owner, id string, revision in
 		return model.Entry{}, err
 	}
 	if detail.Entry.Kind != model.File || !editableText(detail.Entry) {
+		if detail.Entry.Kind == model.Shortcut {
+			return model.Entry{}, model.ErrUnsupported
+		}
 		return model.Entry{}, model.ErrInvalid
 	}
 	if detail.Entry.ContentRevision != revision {
@@ -181,6 +184,9 @@ func (s *Service) Archive(ctx context.Context, owner string, ids []string) ([]by
 			if entry.Kind == model.Folder {
 				name += "/"
 			}
+			if entry.Kind == model.Shortcut {
+				return nil, model.ErrUnsupported
+			}
 			if names[name] {
 				return nil, model.ErrConflict
 			}
@@ -263,6 +269,9 @@ func (s *Service) copyTree(entries []model.Entry, id, parent, name, normalized s
 		}
 	}
 	if len(originals) > s.policy.MaxBatchEntries {
+		return nil, model.ErrTooLarge
+	}
+	if additions := shortcutCount(originals); additions > 0 && shortcutCount(entries)+additions > s.policy.ShortcutLimit {
 		return nil, model.ErrTooLarge
 	}
 	remaining := s.policy.QuotaBytes - model.Used(entries)

@@ -142,6 +142,14 @@ export const generatedRouteCatalog: RouteCatalog = {
       paramNames: [],
     },
     {
+      routeId: 'files.shared',
+      pluginId: 'files',
+      path: 'shared',
+      segments: ['shared'],
+      pattern: '/home/shared',
+      paramNames: [],
+    },
+    {
       routeId: 'files.shares',
       pluginId: 'files',
       path: 'shares',

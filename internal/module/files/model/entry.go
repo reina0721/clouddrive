@@ -13,18 +13,20 @@ import (
 type Kind string
 
 const (
-	File   Kind = "file"
-	Folder Kind = "folder"
+	File     Kind = "file"
+	Folder   Kind = "folder"
+	Shortcut Kind = "shortcut"
 )
 const MaxNameRunes = 255
 
 var (
-	ErrInvalid  = errors.New("invalid file input")
-	ErrMissing  = errors.New("file not accessible")
-	ErrConflict = errors.New("file conflict")
-	ErrQuota    = errors.New("file quota exceeded")
-	ErrTooLarge = errors.New("file size exceeded")
-	ErrBusy     = errors.New("file upload busy")
+	ErrInvalid     = errors.New("invalid file input")
+	ErrMissing     = errors.New("file not accessible")
+	ErrConflict    = errors.New("file conflict")
+	ErrQuota       = errors.New("file quota exceeded")
+	ErrTooLarge    = errors.New("file size exceeded")
+	ErrBusy        = errors.New("file upload busy")
+	ErrUnsupported = errors.New("file operation not supported for this kind")
 )
 
 // Entry 保存单个目录项；ObjectKey 和幂等校验信息永不对外输出。
@@ -44,6 +46,7 @@ type Entry struct {
 	UploadKey       string     `json:"-"`
 	ContentSHA      string     `json:"-"`
 	ContentRevision int64      `json:"contentRevision"`
+	ShareToken      string     `json:"-"`
 }
 
 // ValidateName 不把用户名称解释为路径，并限制名称的字符与长度。

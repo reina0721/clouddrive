@@ -24,6 +24,7 @@ type Handler struct {
 	Sharing          *service.Sharing
 	Connections      *service.Connections
 	ConnectionOrigin string
+	Navigation       *service.Navigation
 	WebDAV           http.Handler
 	Transfers        *service.Transfers
 	TransferProtocol TransferProtocol
@@ -45,6 +46,8 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 	status, code := http.StatusInternalServerError, "files_unavailable"
 	var protocolError *httpx.StatusError
 	switch {
+	case errors.Is(err, model.ErrUnsupported):
+		status, code = http.StatusUnprocessableEntity, "files_unsupported"
 	case errors.Is(err, service.ErrContentPrecondition):
 		status, code = 412, "files_content_precondition"
 	case errors.Is(err, service.ErrConnectionSystemFile):

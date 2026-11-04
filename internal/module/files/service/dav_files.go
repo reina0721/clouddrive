@@ -188,6 +188,9 @@ func (s *DAVFiles) DownloadTo(ctx context.Context, scope DAVScope, relative stri
 		return err
 	}
 	if entry.Kind != model.File {
+		if entry.Kind == model.Shortcut {
+			return model.ErrUnsupported
+		}
 		return model.ErrInvalid
 	}
 	return s.files.DownloadTo(ctx, connection.OwnerID, entry.ID, func(current model.Entry, source io.ReadSeeker) error {

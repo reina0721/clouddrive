@@ -766,6 +766,323 @@
         ]
       }
     },
+    "/api/console/v1/native/files/connections": {
+      "get": {
+        "operationId": "files.connections.list",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "maxLength": 36,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionListView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "post": {
+        "operationId": "files.connections.create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionIssuedView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/connections/{connectionId}": {
+      "get": {
+        "operationId": "files.connections.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connectionId",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionSummaryView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "patch": {
+        "operationId": "files.connections.update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connectionId",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionSummaryView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/connections/{connectionId}/rotate": {
+      "post": {
+        "operationId": "files.connections.rotate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connectionId",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionRotateInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionIssuedView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/connections/{connectionId}/state": {
+      "post": {
+        "operationId": "files.connections.state",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connectionId",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionStateInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionSummaryView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
     "/api/console/v1/native/files/folders": {
       "post": {
         "operationId": "files.folder",
@@ -785,6 +1102,186 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Entry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/pins": {
+      "get": {
+        "operationId": "files.pins.list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PinListing"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "post": {
+        "operationId": "files.pins.create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NavigationRevisionOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/pins/order": {
+      "put": {
+        "operationId": "files.pins.order",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinOrderInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NavigationRevisionOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/pins/{pinId}": {
+      "delete": {
+        "operationId": "files.pins.remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pinId",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinRemoveInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NavigationRevisionOutputBody"
                 }
               }
             },
@@ -918,6 +1415,215 @@
               }
             },
             "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/shortcuts": {
+      "get": {
+        "operationId": "files.shortcuts.list",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "maxLength": 255,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "maxLength": 36,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "state",
+            "schema": {
+              "enum": [
+                "",
+                "active",
+                "protected",
+                "unavailable"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShortcutListing"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "post": {
+        "operationId": "files.shortcuts.create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShortcutRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/shortcuts/{shortcutId}": {
+      "delete": {
+        "operationId": "files.shortcuts.purge",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shortcutId",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShortcutPurgeInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/shortcuts/{shortcutId}/open": {
+      "get": {
+        "operationId": "files.shortcuts.open",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shortcutId",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "See Other",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "default": {
             "content": {
@@ -24767,6 +25473,11 @@
       "Change": {
         "additionalProperties": false,
         "properties": {
+          "expectedRevision": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
           "name": {
             "type": "string"
           },
@@ -24793,6 +25504,255 @@
         "required": [
           "currentPassword",
           "newPassword"
+        ],
+        "type": "object"
+      },
+      "ConnectionChange": {
+        "additionalProperties": false,
+        "properties": {
+          "blockSystemFiles": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "readOnly": {
+            "type": "boolean"
+          },
+          "revision": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "type": "object"
+      },
+      "ConnectionIssuedView": {
+        "additionalProperties": false,
+        "properties": {
+          "blockSystemFiles": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endpointOrigin": {
+            "type": "string"
+          },
+          "endpointPath": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "readOnly": {
+            "type": "boolean"
+          },
+          "revision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "rootId": {
+            "type": "string"
+          },
+          "rootPath": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "endpointPath",
+          "endpointOrigin",
+          "password",
+          "id",
+          "name",
+          "rootId",
+          "rootPath",
+          "readOnly",
+          "blockSystemFiles",
+          "status",
+          "expiresAt",
+          "createdAt",
+          "revision"
+        ],
+        "type": "object"
+      },
+      "ConnectionListView": {
+        "additionalProperties": false,
+        "properties": {
+          "defaultAgeSeconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectionSummaryView"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxAgeSeconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "metadataLimited": {
+            "type": "boolean"
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor",
+          "limit",
+          "defaultAgeSeconds",
+          "maxAgeSeconds",
+          "metadataLimited"
+        ],
+        "type": "object"
+      },
+      "ConnectionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "blockSystemFiles": {
+            "type": "boolean"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "readOnly": {
+            "type": "boolean"
+          },
+          "rootId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "rootId",
+          "readOnly",
+          "blockSystemFiles"
+        ],
+        "type": "object"
+      },
+      "ConnectionRotateInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "type": "object"
+      },
+      "ConnectionStateInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "active",
+              "disabled",
+              "revoked"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "state"
+        ],
+        "type": "object"
+      },
+      "ConnectionSummaryView": {
+        "additionalProperties": false,
+        "properties": {
+          "blockSystemFiles": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endpointOrigin": {
+            "type": "string"
+          },
+          "endpointPath": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "readOnly": {
+            "type": "boolean"
+          },
+          "revision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "rootId": {
+            "type": "string"
+          },
+          "rootPath": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "endpointPath",
+          "endpointOrigin",
+          "id",
+          "name",
+          "rootId",
+          "rootPath",
+          "readOnly",
+          "blockSystemFiles",
+          "status",
+          "expiresAt",
+          "createdAt",
+          "revision"
         ],
         "type": "object"
       },
@@ -25703,6 +26663,19 @@
         ],
         "type": "object"
       },
+      "NavigationRevisionOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "type": "object"
+      },
       "NotificationsStruct": {
         "additionalProperties": false,
         "properties": {
@@ -25783,6 +26756,137 @@
           "ownerModuleId",
           "descriptionMessageId",
           "risk"
+        ],
+        "type": "object"
+      },
+      "PinListing": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PinView"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "metadataLimited": {
+            "type": "boolean"
+          },
+          "revision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "revision",
+          "limit",
+          "metadataLimited"
+        ],
+        "type": "object"
+      },
+      "PinOrderInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "nullable": true,
+            "type": "array"
+          },
+          "revision": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "ids"
+        ],
+        "type": "object"
+      },
+      "PinRemoveInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "type": "object"
+      },
+      "PinRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "targetKind": {
+            "enum": [
+              "folder",
+              "shared",
+              "shortcut"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "targetKind",
+          "targetId"
+        ],
+        "type": "object"
+      },
+      "PinView": {
+        "additionalProperties": false,
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "locked": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "targetKind": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "targetKind",
+          "targetId",
+          "name",
+          "position",
+          "available",
+          "locked"
         ],
         "type": "object"
       },
@@ -26468,6 +27572,108 @@
         ],
         "type": "object"
       },
+      "ShortcutListing": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ShortcutSummary"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "nextCursor": {
+            "type": "string"
+          },
+          "pageSize": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "shortcutLimit": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor",
+          "pageSize",
+          "shortcutLimit"
+        ],
+        "type": "object"
+      },
+      "ShortcutPurgeInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "type": "object"
+      },
+      "ShortcutRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "token": {
+            "maxLength": 43,
+            "minLength": 43,
+            "pattern": "^[A-Za-z0-9_-]{43}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "parentId",
+          "name"
+        ],
+        "type": "object"
+      },
+      "ShortcutSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "$ref": "#/components/schemas/Entry"
+          },
+          "target": {
+            "$ref": "#/components/schemas/ShortcutTargetState"
+          }
+        },
+        "required": [
+          "entry",
+          "target"
+        ],
+        "type": "object"
+      },
+      "ShortcutTargetState": {
+        "additionalProperties": false,
+        "properties": {
+          "locked": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "locked"
+        ],
+        "type": "object"
+      },
       "StatusInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -26736,6 +27942,12 @@
             "format": "int64",
             "type": "integer"
           },
+          "sizeKnown": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": "string"
+          },
           "state": {
             "type": "string"
           },
@@ -26752,6 +27964,8 @@
           "destinationAvailable",
           "name",
           "sizeBytes",
+          "sizeKnown",
+          "source",
           "offsetBytes",
           "state",
           "failureCode",

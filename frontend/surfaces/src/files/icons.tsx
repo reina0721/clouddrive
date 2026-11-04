@@ -22,6 +22,7 @@ import {
   HardDrive,
   Info,
   X,
+  Link,
 } from 'lucide-react';
 export {
   Cloud,
@@ -50,15 +51,17 @@ export function FileGlyph({
   const Icon =
     kind === 'folder'
       ? Folder
-      : mediaType.startsWith('image/')
-        ? Image
-        : mediaType.startsWith('video/')
-          ? Film
-          : mediaType.startsWith('audio/')
-            ? Music
-            : mediaType.startsWith('text/')
-              ? FileText
-              : File;
+      : kind === 'shortcut'
+        ? Link
+        : mediaType.startsWith('image/')
+          ? Image
+          : mediaType.startsWith('video/')
+            ? Film
+            : mediaType.startsWith('audio/')
+              ? Music
+              : mediaType.startsWith('text/')
+                ? FileText
+                : File;
   return (
     <Icon
       aria-hidden="true"

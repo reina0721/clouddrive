@@ -27,7 +27,10 @@ export function FilesRuntime({
       () => controller?.getState().session?.user.id ?? null,
       (destination) => router.push(fileDestinationHrefs[destination]),
       (parent) =>
-        router.push('/home' + (parent ? '?' + new URLSearchParams({ parent }).toString() : '')),
+        router.push(
+          fileDestinationHrefs.files +
+            (parent ? '?' + new URLSearchParams({ parent }).toString() : ''),
+        ),
     );
   }, [controller, account, router]);
   const Media = useMemo(
@@ -66,6 +69,7 @@ export function FilesRuntime({
       media={Media}
       transfers={runtime.transfers}
       connections={runtime.connections}
+      navigation={runtime.navigation}
     >
       <div
         onDragOver={(event) => {

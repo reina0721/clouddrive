@@ -74,3 +74,5 @@ pnpm check
 任务研究、需求、设计和实施证据从 [变更记录索引](docs/changes/README.md) 进入；当前说明以 [Frontend 文档手册](docs/README.md) 与主题 authority 为准，历史变更不再作为当前架构 authority。
 
 Files 提供 `/home/connections` 连接管理。Surface消费ConnectionsPort，Host复用JSON/CSRF客户端并拥有剪贴板；一次性密码只保留在当前弹窗内存，账号变化重置Provider。WebDAV客户端使用管理响应给出的实际服务地址；Next开发代理仅处理管理JSON，不承载整文件PUT。能力与部署限制统一见[文件管理](../docs/operations/file-management.md)。
+
+Files 提供 `/home/shared` 和 NavigationPort，统一保存引用、固定项与集合版本。Host 负责同实例分享地址校验、保存意图片段与受保护的新标签打开；Surface 不操作 location、网络或 Session。Auth 登录/注册返回路径只放在 returnTo query，返回片段单独保留在登录页 fragment，实际导航时重组。浏览器真实验收与当前限制见[文件管理](../docs/operations/file-management.md)。

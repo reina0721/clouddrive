@@ -10,7 +10,7 @@ import { AlertBanner } from '@clouddrive/ui-adapter/feedback';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { useAuth } from './context';
 import { AuthFrame } from './frame';
-import { safeReturnTo } from './contract';
+import { authPageHref, authReturnDestination } from './contract';
 import { readAuthConfig } from './config';
 import { DemoAccessPanel } from './demo-access';
 import { demoAccountPassword, type DemoAccount } from './demo-accounts';
@@ -25,7 +25,15 @@ export function AuthForm({ kind }: Readonly<{ kind: 'login' | 'register' | 'expi
   const { t } = useFrontendTranslation();
   const auth = useAuth();
   const params = useSearchParams();
-  const target = safeReturnTo(params.get('returnTo'));
+  const [returnHash, setReturnHash] = useState('');
+  useEffect(() => {
+    const synchronize = () => setReturnHash(location.hash);
+    synchronize();
+    window.addEventListener('hashchange', synchronize);
+    return () => window.removeEventListener('hashchange', synchronize);
+  }, []);
+  const target = authReturnDestination(params.get('returnTo'), returnHash);
+  const destination = () => authReturnDestination(params.get('returnTo'), location.hash);
   const [registered, setRegistered] = useState(false);
   const [code, setCode] = useState('');
   const [availability, setAvailability] = useState<boolean | null>(null);
@@ -43,7 +51,7 @@ export function AuthForm({ kind }: Readonly<{ kind: 'login' | 'register' | 'expi
     const accepted = await auth.login({ email: account.email, password: demoAccountPassword });
     if (!accepted) return;
     rememberDemoAccount(account.id);
-    window.location.replace(target);
+    window.location.replace(destination());
   };
   useEffect(() => {
     if (!register) return;
@@ -133,7 +141,7 @@ export function AuthForm({ kind }: Readonly<{ kind: 'login' | 'register' | 'expi
               description={t('auth.registeredDescription')}
               icon={<CheckCircle2 aria-hidden="true" className="size-4" />}
             />
-            <Action fullWidth onPress={() => window.location.replace(target)}>
+            <Action fullWidth onPress={() => window.location.replace(destination())}>
               {t('auth.continue')}
             </Action>
           </div>
@@ -153,7 +161,7 @@ export function AuthForm({ kind }: Readonly<{ kind: 'login' | 'register' | 'expi
               if (!accepted) return;
               form.reset();
               if (register) setRegistered(true);
-              else window.location.replace(target);
+              else window.location.replace(destination());
             }}
           >
             {register ? (
@@ -220,7 +228,7 @@ export function AuthForm({ kind }: Readonly<{ kind: 'login' | 'register' | 'expi
           {t(register ? 'auth.hasAccount' : 'auth.noAccount')}{' '}
           <Link
             className="font-semibold text-brand underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-            href={`${register ? '/login' : '/register'}?returnTo=${encodeURIComponent(target)}`}
+            href={authPageHref(register ? '/login' : '/register', target)}
           >
             {t(register ? 'auth.loginLink' : 'auth.registerLink')}
           </Link>

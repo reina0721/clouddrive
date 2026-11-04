@@ -7,12 +7,19 @@ export function FileLink({
   target,
   children,
   className,
-}: Readonly<{ target: FilesDestination; children: ReactNode; className?: string }>) {
+  'aria-current': ariaCurrent,
+}: Readonly<{
+  target: FilesDestination;
+  children: ReactNode;
+  className?: string;
+  'aria-current'?: 'page';
+}>) {
   const port = useFiles();
   return (
     <a
       href={port.destinationHref(target)}
       className={className}
+      aria-current={ariaCurrent}
       onClick={(event) => {
         if (
           event.button === 0 &&

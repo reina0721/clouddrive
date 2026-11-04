@@ -1,0 +1,37 @@
+schema_version: 1
+change: 124-share-shortcuts
+areas:
+  - id: repository
+    decision: updated
+    documents: [README.md, docs/repository-scope.md]
+    reason: 第五批引用与固定集合的实际范围，不把保存分享误当账号协作。
+  - id: startup
+    decision: reviewed-no-change
+    reason: 复用既有两套启动脚本和独立Go工具；没有新进程或启动配置入口。
+  - id: webui
+    decision: updated
+    documents: [frontend/README.md]
+    reason: 共享入口、保存意图、登录片段与受保护原生新标签跳转。
+  - id: frontend
+    decision: updated
+    documents: [frontend/README.md, docs/repository-scope.md]
+    reason: NavigationPort及账号Provider生命周期，不把DOM和凭据放入Surface。
+  - id: module
+    decision: updated
+    documents: [internal/module/README.md]
+    reason: Files内部消费方引用/集合契约和授权边界。
+  - id: capability
+    decision: updated
+    documents: [docs/operations/runtime-capabilities.md]
+    reason: 复用数据库事务，无新资源；记录引用不拥有对象或分享授权。
+  - id: api
+    decision: updated
+    documents: [api/README.md]
+    reason: 111个原生operation、集合CAS与引用303跳转。
+  - id: configuration
+    decision: updated
+    documents: [docs/configuration/README.md, docs/operations/file-management.md]
+    reason: 导航受控预算、v8单轨迁移和拒绝丢弃引用的down guard。
+  - id: delivery
+    decision: reviewed-no-change
+    reason: 无工具链或第三方依赖变化；继续沿用Go1.26.10和现有构建部署方式。
