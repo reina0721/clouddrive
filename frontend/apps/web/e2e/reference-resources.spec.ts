@@ -76,6 +76,11 @@ test('Reference Resources 视觉基线（桌面全页）', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(referenceResources);
   await expectHydrated(page);
+  // Host hydration不代表动态页面就绪；等业务内容齐全后才比较视觉。
+  await expect(page.getByRole('heading', { level: 1, name: '参考资源' })).toBeVisible();
+  for (const name of ['Alpha 示例资源', 'Beta 引导指南', 'Gamma 模板'])
+    await expect(page.getByText(name, { exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: '查看', exact: true })).toHaveCount(3);
   await expect.soft(page).toHaveScreenshot('reference-resources-desktop.png', { fullPage: true });
 });
 
