@@ -76,6 +76,19 @@ func decode(snapshot config.Snapshot) (Config, error) {
 	return normalizeConfig(resolved)
 }
 
+// TaskConfiguredEnabled 从同一配置authority投影具体任务准入，供composition告知业务可用性。
+func TaskConfiguredEnabled(snapshot config.Snapshot, id pkgschedule.TaskID) (bool, error) {
+	if id == "" {
+		return false, fmt.Errorf("scheduler task id is required")
+	}
+	value, err := decode(snapshot)
+	if err != nil {
+		return false, err
+	}
+	override := value.Tasks[string(id)]
+	return value.Enabled && (override.Enabled == nil || *override.Enabled), nil
+}
+
 // Configuration 返回 scheduler 配置节的唯一 authority。
 func Configuration() config.Binding {
 	return config.Binding{

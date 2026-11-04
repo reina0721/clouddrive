@@ -728,6 +728,13 @@ export function FilesPage({
                 </FileLink>
                 <FileLink
                   onNavigate={closeNavigation}
+                  target="downloads"
+                  className="hover:text-brand"
+                >
+                  {t('files.downloads.title')}
+                </FileLink>
+                <FileLink
+                  onNavigate={closeNavigation}
                   target="connections"
                   className="hover:text-brand"
                 >
@@ -807,9 +814,11 @@ export function FilesPage({
                     label: t('files.newMarkdown'),
                     disabled: trash || !listing || loading || navigating,
                   },
+                  { id: 'downloads', label: t('files.downloads.title'), disabled: navigating },
                 ]}
                 onAction={(action) => {
                   if (action === 'folder') openDialog('folder');
+                  else if (action === 'downloads') port.navigate('downloads');
                   else if (action === 'text' || action === 'markdown')
                     setTextRequest({ mode: action, parentId: parent });
                   else if (action === 'clipboard') {

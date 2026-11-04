@@ -22,6 +22,7 @@ import { fileListParameters } from './query';
 import { createAnnotationsPort } from './annotations';
 import { createFileClipboard } from './clipboard';
 import { createVersionsPort } from './versions';
+import { createDownloadsRuntime } from './downloads';
 import { fileDestinationHrefs } from './destinations';
 export { fileDestinationHrefs } from './destinations';
 
@@ -116,7 +117,8 @@ export function createFilesRuntime(
             : payload?.includes('files_quota')
               ? 'quota'
               : 'conflict';
-        else if (error.status === 413) code = 'large';
+        else if (error.status === 413)
+          code = payload?.includes('files_offline_metadata_limited') ? 'metadata-limited' : 'large';
         else if (error.status === 429) code = 'busy';
         else if (error.status === 400 || error.status === 422) code = 'invalid';
       }
@@ -258,6 +260,7 @@ export function createFilesRuntime(
     },
   });
   const versions = createVersionsPort(call, base + native, assertCurrent);
+  const downloads = createDownloadsRuntime(call, assertCurrent);
   const clipboard = createFileClipboard(assertCurrent, {
     detail: (id) => port.detail(id),
     copy: (id, parentId, name) => port.copy(id, parentId, name),
@@ -475,6 +478,7 @@ export function createFilesRuntime(
       if (disposed || !account || owner() !== account) throw new FilesError('canceled');
     }),
     transfers: transfers.port,
+    downloads: downloads.port,
     readMedia: async (
       id: string,
       expectedSizeBytes: number,
@@ -502,6 +506,7 @@ export function createFilesRuntime(
     activate: () => {
       disposed = false;
       clipboard.activate();
+      downloads.activate();
       if (lifecycle.signal.aborted) lifecycle = new AbortController();
       transfers.activate();
     },
@@ -512,6 +517,7 @@ export function createFilesRuntime(
     },
     dispose: async () => {
       clipboard.dispose();
+      downloads.dispose();
       disposed = true;
       lifecycle.abort();
       const stopping = transfers.dispose();

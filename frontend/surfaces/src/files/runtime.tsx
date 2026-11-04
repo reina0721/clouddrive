@@ -9,6 +9,7 @@ import {
   type ComponentType,
 } from 'react';
 import type { TransfersPort } from './transfers';
+import type { DownloadsPort } from './downloads';
 import type { ConnectionsPort } from './connections';
 import type { NavigationPort } from './navigation';
 import type { FilesPort, PublicFilesPort, FileEntry } from './model';
@@ -24,6 +25,7 @@ const MediaContext = createContext<ComponentType<FileMediaProps> | null>(null);
 
 const Context = createContext<FilesPort | null>(null);
 const TransfersContext = createContext<TransfersPort | null>(null);
+const DownloadsContext = createContext<DownloadsPort | null>(null);
 const ConnectionsContext = createContext<ConnectionsPort | null>(null);
 const NavigationContext = createContext<NavigationPort | null>(null);
 export function FilesProvider({
@@ -31,11 +33,13 @@ export function FilesProvider({
   children,
   media: Media,
   transfers,
+  downloads,
   connections,
   navigation,
 }: Readonly<{
   port: FilesPort;
   transfers: TransfersPort;
+  downloads: DownloadsPort;
   connections: ConnectionsPort;
   navigation: NavigationPort;
   children: ReactNode;
@@ -46,7 +50,9 @@ export function FilesProvider({
       <TransfersContext value={transfers}>
         <ConnectionsContext value={connections}>
           <NavigationContext value={navigation}>
-            <MediaContext value={Media}>{children}</MediaContext>
+            <DownloadsContext value={downloads}>
+              <MediaContext value={Media}>{children}</MediaContext>
+            </DownloadsContext>
           </NavigationContext>
         </ConnectionsContext>
       </TransfersContext>
@@ -63,6 +69,12 @@ export function useFileNavigation() {
 export function useConnections() {
   const port = useContext(ConnectionsContext);
   if (!port) throw new Error('File connections runtime is required');
+  return port;
+}
+
+export function useDownloads() {
+  const port = useContext(DownloadsContext);
+  if (!port) throw new Error('Offline downloads runtime is required');
   return port;
 }
 

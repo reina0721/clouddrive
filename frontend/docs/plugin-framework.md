@@ -278,6 +278,7 @@ Discovery → Framework Contract Validation → Static Framework Descriptors
   - 两层都不出现：params 拦截、Context 包装、children 包装、生命周期逻辑、第二套匹配器。
 
   Host 对公开分享 `/share` 明确选择 `(file-shares)` 组，而非 `(app)` 或带登录品牌框架的 `(public)` 组；该位置由 Host generator 决定，Plugin Contract 不增加认证字段。此路由的手写 Host layout 只注入独立 PublicFilesPort，其他插件仍受 `(app)` 的 ProtectedGate 保护。
+
 - **Registry（`packages/plugin-framework`，运行时）只保留真实需要的结构**：
   `navigation-resolution.ts` 单一 authority 解析 Group Alias + Parent/Child →
   `registry.navigation`（Group → Parent → Child，含 href）；`registry.routes` 是
@@ -473,3 +474,7 @@ expectedVersion)`、`resetPresentation`、`clear`、`clearAll`、`recover`（清
   `useNavigationLabelOverrides` 同时作用于侧栏、页签标题与命令面板。
 - 边界：覆盖只改变**入口呈现**，不放宽任何真实权限；路由与组件仍来自部署期 Registry；
   直接 URL 访问仍由数据服务授权。
+
+## 文件离线任务Port（129）
+
+`files/routes/downloads/page.tsx`声明`/home/downloads`插件页面，Host路由壳由plugin-codegen生成。`surfaces/src/files/downloads.ts`定义独立DownloadsPort与Zod契约，HostFilesRuntime显式提供账号绑定的实现。Host负责网络、私有链接复制和可见性轮询，页面只消费任务语义；卸载或账号失效清理订阅，不恢复旧账号的timer。布局复用Page/PageHeader/Section/StateSurface，已知总量复用ProgressMeter，未知总量保留真实字节而不绘制虚假百分比。

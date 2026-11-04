@@ -9,15 +9,18 @@ import (
 // TransferState 表达持久上传状态，不把浏览器临时进度当作完成事实。
 type TransferState string
 
-// TransferSource 明确由浏览器tus还是外部同步请求拥有上传源。
+// TransferSource 区分浏览器tus、同步WebDAV与服务器离线任务的源所有权。
 type TransferSource string
 
 const (
-	TransferSourceTus    TransferSource = "tus"
-	TransferSourceWebDAV TransferSource = "webdav"
+	TransferSourceOffline TransferSource = "offline"
+	TransferSourceTus     TransferSource = "tus"
+	TransferSourceWebDAV  TransferSource = "webdav"
 )
 
-func (s TransferSource) Valid() bool { return s == TransferSourceTus || s == TransferSourceWebDAV }
+func (s TransferSource) Valid() bool {
+	return s == TransferSourceTus || s == TransferSourceWebDAV || s == TransferSourceOffline
+}
 
 const (
 	TransferPreparing  TransferState = "preparing"
@@ -32,6 +35,7 @@ const (
 
 // Transfer 是归属于账号的上传及发布记录；暂存和永久对象位置不属于公开 DTO。
 type Transfer struct {
+	DownloadID              string
 	ID                      string
 	OwnerID                 string
 	ParentID                string

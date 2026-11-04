@@ -327,6 +327,26 @@ observability:
 
 # 私有文件的有界传输预算；变更后重启服务。
 files:
+  offline:
+    enabled: true
+    batchEntries: 20
+    ownerRecords: 200
+    globalRecords: 2000
+    concurrency: 1
+    dispatchInterval: 1s
+    leaseTTL: 20s
+    renewInterval: 5s
+    progressInterval: 1s
+    attemptTimeout: 15m
+    maxAttempts: 20
+    maxRequests: 64
+    source:
+      connectTimeout: 10s
+      idleTimeout: 15s
+      headerBytes: 32768
+      redirects: 5
+      dnsAddresses: 16
+      allowedNetworks: []
   history:
     enabled: true
     perFile: 20

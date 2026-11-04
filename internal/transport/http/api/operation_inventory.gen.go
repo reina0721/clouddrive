@@ -29,6 +29,19 @@ const (
 	OperationFilesContentHead               OperationID = "files.content.head"
 	OperationFilesCopy                      OperationID = "files.copy"
 	OperationFilesDetail                    OperationID = "files.detail"
+	OperationFilesDownloadsBatchControl     OperationID = "files.downloads.batch-control"
+	OperationFilesDownloadsBatchCreate      OperationID = "files.downloads.batch-create"
+	OperationFilesDownloadsCancel           OperationID = "files.downloads.cancel"
+	OperationFilesDownloadsCreate           OperationID = "files.downloads.create"
+	OperationFilesDownloadsList             OperationID = "files.downloads.list"
+	OperationFilesDownloadsPause            OperationID = "files.downloads.pause"
+	OperationFilesDownloadsRead             OperationID = "files.downloads.read"
+	OperationFilesDownloadsRemove           OperationID = "files.downloads.remove"
+	OperationFilesDownloadsRestart          OperationID = "files.downloads.restart"
+	OperationFilesDownloadsResume           OperationID = "files.downloads.resume"
+	OperationFilesDownloadsRetry            OperationID = "files.downloads.retry"
+	OperationFilesDownloadsSource           OperationID = "files.downloads.source"
+	OperationFilesDownloadsTarget           OperationID = "files.downloads.target"
 	OperationFilesFolder                    OperationID = "files.folder"
 	OperationFilesList                      OperationID = "files.list"
 	OperationFilesPinsCreate                OperationID = "files.pins.create"
@@ -153,6 +166,19 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesContentHead, Method: "HEAD", Path: "/api/v1/files/{id}/content", Policy: "protected", Scope: "files:read", Action: "files.content.head"},
 	{ID: OperationFilesCopy, Method: "POST", Path: "/api/v1/files/{id}/copy", Policy: "protected", Scope: "files:write", Action: "files.copy"},
 	{ID: OperationFilesDetail, Method: "GET", Path: "/api/v1/files/{id}", Policy: "protected", Scope: "files:read", Action: "files.detail"},
+	{ID: OperationFilesDownloadsBatchControl, Method: "POST", Path: "/api/v1/files/downloads/batch-control", Policy: "protected", Scope: "files:write", Action: "files.downloads.batch-control"},
+	{ID: OperationFilesDownloadsBatchCreate, Method: "POST", Path: "/api/v1/files/downloads/batch-create", Policy: "protected", Scope: "files:write", Action: "files.downloads.batch-create"},
+	{ID: OperationFilesDownloadsCancel, Method: "POST", Path: "/api/v1/files/downloads/{id}/cancel", Policy: "protected", Scope: "files:write", Action: "files.downloads.cancel"},
+	{ID: OperationFilesDownloadsCreate, Method: "POST", Path: "/api/v1/files/downloads", Policy: "protected", Scope: "files:write", Action: "files.downloads.create"},
+	{ID: OperationFilesDownloadsList, Method: "GET", Path: "/api/v1/files/downloads", Policy: "protected", Scope: "files:read", Action: "files.downloads.list"},
+	{ID: OperationFilesDownloadsPause, Method: "POST", Path: "/api/v1/files/downloads/{id}/pause", Policy: "protected", Scope: "files:write", Action: "files.downloads.pause"},
+	{ID: OperationFilesDownloadsRead, Method: "GET", Path: "/api/v1/files/downloads/{id}", Policy: "protected", Scope: "files:read", Action: "files.downloads.read"},
+	{ID: OperationFilesDownloadsRemove, Method: "POST", Path: "/api/v1/files/downloads/{id}/remove", Policy: "protected", Scope: "files:write", Action: "files.downloads.remove"},
+	{ID: OperationFilesDownloadsRestart, Method: "POST", Path: "/api/v1/files/downloads/{id}/restart", Policy: "protected", Scope: "files:write", Action: "files.downloads.restart"},
+	{ID: OperationFilesDownloadsResume, Method: "POST", Path: "/api/v1/files/downloads/{id}/resume", Policy: "protected", Scope: "files:write", Action: "files.downloads.resume"},
+	{ID: OperationFilesDownloadsRetry, Method: "POST", Path: "/api/v1/files/downloads/{id}/retry", Policy: "protected", Scope: "files:write", Action: "files.downloads.retry"},
+	{ID: OperationFilesDownloadsSource, Method: "GET", Path: "/api/v1/files/downloads/{id}/source", Policy: "protected", Scope: "files:read", Action: "files.downloads.source"},
+	{ID: OperationFilesDownloadsTarget, Method: "PUT", Path: "/api/v1/files/downloads/{id}/target", Policy: "protected", Scope: "files:write", Action: "files.downloads.target"},
 	{ID: OperationFilesFolder, Method: "POST", Path: "/api/v1/files/folders", Policy: "protected", Scope: "files:write", Action: "files.folder"},
 	{ID: OperationFilesList, Method: "GET", Path: "/api/v1/files", Policy: "protected", Scope: "files:read", Action: "files.list"},
 	{ID: OperationFilesPinsCreate, Method: "POST", Path: "/api/v1/files/pins", Policy: "protected", Scope: "files:write", Action: "files.pins.create"},

@@ -32,6 +32,7 @@ import (
 	filesconfig "github.com/reina0721/clouddrive/internal/module/files/binding/config"
 	fileshttp "github.com/reina0721/clouddrive/internal/module/files/binding/http"
 	fileswebdav "github.com/reina0721/clouddrive/internal/module/files/binding/webdav"
+	filesservice "github.com/reina0721/clouddrive/internal/module/files/service"
 	"github.com/reina0721/clouddrive/internal/module/iam"
 	iamconfig "github.com/reina0721/clouddrive/internal/module/iam/binding/config"
 	iamhttp "github.com/reina0721/clouddrive/internal/module/iam/binding/http"
@@ -469,16 +470,6 @@ func (f *applicationGenerationFactory) Prepare(
 		return abort(err)
 	}
 
-	if err := module.ValidateContributions(generation.authModule.Contribution, generation.iamModule.Contribution, generation.organizationModule.Contribution, generation.navigationModule.Contribution, generation.module.Contribution, generation.opsModule.Contribution); err != nil {
-		return abort(fmt.Errorf("validate application module contributions: %w", err))
-	}
-	messages, err := module.MessageBindings(generation.authModule.Contribution, generation.iamModule.Contribution, generation.organizationModule.Contribution, generation.navigationModule.Contribution, generation.module.Contribution, generation.opsModule.Contribution)
-	if err != nil {
-		return abort(fmt.Errorf("collect application module messages: %w", err))
-	}
-	if err := generation.messaging.output.Control.Freeze(messages); err != nil {
-		return abort(fmt.Errorf("freeze messaging candidate: %w", err))
-	}
 	consoleConfig, err := console.Decode(snapshot)
 	if err != nil {
 		return abort(err)
@@ -497,9 +488,25 @@ func (f *applicationGenerationFactory) Prepare(
 	if err := files.PrepareTransfers(ctx, databaseAccess, storageIdentity, filesPolicy.Transfers.StagingPath); err != nil {
 		return abort(err)
 	}
-	filesHandler, err := files.New(files.Dependencies{NavigationPolicy: filesPolicy.NavigationPolicy(), ConnectionOrigin: filesPolicy.Connections.PublicOrigin, ConnectionPolicy: filesPolicy.ConnectionPolicy(), ConnectionAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization}, TransferContent: filesContentAdapter{access: generation.storage.value()}, TransferPolicy: filesPolicy.TransferPolicy(), StagingPath: filesPolicy.Transfers.StagingPath, Passwords: iam.NewCredentialDigests(), SharePolicy: filesPolicy.SharePolicy(), PublicOrigins: httpConfig.CORS.AllowedOrigins, StorageIdentity: storageIdentity, Database: databaseAccess, Content: filesContentAdapter{access: generation.storage.value()}, Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: filesPolicy.Policy()})
+	offlineEnabled, err := scheduleapp.TaskConfiguredEnabled(snapshot, filesservice.DownloadDispatchTaskID)
 	if err != nil {
 		return abort(err)
+	}
+	filesModule, err := files.New(files.Dependencies{OfflinePolicy: filesPolicy.Offline, OfflineDispatcherEnabled: offlineEnabled, OfflineAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization}, NavigationPolicy: filesPolicy.NavigationPolicy(), ConnectionOrigin: filesPolicy.Connections.PublicOrigin, ConnectionPolicy: filesPolicy.ConnectionPolicy(), ConnectionAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization}, TransferContent: filesContentAdapter{access: generation.storage.value()}, TransferPolicy: filesPolicy.TransferPolicy(), StagingPath: filesPolicy.Transfers.StagingPath, Passwords: iam.NewCredentialDigests(), SharePolicy: filesPolicy.SharePolicy(), PublicOrigins: httpConfig.CORS.AllowedOrigins, StorageIdentity: storageIdentity, Database: databaseAccess, Content: filesContentAdapter{access: generation.storage.value()}, Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: filesPolicy.Policy()})
+	if err != nil {
+		return abort(err)
+	}
+	filesHandler := filesModule.Handler
+	contributions := []module.Contribution{generation.authModule.Contribution, generation.iamModule.Contribution, generation.organizationModule.Contribution, generation.navigationModule.Contribution, generation.module.Contribution, generation.opsModule.Contribution, filesModule.Contribution}
+	if err := module.ValidateContributions(contributions...); err != nil {
+		return abort(fmt.Errorf("validate application module contributions: %w", err))
+	}
+	messages, err := module.MessageBindings(contributions...)
+	if err != nil {
+		return abort(fmt.Errorf("collect application module messages: %w", err))
+	}
+	if err := generation.messaging.output.Control.Freeze(messages); err != nil {
+		return abort(fmt.Errorf("freeze messaging candidate: %w", err))
 	}
 	apiRoutes, err := httptransport.NewRouteBinding(operationGate,
 		fileshttp.HumaRegistration(filesHandler, mutationGuard),
@@ -524,7 +531,7 @@ func (f *applicationGenerationFactory) Prepare(
 		}
 		nativeRoutes.ServeHTTP(w, r)
 	})
-	schedules, err := module.ScheduleBindings(generation.authModule.Contribution, generation.iamModule.Contribution, generation.organizationModule.Contribution, generation.navigationModule.Contribution, generation.module.Contribution, generation.opsModule.Contribution)
+	schedules, err := module.ScheduleBindings(contributions...)
 	if err != nil {
 		return abort(fmt.Errorf("collect application module schedules: %w", err))
 	}
@@ -556,8 +563,10 @@ func (f *applicationGenerationFactory) Prepare(
 	generation.resourceStats.Built = append(generation.resourceStats.Built, "organization")
 	generation.resourceStats.Built = append(generation.resourceStats.Built, "navigation")
 	generation.resourceStats.Built = append(generation.resourceStats.Built, "ops")
-	participants := append(append([]supervisor.Participant(nil), generation.module.Contribution.Participants...), generation.authModule.Contribution.Participants...)
-	participants = append(participants, generation.opsModule.Contribution.Participants...)
+	participants := []supervisor.Participant{}
+	for _, contribution := range contributions {
+		participants = append(participants, contribution.Participants...)
+	}
 	for _, participant := range participants {
 		if err := participant.Start(ctx); err != nil {
 			return abort(fmt.Errorf("start generation participant %s: %w", participant.Name(), err))

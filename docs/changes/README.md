@@ -98,7 +98,7 @@
 
 - [118 clouddrive 前后端整合](118-clouddrive-integration/README.md)：本地实现及功能验证完成，视觉基线待人工确认。
 
-下一个任务序号为 `128`。已完成记录只保存历史证据；当前行为必须回到根 [README](../../README.md) 和对应主题文档确认。
+下一个任务序号为 `130`。已完成记录只保存历史证据；当前行为必须回到根 [README](../../README.md) 和对应主题文档确认。
 
 - [124 分享快捷方式与侧栏固定](124-share-shortcuts/README.md)：第五批 F81–F100，研究、实现、集中验收及交付证据。
 
@@ -106,3 +106,5 @@
 - [126 私有标签与属性](126-file-annotations/README.md)：第七批 F121–F140，标签、属性、个性化、批量CAS及v9持久化。
 
 - [127 文件浏览交互](127-explorer-interactions/README.md)：第八批 F141–F160，响应式导航、路径/选择菜单及同账号剪切复制粘贴。
+- [128 私有版本历史](128-file-version-history/README.md)：第九批 F161–F180，覆盖保留、旧版读取/恢复/另存与比较。
+- [129 HTTP离线下载](129-offline-downloads/README.md)：第十批 F181–F200，持久任务、受控来源、断点与批量管理；验收状态见任务清单。

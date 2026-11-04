@@ -159,7 +159,7 @@ func (s *Store) Inspect(ctx context.Context, id string) (service.StageInfo, erro
 	return service.StageInfo{SizeBytes: info.Size, OffsetBytes: info.Offset, Deferred: info.SizeIsDeferred}, nil
 }
 
-// CreateDeferred 仅供持有同会话锁的同步服务端摘要源，不能从原生tus数据面创建。
+// CreateDeferred 仅供持有同会话锁的服务端摘要源，不能从原生tus数据面创建。
 func (s *Store) CreateDeferred(ctx context.Context, id string) error {
 	if err := model.ValidateTransferID(id); err != nil {
 		return err
@@ -185,40 +185,14 @@ func (s *Store) CreateDeferred(ctx context.Context, id string) error {
 	return nil
 }
 
-type streamInput struct {
-	ctx    context.Context
-	source io.Reader
-}
-
-func (r streamInput) Read(target []byte) (int, error) {
-	if err := r.ctx.Err(); err != nil {
-		return 0, err
-	}
-	return r.source.Read(target)
-}
-
-// WriteStream 有界读取且在写入时增量计算摘要；filestore负责关闭真实文件并导出关闭错误。
+// WriteStream 复用同一有界追加路径并计算摘要，保留读取、写入与关闭的所有错误。
 func (s *Store) WriteStream(ctx context.Context, id string, source io.Reader, limit int64) (int64, string, error) {
-	if source == nil || limit < 0 || limit > s.config.MaxFileBytes {
+	if source == nil {
 		return 0, "", model.ErrInvalid
 	}
-	info, err := s.Inspect(ctx, id)
-	if err != nil {
-		return 0, "", err
-	}
-	if !info.Deferred || info.OffsetBytes != 0 {
-		return 0, "", model.ErrConflict
-	}
-	upload, err := s.store.GetUpload(ctx, id)
-	if err != nil {
-		return 0, "", err
-	}
 	hash := sha256.New()
-	written, writeErr := upload.WriteChunk(ctx, 0, io.TeeReader(io.LimitReader(streamInput{ctx: ctx, source: source}, limit+1), hash))
-	if written > limit {
-		writeErr = errors.Join(writeErr, model.ErrTooLarge)
-	}
-	if err := errors.Join(writeErr, ctx.Err()); err != nil {
+	written, err := s.AppendStream(ctx, id, io.TeeReader(source, hash), service.StageAppend{OffsetBytes: 0, MaxAppendBytes: limit})
+	if err != nil {
 		return written, "", err
 	}
 	return written, hex.EncodeToString(hash.Sum(nil)), nil

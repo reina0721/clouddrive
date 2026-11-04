@@ -69,6 +69,7 @@ export function FilesRuntime({
       media={Media}
       transfers={runtime.transfers}
       connections={runtime.connections}
+      downloads={runtime.downloads}
       navigation={runtime.navigation}
     >
       <div

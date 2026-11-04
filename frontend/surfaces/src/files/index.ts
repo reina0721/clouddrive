@@ -10,3 +10,4 @@ export * from './annotations';
 export * from './clipboard';
 
 export * from './versions';
+export * from './downloads';

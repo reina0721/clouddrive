@@ -13,10 +13,15 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 		t.Fatal(err)
 	}
 	definitions := blueprint.httpDefinitions
-	if len(definitions) != 121 {
+	if len(definitions) != 134 {
 		t.Fatalf("operation count = %d", len(definitions))
 	}
 	seen := make(map[string]struct{}, len(definitions))
+	downloads := map[string]string{
+		"files.downloads.create": "files:write", "files.downloads.list": "files:read", "files.downloads.read": "files:read", "files.downloads.source": "files:read",
+		"files.downloads.pause": "files:write", "files.downloads.resume": "files:write", "files.downloads.retry": "files:write", "files.downloads.cancel": "files:write",
+		"files.downloads.restart": "files:write", "files.downloads.target": "files:write", "files.downloads.remove": "files:write", "files.downloads.batch-create": "files:write", "files.downloads.batch-control": "files:write",
+	}
 	for _, definition := range definitions {
 		if strings.HasPrefix(definition.ID, "files.public.") {
 			if definition.Security != humabinding.SecurityNone || definition.Policy != humabinding.PolicyPublic || definition.Scope != "" || definition.Action != "" {
@@ -25,6 +30,15 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 			continue
 		}
 		seen[definition.ID] = struct{}{}
+		if scope, exists := downloads[definition.ID]; exists {
+			if definition.Scope != scope || definition.Policy != humabinding.PolicyProtected || definition.Action != definition.ID {
+				t.Fatalf("离线任务权限不完整: %s", definition.ID)
+			}
+			delete(downloads, definition.ID)
+		}
+	}
+	if len(downloads) != 0 {
+		t.Fatalf("缺少离线任务入口: %v", downloads)
 	}
 	for _, id := range []string{"files.list", "files.folder", "files.text.create", "files.transfers.create", "files.transfers.chunk", "files.transfers.commit", "files.detail", "files.update", "files.trash", "files.restore", "files.content", "iam.setup", "navigation.menus.update", "organization.departments.update", "completeTodo", "auth.audit.list", "auth.audit.read", "iam.sessions.list", "iam.sessions.revoke", "iam.accounts.read", "iam.accounts.update", "iam.accounts.archive", "iam.roles.read", "iam.roles.update", "iam.roles.archive", "iam.self.profile.update", "iam.self.archive", "iam.self.archive.confirm", "iam.roles.accounts.list", "iam.permissions.roles.list", "iam.api-tokens.list", "iam.api-tokens.create", "iam.api-tokens.update", "iam.api-tokens.rotate", "iam.api-tokens.disable", "iam.api-tokens.enable", "iam.api-tokens.revoke", "iam.self.mfa.begin", "iam.self.mfa.status", "iam.self.mfa.confirm", "iam.self.mfa.disable", "iam.login.mfa-verify", "iam.accounts.status.batch", "iam.accounts.archive.batch"} {
 		if _, ok := seen[id]; !ok {

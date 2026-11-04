@@ -315,8 +315,10 @@ func (s *Transfers) expireLocked(ctx context.Context, transfer model.Transfer) (
 
 func (s *Transfers) Read(ctx context.Context, owner, id string) (TransferSummary, error) {
 	// 在获取磁盘锁前先做 owner 查询，未知/他人 ID 不产生锁文件。
-	if _, err := s.repo.ReadTransfer(ctx, owner, id); err != nil {
+	if current, err := s.repo.ReadTransfer(ctx, owner, id); err != nil {
 		return TransferSummary{}, err
+	} else if current.Source == model.TransferSourceOffline {
+		return TransferSummary{}, model.ErrMissing
 	}
 	var result TransferSummary
 	err := s.stage.WithLock(ctx, id, func(ctx context.Context) error {
@@ -463,8 +465,10 @@ func (s *Transfers) setPaused(ctx context.Context, owner, id string, paused bool
 }
 
 func (s *Transfers) Cancel(ctx context.Context, owner, id string) (TransferSummary, error) {
-	if _, err := s.repo.ReadTransfer(ctx, owner, id); err != nil {
+	if current, err := s.repo.ReadTransfer(ctx, owner, id); err != nil {
 		return TransferSummary{}, err
+	} else if current.Source == model.TransferSourceOffline {
+		return TransferSummary{}, model.ErrMissing
 	}
 	var result TransferSummary
 	err := s.stage.WithLock(ctx, id, func(ctx context.Context) error {
@@ -542,6 +546,13 @@ func (s *Transfers) Commit(ctx context.Context, owner, id string) (TransferSumma
 }
 
 func (s *Transfers) commit(ctx context.Context, owner, id string, sourceKind model.TransferSource) (TransferSummary, error) {
+	return s.commitAuthorized(ctx, owner, id, sourceKind, nil)
+}
+
+func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sourceKind model.TransferSource, offline *downloadPublication) (TransferSummary, error) {
+	if (sourceKind == model.TransferSourceOffline) != (offline != nil) {
+		return TransferSummary{}, model.ErrInvalid
+	}
 	if _, err := s.repo.ReadTransfer(ctx, owner, id); err != nil {
 		return TransferSummary{}, err
 	}
@@ -570,6 +581,11 @@ func (s *Transfers) commit(ctx context.Context, owner, id string, sourceKind mod
 		}
 		if transfer.Source == model.TransferSourceWebDAV {
 			if err := s.connections.AuthorizePublication(ctx, transfer.ConnectionID, transfer.ConnectionRevision); err != nil {
+				return err
+			}
+		}
+		if offline != nil {
+			if err := offline.authorize(ctx, s.files.clock.Now()); err != nil {
 				return err
 			}
 		}
@@ -609,16 +625,31 @@ func (s *Transfers) commit(ctx context.Context, owner, id string, sourceKind mod
 			if mediaType == "" {
 				mediaType = http.DetectContentType(prefix[:countPrefix])
 			}
-			transfer, err = s.change(ctx, owner, id, func(current *model.Transfer, _ []model.Entry) error {
+			transfer, err = s.repo.ChangeTransfer(ctx, owner, id, "", func(snapshot TransferSnapshot) (model.Transfer, *model.Entry, error) {
+				if snapshot.Transfer == nil {
+					return model.Transfer{}, nil, model.ErrMissing
+				}
+				if offline != nil {
+					if err := offline.validate(snapshot.DownloadTask, s.files.clock.Now()); err != nil {
+						return model.Transfer{}, nil, err
+					}
+				}
+				current := *snapshot.Transfer
 				if current.Terminal() {
-					return model.ErrConflict
+					return model.Transfer{}, nil, model.ErrConflict
 				}
 				current.State = model.TransferPublishing
 				current.FailureCode = ""
-				return nil
+				current.UpdatedAt = s.files.clock.Now().UTC()
+				return current, nil, nil
 			})
 			if err != nil {
 				return err
+			}
+			if offline != nil {
+				if err := offline.authorize(ctx, s.files.clock.Now()); err != nil {
+					return err
+				}
 			}
 			if err := s.content.PutReader(ctx, transfer.ObjectKey, source, transfer.SizeBytes, mediaType); err != nil {
 				return err
@@ -626,6 +657,9 @@ func (s *Transfers) commit(ctx context.Context, owner, id string, sourceKind mod
 			return nil
 		})
 		if err != nil {
+			if offline != nil {
+				return err
+			}
 			code := transferFailureStorage
 			if errors.Is(err, ErrTransferChecksum) {
 				code = transferFailureChecksum
@@ -644,11 +678,21 @@ func (s *Transfers) commit(ctx context.Context, owner, id string, sourceKind mod
 				return err
 			}
 		}
+		if offline != nil {
+			if err := offline.authorize(ctx, s.files.clock.Now()); err != nil {
+				return err
+			}
+		}
 		transfer, err = s.repo.ChangeTransfer(ctx, owner, id, "", func(snapshot TransferSnapshot) (model.Transfer, *model.Entry, error) {
 			if snapshot.Transfer == nil {
 				return model.Transfer{}, nil, model.ErrMissing
 			}
 			current := *snapshot.Transfer
+			if offline != nil {
+				if err := offline.validate(snapshot.DownloadTask, s.files.clock.Now()); err != nil {
+					return model.Transfer{}, nil, err
+				}
+			}
 			if current.State == model.TransferCompleted {
 				return current, nil, nil
 			}
@@ -717,6 +761,9 @@ func (s *Transfers) commit(ctx context.Context, owner, id string, sourceKind mod
 			return current, &entry, nil
 		})
 		if err != nil {
+			if offline != nil {
+				return err
+			}
 			code := transferFailureDestination
 			if errors.Is(err, model.ErrQuota) {
 				code = transferFailureQuota

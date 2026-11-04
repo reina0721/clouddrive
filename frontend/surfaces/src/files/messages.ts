@@ -5,6 +5,7 @@ export async function loadFileAnnotationMessages(): Promise<TranslationResources
   const messages = await import('../../plugins/files/annotations-i18n');
   const explorer = await import('../../plugins/files/explorer-i18n');
   const versions = await import('../../plugins/files/versions-i18n');
+  const downloads = await import('../../plugins/files/downloads-i18n');
   return {
     'zh-CN': {
       translation: {
@@ -12,7 +13,11 @@ export async function loadFileAnnotationMessages(): Promise<TranslationResources
           annotations: messages.zhAnnotations,
           explorer: explorer.zhExplorer,
           versions: versions.zhVersions,
-          errors: { 'history-full': versions.zhVersions.full },
+          downloads: downloads.zhDownloads,
+          errors: {
+            'history-full': versions.zhVersions.full,
+            'metadata-limited': downloads.zhDownloads.metadataLimited,
+          },
         },
       },
     },
@@ -22,7 +27,11 @@ export async function loadFileAnnotationMessages(): Promise<TranslationResources
           annotations: messages.enAnnotations,
           explorer: explorer.enExplorer,
           versions: versions.enVersions,
-          errors: { 'history-full': versions.enVersions.full },
+          downloads: downloads.enDownloads,
+          errors: {
+            'history-full': versions.enVersions.full,
+            'metadata-limited': downloads.enDownloads.metadataLimited,
+          },
         },
       },
     },

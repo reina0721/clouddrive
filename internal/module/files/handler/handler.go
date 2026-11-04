@@ -20,6 +20,7 @@ type TransferProtocol interface {
 	Handle(http.ResponseWriter, *http.Request, string)
 }
 type Handler struct {
+	Downloads        *service.OfflineDownloads
 	Service          *service.Service
 	Sharing          *service.Sharing
 	Connections      *service.Connections
@@ -46,6 +47,24 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 	status, code := http.StatusInternalServerError, "files_unavailable"
 	var protocolError *httpx.StatusError
 	switch {
+	case errors.Is(err, model.ErrDownloadMetadataLimited):
+		status, code = 413, "files_offline_metadata_limited"
+	case errors.Is(err, model.ErrDownloadUnavailable):
+		status, code = 503, "files_offline_unavailable"
+	case errors.Is(err, model.ErrDownloadLimit):
+		status, code = 429, "files_offline_limit"
+	case errors.Is(err, model.ErrDownloadPermission):
+		status, code = 403, "files_offline_permission"
+	case errors.Is(err, model.ErrDownloadSourceBlocked):
+		status, code = 422, "files_offline_source_blocked"
+	case errors.Is(err, model.ErrDownloadSourceChanged):
+		status, code = 409, "files_offline_source_changed"
+	case errors.Is(err, model.ErrDownloadResumeUnsupported):
+		status, code = 409, "files_offline_resume_unsupported"
+	case errors.Is(err, model.ErrDownloadSourceUnavailable):
+		status, code = 502, "files_offline_source_unavailable"
+	case errors.Is(err, model.ErrDownloadLeaseLost):
+		status, code = 409, "files_offline_lease_lost"
 	case errors.Is(err, model.ErrHistoryFull):
 		status, code = 409, "files_history_full"
 	case errors.Is(err, model.ErrUnsupported):

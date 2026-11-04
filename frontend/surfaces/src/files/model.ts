@@ -8,6 +8,7 @@ import type { FileViewPreferences } from './view-options';
 export type { FileViewPreferences } from './view-options';
 
 export type FilesErrorCode =
+  | 'metadata-limited'
   | 'history-full'
   | 'unavailable'
   | 'unauthenticated'
@@ -116,7 +117,14 @@ export type FileShortcut =
   | 'extendFirst'
   | 'extendLast';
 export type FilesDestination =
-  'files' | 'shares' | 'shared' | 'transfers' | 'connections' | 'workspace' | 'account';
+  | 'files'
+  | 'shares'
+  | 'shared'
+  | 'transfers'
+  | 'downloads'
+  | 'connections'
+  | 'workspace'
+  | 'account';
 export type FilesPort = Readonly<{
   clipboard: FileClipboardPort;
   versions: VersionsPort;

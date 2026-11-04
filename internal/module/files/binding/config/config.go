@@ -10,22 +10,23 @@ import (
 )
 
 type Config struct {
-	MaxFileBytes      int64            `mapstructure:"maxFileBytes"`
-	QuotaBytes        int64            `mapstructure:"quotaBytes"`
-	ConcurrentUploads int              `mapstructure:"concurrentUploads"`
-	MaxTextBytes      int64            `mapstructure:"maxTextBytes"`
-	MaxArchiveBytes   int64            `mapstructure:"maxArchiveBytes"`
-	MaxBatchEntries   int              `mapstructure:"maxBatchEntries"`
-	MaxMediaBytes     int64            `mapstructure:"maxMediaBytes"`
-	MaxThumbnailBytes int64            `mapstructure:"maxThumbnailBytes"`
-	MaxGalleryEntries int              `mapstructure:"maxGalleryEntries"`
-	Sharing           ShareConfig      `mapstructure:"sharing"`
-	Transfers         TransferConfig   `mapstructure:"transfers"`
-	Connections       ConnectionConfig `mapstructure:"connections"`
-	Navigation        NavigationConfig `mapstructure:"navigation"`
-	Search            SearchConfig     `mapstructure:"search"`
-	Annotations       AnnotationConfig `mapstructure:"annotations"`
-	History           HistoryConfig    `mapstructure:"history"`
+	Offline           service.DownloadPolicy `mapstructure:"offline"`
+	MaxFileBytes      int64                  `mapstructure:"maxFileBytes"`
+	QuotaBytes        int64                  `mapstructure:"quotaBytes"`
+	ConcurrentUploads int                    `mapstructure:"concurrentUploads"`
+	MaxTextBytes      int64                  `mapstructure:"maxTextBytes"`
+	MaxArchiveBytes   int64                  `mapstructure:"maxArchiveBytes"`
+	MaxBatchEntries   int                    `mapstructure:"maxBatchEntries"`
+	MaxMediaBytes     int64                  `mapstructure:"maxMediaBytes"`
+	MaxThumbnailBytes int64                  `mapstructure:"maxThumbnailBytes"`
+	MaxGalleryEntries int                    `mapstructure:"maxGalleryEntries"`
+	Sharing           ShareConfig            `mapstructure:"sharing"`
+	Transfers         TransferConfig         `mapstructure:"transfers"`
+	Connections       ConnectionConfig       `mapstructure:"connections"`
+	Navigation        NavigationConfig       `mapstructure:"navigation"`
+	Search            SearchConfig           `mapstructure:"search"`
+	Annotations       AnnotationConfig       `mapstructure:"annotations"`
+	History           HistoryConfig          `mapstructure:"history"`
 }
 
 type ShareConfig struct {
@@ -51,6 +52,7 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 	c := Config{MaxFileBytes: p.MaxFileBytes, QuotaBytes: p.QuotaBytes, ConcurrentUploads: p.ConcurrentUploads, MaxTextBytes: p.MaxTextBytes, MaxArchiveBytes: p.MaxArchiveBytes, MaxBatchEntries: p.MaxBatchEntries, MaxThumbnailBytes: p.MaxThumbnailBytes, MaxMediaBytes: p.MaxMediaBytes, MaxGalleryEntries: p.MaxGalleryEntries}
 	share := service.DefaultSharePolicy()
 	c.Sharing = ShareConfig{MaxAge: share.MaxAge, GrantTTL: share.GrantTTL, AttemptWindow: share.AttemptWindow, AttemptLimit: share.AttemptLimit, KDFConcurrency: share.KDFConcurrency, DownloadTTL: share.DownloadTTL, DownloadLimit: share.DownloadLimit}
+	c.Offline = service.DefaultDownloadPolicy()
 	c.Transfers = defaultTransfers()
 	c.Connections = defaultConnections()
 	c.Navigation = defaultNavigation()
@@ -73,6 +75,9 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 		return Config{}, err
 	}
 	if err := c.validateConnectionOrigin(); err != nil {
+		return Config{}, err
+	}
+	if err := c.Offline.Validate(); err != nil {
 		return Config{}, err
 	}
 	return c, c.validateTransfers()
@@ -155,5 +160,10 @@ func (defaults) Defaults(ctx context.Context) (config.Object, config.Control, er
 		return nil, config.Continue, err
 	}
 	fields = append(fields, config.FieldOf("history", config.ObjectValue(history)))
+	offline, err := offlineDefaults(ctx)
+	if err != nil {
+		return nil, config.Continue, err
+	}
+	fields = append(fields, config.FieldOf("offline", config.ObjectValue(offline)))
 	return fields, config.Continue, nil
 }

@@ -1,0 +1,11 @@
+# 调度与装配
+
+files.New返回Module{Handler, Contribution}并一次迁移全部现有调用方；删除旧返回形态，不保留兼容入口。Contribution只使用现有module.Contribution：源Client Participant及files.offline.dispatch ScheduleBinding。构造和Participant.Start均不下载，故Prepare候选不会产生任务外部副作用。
+
+composition将files与已有模块集中为同一贡献列表，先ValidateContributions，再Freeze messages、收集schedules和participants。复用原Scheduler Definition/Hub Commit/Retire，旧代Deactivate后新代Activate；业务不访问Scheduler或Execution全集，也不创建第二个调度器。源Client Participant Stop在Scheduler排空之后关闭资源。无新的Kernel App或DI框架。
+
+Scheduler配置authority增加只读TaskConfiguredEnabled(snapshot,TaskID)，复用同一decode，综合全局enabled与该task override，composition将可用性投影到files，业务不导入Kernel内部类型。保留config.example的显式禁用决策；预览原本使用默认已启用的Scheduler。UI/API区分禁用与真正可创建，不接受永远不处理的假队列。
+
+业务任务租约属于files的可恢复执行和发布围栏，Scheduler/Execution仍负责触发、进程内并发、generation取消与诊断。心跳goroutine由一次RunOne拥有，主流程取消并等待退出；取消句柄表显式注入实例且有锁，持久状态全部在数据库。默认offline并发1，沿Service的I/O准入限制，保持交互内容通道余量，不无上限抢占。
+
+接入位置：files module/handler/service/repo/adapter/httpdownload、binding/config/http/migration；composition generation/files及schedule config只读投影。记录结构、鉴权、资源清理和对账由具体owner负责，不创建万能任务容器或共享全局HTTP客户端。

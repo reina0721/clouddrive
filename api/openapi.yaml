@@ -1057,6 +1057,116 @@ components:
         - entry
         - breadcrumbs
       type: object
+    DownloadBatchControlInputBody:
+      additionalProperties: false
+      properties:
+        action:
+          enum:
+            - pause
+            - resume
+            - cancel
+            - remove
+          type: string
+        items:
+          items:
+            $ref: "#/components/schemas/DownloadBatchTarget"
+          maxItems: 20
+          minItems: 1
+          nullable: true
+          type: array
+      required:
+        - action
+        - items
+      type: object
+    DownloadBatchCreateInputBody:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/DownloadCreate"
+          maxItems: 20
+          minItems: 1
+          nullable: true
+          type: array
+      required:
+        - items
+      type: object
+    DownloadBatchOutputBody:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/DownloadBatchResult"
+          nullable: true
+          type: array
+      required:
+        - items
+      type: object
+    DownloadBatchResult:
+      additionalProperties: false
+      properties:
+        clientKey:
+          type: string
+        errorCode:
+          type: string
+        id:
+          type: string
+        task:
+          $ref: "#/components/schemas/DownloadSummary"
+      required:
+        - id
+        - clientKey
+        - errorCode
+      type: object
+    DownloadBatchTarget:
+      additionalProperties: false
+      properties:
+        id:
+          maxLength: 36
+          minLength: 36
+          type: string
+        revision:
+          format: int64
+          maximum: 9007199254740990
+          minimum: 1
+          type: integer
+      required:
+        - id
+        - revision
+      type: object
+    DownloadCommandInputBody:
+      additionalProperties: false
+      properties:
+        revision:
+          format: int64
+          maximum: 9007199254740990
+          minimum: 1
+          type: integer
+      required:
+        - revision
+      type: object
+    DownloadCreate:
+      additionalProperties: false
+      properties:
+        clientKey:
+          maxLength: 64
+          minLength: 16
+          type: string
+        name:
+          maxLength: 255
+          type: string
+        parentId:
+          maxLength: 36
+          type: string
+        uri:
+          maxLength: 4096
+          type: string
+      required:
+        - uri
+        - parentId
+        - name
+        - clientKey
+      type: object
     DownloadGrant:
       additionalProperties: false
       properties:
@@ -1068,6 +1178,184 @@ components:
       required:
         - ticket
         - expiresAt
+      type: object
+    DownloadListing:
+      additionalProperties: false
+      properties:
+        activeCount:
+          format: int64
+          type: integer
+        available:
+          type: boolean
+        batchEntries:
+          format: int64
+          type: integer
+        finishedCount:
+          format: int64
+          type: integer
+        items:
+          items:
+            $ref: "#/components/schemas/DownloadSummary"
+          nullable: true
+          type: array
+        metadataLimited:
+          type: boolean
+        nextCursor:
+          type: string
+        ownerRecords:
+          format: int64
+          type: integer
+        totalCount:
+          format: int64
+          type: integer
+      required:
+        - metadataLimited
+        - items
+        - nextCursor
+        - activeCount
+        - finishedCount
+        - totalCount
+        - available
+        - batchEntries
+        - ownerRecords
+      type: object
+    DownloadRemovedOutputBody:
+      additionalProperties: false
+      properties:
+        removed:
+          type: boolean
+      required:
+        - removed
+      type: object
+    DownloadSourceOutputBody:
+      additionalProperties: false
+      properties:
+        uri:
+          type: string
+      required:
+        - uri
+      type: object
+    DownloadSummary:
+      additionalProperties: false
+      properties:
+        attempts:
+          format: int64
+          type: integer
+        cleanupPending:
+          type: boolean
+        clientKey:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        declaredBytes:
+          format: int64
+          nullable: true
+          type: integer
+        destinationAvailable:
+          type: boolean
+        destinationPath:
+          type: string
+        entryId:
+          type: string
+        expiresAt:
+          format: date-time
+          type: string
+        failureCode:
+          type: string
+        finishedAt:
+          format: date-time
+          nullable: true
+          type: string
+        id:
+          type: string
+        kind:
+          type: string
+        metadataLimited:
+          type: boolean
+        name:
+          type: string
+        origin:
+          type: string
+        parentId:
+          type: string
+        progressAt:
+          format: date-time
+          nullable: true
+          type: string
+        rateBytesPerSecond:
+          format: double
+          type: number
+        receivedBytes:
+          format: int64
+          type: integer
+        resultAvailable:
+          type: boolean
+        resumable:
+          type: boolean
+        revision:
+          format: int64
+          type: integer
+        sourceStatus:
+          format: int64
+          type: integer
+        startedAt:
+          format: date-time
+          nullable: true
+          type: string
+        state:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - metadataLimited
+        - id
+        - clientKey
+        - kind
+        - origin
+        - name
+        - parentId
+        - destinationPath
+        - destinationAvailable
+        - state
+        - failureCode
+        - sourceStatus
+        - declaredBytes
+        - receivedBytes
+        - rateBytesPerSecond
+        - progressAt
+        - resumable
+        - attempts
+        - revision
+        - entryId
+        - resultAvailable
+        - cleanupPending
+        - createdAt
+        - updatedAt
+        - startedAt
+        - finishedAt
+        - expiresAt
+      type: object
+    DownloadTargetInputBody:
+      additionalProperties: false
+      properties:
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+        parentId:
+          maxLength: 36
+          type: string
+        revision:
+          format: int64
+          maximum: 9007199254740990
+          minimum: 1
+          type: integer
+      required:
+        - revision
+        - parentId
+        - name
       type: object
     Entry:
       additionalProperties: false
@@ -3847,6 +4135,440 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ConnectionSummaryView"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/downloads:
+    get:
+      operationId: files.downloads.list
+      parameters:
+        - explode: false
+          in: query
+          name: section
+          schema:
+            enum:
+              - ""
+              - all
+              - active
+              - finished
+            type: string
+        - explode: false
+          in: query
+          name: state
+          schema:
+            enum:
+              - ""
+              - queued
+              - fetching
+              - pausing
+              - paused
+              - publishing
+              - completed
+              - failed
+              - canceled
+              - expired
+            type: string
+        - explode: false
+          in: query
+          name: search
+          schema:
+            maxLength: 200
+            type: string
+        - explode: false
+          in: query
+          name: cursor
+          schema:
+            maxLength: 256
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadListing"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+    post:
+      operationId: files.downloads.create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DownloadCreate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadSummary"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/downloads/batch-control:
+    post:
+      operationId: files.downloads.batch-control
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DownloadBatchControlInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadBatchOutputBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/downloads/batch-create:
+    post:
+      operationId: files.downloads.batch-create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DownloadBatchCreateInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadBatchOutputBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/downloads/{id}:
+    get:
+      operationId: files.downloads.read
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadSummary"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/downloads/{id}/cancel:
+    post:
+      operationId: files.downloads.cancel
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DownloadCommandInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadSummary"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/downloads/{id}/pause:
+    post:
+      operationId: files.downloads.pause
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DownloadCommandInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadSummary"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/downloads/{id}/remove:
+    post:
+      operationId: files.downloads.remove
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DownloadCommandInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadRemovedOutputBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/downloads/{id}/restart:
+    post:
+      operationId: files.downloads.restart
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DownloadCommandInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadSummary"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/downloads/{id}/resume:
+    post:
+      operationId: files.downloads.resume
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DownloadCommandInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadSummary"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/downloads/{id}/retry:
+    post:
+      operationId: files.downloads.retry
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DownloadCommandInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadSummary"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/downloads/{id}/source:
+    get:
+      operationId: files.downloads.source
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadSourceOutputBody"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/downloads/{id}/target:
+    put:
+      operationId: files.downloads.target
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DownloadTargetInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadSummary"
           description: OK
         default:
           content:

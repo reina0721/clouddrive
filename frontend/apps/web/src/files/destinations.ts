@@ -6,6 +6,7 @@ export const fileDestinationHrefs = {
   shares: '/home/shares',
   shared: '/home/shared',
   transfers: '/home/transfers',
+  downloads: '/home/downloads',
   connections: '/home/connections',
   workspace: '/workspace',
   account: '/account',

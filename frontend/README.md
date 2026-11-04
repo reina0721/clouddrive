@@ -1,5 +1,7 @@
 # clouddrive 前端
 
+`/home/downloads` 使用独立DownloadsPort，由HostFilesRuntime显式注入；Host拥有任务请求、账号失效处理、可见性刷新订阅与私有来源复制，Surface复用Page/Section、UIAdapter与动态中英资源。离线真实来源浏览器夹具只对隔离测试服务显式启用，预算和使用方式以[文件管理运行说明](../docs/operations/file-management.md)为准。
+
 当前与根目录 Go 后端一起运行，默认 backend + server 模式；业务地址 /api/console/v1，通过 Next.js 同源代理访问。完整启动和部署命令以 [项目 README](../README.md) 为准。下文保留 console-web 组件、插件、布局和质量检查的工程说明。
 
 文件插件位于 `/home`，分享管理在 `/home/shares`，持久上传传输中心在 `/home/transfers`；独立访客插件 `/share` 由 Host 放入不含认证品牌框架的 `(file-shares)` 组，消费 `surfaces/src/files` 的语义 Port。认证应用框架中的 Host TransferRuntime 拥有 File、增量 SHA-256、tus 客户端和暂停/接续队列，应用内切换页面保持上传；owner 变化或框架卸载时取消并等待请求。Web Host 同时拥有文件/目录选择器、拖拽/剪贴板、快捷键、网络、媒体 URL 释放和视图偏好，Surface 不持有 File/DOM/Session。大文件下载交给浏览器原生保存。使用、预算和专用预览统一见[文件管理运行说明](../docs/operations/file-management.md)。

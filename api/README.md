@@ -17,15 +17,17 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 文件复制为 `POST /api/v1/files/{id}/copy`；文本替换为 `PUT /{id}/text`，必须带 `expectedRevision`；ZIP 为 `POST /api/v1/files/archive`。分享管理使用 `/api/v1/files/shares` 和 `/{shareId}/revoke`，仍要求 IAM 会话、文件权限和写请求 CSRF。
 
-访客入口 `/api/v1/file-shares/{token}` 的 metadata、entries、unlock 和 content operation 显式声明 public，不放宽任何私有 files operation。解锁 POST 需要可信 Origin，票据通过 `X-Share-Grant` header 传递，不能用 IAM 会话代替。原生浏览器下载经 `POST /file-shares/{token}/content/{id}/download` 授权，随后以短期限定文件句柄访问 `GET/HEAD /file-downloads/{ticket}`。私有和公开下载提供 Range/条件请求，每次检查撤销、到期和范围；完整 code-first 结果为当前 111 个原生 operation。
+访客入口 `/api/v1/file-shares/{token}` 的 metadata、entries、unlock 和 content operation 显式声明 public，不放宽任何私有 files operation。解锁 POST 需要可信 Origin，票据通过 `X-Share-Grant` header 传递，不能用 IAM 会话代替。原生浏览器下载经 `POST /file-shares/{token}/content/{id}/download` 授权，随后以短期限定文件句柄访问 `GET/HEAD /file-downloads/{ticket}`。私有和公开下载提供 Range/条件请求，每次检查撤销、到期和范围；完整 code-first 结果为当前 134 个原生 operation。
 
 原生 OpenAPI 与 operation inventory 通过 `internal/composition/httpcatalog` 的同一清单生成；生成器不再单独选择模块，也不导入带资源的应用组合根。
+
+离线任务为 `/api/v1/files/downloads` 的列表/单项创建、`/batch-create`、`/{id}`、`/{id}/source`、`/{id}/{pause,resume,retry,restart,cancel,remove}`、`PUT /{id}/target`及`/batch-control`，共13个operation。控制使用任务revision CAS；owner取自当前会话，原始来源只由受保护的显式source读取返回并设置no-store，普通DTO不包含URI或租约。仅HTTP/HTTPS，预算与失败行为见文件管理说明。
 
 控制台错误为 {error:{code,reason?}}；分页默认 page=1/pageSize=20，允许 10/20/50。身份与字典写入携带 version；工作区 PUT 使用 If-Match 和响应 ETag；定时任务携带 version，删除任务使用 version 查询参数。冲突返回 409，不自动覆盖服务器数据。
 
 通知与 API 工作区、历史、任务按用户隔离。API 执行权限为 console:workbench:execute；任务写入还需要 console:workbench:write。目标地址、取消、超时和响应限制由服务端执行；不支持的指纹/代理功能返回明确失败。
 
-WebDAV 管理使用 `/api/v1/files/connections`（列表/创建）和 `/{connectionId}`（读取/CAS修改）、`/state`、`/rotate`。一次性密码不进入列表。独立协议入口为 `/dav/{connectionId}/...`，支持 OPTIONS、PROPFIND、受保护属性的 PROPPATCH、GET/HEAD、PUT、MKCOL、COPY、MOVE 和 DELETE，使用独立 Basic 凭据及当前 IAM 权限。该协议不属于 OpenAPI 标准方法清单，不计入上述111个JSON/原生operation；LOCK/UNLOCK不可用。实际客户端地址由管理响应的 endpointOrigin/endpointPath 提供，限制见[文件管理](../docs/operations/file-management.md)。
+WebDAV 管理使用 `/api/v1/files/connections`（列表/创建）和 `/{connectionId}`（读取/CAS修改）、`/state`、`/rotate`。一次性密码不进入列表。独立协议入口为 `/dav/{connectionId}/...`，支持 OPTIONS、PROPFIND、受保护属性的 PROPPATCH、GET/HEAD、PUT、MKCOL、COPY、MOVE 和 DELETE，使用独立 Basic 凭据及当前 IAM 权限。该协议不属于 OpenAPI 标准方法清单，不计入上述134个JSON/原生operation；LOCK/UNLOCK不可用。实际客户端地址由管理响应的 endpointOrigin/endpointPath 提供，限制见[文件管理](../docs/operations/file-management.md)。
 
 `GET /api/v1/files` 在同一 operation 承载高级搜索：重复的 `keywords`、`extensions`、`kinds` 参数，`scope`、`match`、`caseSensitive`、字节/时间上下界、`foldersFirst`、`page` 和 `pageSize`。数组不按逗号拆分，字节零值区别于缺失；时间为包含起点、不含终点。返回 `total` 与生效分页及预算。未指定 `pageSize` 或显式 0 保留有界非分页读取，普通网页显式请求 50/100/200；范围、排序和日期语义见[文件管理](../docs/operations/file-management.md)。
 
