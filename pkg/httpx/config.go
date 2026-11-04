@@ -28,6 +28,7 @@ type ServerConfig struct {
 	IdleTimeout         time.Duration
 	MaxHeaderBytes      int
 	RequestTimeout      time.Duration
+	TransferTimeout     time.Duration
 	MaxRequestBodyBytes int64
 	MaxInFlight         int
 	TrustedProxyCIDRs   []string
@@ -89,6 +90,7 @@ type resolvedServerConfig struct {
 	IdleTimeout         time.Duration
 	MaxHeaderBytes      int
 	RequestTimeout      time.Duration
+	TransferTimeout     time.Duration
 	MaxRequestBodyBytes int64
 	MaxInFlight         int
 	TrustedProxyCIDRs   []string

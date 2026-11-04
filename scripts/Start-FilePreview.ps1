@@ -46,6 +46,7 @@ try {
     $access.dataDirectory = $previewDirectory
     $access | ConvertTo-Json | Set-Content -LiteralPath $accessPath
     $storagePath = (Join-Path $previewDirectory 'storage').Replace('\', '/').Replace("'", "''")
+    $stagingPath = (Join-Path $previewDirectory 'transfers').Replace('\', '/').Replace("'", "''")
     @"
 logger:
   environment: development
@@ -69,6 +70,9 @@ storage:
   driver: local
   local:
     basePath: '$storagePath'
+files:
+  transfers:
+    stagingPath: '$stagingPath'
 "@ | Set-Content -LiteralPath (Join-Path $previewDirectory 'config.yaml')
     Push-Location $previewDirectory
     try { & $binaryPath db migrate up; if ($LASTEXITCODE -ne 0) { throw 'Preview migration failed.' } } finally { Pop-Location }

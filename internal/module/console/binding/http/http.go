@@ -21,6 +21,8 @@ import (
 )
 
 const Prefix = "/api/console/v1"
+const NativePrefix = Prefix + "/native/"
+const NativeTargetPrefix = "/api/v1/"
 const csrfCookie = "__Host-clouddrive_console_csrf"
 const nativeCSRFCookie = "__Host-clouddrive_native_csrf"
 
@@ -288,7 +290,7 @@ func (h *Handler) routes() {
 	h.mux.HandleFunc("POST "+Prefix+"/auth/sessions/revoke-others", h.revokeSession)
 	h.mux.HandleFunc("GET "+Prefix+"/auth/sessions", h.sessions)
 	h.mux.HandleFunc("DELETE "+Prefix+"/auth/sessions/{id}", h.revokeSession)
-	h.mux.HandleFunc(Prefix+"/native/", h.forwardNative)
+	h.mux.HandleFunc(NativePrefix, h.forwardNative)
 	h.mux.HandleFunc("GET "+Prefix+"/users", h.listUsers)
 	h.mux.HandleFunc("POST "+Prefix+"/users", h.createUser)
 	h.mux.HandleFunc("GET "+Prefix+"/users/{id}", h.readUser)
@@ -450,7 +452,7 @@ func (h *Handler) forwardNative(w http.ResponseWriter, r *http.Request) {
 	copy := r.Clone(r.Context())
 	u := *r.URL
 	copy.URL = &u
-	copy.URL.Path = "/api/v1/" + strings.TrimPrefix(r.URL.Path, Prefix+"/native/")
+	copy.URL.Path = NativeTargetPrefix + strings.TrimPrefix(r.URL.Path, NativePrefix)
 	if r.Method != "GET" && r.Method != "HEAD" {
 		// 登录时镜像 IAM 会话的 CSRF token；每次转发轮换会让并发上传互相失效。
 		csrf, err := r.Cookie(nativeCSRFCookie)

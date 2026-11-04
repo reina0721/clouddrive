@@ -27,10 +27,15 @@ async function createText(
 }
 test.beforeEach(async ({ page }) => {
   const access = JSON.parse(
-    (await readFile(resolve(__dirname, '../../.data/preview-access.json'), 'utf8')).replace(
-      /^\uFEFF/,
-      '',
-    ),
+    (
+      await readFile(
+        resolve(
+          __dirname,
+          process.env.CLOUDDRIVE_FILE_TEST_ACCESS ?? '../../.data/preview-access.json',
+        ),
+        'utf8',
+      )
+    ).replace(/^\uFEFF/, ''),
   ) as { username: string; password: string };
   await page.goto('/login?returnTo=%2Fhome');
   await page.getByLabel('邮箱', { exact: true }).fill(access.username);

@@ -4,6 +4,8 @@
 
 [Files](files/README.md) 拥有私有文件目录、传输、回收状态、配额、幂等、内容编辑及只读分享授权；复用现有 IAM 与 Kernel Storage，不引入第二套认证或存储客户端。分享密码通过 composition 注入 IAM 根公开的无状态凭据摘要能力，Files 不导入 IAM 私有 Adapter，也不复用浏览器 Session 作为访客票据。
 
+Files 的持久传输生命周期与配额由 service 拥有，tusd 与 OS 锁留在窄 Adapter 中；候选准入绑定内容和暂存位置，流式读写保持在 Kernel 租约内。浏览器传输中心属于 files 子路由，不复用演示后台任务。
+
 `internal/module` 保存由应用组合根显式选择的纵向模块。这里的 Module 是进程内业务单元，不是 Go module、Kernel Component 或动态插件。每个模块按业务名称收口 Model、Service、Repository、协议 Adapter、binding 与 contribution；底层资源仍由 Kernel 统一创建，模块对象不进入 Kernel Plan。
 
 新增模块必须先按 [应用模块开发指南](../../docs/development/application-module-development.md) 完成真实用例、现有能力、新 Capability、资源 owner、生命周期和当前契约适配性评估，再进入目录与接口设计。

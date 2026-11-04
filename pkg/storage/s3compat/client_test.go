@@ -1,13 +1,16 @@
 package s3compat
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	storageclient "github.com/reina0721/clouddrive/pkg/storage/client"
 )
@@ -48,15 +51,19 @@ func TestClientExerciseWithPathStyleEndpoint(t *testing.T) {
 				return
 			}
 			w.Header().Set("Content-Type", "text/plain")
-			_, _ = w.Write(data)
+			w.Header().Set("ETag", `"test-etag"`)
+			http.ServeContent(w, r, key, time.Time{}, bytes.NewReader(data))
 		case http.MethodHead:
 			mu.Lock()
-			_, ok := objects[key]
+			data, ok := objects[key]
 			mu.Unlock()
 			if !ok {
 				http.NotFound(w, r)
 				return
 			}
+			w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+			w.Header().Set("Content-Type", "text/plain")
+			w.Header().Set("ETag", `"test-etag"`)
 			w.WriteHeader(http.StatusOK)
 		case http.MethodDelete:
 			mu.Lock()

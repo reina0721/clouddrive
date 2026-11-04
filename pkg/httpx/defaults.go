@@ -23,6 +23,9 @@ const (
 	DefaultServerIdleTimeout = 60 * time.Second
 	// DefaultServerRequestTimeout 是单个业务请求的 application budget。
 	DefaultServerRequestTimeout = 10 * time.Second
+	// DefaultServerTransferTimeout 只适用于静态声明的文件传输 operation。
+	DefaultServerTransferTimeout = 5 * time.Minute
+	MaxServerTransferTimeout     = 15 * time.Minute
 	// DefaultMaxRequestBodyBytes 是默认最大请求体。
 	DefaultMaxRequestBodyBytes int64 = 1 << 20
 	// DefaultServerMaxInFlight 是单进程同时处理的请求上限。
@@ -58,6 +61,7 @@ func DefaultServerConfig() ServerConfig {
 		IdleTimeout:         DefaultServerIdleTimeout,
 		MaxHeaderBytes:      http.DefaultMaxHeaderBytes,
 		RequestTimeout:      DefaultServerRequestTimeout,
+		TransferTimeout:     DefaultServerTransferTimeout,
 		MaxRequestBodyBytes: DefaultMaxRequestBodyBytes,
 		MaxInFlight:         DefaultServerMaxInFlight,
 		RateLimit: RateLimitConfig{

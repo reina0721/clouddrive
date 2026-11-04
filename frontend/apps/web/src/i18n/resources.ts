@@ -5,6 +5,7 @@ export const resources = {
       auth: { loading: '正在加载…', logout: '退出登录' },
       common: {
         filesUnavailableTitle: '文件服务尚未连接',
+        fileTransferFailed: '文件传输未能继续，请检查传输中心或重新选择文件。',
         filesUnavailableDescription: '当前演示环境不提供文件存储，请使用项目预览地址。',
         close: '关闭',
         cancel: '取消',
@@ -234,6 +235,8 @@ export const resources = {
       auth: { loading: 'Loading…', logout: 'Sign out' },
       common: {
         filesUnavailableTitle: 'File storage is not connected',
+        fileTransferFailed:
+          'The file transfer could not continue. Check the transfer center or select the file again.',
         filesUnavailableDescription:
           'File storage is not provided in this demo environment. Open the project preview instead.',
         close: 'Close',

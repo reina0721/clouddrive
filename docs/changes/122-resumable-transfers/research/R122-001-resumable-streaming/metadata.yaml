@@ -1,0 +1,46 @@
+schema_version: 1
+id: R122-001
+title: 大文件续传协议与流式承载
+question: 如何消除整块内存上传与刷新丢失，接入成熟续传协议并保留身份、配额、存储租约和公开分享边界？
+research_type: current-project
+topics: [resumable-upload, streaming-storage, transfer-lifecycle]
+keywords: [tus, tusd, tus-js-client, Range, SHA256, 传输中心]
+applicable_scenarios: [第三批本地网盘传输, 单服务本地暂存, 现有local及S3-compatible对象存储]
+non_applicable_scenarios: [无共享暂存的多主机集群, 离线下载, WebDAV, 浏览器关闭后自动读取用户磁盘]
+status: active
+summary: 采用tusd与tus-js-client；重构Storage流式租约和HTTP传输预算；files拥有持久传输与发布事务，不扩大字节fallback。
+evidence:
+  types: [source-code, browser-observation, official-source, official-release]
+  primary_sources:
+    - title: 当前源码与承载路径
+      locator: report.md
+      snapshot: c9071553b23f4e2e18d376245a3c42ee1d8e432d
+    - title: tusd官方发行
+      locator: https://github.com/tus/tusd/releases/tag/v2.10.1
+      snapshot: 2026-11-03 GitHub releases/latest 实际返回v2.10.1，2026-09-16发布
+    - title: tus-js-client官方发行
+      locator: https://github.com/tus/tus-js-client/releases/tag/v4.3.1
+      snapshot: 2026-11-03 GitHub releases/latest 实际返回v4.3.1，2025-01-16发布
+    - title: noble-hashes官方发行
+      locator: https://github.com/paulmillr/noble-hashes/releases/tag/2.4.0
+      snapshot: 2026-11-03 GitHub releases/latest 实际返回2.4.0，2026-08-27发布
+    - title: 同机独占OS锁
+      locator: https://github.com/gofrs/flock/releases/tag/v0.13.1
+      snapshot: 2026-11-03 实际源码复核后替换filelocker候选；Go1.25兼容，BSD-3-Clause
+researched_at: '2026-11-03'
+verified_at: '2026-11-03'
+validity:
+  mode: snapshot
+  review_after: '2026-12-03'
+  refresh_triggers:
+    - tusd或浏览器依赖出现安全公告或所选tag不可解析
+    - Storage租约、对象位置或HTTP operation gate发生相关修改
+    - 部署改为多主机或暂存不再是同机持久目录
+    - 需求改变为直传云存储、自动持久文件句柄或后台离线作业
+relations:
+  extends: [R120-001, R121-001]
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md
+

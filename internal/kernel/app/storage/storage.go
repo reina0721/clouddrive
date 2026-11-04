@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"sync"
 
@@ -59,6 +60,8 @@ type ObjectConfig struct {
 type Client interface {
 	Put(context.Context, string, []byte, pkgstorage.PutOptions) error
 	Get(context.Context, string) ([]byte, pkgstorage.ObjectInfo, error)
+	PutReader(context.Context, string, io.ReadSeeker, int64, pkgstorage.PutOptions) error
+	WithReader(context.Context, string, func(io.ReadSeeker, pkgstorage.ObjectInfo) error) error
 	Delete(context.Context, string) error
 	Exists(context.Context, string) (bool, error)
 }
@@ -401,6 +404,27 @@ func (c *borrowedClient) Get(ctx context.Context, key string) ([]byte, pkgstorag
 	}
 	defer cancel()
 	return c.delegate.Get(operationCtx, key)
+}
+
+func (c *borrowedClient) PutReader(ctx context.Context, key string, source io.ReadSeeker, sizeBytes int64, options pkgstorage.PutOptions) error {
+	operationCtx, cancel, err := c.state.operationContext(ctx)
+	if err != nil {
+		return err
+	}
+	defer cancel()
+	return c.delegate.PutReader(operationCtx, key, source, sizeBytes, options)
+}
+
+func (c *borrowedClient) WithReader(ctx context.Context, key string, use func(io.ReadSeeker, pkgstorage.ObjectInfo) error) error {
+	operationCtx, cancel, err := c.state.operationContext(ctx)
+	if err != nil {
+		return err
+	}
+	defer cancel()
+	if use == nil {
+		return pkgstorage.ErrNilClientFunc
+	}
+	return c.delegate.WithReader(operationCtx, key, use)
 }
 
 func (c *borrowedClient) Delete(ctx context.Context, key string) error {

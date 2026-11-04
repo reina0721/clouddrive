@@ -718,6 +718,9 @@ storage:
   driver: local
   local:
     basePath: %q
+files:
+  transfers:
+    stagingPath: %q
 scheduler:
   enabled: false
   timezone: UTC
@@ -741,7 +744,7 @@ management:
   maxInFlight: 16
 observability:
   serviceName: generation-a
-`, filepath.ToSlash(databasePath), filepath.ToSlash(filepath.Join(directory, "storage")), titleMax, maxHeaderBytes)
+`, filepath.ToSlash(databasePath), filepath.ToSlash(filepath.Join(directory, "storage")), filepath.ToSlash(filepath.Join(directory, "transfers")), titleMax, maxHeaderBytes)
 }
 
 func replaceConfig(oldValue, newValue string) func(*testing.T, string, string) string {

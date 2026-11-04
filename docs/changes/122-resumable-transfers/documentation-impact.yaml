@@ -1,0 +1,39 @@
+schema_version: 1
+change: 122-resumable-transfers
+areas:
+  - id: repository
+    decision: updated
+    documents: [README.md, docs/repository-scope.md]
+    reason: 第三批20项持久传输和流式下载，保留后续真实缺口。
+  - id: startup
+    decision: updated
+    documents: [README.md]
+    reason: composition显式装配暂存准入和流式租约，独立预览绑定自己的暂存根。
+  - id: webui
+    decision: updated
+    documents: [frontend/README.md]
+    reason: 认证框架拥有传输运行时，files增加传输中心子路由。
+  - id: frontend
+    decision: updated
+    documents: [frontend/README.md, docs/repository-scope.md]
+    reason: Host封装成熟tus客户端和增量摘要，Surface只消费语义快照。
+  - id: module
+    decision: updated
+    documents: [internal/module/README.md]
+    reason: files拥有传输状态和窄暂存契约，不穿透IAM或Storage资源所有权。
+  - id: capability
+    decision: updated
+    documents: [docs/operations/runtime-capabilities.md, pkg/storage/README.md]
+    reason: local/S3可寻址流、回调租约和清理错误处理。
+  - id: api
+    decision: updated
+    documents: [api/README.md]
+    reason: 原生97个operation、单轨分块上传和公开短期下载句柄。
+  - id: configuration
+    decision: updated
+    documents: [docs/configuration/README.md, docs/operations/file-management.md]
+    reason: 暂存和分块预算、媒体独立预算、精确HTTP传输超时与下载凭据期限。
+  - id: delivery
+    decision: updated
+    documents: [docs/operations/runtime-capabilities.md]
+    reason: v5/v6增量迁移、持续预览和隔离验收资料。

@@ -63,48 +63,57 @@ func New(ctx context.Context, cfg Config) (*Client, error) {
 }
 
 func (c *Client) Put(ctx context.Context, key string, data []byte, opts storageclient.PutOptions) error {
+	return c.PutReader(ctx, key, bytes.NewReader(data), int64(len(data)), opts)
+}
+
+// PutReader 复用已装配的 SDK 客户端，源可寻址以支持签名和 SDK 的有界重试。
+func (c *Client) PutReader(ctx context.Context, key string, source io.ReadSeeker, sizeBytes int64, opts storageclient.PutOptions) error {
+	if ctx == nil || source == nil || sizeBytes < 0 {
+		return fmt.Errorf("invalid object stream input")
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	if err := validateKey(key); err != nil {
 		return err
 	}
-	_, err := c.client.PutObject(ctx, &s3.PutObjectInput{
-		Bucket:      aws.String(c.bucket),
-		Key:         aws.String(key),
-		Body:        bytes.NewReader(data),
-		ContentType: stringPtr(opts.ContentType),
-		Metadata:    opts.Metadata,
+	size, err := source.Seek(0, io.SeekEnd)
+	if err != nil {
+		return fmt.Errorf("inspect object source length: %w", err)
+	}
+	if size != sizeBytes {
+		return fmt.Errorf("object stream length mismatch")
+	}
+	if _, err := source.Seek(0, io.SeekStart); err != nil {
+		return fmt.Errorf("rewind object source: %w", err)
+	}
+	_, err = c.client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket:        aws.String(c.bucket),
+		Key:           aws.String(key),
+		Body:          &contextSource{ctx: ctx, source: source},
+		ContentLength: aws.Int64(sizeBytes),
+		ContentType:   stringPtr(opts.ContentType),
+		Metadata:      opts.Metadata,
 	})
 	if err != nil {
-		return fmt.Errorf("put object %s: %w", key, err)
+		return fmt.Errorf("put object: %w", err)
 	}
 	return nil
 }
 
 func (c *Client) Get(ctx context.Context, key string) ([]byte, storageclient.ObjectInfo, error) {
-	if err := validateKey(key); err != nil {
-		return nil, storageclient.ObjectInfo{}, err
-	}
-	out, err := c.client.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: aws.String(c.bucket),
-		Key:    aws.String(key),
+	var content []byte
+	var metadata storageclient.ObjectInfo
+	err := c.WithReader(ctx, key, func(reader io.ReadSeeker, info storageclient.ObjectInfo) error {
+		metadata = info
+		var err error
+		content, err = io.ReadAll(reader)
+		return err
 	})
 	if err != nil {
-		return nil, storageclient.ObjectInfo{}, fmt.Errorf("get object %s: %w", key, err)
+		return nil, storageclient.ObjectInfo{}, err
 	}
-	defer out.Body.Close()
-	data, err := io.ReadAll(out.Body)
-	if err != nil {
-		return nil, storageclient.ObjectInfo{}, fmt.Errorf("read object %s: %w", key, err)
-	}
-	info := storageclient.ObjectInfo{
-		Key:         key,
-		ContentType: stringValue(out.ContentType),
-		ETag:        stringValue(out.ETag),
-		Metadata:    out.Metadata,
-	}
-	if out.ContentLength != nil {
-		info.Size = *out.ContentLength
-	}
-	return data, info, nil
+	return content, metadata, nil
 }
 
 func (c *Client) Delete(ctx context.Context, key string) error {

@@ -3,22 +3,22 @@ import {
   publicShareSchema,
   publicFileListingSchema,
   shareUnlockSchema,
+  shareDownloadGrantSchema,
   type PublicFilesPort,
 } from '@clouddrive/surface/files';
+import { nativeDownload } from './native-download';
 
 const requestTimeoutMs = 120_000;
 const shareTokenPattern = /^[A-Za-z0-9_-]{43}$/;
 
-/** createPublicFilesRuntime 只使用分享 capability；不读取或发送 IAM Cookie。 */
+/** createPublicFilesRuntime 的 JSON 请求不带 IAM Cookie，原生下载仅使用单文件 capability。 */
 export function createPublicFilesRuntime(token: string) {
   let ticket = '';
   let disposed = false;
   const controllers = new Set<AbortController>();
-  const urls = new Set<string>();
-  const timers = new Set<ReturnType<typeof setTimeout>>();
   async function call(
     suffix: string,
-    options: { password?: string; signal?: AbortSignal; binary?: boolean } = {},
+    options: { password?: string; signal?: AbortSignal; download?: boolean } = {},
   ): Promise<unknown> {
     if (disposed || !shareTokenPattern.test(token)) throw new FilesError('missing');
     const controller = new AbortController();
@@ -26,7 +26,7 @@ export function createPublicFilesRuntime(token: string) {
     const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
     try {
       const response = await fetch(`/api/v1/file-shares/${encodeURIComponent(token)}${suffix}`, {
-        method: options.password === undefined ? 'GET' : 'POST',
+        method: options.password === undefined && !options.download ? 'GET' : 'POST',
         credentials: 'omit',
         cache: 'no-store',
         referrerPolicy: 'no-referrer',
@@ -55,7 +55,7 @@ export function createPublicFilesRuntime(token: string) {
                   : 'unavailable',
         );
       }
-      return options.binary ? await response.blob() : await response.json();
+      return await response.json();
     } catch (error) {
       if (error instanceof FilesError) throw error;
       throw new FilesError(options.signal?.aborted || disposed ? 'canceled' : 'unavailable', {
@@ -79,23 +79,11 @@ export function createPublicFilesRuntime(token: string) {
         await call(`/entries?${new URLSearchParams({ parent })}`, signal ? { signal } : {}),
       ),
     download: async (entry) => {
-      const blob = await call(`/content/${encodeURIComponent(entry.id)}`, { binary: true });
-      if (!(blob instanceof Blob)) throw new FilesError('unavailable');
+      const grant = shareDownloadGrantSchema.parse(
+        await call('/content/' + encodeURIComponent(entry.id) + '/download', { download: true }),
+      );
       if (disposed) throw new FilesError('canceled');
-      const url = URL.createObjectURL(blob);
-      urls.add(url);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = entry.name;
-      document.body.append(anchor);
-      anchor.click();
-      anchor.remove();
-      const timer = setTimeout(() => {
-        URL.revokeObjectURL(url);
-        urls.delete(url);
-        timers.delete(timer);
-      }, 0);
-      timers.add(timer);
+      nativeDownload('/api/v1/file-downloads/' + encodeURIComponent(grant.ticket), entry.name);
     },
   };
   return {
@@ -108,10 +96,6 @@ export function createPublicFilesRuntime(token: string) {
       ticket = '';
       for (const controller of controllers) controller.abort();
       controllers.clear();
-      for (const timer of timers) clearTimeout(timer);
-      timers.clear();
-      for (const url of urls) URL.revokeObjectURL(url);
-      urls.clear();
     },
   };
 }

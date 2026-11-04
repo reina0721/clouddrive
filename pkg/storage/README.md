@@ -70,6 +70,8 @@ if err := client.Put(ctx, "setup/health.txt", []byte("ok"), storage.PutOptions{C
 
 `StorageManager.Close` 会同时尝试关闭 local 与 object client，并用 `errors.Join` 保留多个关闭错误。
 
+`PutReader` 接收已知长度的 `io.ReadSeeker`，保留取消与长度校验；`WithReader` 在回调内借用可寻址内容及 ObjectInfo，回调后读写失效，调用方不拥有 Close。local 使用实际文件流与候选原子发布，S3-compatible 使用 HeadObject 和带 ETag 条件的惰性 Range GetObject，Seek 关闭被替代响应；回调与 Close 同时失败时聚合错误。原有 Put/Get 复用这一路径服务小内容，不提供把流静默转成全文件 ReadAll 的 fallback。
+
 ## Kernel 装配
 
 Kernel 组合返回稳定的 `capabilities.Storage`。调用方按 `primary`、`local` 或 `object` route 在回调内借用窄 Client；Client 不含 `Close`，回调结束后不能继续使用：

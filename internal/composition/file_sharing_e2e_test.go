@@ -69,7 +69,7 @@ func TestFileSharingPublicPasswordScopeRevocationAndRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	payload := "iam:\n  local:\n    setupToken: " + setup + "\n" + strings.Replace(generationConfig(directory, 120, 32<<20, filepath.Join(directory, "shares.db")), "mode: development-anonymous", "mode: session", 1)
-	payload += "files:\n  sharing:\n    attemptLimit: 2\n"
+	payload = strings.Replace(payload, "files:\n", "files:\n  sharing:\n    attemptLimit: 2\n", 1)
 	writeGenerationConfig(t, configPath, payload)
 	coordinator, _ := newGenerationTestCoordinator(t, configPath)
 	if err := coordinator.Start(t.Context()); err != nil {
@@ -139,6 +139,34 @@ func TestFileSharingPublicPasswordScopeRevocationAndRestart(t *testing.T) {
 		t.Fatal("分享下载字节不一致")
 	}
 	publicShareRequest(t, owner.base, "GET", path+"/content/"+outside.ID, nil, access.Ticket, 404)
+	publicShareRequest(t, owner.base, "POST", path+"/content/"+file.ID+"/download", nil, "", 403)
+	publicShareRequest(t, owner.base, "POST", path+"/content/"+outside.ID+"/download", nil, access.Ticket, 404)
+	downloadGrant := publicShareRequest(t, owner.base, "POST", path+"/content/"+file.ID+"/download", nil, access.Ticket, 200)
+	var nativeDownload struct {
+		Ticket string `json:"ticket"`
+	}
+	if err := json.Unmarshal(downloadGrant, &nativeDownload); err != nil || nativeDownload.Ticket == "" {
+		t.Fatal("没有签发单文件下载凭据")
+	}
+	downloadPath := "/api/v1/file-downloads/" + nativeDownload.Ticket
+	publicShareRequest(t, owner.base, "GET", downloadPath, nil, "", 200)
+	// 原生浏览器无需登录 Cookie，且同一凭据支持字节范围。
+	rangeRequest, err := http.NewRequestWithContext(t.Context(), "GET", owner.base+downloadPath, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rangeRequest.Header.Set("Range", "bytes=7-16")
+	rangeResponse, err := http.DefaultClient.Do(rangeRequest)
+	if err != nil {
+		t.Fatal("公开范围下载请求失败")
+	}
+	rangeContent, readErr := io.ReadAll(rangeResponse.Body)
+	if err := errors.Join(readErr, rangeResponse.Body.Close()); err != nil {
+		t.Fatal(err)
+	}
+	if rangeResponse.StatusCode != 206 || string(rangeContent) != "authorized" {
+		t.Fatal("公开范围下载返回错误内容")
+	}
 	publicShareRequest(t, owner.base, "GET", path+"/entries?parent="+outside.ID, nil, access.Ticket, 404)
 	publicShareRequest(t, owner.base, "GET", "/api/v1/files/"+file.ID+"/content", nil, "", 401)
 	listing := publicShareRequest(t, owner.base, "GET", path+"/entries", nil, access.Ticket, 200)
@@ -163,6 +191,7 @@ func TestFileSharingPublicPasswordScopeRevocationAndRestart(t *testing.T) {
 	}
 	owner.request(t, "POST", "/native/files/shares/"+shareID+"/revoke", nil, 200)
 	publicShareRequest(t, owner.base, "GET", path+"/content/"+file.ID, nil, access.Ticket, 404)
+	publicShareRequest(t, owner.base, "GET", downloadPath, nil, "", 404)
 	expired := time.Now().UTC().Add(-time.Second).Format(time.RFC3339)
 	owner.request(t, "POST", "/native/files/shares", map[string]string{"rootId": file.ID, "expiresAt": expired}, 422)
 }

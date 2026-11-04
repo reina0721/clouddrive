@@ -34,13 +34,22 @@ type Problem struct {
 type ProtocolProblemError struct {
 	Problem
 	status int
+	cause  error
 }
 
 // NewProtocolProblemError 从项目错误映射构造可序列化的协议错误。
 func NewProtocolProblemError(ctx context.Context, err error) *ProtocolProblemError {
 	request := (&http.Request{}).WithContext(ctx)
 	problem, _ := ProblemOf(request, err)
-	return &ProtocolProblemError{Problem: problem, status: problem.Status}
+	return &ProtocolProblemError{Problem: problem, status: problem.Status, cause: err}
+}
+
+// Unwrap 保留已映射的项目错误，供原始内容响应复用同一协议语义。
+func (e *ProtocolProblemError) Unwrap() error {
+	if e == nil {
+		return nil
+	}
+	return e.cause
 }
 
 func (e *ProtocolProblemError) Error() string {

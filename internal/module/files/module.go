@@ -3,7 +3,10 @@ package files
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"github.com/reina0721/clouddrive/internal/module/files/adapter/tus"
 	"github.com/reina0721/clouddrive/internal/module/files/adapter/unicodename"
 	"github.com/reina0721/clouddrive/internal/module/files/handler"
 	"github.com/reina0721/clouddrive/internal/module/files/repo"
@@ -11,6 +14,7 @@ import (
 	"github.com/reina0721/clouddrive/pkg/clock"
 	"github.com/reina0721/clouddrive/pkg/idgen"
 	"github.com/reina0721/clouddrive/pkg/logger"
+	"path/filepath"
 )
 
 // ValidateStorage 将存储身份校验放在候选准入，不混入纯内存构造器。
@@ -25,6 +29,9 @@ func ValidateStorage(ctx context.Context, access repo.Access, identity string) e
 type Dependencies struct {
 	Database        repo.Access
 	Content         service.Content
+	TransferContent service.TransferContent
+	TransferPolicy  service.TransferPolicy
+	StagingPath     string
 	Clock           clock.Clock
 	IDs             idgen.Generator
 	Actors          handler.ActorAccess
@@ -52,5 +59,50 @@ func New(deps Dependencies) (*handler.Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &handler.Handler{Service: useCases, Sharing: sharing, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}, nil
+	identity, err := stagingIdentity(deps.StagingPath)
+	if err != nil {
+		return nil, err
+	}
+	transfersRepository, err := repo.NewTransfers(deps.Database, deps.StorageIdentity, identity)
+	if err != nil {
+		return nil, err
+	}
+	p := deps.TransferPolicy
+	staging, err := tus.New(tus.Config{Root: deps.StagingPath, LockTimeout: p.LockTimeout, LockRetryInterval: p.LockRetryInterval, NetworkTimeout: p.NetworkTimeout, CompletionTimeout: p.CompletionTimeout, MaxFileBytes: p.MaxFileBytes}, deps.Logger)
+	if err != nil {
+		return nil, err
+	}
+	transfers, err := service.NewTransfers(useCases, transfersRepository, staging, deps.TransferContent, p)
+	if err != nil {
+		return nil, err
+	}
+	return &handler.Handler{Service: useCases, Sharing: sharing, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}, nil
+}
+
+func stagingIdentity(root string) (string, error) {
+	if root == "" {
+		return "", fmt.Errorf("transfer staging path missing")
+	}
+	absolute, err := filepath.Abs(root)
+	if err != nil {
+		return "", err
+	}
+	digest := sha256.Sum256([]byte(absolute))
+	return hex.EncodeToString(digest[:]), nil
+}
+
+// PrepareTransfers 将暂存目录准入 I/O 与纯内存模块构造分开。
+func PrepareTransfers(ctx context.Context, access repo.Access, storageIdentity, root string) error {
+	identity, err := stagingIdentity(root)
+	if err != nil {
+		return err
+	}
+	repository, err := repo.New(access, storageIdentity)
+	if err != nil {
+		return err
+	}
+	if err := repository.ValidateStagingRoot(ctx, identity); err != nil {
+		return err
+	}
+	return tus.PrepareRoot(ctx, root)
 }

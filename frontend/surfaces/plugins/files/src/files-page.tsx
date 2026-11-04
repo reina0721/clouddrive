@@ -9,6 +9,8 @@ import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { ProgressMeter } from '@clouddrive/ui-adapter/progress-meter';
 import { ShareDialog } from './share-dialog';
+import { TransferPanel } from './transfer-panel';
+import { FileLink } from './file-link';
 import { TextDialog, type TextRequest } from './text-dialog';
 import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
 import {
@@ -25,7 +27,12 @@ import {
   HardDrive,
   MoreHorizontal,
 } from '../../../src/files/icons';
-import { useFiles, useFileMedia } from '../../../src/files/runtime';
+import {
+  useFiles,
+  useFileMedia,
+  useTransfers,
+  useTransferSnapshot,
+} from '../../../src/files/runtime';
 import { filesAccentStyle } from '../../../src/files/appearance';
 import {
   FilesError,
@@ -42,11 +49,6 @@ type Props = Readonly<{
   search: string;
   navigate: (query: Record<string, string>) => void;
 }>;
-type QueueItem = UploadCandidate & {
-  parentId: string;
-  state: 'waiting' | 'uploading' | 'succeeded' | 'failed' | 'canceled';
-  failure?: string | undefined;
-};
 type Dialog = {
   mode: 'folder' | 'rename' | 'move' | 'copy' | 'remove' | 'restore';
   targets: FileEntry[];
@@ -62,6 +64,8 @@ function bytes(value: number): string {
 
 export function FilesPage({ parent, category, trash, search, navigate: routeNavigate }: Props) {
   const port = useFiles();
+  const transfers = useTransfers();
+  const transferState = useTransferSnapshot();
   const Media = useFileMedia();
   const { t } = useFrontendTranslation();
   const [listing, setListing] = useState<FileListing>();
@@ -86,8 +90,6 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
   const [preferences, setPreferences] = useState(initialPreferences);
   const [selected, setSelected] = useState<string[]>([]);
   const [searchText, setSearchText] = useState(search);
-  const [queue, setQueue] = useState<QueueItem[]>([]);
-  const controllers = useRef(new Map<string, AbortController>());
   const [dialog, setDialog] = useState<Dialog>();
   const [shareTarget, setShareTarget] = useState<FileEntry>();
   const [textRequest, setTextRequest] = useState<TextRequest>();
@@ -182,70 +184,19 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
         for (const candidate of candidates) port.releaseCandidate(candidate.id);
         return;
       }
-      setQueue((current) => [
-        ...current,
-        ...candidates.map((candidate): QueueItem => ({
-          ...candidate,
-          parentId: parent,
-          state: candidate.sizeBytes > listing.maxFileBytes ? 'failed' : 'waiting',
-          ...(candidate.sizeBytes > listing.maxFileBytes
-            ? { failure: t('files.errors.large') }
-            : {}),
-        })),
-      ]);
+      void transfers.enqueue(candidates, parent).catch((error) => setNotice(errorText(error)));
     },
-    [listing, parent, port, t, trash],
+    [trash, listing, parent, port, transfers, errorText],
   );
   useEffect(() => port.subscribeDrop(enqueue), [port, enqueue]);
+  useEffect(() => () => previewController.current?.abort(), []);
+  const completedRevision = useRef(transferState.completedRevision);
   useEffect(() => {
-    const slots = (listing?.concurrentUploads ?? 1) - controllers.current.size;
-    const ready = queue
-      .filter((item) => item.state === 'waiting' && !controllers.current.has(item.id))
-      .slice(0, Math.max(0, slots));
-    for (const item of ready) {
-      const controller = new AbortController();
-      controllers.current.set(item.id, controller);
-      setQueue((current) =>
-        current.map((candidate) =>
-          candidate.id === item.id ? { ...candidate, state: 'uploading' } : candidate,
-        ),
-      );
-      port
-        .upload(item, item.parentId, controller.signal)
-        .then(() => {
-          port.releaseCandidate(item.id);
-          setQueue((current) =>
-            current.map((candidate) =>
-              candidate.id === item.id ? { ...candidate, state: 'succeeded' } : candidate,
-            ),
-          );
-        })
-        .catch((error: unknown) => {
-          setQueue((current) =>
-            current.map((candidate) =>
-              candidate.id === item.id
-                ? {
-                    ...candidate,
-                    state: controller.signal.aborted ? 'canceled' : 'failed',
-                    failure: errorText(error),
-                  }
-                : candidate,
-            ),
-          );
-        })
-        .finally(() => {
-          controllers.current.delete(item.id);
-          reload();
-        });
+    if (completedRevision.current !== transferState.completedRevision) {
+      completedRevision.current = transferState.completedRevision;
+      reload();
     }
-  }, [queue, listing?.concurrentUploads, port, errorText, reload]);
-  useEffect(() => {
-    const active = controllers.current;
-    return () => {
-      for (const controller of active.values()) controller.abort();
-      previewController.current?.abort();
-    };
-  }, []);
+  }, [transferState.completedRevision, reload]);
 
   function savePreferences(next: FileViewPreferences) {
     setPreferences(next);
@@ -305,14 +256,6 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
       setDialogFailure((current) => current || errorText(error));
       throw error;
     }
-  }
-  function cancelUpload(item: QueueItem) {
-    controllers.current.get(item.id)?.abort();
-    setQueue((current) =>
-      current.map((candidate) =>
-        candidate.id === item.id ? { ...candidate, state: 'canceled' } : candidate,
-      ),
-    );
   }
   async function showDetails(entry: FileEntry) {
     try {
@@ -422,10 +365,10 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
     >
       <div className="mx-auto grid min-h-screen max-w-screen-2xl md:grid-cols-5">
         <aside className="border-b border-border p-4 md:border-b-0 md:p-5">
-          <a href="/home" className="flex items-center gap-3 px-3 py-3 text-xl font-bold">
+          <FileLink target="files" className="flex items-center gap-3 px-3 py-3 text-xl font-bold">
             <Cloud className="size-8 text-brand" />
             {t('files.brand')}
-          </a>
+          </FileLink>
           <nav aria-label={t('files.nav')} className="mt-5 flex flex-wrap gap-1 md:flex-col">
             {navItems.map((item) => (
               <button
@@ -452,16 +395,19 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
             </button>
           </nav>
           <div className="mt-6 flex flex-wrap gap-3 px-4 text-sm text-ink-muted md:flex-col">
-            <a href="/home/shares" className="hover:text-brand">
+            <FileLink target="shares" className="hover:text-brand">
               {t('files.myShares')}
-            </a>
-            <a href="/workspace" className="flex items-center gap-3 hover:text-brand">
+            </FileLink>
+            <FileLink target="transfers" className="hover:text-brand">
+              {t('files.transferCenter')}
+            </FileLink>
+            <FileLink target="workspace" className="flex items-center gap-3 hover:text-brand">
               <Settings className="size-5" />
               {t('files.management')}
-            </a>
-            <a href="/account" className="hover:text-brand">
+            </FileLink>
+            <FileLink target="account" className="hover:text-brand">
               {t('files.account')}
-            </a>
+            </FileLink>
           </div>
           {listing ? (
             <div className="mt-8 rounded-panel border border-border bg-surface p-4 text-xs text-ink-muted">
@@ -906,67 +852,7 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
                 })}
               </p>
             ) : null}
-            {queue.length ? (
-              <section
-                className="rounded-panel border border-border bg-surface p-4"
-                aria-label={t('files.uploads')}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="font-semibold">{t('files.uploads')}</h2>
-                  <Action
-                    size="sm"
-                    variant="quiet"
-                    onPress={() => {
-                      for (const item of queue)
-                        if (item.state === 'succeeded' || item.state === 'canceled')
-                          port.releaseCandidate(item.id);
-                      setQueue((current) =>
-                        current.filter(
-                          (item) => item.state !== 'succeeded' && item.state !== 'canceled',
-                        ),
-                      );
-                    }}
-                  >
-                    {t('files.clearFinished')}
-                  </Action>
-                </div>
-                <ul className="mt-3 divide-y divide-border">
-                  {queue.map((item) => (
-                    <li key={item.id} className="flex min-w-0 flex-wrap items-center gap-3 py-3">
-                      <span className="min-w-0 flex-1 truncate text-sm">{item.name}</span>
-                      <span className="text-xs text-ink-muted">{bytes(item.sizeBytes)}</span>
-                      <span role="status" className="text-sm">
-                        {t(`files.${item.state}`)}
-                      </span>
-                      {item.failure && item.state === 'failed' ? (
-                        <p className="w-full text-xs text-danger">{item.failure}</p>
-                      ) : null}
-                      {item.state === 'waiting' || item.state === 'uploading' ? (
-                        <Action size="sm" variant="quiet" onPress={() => cancelUpload(item)}>
-                          {t('files.cancel')}
-                        </Action>
-                      ) : item.state === 'failed' || item.state === 'canceled' ? (
-                        <Action
-                          size="sm"
-                          variant="secondary"
-                          onPress={() =>
-                            setQueue((current) =>
-                              current.map((candidate) =>
-                                candidate.id === item.id
-                                  ? { ...candidate, state: 'waiting', failure: undefined }
-                                  : candidate,
-                              ),
-                            )
-                          }
-                        >
-                          {t('files.retry')}
-                        </Action>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
+            <TransferPanel compact />
           </Page>
         </main>
       </div>
@@ -1080,7 +966,7 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
               key={mediaEntry.id + ':' + mediaEntry.contentRevision}
               entry={mediaEntry}
               mode="preview"
-              maxBytes={listing.maxFileBytes}
+              maxBytes={listing.maxMediaBytes}
             />
             <Action
               variant="secondary"

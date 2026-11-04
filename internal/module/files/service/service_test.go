@@ -1,12 +1,14 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"github.com/reina0721/clouddrive/internal/module/files/adapter/unicodename"
 	"github.com/reina0721/clouddrive/internal/module/files/model"
 	"github.com/reina0721/clouddrive/pkg/clock"
 	"github.com/reina0721/clouddrive/pkg/idgen"
+	"io"
 	"sync"
 	"testing"
 	"time"
@@ -113,6 +115,14 @@ func (c *memoryContent) Get(ctx context.Context, key string) ([]byte, error) {
 	}
 	return append([]byte{}, c.objects[key]...), ctx.Err()
 }
+
+func (c *memoryContent) WithReader(ctx context.Context, key string, use func(io.ReadSeeker, int64) error) error {
+	content, err := c.Get(ctx, key)
+	if err != nil {
+		return err
+	}
+	return use(bytes.NewReader(content), int64(len(content)))
+}
 func (c *memoryContent) Delete(ctx context.Context, key string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -147,7 +157,7 @@ func TestDirectoryOwnershipTrashRestoreAndCycles(t *testing.T) {
 	folder = requireEntry(t, folder, err)
 	child, err := s.Folder(ctx, "owner", folder.ID, "子目录")
 	child = requireEntry(t, child, err)
-	file, err := s.Upload(ctx, "owner", child.ID, "notes.txt", "upload-notes-key-001", []byte("你好"))
+	file, err := s.createSmallContent(ctx, "owner", child.ID, "notes.txt", "upload-notes-key-001", []byte("你好"))
 	file = requireEntry(t, file, err)
 	if _, err = s.Detail(ctx, "other", file.ID); !errors.Is(err, model.ErrMissing) {
 		t.Fatalf("cross-owner read: %v", err)
@@ -167,7 +177,7 @@ func TestDirectoryOwnershipTrashRestoreAndCycles(t *testing.T) {
 	if _, err = s.Trash(ctx, "owner", folder.ID); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err = s.Download(ctx, "owner", file.ID); !errors.Is(err, model.ErrMissing) {
+	if _, _, err = s.ReadSmall(ctx, "owner", file.ID, DefaultMaxArchiveBytes); !errors.Is(err, model.ErrMissing) {
 		t.Fatalf("trashed ancestor leak: %v", err)
 	}
 	listing, err := s.List(ctx, "owner", Query{Search: "notes"})
@@ -177,7 +187,7 @@ func TestDirectoryOwnershipTrashRestoreAndCycles(t *testing.T) {
 	if _, err = s.Restore(ctx, "owner", folder.ID, nil); err != nil {
 		t.Fatal(err)
 	}
-	_, content, err := s.Download(ctx, "owner", file.ID)
+	_, content, err := s.ReadSmall(ctx, "owner", file.ID, DefaultMaxArchiveBytes)
 	if err != nil || string(content) != "你好" {
 		t.Fatalf("restore content: %q %v", content, err)
 	}
@@ -190,9 +200,9 @@ func pointer(value string) *string { return &value }
 func TestListingFiltersAndStableSizeOrder(t *testing.T) {
 	s, _, _ := newTestService(t, DefaultPolicy())
 	ctx := t.Context()
-	small, err := s.Upload(ctx, "owner", "", "z.txt", "list-upload-key-001", []byte("a"))
+	small, err := s.createSmallContent(ctx, "owner", "", "z.txt", "list-upload-key-001", []byte("a"))
 	small = requireEntry(t, small, err)
-	large, err := s.Upload(ctx, "owner", "", "a.txt", "list-upload-key-002", []byte("ab"))
+	large, err := s.createSmallContent(ctx, "owner", "", "a.txt", "list-upload-key-002", []byte("ab"))
 	large = requireEntry(t, large, err)
 	result, err := s.List(ctx, "owner", Query{Category: "document", Sort: "size"})
 	if err != nil || len(result.Items) != 2 || result.Items[0].ID != small.ID {
@@ -218,19 +228,19 @@ func TestUploadIdempotencyQuotaRaceAndCompensation(t *testing.T) {
 	policy.QuotaBytes = 6
 	s, repository, content := newTestService(t, policy)
 	ctx := t.Context()
-	entry, err := s.Upload(ctx, "owner", "", "a.txt", "stable-upload-key-001", []byte("abcd"))
+	entry, err := s.createSmallContent(ctx, "owner", "", "a.txt", "stable-upload-key-001", []byte("abcd"))
 	entry = requireEntry(t, entry, err)
-	retried, err := s.Upload(ctx, "owner", "", "a.txt", "stable-upload-key-001", []byte("abcd"))
+	retried, err := s.createSmallContent(ctx, "owner", "", "a.txt", "stable-upload-key-001", []byte("abcd"))
 	if err != nil || retried.ID != entry.ID {
 		t.Fatalf("retry: %+v %v", retried, err)
 	}
-	if _, err = s.Upload(ctx, "owner", "", "a.txt", "stable-upload-key-001", []byte("diff")); !errors.Is(err, model.ErrConflict) {
+	if _, err = s.createSmallContent(ctx, "owner", "", "a.txt", "stable-upload-key-001", []byte("diff")); !errors.Is(err, model.ErrConflict) {
 		t.Fatalf("idempotency mismatch: %v", err)
 	}
-	if _, err = s.Upload(ctx, "owner", "", "b.txt", "stable-upload-key-002", []byte("abc")); !errors.Is(err, model.ErrQuota) {
+	if _, err = s.createSmallContent(ctx, "owner", "", "b.txt", "stable-upload-key-002", []byte("abc")); !errors.Is(err, model.ErrQuota) {
 		t.Fatalf("quota: %v", err)
 	}
-	if _, err = s.Upload(ctx, "owner", "", "b.txt", "stable-upload-key-002", []byte("abcde")); !errors.Is(err, model.ErrTooLarge) {
+	if _, err = s.createSmallContent(ctx, "owner", "", "b.txt", "stable-upload-key-002", []byte("abcde")); !errors.Is(err, model.ErrTooLarge) {
 		t.Fatalf("size: %v", err)
 	}
 	if _, err = s.Trash(ctx, "owner", entry.ID); err != nil {
@@ -242,7 +252,7 @@ func TestUploadIdempotencyQuotaRaceAndCompensation(t *testing.T) {
 	}
 	repository.fail = errors.New("database unavailable")
 	content.deleteErr = errors.New("cleanup unavailable")
-	_, err = s.Upload(ctx, "second-owner", "", "c.txt", "stable-upload-key-003", []byte("a"))
+	_, err = s.createSmallContent(ctx, "second-owner", "", "c.txt", "stable-upload-key-003", []byte("a"))
 	if !errors.Is(err, repository.fail) || !errors.Is(err, content.deleteErr) {
 		t.Fatalf("error chain lost: %v", err)
 	}
@@ -254,7 +264,7 @@ func TestUploadIdempotencyQuotaRaceAndCompensation(t *testing.T) {
 		wg.Add(1)
 		go func(name string) {
 			defer wg.Done()
-			_, err := race.Upload(ctx, "owner", "", name, name+"-stable-key-01", []byte("abcd"))
+			_, err := race.createSmallContent(ctx, "owner", "", name, name+"-stable-key-01", []byte("abcd"))
 			results <- err
 		}(name)
 	}
@@ -293,15 +303,15 @@ func TestCancellationSlotsAndIntegrity(t *testing.T) {
 	if _, err = s.AcquireUpload(canceled); !errors.Is(err, context.Canceled) {
 		t.Fatal(err)
 	}
-	entry, err := s.Upload(ctx, "owner", "", "text.txt", "integrity-key-0001", []byte("good"))
+	entry, err := s.createSmallContent(ctx, "owner", "", "text.txt", "integrity-key-0001", []byte("good"))
 	entry = requireEntry(t, entry, err)
 	content.corrupt = true
-	if _, _, err = s.Download(ctx, "owner", entry.ID); err == nil {
+	if _, _, err = s.ReadSmall(ctx, "owner", entry.ID, DefaultMaxArchiveBytes); err == nil {
 		t.Fatal("corrupt bytes returned successfully")
 	}
 	deadline, cancel := context.WithDeadline(ctx, time.Now().Add(-time.Second))
 	defer cancel()
-	if _, err = s.Upload(deadline, "owner", "", "late.txt", "integrity-key-0002", []byte("late")); !errors.Is(err, context.DeadlineExceeded) {
+	if _, err = s.createSmallContent(deadline, "owner", "", "late.txt", "integrity-key-0002", []byte("late")); !errors.Is(err, context.DeadlineExceeded) {
 		t.Fatalf("deadline cause: %v", err)
 	}
 }

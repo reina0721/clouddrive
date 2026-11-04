@@ -1,9 +1,9 @@
 package httpbinding
 
 import (
-	"bytes"
 	"context"
-	"mime"
+	"github.com/reina0721/clouddrive/internal/module/files/model"
+	"io"
 	"net/http"
 	"time"
 
@@ -11,7 +11,6 @@ import (
 	"github.com/reina0721/clouddrive/internal/module/files/handler"
 	"github.com/reina0721/clouddrive/internal/module/files/service"
 	"github.com/reina0721/clouddrive/internal/transport/http/humabinding"
-	"github.com/reina0721/clouddrive/pkg/httpx"
 )
 
 const publicSharePrefix = "/api/v1/file-shares"
@@ -73,6 +72,7 @@ func publicShareOperation(id, method, suffix string, jsonBody bool) huma.Operati
 	return op
 }
 func registerSharing(api huma.API, h *handler.Handler, operation func(string, string, string, string, bool) huma.Operation) {
+	registerShareDownloads(api, h)
 	private := func(id, method, suffix, scope string, jsonBody bool) huma.Operation {
 		op := operation(id, method, suffix, scope, jsonBody)
 		op.Middlewares = append(op.Middlewares, sharingHeaders)
@@ -129,24 +129,7 @@ func registerSharing(api huma.API, h *handler.Handler, operation func(string, st
 	})
 	unlock := publicShareOperation("files.public.unlock", http.MethodPost, "/{token}/unlock", true)
 	unlock.MaxBodyBytes = maxShareUnlockBodyBytes
-	unlock.Middlewares = append(unlock.Middlewares, func(ctx huma.Context, next func(huma.Context)) {
-		request, writer := humabinding.UnwrapHTTP(ctx)
-		origin := request.Header.Get("Origin")
-		allowed := origin != "" && httpx.SameOrigin(request, origin)
-		if h != nil {
-			for _, candidate := range h.PublicOrigins {
-				if candidate == origin && origin != "" {
-					allowed = true
-					break
-				}
-			}
-		}
-		if !allowed {
-			httpx.WriteProblem(writer, request, &httpx.StatusError{StatusCode: http.StatusForbidden, Code: "files_share_origin", Message: "share origin rejected"})
-			return
-		}
-		next(ctx)
-	})
+	unlock.Middlewares = append(unlock.Middlewares, shareOrigin(h))
 	huma.Register(api, unlock, func(ctx context.Context, input *publicUnlockInput) (*publicUnlockOutput, error) {
 		grant, err := h.Sharing.Unlock(ctx, input.Token, input.Body.Password)
 		if err != nil {
@@ -155,19 +138,20 @@ func registerSharing(api huma.API, h *handler.Handler, operation func(string, st
 		h.Logger.Info("files.share.unlocked")
 		return &publicUnlockOutput{Body: grant}, nil
 	})
-	download := publicShareOperation("files.public.content", http.MethodGet, "/{token}/content/{id}", false)
-	download.Middlewares = append(download.Middlewares, transferAdmission(h))
-	download.Responses = map[string]*huma.Response{"200": {Description: "分享授权范围内的原始文件", Content: map[string]*huma.MediaType{"application/octet-stream": {Schema: &huma.Schema{Type: "string", Format: "binary"}}}}}
-	huma.Register(api, download, func(ctx context.Context, input *publicContentInput) (*contentOutput, error) {
-		entry, content, err := h.Sharing.Download(ctx, input.Token, input.Grant, input.ID)
-		if err != nil {
-			return nil, h.Present(ctx, err)
+
+	for _, method := range []string{http.MethodGet, http.MethodHead} {
+		id := "files.public.content"
+		if method == http.MethodHead {
+			id = "files.public.content.head"
 		}
-		return &contentOutput{Body: func(ctx huma.Context) {
-			request, writer := humabinding.UnwrapHTTP(ctx)
-			writer.Header().Set("Content-Type", "application/octet-stream")
-			writer.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": entry.Name}))
-			http.ServeContent(writer, request, entry.Name, entry.UpdatedAt, bytes.NewReader(content))
-		}}, nil
-	})
+		download := transferBudget(publicShareOperation(id, method, "/{token}/content/{id}", false))
+		download.Middlewares = append(download.Middlewares, transferAdmission(h))
+		download.Responses = map[string]*huma.Response{"200": {Description: "分享范围内的原始内容和字节范围", Content: map[string]*huma.MediaType{"application/octet-stream": {Schema: &huma.Schema{Type: "string", Format: "binary"}}}}}
+		huma.Register(api, download, func(ctx context.Context, input *publicContentInput) (*contentOutput, error) {
+			return contentResponse(ctx, h, func(ctx context.Context, use func(model.Entry, io.ReadSeeker) error) error {
+				return h.Sharing.DownloadTo(ctx, input.Token, input.Grant, input.ID, use)
+			}), nil
+		})
+	}
+
 }

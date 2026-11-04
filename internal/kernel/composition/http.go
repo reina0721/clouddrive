@@ -32,6 +32,9 @@ func HTTPServerConfig(snapshot config.Snapshot) (pkghttpx.ServerConfig, error) {
 	if err := snapshot.DecodeSection(httpConfigPath, &resolved); err != nil {
 		return pkghttpx.ServerConfig{}, fmt.Errorf("decode HTTP configuration: %w", err)
 	}
+	if resolved.TransferTimeout <= 0 {
+		return pkghttpx.ServerConfig{}, fmt.Errorf("HTTP transfer timeout must be positive")
+	}
 	if err := pkghttpx.ValidateServerConfig(&resolved); err != nil {
 		return pkghttpx.ServerConfig{}, err
 	}
@@ -92,6 +95,7 @@ func (httpDefaults) Defaults(ctx context.Context) (config.Object, config.Control
 		config.FieldOf("idleTimeout", config.Duration(value.IdleTimeout)),
 		config.FieldOf("maxHeaderBytes", maxHeaderBytes),
 		config.FieldOf("requestTimeout", config.Duration(value.RequestTimeout)),
+		config.FieldOf("transferTimeout", config.Duration(value.TransferTimeout)),
 		config.FieldOf("maxRequestBodyBytes", maxBodyBytes),
 		config.FieldOf("maxInFlight", maxInFlight),
 		config.FieldOf("trustedProxyCIDRs", httpStringList(value.TrustedProxyCIDRs)),

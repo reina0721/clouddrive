@@ -18,9 +18,9 @@ func TestCopyTreeTextCASAndArchivePreserveIndependentContents(t *testing.T) {
 	root = requireEntry(t, root, err)
 	sub, err := s.Folder(ctx, "owner", root.ID, "子目录")
 	sub = requireEntry(t, sub, err)
-	original, err := s.Upload(ctx, "owner", sub.ID, "说明.md", "copy-source-upload-key", []byte("原始内容"))
+	original, err := s.createSmallContent(ctx, "owner", sub.ID, "说明.md", "copy-source-upload-key", []byte("原始内容"))
 	original = requireEntry(t, original, err)
-	deleted, err := s.Upload(ctx, "owner", sub.ID, "回收.txt", "copy-trashed-upload-key", []byte("不可复制"))
+	deleted, err := s.createSmallContent(ctx, "owner", sub.ID, "回收.txt", "copy-trashed-upload-key", []byte("不可复制"))
 	deleted = requireEntry(t, deleted, err)
 	if _, err := s.Trash(ctx, "owner", deleted.ID); err != nil {
 		t.Fatal(err)
@@ -45,10 +45,10 @@ func TestCopyTreeTextCASAndArchivePreserveIndependentContents(t *testing.T) {
 	if updated.ContentRevision != duplicate.ContentRevision+1 {
 		t.Fatal("文本内容版本未递增")
 	}
-	if _, _, err := s.Download(ctx, "owner", original.ID); err != nil {
+	if _, _, err := s.ReadSmall(ctx, "owner", original.ID, DefaultMaxArchiveBytes); err != nil {
 		t.Fatal(err)
 	}
-	_, content, err := s.Download(ctx, "owner", original.ID)
+	_, content, err := s.ReadSmall(ctx, "owner", original.ID, DefaultMaxArchiveBytes)
 	if err != nil || string(content) != "原始内容" {
 		t.Fatal("编辑副本破坏了原文件")
 	}
@@ -109,7 +109,7 @@ func TestCopyBudgetsAndConcurrentTextCAS(t *testing.T) {
 	ctx := t.Context()
 	root, err := s.Folder(ctx, "owner", "", "root")
 	root = requireEntry(t, root, err)
-	file, err := s.Upload(ctx, "owner", root.ID, "text.txt", "text-cas-source-key", []byte("initial"))
+	file, err := s.createSmallContent(ctx, "owner", root.ID, "text.txt", "text-cas-source-key", []byte("initial"))
 	file = requireEntry(t, file, err)
 	if _, err := s.Folder(ctx, "owner", root.ID, "nested"); err != nil {
 		t.Fatal(err)
@@ -159,7 +159,7 @@ func TestCopyBudgetsAndConcurrentTextCAS(t *testing.T) {
 func TestTextReplacementNormalizesRenamedFileMediaType(t *testing.T) {
 	s, _, _ := newTestService(t, DefaultPolicy())
 	ctx := t.Context()
-	entry, err := s.Upload(ctx, "owner", "", "upload.png", "renamed-text-upload-key", []byte("UTF-8 text"))
+	entry, err := s.createSmallContent(ctx, "owner", "", "upload.png", "renamed-text-upload-key", []byte("UTF-8 text"))
 	entry = requireEntry(t, entry, err)
 	name := "editable.txt"
 	entry, err = s.Update(ctx, "owner", entry.ID, Change{Name: &name})

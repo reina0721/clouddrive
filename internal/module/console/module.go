@@ -77,6 +77,8 @@ var ErrUnknownPermission = httpbinding.ErrUnknownPermission
 var ErrInvalidQuery = httpbinding.ErrInvalidQuery
 
 const Prefix = httpbinding.Prefix
+const NativePrefix = httpbinding.NativePrefix
+const NativeTargetPrefix = httpbinding.NativeTargetPrefix
 const SessionListActive = httpbinding.SessionListActive
 const AccountActive = httpbinding.AccountActive
 

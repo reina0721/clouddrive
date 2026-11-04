@@ -9,6 +9,7 @@ import (
 	"github.com/reina0721/clouddrive/internal/kernel/config"
 	authmodel "github.com/reina0721/clouddrive/internal/module/auth/model"
 	"github.com/reina0721/clouddrive/pkg/storage"
+	"io"
 	"path/filepath"
 )
 
@@ -50,14 +51,17 @@ func (a filesContentAdapter) Put(ctx context.Context, key string, content []byte
 		return client.Put(ctx, key, content, storage.PutOptions{ContentType: mediaType})
 	})
 }
-func (a filesContentAdapter) Get(ctx context.Context, key string) ([]byte, error) {
-	var content []byte
-	err := a.access.Use(ctx, storageapp.RoutePrimary, func(client storageapp.Client) error {
-		var err error
-		content, _, err = client.Get(ctx, key)
-		return err
+
+func (a filesContentAdapter) PutReader(ctx context.Context, key string, source io.ReadSeeker, sizeBytes int64, mediaType string) error {
+	return a.access.Use(ctx, storageapp.RoutePrimary, func(client storageapp.Client) error {
+		return client.PutReader(ctx, key, source, sizeBytes, storage.PutOptions{ContentType: mediaType})
 	})
-	return content, err
+}
+
+func (a filesContentAdapter) WithReader(ctx context.Context, key string, use func(io.ReadSeeker, int64) error) error {
+	return a.access.Use(ctx, storageapp.RoutePrimary, func(client storageapp.Client) error {
+		return client.WithReader(ctx, key, func(reader io.ReadSeeker, info storage.ObjectInfo) error { return use(reader, info.Size) })
+	})
 }
 func (a filesContentAdapter) Delete(ctx context.Context, key string) error {
 	return a.access.Use(ctx, storageapp.RoutePrimary, func(client storageapp.Client) error { return client.Delete(ctx, key) })

@@ -10,6 +10,7 @@ import (
 	"github.com/reina0721/clouddrive/internal/module/files/model"
 	"github.com/reina0721/clouddrive/pkg/clock"
 	"github.com/reina0721/clouddrive/pkg/idgen"
+	"io"
 	"mime"
 	"net/http"
 	"path"
@@ -19,13 +20,14 @@ import (
 )
 
 const (
-	DefaultMaxFileBytes      int64 = 32 << 20
+	DefaultMaxFileBytes      int64 = 512 << 20
 	DefaultQuotaBytes        int64 = 1 << 30
 	DefaultConcurrentUploads       = 2
 	DefaultMaxTextBytes      int64 = 1 << 20
 	DefaultMaxArchiveBytes   int64 = 64 << 20
 	DefaultMaxBatchEntries         = 500
 	DefaultMaxThumbnailBytes int64 = 2 << 20
+	DefaultMaxMediaBytes     int64 = 32 << 20
 	DefaultMaxGalleryEntries       = 12
 	cleanupTimeout                 = 5 * time.Second
 )
@@ -38,11 +40,12 @@ type Policy struct {
 	MaxArchiveBytes   int64
 	MaxBatchEntries   int
 	MaxThumbnailBytes int64
+	MaxMediaBytes     int64
 	MaxGalleryEntries int
 }
 
 func DefaultPolicy() Policy {
-	return Policy{MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxGalleryEntries: DefaultMaxGalleryEntries}
+	return Policy{MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries}
 }
 func (p Policy) Validate() error {
 	if p.MaxFileBytes < 1 || p.MaxFileBytes > DefaultMaxFileBytes || p.QuotaBytes < p.MaxFileBytes || p.ConcurrentUploads < 1 || p.ConcurrentUploads > DefaultConcurrentUploads {
@@ -51,7 +54,7 @@ func (p Policy) Validate() error {
 	if p.MaxTextBytes < 1 || p.MaxTextBytes > DefaultMaxTextBytes || p.MaxArchiveBytes < 1 || p.MaxArchiveBytes > DefaultMaxArchiveBytes || p.MaxBatchEntries < 1 || p.MaxBatchEntries > DefaultMaxBatchEntries {
 		return fmt.Errorf("invalid files operation budgets")
 	}
-	if p.MaxThumbnailBytes < 1 || p.MaxThumbnailBytes > DefaultMaxThumbnailBytes || p.MaxGalleryEntries < 1 || p.MaxGalleryEntries > DefaultMaxGalleryEntries {
+	if p.MaxMediaBytes < 1 || p.MaxMediaBytes > DefaultMaxMediaBytes || p.MaxThumbnailBytes < 1 || p.MaxThumbnailBytes > DefaultMaxThumbnailBytes || p.MaxGalleryEntries < 1 || p.MaxGalleryEntries > DefaultMaxGalleryEntries {
 		return fmt.Errorf("invalid file media budgets")
 	}
 	return nil
@@ -65,8 +68,8 @@ type Repository interface {
 }
 type Content interface {
 	Put(context.Context, string, []byte, string) error
-	Get(context.Context, string) ([]byte, error)
 	Delete(context.Context, string) error
+	WithReader(context.Context, string, func(io.ReadSeeker, int64) error) error
 }
 type NameNormalizer interface{ Normalize(string) string }
 type Service struct {
@@ -115,6 +118,7 @@ type Listing struct {
 	MaxArchiveBytes   int64         `json:"maxArchiveBytes"`
 	MaxBatchEntries   int           `json:"maxBatchEntries"`
 	MaxThumbnailBytes int64         `json:"maxThumbnailBytes"`
+	MaxMediaBytes     int64         `json:"maxMediaBytes"`
 	MaxGalleryEntries int           `json:"maxGalleryEntries"`
 }
 
@@ -137,6 +141,7 @@ func (s *Service) List(ctx context.Context, owner string, q Query) (Listing, err
 	}
 	result := Listing{Items: []model.Entry{}, Breadcrumbs: []model.Entry{}, UsedBytes: model.Used(entries), QuotaBytes: s.policy.QuotaBytes, MaxFileBytes: s.policy.MaxFileBytes, ConcurrentUploads: s.policy.ConcurrentUploads}
 	result.MaxTextBytes, result.MaxArchiveBytes, result.MaxBatchEntries = s.policy.MaxTextBytes, s.policy.MaxArchiveBytes, s.policy.MaxBatchEntries
+	result.MaxMediaBytes = s.policy.MaxMediaBytes
 	result.MaxThumbnailBytes, result.MaxGalleryEntries = s.policy.MaxThumbnailBytes, s.policy.MaxGalleryEntries
 	if !q.Trash {
 		if err := model.Parent(entries, q.ParentID); err != nil {
@@ -239,7 +244,7 @@ func (s *Service) AcquireUpload(ctx context.Context) (func(), error) {
 	}
 }
 func (s *Service) MaxFileBytes() int64 { return s.policy.MaxFileBytes }
-func (s *Service) Upload(ctx context.Context, owner, parent, name, key string, content []byte) (model.Entry, error) {
+func (s *Service) createSmallContent(ctx context.Context, owner, parent, name, key string, content []byte) (model.Entry, error) {
 	normalized, err := s.normalizedName(name)
 	if err != nil {
 		return model.Entry{}, err
@@ -446,7 +451,9 @@ func (s *Service) Detail(ctx context.Context, owner, id string) (Detail, error) 
 	}
 	return result, nil
 }
-func (s *Service) Download(ctx context.Context, owner, id string) (model.Entry, []byte, error) {
+
+// ReadSmall 仅用于有明确预算的内容处理；大文件下载必须使用 DownloadTo。
+func (s *Service) ReadSmall(ctx context.Context, owner, id string, maxBytes int64) (model.Entry, []byte, error) {
 	detail, err := s.Detail(ctx, owner, id)
 	if err != nil {
 		return model.Entry{}, nil, err
@@ -455,10 +462,18 @@ func (s *Service) Download(ctx context.Context, owner, id string) (model.Entry, 
 	if entry.Kind != model.File {
 		return model.Entry{}, nil, model.ErrInvalid
 	}
-	if entry.SizeBytes > s.policy.MaxFileBytes {
+	if maxBytes < 0 || maxBytes > DefaultMaxArchiveBytes || entry.SizeBytes > maxBytes {
 		return model.Entry{}, nil, model.ErrTooLarge
 	}
-	content, err := s.content.Get(ctx, entry.ObjectKey)
+	var content []byte
+	err = s.content.WithReader(ctx, entry.ObjectKey, func(reader io.ReadSeeker, sizeBytes int64) error {
+		if sizeBytes != entry.SizeBytes {
+			return fmt.Errorf("file content length mismatch")
+		}
+		var err error
+		content, err = io.ReadAll(io.LimitReader(reader, maxBytes+1))
+		return err
+	})
 	if err != nil {
 		return model.Entry{}, nil, fmt.Errorf("read file content: %w", err)
 	}

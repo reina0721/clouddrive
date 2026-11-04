@@ -16,11 +16,16 @@ const (
 	OperationCreateTodo                     OperationID = "createTodo"
 	OperationFilesArchive                   OperationID = "files.archive"
 	OperationFilesContent                   OperationID = "files.content"
+	OperationFilesContentHead               OperationID = "files.content.head"
 	OperationFilesCopy                      OperationID = "files.copy"
 	OperationFilesDetail                    OperationID = "files.detail"
 	OperationFilesFolder                    OperationID = "files.folder"
 	OperationFilesList                      OperationID = "files.list"
 	OperationFilesPublicContent             OperationID = "files.public.content"
+	OperationFilesPublicContentHead         OperationID = "files.public.content.head"
+	OperationFilesPublicDownloadContent     OperationID = "files.public.download.content"
+	OperationFilesPublicDownloadCreate      OperationID = "files.public.download.create"
+	OperationFilesPublicDownloadHead        OperationID = "files.public.download.head"
 	OperationFilesPublicEntries             OperationID = "files.public.entries"
 	OperationFilesPublicMetadata            OperationID = "files.public.metadata"
 	OperationFilesPublicUnlock              OperationID = "files.public.unlock"
@@ -28,10 +33,21 @@ const (
 	OperationFilesSharesCreate              OperationID = "files.shares.create"
 	OperationFilesSharesList                OperationID = "files.shares.list"
 	OperationFilesSharesRevoke              OperationID = "files.shares.revoke"
+	OperationFilesTextCreate                OperationID = "files.text.create"
 	OperationFilesTextReplace               OperationID = "files.text.replace"
+	OperationFilesTransfersCancel           OperationID = "files.transfers.cancel"
+	OperationFilesTransfersChunk            OperationID = "files.transfers.chunk"
+	OperationFilesTransfersCommit           OperationID = "files.transfers.commit"
+	OperationFilesTransfersCreate           OperationID = "files.transfers.create"
+	OperationFilesTransfersList             OperationID = "files.transfers.list"
+	OperationFilesTransfersOffset           OperationID = "files.transfers.offset"
+	OperationFilesTransfersPause            OperationID = "files.transfers.pause"
+	OperationFilesTransfersRead             OperationID = "files.transfers.read"
+	OperationFilesTransfersResume           OperationID = "files.transfers.resume"
+	OperationFilesTransfersSource           OperationID = "files.transfers.source"
+	OperationFilesTransfersTarget           OperationID = "files.transfers.target"
 	OperationFilesTrash                     OperationID = "files.trash"
 	OperationFilesUpdate                    OperationID = "files.update"
-	OperationFilesUpload                    OperationID = "files.upload"
 	OperationGetTodo                        OperationID = "getTodo"
 	OperationIamAccountsArchive             OperationID = "iam.accounts.archive"
 	OperationIamAccountsArchiveBatch        OperationID = "iam.accounts.archive.batch"
@@ -100,11 +116,16 @@ var operationInventory = [...]Operation{
 	{ID: OperationCreateTodo, Method: "POST", Path: "/api/v1/todos", Policy: "protected", Scope: "todos:write", Action: "todo.create"},
 	{ID: OperationFilesArchive, Method: "POST", Path: "/api/v1/files/archive", Policy: "protected", Scope: "files:read", Action: "files.archive"},
 	{ID: OperationFilesContent, Method: "GET", Path: "/api/v1/files/{id}/content", Policy: "protected", Scope: "files:read", Action: "files.content"},
+	{ID: OperationFilesContentHead, Method: "HEAD", Path: "/api/v1/files/{id}/content", Policy: "protected", Scope: "files:read", Action: "files.content.head"},
 	{ID: OperationFilesCopy, Method: "POST", Path: "/api/v1/files/{id}/copy", Policy: "protected", Scope: "files:write", Action: "files.copy"},
 	{ID: OperationFilesDetail, Method: "GET", Path: "/api/v1/files/{id}", Policy: "protected", Scope: "files:read", Action: "files.detail"},
 	{ID: OperationFilesFolder, Method: "POST", Path: "/api/v1/files/folders", Policy: "protected", Scope: "files:write", Action: "files.folder"},
 	{ID: OperationFilesList, Method: "GET", Path: "/api/v1/files", Policy: "protected", Scope: "files:read", Action: "files.list"},
 	{ID: OperationFilesPublicContent, Method: "GET", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicContentHead, Method: "HEAD", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicDownloadContent, Method: "GET", Path: "/api/v1/file-downloads/{ticket}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicDownloadCreate, Method: "POST", Path: "/api/v1/file-shares/{token}/content/{id}/download", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicDownloadHead, Method: "HEAD", Path: "/api/v1/file-downloads/{ticket}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicEntries, Method: "GET", Path: "/api/v1/file-shares/{token}/entries", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicMetadata, Method: "GET", Path: "/api/v1/file-shares/{token}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicUnlock, Method: "POST", Path: "/api/v1/file-shares/{token}/unlock", Policy: "public", Scope: "", Action: ""},
@@ -112,10 +133,21 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesSharesCreate, Method: "POST", Path: "/api/v1/files/shares", Policy: "protected", Scope: "files:write", Action: "files.shares.create"},
 	{ID: OperationFilesSharesList, Method: "GET", Path: "/api/v1/files/shares", Policy: "protected", Scope: "files:read", Action: "files.shares.list"},
 	{ID: OperationFilesSharesRevoke, Method: "POST", Path: "/api/v1/files/shares/{shareId}/revoke", Policy: "protected", Scope: "files:write", Action: "files.shares.revoke"},
+	{ID: OperationFilesTextCreate, Method: "POST", Path: "/api/v1/files/text", Policy: "protected", Scope: "files:write", Action: "files.text.create"},
 	{ID: OperationFilesTextReplace, Method: "PUT", Path: "/api/v1/files/{id}/text", Policy: "protected", Scope: "files:write", Action: "files.text.replace"},
+	{ID: OperationFilesTransfersCancel, Method: "POST", Path: "/api/v1/files/transfers/{id}/cancel", Policy: "protected", Scope: "files:write", Action: "files.transfers.cancel"},
+	{ID: OperationFilesTransfersChunk, Method: "PATCH", Path: "/api/v1/files/transfers/{id}/data", Policy: "protected", Scope: "files:write", Action: "files.transfers.chunk"},
+	{ID: OperationFilesTransfersCommit, Method: "POST", Path: "/api/v1/files/transfers/{id}/commit", Policy: "protected", Scope: "files:write", Action: "files.transfers.commit"},
+	{ID: OperationFilesTransfersCreate, Method: "POST", Path: "/api/v1/files/transfers", Policy: "protected", Scope: "files:write", Action: "files.transfers.create"},
+	{ID: OperationFilesTransfersList, Method: "GET", Path: "/api/v1/files/transfers", Policy: "protected", Scope: "files:read", Action: "files.transfers.list"},
+	{ID: OperationFilesTransfersOffset, Method: "HEAD", Path: "/api/v1/files/transfers/{id}/data", Policy: "protected", Scope: "files:read", Action: "files.transfers.offset"},
+	{ID: OperationFilesTransfersPause, Method: "POST", Path: "/api/v1/files/transfers/{id}/pause", Policy: "protected", Scope: "files:write", Action: "files.transfers.pause"},
+	{ID: OperationFilesTransfersRead, Method: "GET", Path: "/api/v1/files/transfers/{id}", Policy: "protected", Scope: "files:read", Action: "files.transfers.read"},
+	{ID: OperationFilesTransfersResume, Method: "POST", Path: "/api/v1/files/transfers/{id}/resume", Policy: "protected", Scope: "files:write", Action: "files.transfers.resume"},
+	{ID: OperationFilesTransfersSource, Method: "POST", Path: "/api/v1/files/transfers/{id}/source", Policy: "protected", Scope: "files:write", Action: "files.transfers.source"},
+	{ID: OperationFilesTransfersTarget, Method: "PUT", Path: "/api/v1/files/transfers/{id}/target", Policy: "protected", Scope: "files:write", Action: "files.transfers.target"},
 	{ID: OperationFilesTrash, Method: "POST", Path: "/api/v1/files/{id}/trash", Policy: "protected", Scope: "files:write", Action: "files.trash"},
 	{ID: OperationFilesUpdate, Method: "PATCH", Path: "/api/v1/files/{id}", Policy: "protected", Scope: "files:write", Action: "files.update"},
-	{ID: OperationFilesUpload, Method: "POST", Path: "/api/v1/files/upload", Policy: "protected", Scope: "files:write", Action: "files.upload"},
 	{ID: OperationGetTodo, Method: "GET", Path: "/api/v1/todos/{id}", Policy: "protected", Scope: "todos:read", Action: "todo.read"},
 	{ID: OperationIamAccountsArchive, Method: "POST", Path: "/api/v1/iam/accounts/{id}/archive", Policy: "protected", Scope: "iam:account:write", Action: "iam.accounts.archive"},
 	{ID: OperationIamAccountsArchiveBatch, Method: "POST", Path: "/api/v1/iam/accounts/batch-archive", Policy: "protected", Scope: "iam:account:write", Action: "iam.accounts.archive.batch"},

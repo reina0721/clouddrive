@@ -77,6 +77,9 @@ func Recovery(log logger.Logger) Middleware {
 		return func(ctx *Context) (err error) {
 			defer func() {
 				if recovered := recover(); recovered != nil {
+					if recovered == http.ErrAbortHandler {
+						panic(recovered)
+					}
 					if log != nil {
 						log.Error("http panic recovered", logger.String("panic_type", fmt.Sprintf("%T", recovered)))
 					}
@@ -319,14 +322,38 @@ func BodyLimit(maxBytes int64) Middleware {
 
 // RequestTimeout 为每个请求建立有界 application deadline。
 func RequestTimeout(timeout time.Duration) Middleware {
+	return RequestTimeoutPolicy(timeout, nil)
+}
+
+// RequestTimeoutPolicy 在创建父 deadline 前按静态服务策略选预算，保留请求取消。
+// selector 为 nil 时只有普通预算；请求自身不能指定延长时限。
+func RequestTimeoutPolicy(timeout time.Duration, selector func(*http.Request) (time.Duration, bool)) Middleware {
 	return func(next Handler) Handler {
 		return func(ctx *Context) error {
-			if timeout <= 0 {
+			budget, transfer := timeout, false
+			if selector != nil {
+				if selected, matched := selector(ctx.Request); matched {
+					budget, transfer = selected, true
+				}
+			}
+			if budget <= 0 {
+				if transfer {
+					return fmt.Errorf("invalid selected request budget")
+				}
 				return next(ctx)
 			}
-			requestCtx, cancel := context.WithTimeout(ctx.Request.Context(), timeout)
+			requestCtx, cancel := context.WithTimeout(ctx.Request.Context(), budget)
 			defer cancel()
 			ctx.Request = ctx.Request.WithContext(requestCtx)
+			if transfer {
+				controller := http.NewResponseController(ctx.ResponseWriter)
+				deadline, _ := requestCtx.Deadline()
+				for _, set := range []func(time.Time) error{controller.SetReadDeadline, controller.SetWriteDeadline} {
+					if err := set(deadline); err != nil && !errors.Is(err, http.ErrNotSupported) {
+						return fmt.Errorf("set transfer socket deadline: %w", err)
+					}
+				}
+			}
 			err := next(ctx)
 			if errors.Is(requestCtx.Err(), context.DeadlineExceeded) {
 				return &StatusError{StatusCode: http.StatusGatewayTimeout, Code: "request_timeout", Message: "request deadline exceeded", Err: errors.Join(err, requestCtx.Err())}

@@ -40,9 +40,20 @@ func New(cfg Config) (*Client, error) {
 	return &Client{basePath: abs}, nil
 }
 
-func (c *Client) Put(ctx context.Context, key string, data []byte, _ storageclient.PutOptions) (resultErr error) {
+func (c *Client) Put(ctx context.Context, key string, data []byte, options storageclient.PutOptions) error {
+	return c.PutReader(ctx, key, bytes.NewReader(data), int64(len(data)), options)
+}
+
+// PutReader 以有界复制写候选文件，只在长度准确且资源关闭成功后发布。
+func (c *Client) PutReader(ctx context.Context, key string, source io.ReadSeeker, sizeBytes int64, _ storageclient.PutOptions) (resultErr error) {
+	if ctx == nil || source == nil || sizeBytes < 0 || sizeBytes == int64(^uint64(0)>>1) {
+		return fmt.Errorf("invalid object stream input")
+	}
 	if err := ctx.Err(); err != nil {
 		return err
+	}
+	if _, err := source.Seek(0, io.SeekStart); err != nil {
+		return fmt.Errorf("rewind object source: %w", err)
 	}
 	path, err := c.pathForKey(key)
 	if err != nil {
@@ -65,8 +76,12 @@ func (c *Client) Put(ctx context.Context, key string, data []byte, _ storageclie
 			resultErr = errors.Join(resultErr, os.Remove(file.Name()))
 		}
 	}()
-	if _, err := io.Copy(file, &contextReader{ctx: ctx, reader: bytes.NewReader(data)}); err != nil {
+	written, err := io.Copy(file, io.LimitReader(&contextReader{ctx: ctx, reader: source}, sizeBytes+1))
+	if err != nil {
 		return fmt.Errorf("write object candidate: %w", err)
+	}
+	if written != sizeBytes {
+		return fmt.Errorf("object stream length mismatch")
 	}
 	if err := file.Close(); err != nil {
 		closed = true
@@ -84,28 +99,59 @@ func (c *Client) Put(ctx context.Context, key string, data []byte, _ storageclie
 }
 
 func (c *Client) Get(ctx context.Context, key string) (content []byte, metadata storageclient.ObjectInfo, resultErr error) {
-	if err := ctx.Err(); err != nil {
+	err := c.WithReader(ctx, key, func(reader io.ReadSeeker, info storageclient.ObjectInfo) error {
+		metadata = info
+		var err error
+		content, err = io.ReadAll(reader)
+		return err
+	})
+	if err != nil {
 		return nil, storageclient.ObjectInfo{}, err
+	}
+	return content, metadata, nil
+}
+
+// WithReader 将文件和取消生命周期限定在同步回调内，同时保留读取与关闭错误。
+func (c *Client) WithReader(ctx context.Context, key string, use func(io.ReadSeeker, storageclient.ObjectInfo) error) (resultErr error) {
+	if ctx == nil || use == nil {
+		return fmt.Errorf("invalid object reader callback")
+	}
+	if err := ctx.Err(); err != nil {
+		return err
 	}
 	path, err := c.pathForKey(key)
 	if err != nil {
-		return nil, storageclient.ObjectInfo{}, err
+		return err
 	}
 	// #nosec G304 -- pathForKey 已做绝对根边界和穿越校验，读取被限制在 basePath 内。
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, storageclient.ObjectInfo{}, err
+		return err
 	}
 	defer func() { resultErr = errors.Join(resultErr, file.Close()) }()
-	data, err := io.ReadAll(&contextReader{ctx: ctx, reader: file})
-	if err != nil {
-		return nil, storageclient.ObjectInfo{}, err
-	}
 	info, err := file.Stat()
 	if err != nil {
-		return nil, storageclient.ObjectInfo{}, err
+		return err
 	}
-	return data, storageclient.ObjectInfo{Key: key, Size: info.Size()}, nil
+	lifetime, cancel := context.WithCancel(ctx)
+	defer cancel()
+	return use(&contextReadSeeker{ctx: lifetime, source: file}, storageclient.ObjectInfo{Key: key, Size: info.Size()})
+}
+
+type contextReadSeeker struct {
+	ctx    context.Context
+	source io.ReadSeeker
+}
+
+func (r *contextReadSeeker) Read(buffer []byte) (int, error) {
+	return (&contextReader{ctx: r.ctx, reader: r.source}).Read(buffer)
+}
+
+func (r *contextReadSeeker) Seek(offset int64, whence int) (int64, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	return r.source.Seek(offset, whence)
 }
 
 func (c *Client) Delete(ctx context.Context, key string) error {

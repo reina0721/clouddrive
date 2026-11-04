@@ -2,7 +2,10 @@ import { defineConfig } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 const access: unknown = JSON.parse(
-  readFileSync(resolve(__dirname, '../.data/preview-access.json'), 'utf8').replace(/^\uFEFF/, ''),
+  readFileSync(
+    resolve(__dirname, process.env.CLOUDDRIVE_FILE_TEST_ACCESS ?? '../.data/preview-access.json'),
+    'utf8',
+  ).replace(/^\uFEFF/, ''),
 );
 if (typeof access !== 'object' || !access || !('url' in access) || typeof access.url !== 'string')
   throw new Error('Run Start-FilePreview.ps1 to create preview access information.');

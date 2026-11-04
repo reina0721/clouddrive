@@ -1,0 +1,28 @@
+# 流式存储与HTTP预算
+
+## 边界与资源
+
+StorageClient保留bytes能力服务现有小内容消费者，并增加项目自有流式操作：PutReader(ctx,key,io.ReadSeeker,size,options)与WithReader(ctx,key,use func(io.ReadSeeker,ObjectInfo)error)。返回reader不得逃出租约；Kernel借用层在回调结束/取消后失效，并保留主错误与close错误。生产local/S3-compatible都必须实现，不允许ReadAll fallback。stream.go无消费者fallback退役，实际使用新契约，既有bytes方法复用相同实现路径。
+
+local以0600随机候选、contextReader、明确size上界、Close+rename原子发布；无网络资源。S3复用已有SDK客户端，PutObject使用seekable源与已知ContentLength；下载使用Range实现可寻址reader：Seek只记录新offset，Read按需发GetObject，关闭被替代的body，最终Close错误与回调错误合并。不得自建HTTP client或全文件buffer；ObjectInfo与Range总长度校验，取消传至SDK。
+
+files Content扩展WithReader/PutReader，不向service泄漏第三方或共享关闭权。小文本/ZIP/缩略图仍有各自预算，不能因maxFileBytes增大而让它们读完整大文件。Get的bytes上限需显式用途参数或单独ReadSmall契约，以免调用方绕过限制。
+
+## 下载
+
+私有和分享内容使用同一受控原始响应工具与net/http.ServeContent，支持Range、If-Range、Last-Modified及基于不可变SHA的ETag；传输前重新检查owner/祖先或分享票据。公共媒体不能直接引用永久对象URL，Grant不能写入日志。公开下载经POST授权签发单文件短期download capability，随后普通GET；复用ShareGrant持久摘要表，新增entryID和contentRevision约束，不新增签名算法。默认1分钟、每分享100个有效下载句柄，且不晚于分享或原解锁凭据到期；每次GET/HEAD/Range重新检查撤销与对象版本，句柄可在有效期内重复用于续传。长期分享密码/解锁票据不进入URL，下载句柄不授权目录访问。
+
+普通已登录下载使用同源原生链接带会话，Host不调用response.blob()。公开小/大下载统一同一路径，不保留大小分叉旧实现。若新download ticket为必要，持久摘要、expiry与作用域写入同批additive migration，不签任意路径。
+
+## HTTP承载
+
+Huma registration是唯一路由与OpenAPI源；HEAD/PATCH仅通过已认证operation，不增加旁路http.Server。tus核心HEAD/PATCH由窄协议Adapter委托真实tusd.UnroutedHandler.Middleware；项目JSON控制端点创建会话，客户端使用uploadUrl，因此不宣称支持tus Creation/Concatenation/IETF草案。输入结构不含RawBody，原始Body保持stream；输出Body回调在gate、owner与mutation guard通过后委托协议Adapter。
+
+在Definition增加语义化传输预算profile，transport从同一catalog派生精确method/path匹配（含明确的console投影），composition注入http.transferTimeout（默认5分钟，上限15分钟），其他请求仍10秒。选择在全局RequestTimeout之前，保留请求取消；不得WithOutCancel突破请求生命周期。必要socket deadline通过ResponseController按同一profile有界设置，普通请求不放大。未知路由没有传输豁免。全局BodyLimit保持普通配置，只有精确传输PATCH改由认证及准入后的files绑定施加chunkBytes上限，避免默认JSON上限截断合法4MiB块；不会放宽其他PATCH或JSON请求。Huma普通Problem缓冲不包裹实际流内容；流写入后错误只由边界低敏记录，不再次拼接JSON Problem。超时中间件同样要识别已开始响应，不能在文件尾追加错误体。
+
+协议Adapter使用受控logger bridge，tusd原日志含路径/body/error，不可原样转发。禁用其默认CORS、download、progress channel和后台通知；项目既有CORS、CSRF与日志authority保留。HEAD/OPTIONS为安全方法，不索取写CSRF；PATCH及控制写端点仍验证可信Origin、Session和CSRF，禁止method override绕过既有gate。
+
+## 文件影响与验证
+
+pkg/storage/client、local、s3compat及stream；Kernel storage租约与文档；composition/files/service/generation及HTTP catalog；httpx超时/响应状态；files service/HTTP；API生成物。验证包含local错误/取消/size/close、S3受控httptest Range与Close、租约逃逸拒绝、真实>32MiB上传下载与partial/416、默认JSON预算不变。外部S3生产实例未提供时明确未验证。
+

@@ -9,6 +9,20 @@ export class ApiError extends Error {
   }
 }
 
+/** csrfTokenOf 复用同一受控协议校验，避免上传客户端建立另一套凭据读取规则。 */
+export function csrfTokenOf(value: unknown): string {
+  if (
+    typeof value !== 'object' ||
+    value === null ||
+    !('token' in value) ||
+    typeof value.token !== 'string' ||
+    !value.token.trim() ||
+    value.token.length > 4096
+  )
+    throw new ApiError('protocol');
+  return value.token;
+}
+
 /** Cookie/CSRF transport shared by auth and product adapters; never caches credentials or responses. */
 export function createJsonClient(apiBaseUrl: string, request: typeof fetch = fetch) {
   return async (
@@ -42,16 +56,7 @@ export function createJsonClient(apiBaseUrl: string, request: typeof fetch = fet
         const value: unknown = await csrf.json().catch(() => {
           throw new ApiError('protocol');
         });
-        if (
-          typeof value !== 'object' ||
-          value === null ||
-          !('token' in value) ||
-          typeof value.token !== 'string' ||
-          !value.token.trim() ||
-          value.token.length > 4096
-        )
-          throw new ApiError('protocol');
-        csrfToken = value.token;
+        csrfToken = csrfTokenOf(value);
       }
       const response = await request(`${apiBaseUrl}${path}`, {
         method,

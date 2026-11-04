@@ -3,6 +3,8 @@ package composition
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,38 +12,77 @@ import (
 	"github.com/reina0721/clouddrive/pkg/idgen"
 	"io"
 	"net/http"
-	"net/url"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 )
 
-// uploadFileHTTP 覆盖真实 Cookie/CSRF、Huma 二进制 body 与数据库/对象内容接线。
+// uploadFileHTTP 通过唯一的分块协议覆盖 Cookie/CSRF、内容校验及最终发布。
 func uploadFileHTTP(ctx context.Context, client *consoleTestClient, parent, name, key string, content []byte) (entry model.Entry, resultErr error) {
-	params := url.Values{"parent": {parent}, "name": {name}}
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, client.base+"/api/console/v1/native/files/upload?"+params.Encode(), bytes.NewReader(content))
+	digest := sha256.Sum256(content)
+	keyDigest := sha256.Sum256([]byte(key))
+	payload, err := json.Marshal(map[string]any{"parentId": parent, "name": name, "key": hex.EncodeToString(keyDigest[:]), "sizeBytes": len(content), "sha256": hex.EncodeToString(digest[:])})
 	if err != nil {
 		return entry, err
 	}
-	request.Header.Set("Origin", client.base)
-	request.Header.Set("Content-Type", "application/octet-stream")
-	request.Header.Set("Idempotency-Key", key)
-	request.Header.Set("X-CSRF-Token", client.csrf)
-	for name, value := range client.cookies {
-		request.AddCookie(&http.Cookie{Name: name, Value: value})
+	var transfer struct {
+		ID          string `json:"id"`
+		State       string `json:"state"`
+		OffsetBytes int    `json:"offsetBytes"`
+		EntryID     string `json:"entryId"`
 	}
-	response, err := http.DefaultClient.Do(request)
-	if err != nil {
+	call := func(method, suffix, mediaType string, body []byte, offset int, output any) error {
+		request, err := http.NewRequestWithContext(ctx, method, client.base+"/api/console/v1/native/files"+suffix, bytes.NewReader(body))
+		if err != nil {
+			return err
+		}
+		request.Header.Set("Origin", client.base)
+		request.Header.Set("Content-Type", mediaType)
+		if method == http.MethodPatch {
+			request.Header.Set("Tus-Resumable", "1.0.0")
+			request.Header.Set("Upload-Offset", strconv.Itoa(offset))
+		}
+		request.Header.Set("X-CSRF-Token", client.csrf)
+		for name, value := range client.cookies {
+			request.AddCookie(&http.Cookie{Name: name, Value: value})
+		}
+		response, err := http.DefaultClient.Do(request)
+		if err != nil {
+			return err
+		}
+		var readErr error
+		if response.StatusCode != 200 && response.StatusCode != 204 {
+			readErr = fmt.Errorf("file transfer returned %d", response.StatusCode)
+		} else if output != nil {
+			readErr = json.NewDecoder(response.Body).Decode(output)
+		} else {
+			_, readErr = io.Copy(io.Discard, response.Body)
+		}
+		return errors.Join(readErr, response.Body.Close())
+	}
+	if err := call("POST", "/transfers", "application/json", payload, 0, &transfer); err != nil {
 		return entry, err
 	}
-	defer func() { resultErr = errors.Join(resultErr, response.Body.Close()) }()
-	if response.StatusCode != 200 {
-		return entry, fmt.Errorf("file upload returned %d", response.StatusCode)
+	if transfer.State != "completed" {
+		for transfer.OffsetBytes < len(content) {
+			end := min(transfer.OffsetBytes+(4<<20), len(content))
+			if err := call("PATCH", "/transfers/"+transfer.ID+"/data", "application/offset+octet-stream", content[transfer.OffsetBytes:end], transfer.OffsetBytes, nil); err != nil {
+				return entry, err
+			}
+			transfer.OffsetBytes = end
+		}
+		if err := call("POST", "/transfers/"+transfer.ID+"/commit", "application/json", nil, 0, &transfer); err != nil {
+			return entry, err
+		}
 	}
-	err = json.NewDecoder(response.Body).Decode(&entry)
-	return entry, err
+	var detail struct {
+		Entry model.Entry `json:"entry"`
+	}
+	err = call("GET", "/"+transfer.EntryID, "application/json", nil, 0, &detail)
+	return detail.Entry, err
 }
 func TestFilesHTTPConcurrentUploadsOwnershipRestartAndStorageGuard(t *testing.T) {
 	directory := t.TempDir()

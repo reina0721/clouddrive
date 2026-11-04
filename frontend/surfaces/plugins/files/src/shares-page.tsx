@@ -5,6 +5,7 @@ import { Page, Toolbar } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
+import { FileLink } from './file-link';
 import { Cloud } from '../../../src/files/icons';
 import { useFiles } from '../../../src/files/runtime';
 import { filesAccentStyle } from '../../../src/files/appearance';
@@ -48,10 +49,10 @@ export function MySharesPage() {
         <Toolbar
           label={t('files.myShares')}
           primary={
-            <a href="/home" className="flex items-center gap-3 font-semibold text-brand">
+            <FileLink target="files" className="flex items-center gap-3 font-semibold text-brand">
               <Cloud className="size-7" />
               {t('files.nav')}
-            </a>
+            </FileLink>
           }
           secondary={
             <Action

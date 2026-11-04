@@ -13,7 +13,10 @@ async function fileAction(page: Page, name: string, label: string) {
   await expect(page.getByRole('dialog', { name: name + ' 的操作', exact: true })).toHaveCount(0);
 }
 
-const accessPath = resolve(__dirname, '../../.data/preview-access.json');
+const accessPath = resolve(
+  __dirname,
+  process.env.CLOUDDRIVE_FILE_TEST_ACCESS ?? '../../.data/preview-access.json',
+);
 test.beforeEach(async ({ page }) => {
   const access = JSON.parse((await readFile(accessPath, 'utf8')).replace(/^\uFEFF/, '')) as {
     username: string;
@@ -175,7 +178,7 @@ test('拖拽上传使用同一队列，等待项可以取消并保持未提交�
   const gate = new Promise<void>((resolveGate) => {
     release = resolveGate;
   });
-  await page.route('**/native/files/upload?**', async (route) => {
+  await page.route('**/native/files/transfers/*/data', async (route) => {
     await gate;
     await route.continue();
   });
@@ -199,6 +202,6 @@ test('拖拽上传使用同一队列，等待项可以取消并保持未提交�
     await expect(page.getByRole('button', { name: names[2], exact: true })).toHaveCount(0);
   } finally {
     release();
-    await page.unroute('**/native/files/upload?**');
+    await page.unroute('**/native/files/transfers/*/data');
   }
 });

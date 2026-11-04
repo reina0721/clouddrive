@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"sort"
 	"time"
 	"unicode/utf8"
@@ -20,6 +21,8 @@ const (
 	DefaultShareAttemptWindow  = time.Minute
 	DefaultShareAttemptLimit   = 10
 	DefaultShareKDFConcurrency = 2
+	DefaultShareDownloadTTL    = time.Minute
+	DefaultShareDownloadLimit  = 100
 	shareSecretBytes           = 32
 	minSharePasswordBytes      = 8
 	maxSharePasswordBytes      = 128
@@ -31,12 +34,17 @@ type SharePolicy struct {
 	AttemptWindow  time.Duration
 	AttemptLimit   int
 	KDFConcurrency int
+	DownloadTTL    time.Duration
+	DownloadLimit  int
 }
 
 func DefaultSharePolicy() SharePolicy {
-	return SharePolicy{MaxAge: DefaultShareMaxAge, GrantTTL: DefaultShareGrantTTL, AttemptWindow: DefaultShareAttemptWindow, AttemptLimit: DefaultShareAttemptLimit, KDFConcurrency: DefaultShareKDFConcurrency}
+	return SharePolicy{MaxAge: DefaultShareMaxAge, GrantTTL: DefaultShareGrantTTL, AttemptWindow: DefaultShareAttemptWindow, AttemptLimit: DefaultShareAttemptLimit, KDFConcurrency: DefaultShareKDFConcurrency, DownloadTTL: DefaultShareDownloadTTL, DownloadLimit: DefaultShareDownloadLimit}
 }
 func (p SharePolicy) Validate() error {
+	if p.DownloadTTL <= 0 || p.DownloadTTL > DefaultShareDownloadTTL || p.DownloadTTL > p.GrantTTL || p.DownloadTTL > p.MaxAge || p.DownloadLimit < 1 || p.DownloadLimit > DefaultShareDownloadLimit {
+		return fmt.Errorf("invalid share download budgets")
+	}
 	if p.MaxAge <= 0 || p.MaxAge > DefaultShareMaxAge || p.GrantTTL <= 0 || p.GrantTTL > DefaultShareGrantTTL || p.GrantTTL > p.MaxAge || p.AttemptWindow < DefaultShareAttemptWindow || p.AttemptWindow > time.Hour || p.AttemptLimit < 1 || p.AttemptLimit > DefaultShareAttemptLimit || p.KDFConcurrency < 1 || p.KDFConcurrency > DefaultShareKDFConcurrency {
 		return fmt.Errorf("invalid file share budgets")
 	}
@@ -58,6 +66,8 @@ type ShareRepository interface {
 	ReadShare(context.Context, string, string) (ShareSnapshot, error)
 	ReserveShareAttempt(context.Context, string, time.Time, time.Duration, int) error
 	PutShareGrant(context.Context, model.ShareGrant, time.Time) error
+	PutDownloadGrant(context.Context, model.ShareGrant, time.Time, int) error
+	ReadDownloadGrant(context.Context, string) (ShareSnapshot, error)
 }
 type Sharing struct {
 	files     *Service
@@ -247,7 +257,7 @@ func (s *Sharing) inspect(ctx context.Context, token, ticket string) (ShareSnaps
 	return snapshot, nil
 }
 func (s *Sharing) authorized(snapshot ShareSnapshot) bool {
-	return snapshot.Share.PasswordHash == "" || snapshot.Grant != nil && snapshot.Grant.ShareID == snapshot.Share.ID && s.files.clock.Now().Before(snapshot.Grant.ExpiresAt)
+	return snapshot.Share.PasswordHash == "" || snapshot.Grant != nil && snapshot.Grant.EntryID == "" && snapshot.Grant.ShareID == snapshot.Share.ID && s.files.clock.Now().Before(snapshot.Grant.ExpiresAt)
 }
 
 type PublicEntry struct {
@@ -384,32 +394,30 @@ func (s *Sharing) Entries(ctx context.Context, token, ticket, parent string) (Pu
 	})
 	return result, nil
 }
-func (s *Sharing) Download(ctx context.Context, token, ticket, id string) (PublicEntry, []byte, error) {
+func (s *Sharing) DownloadTo(ctx context.Context, token, ticket, id string, use func(model.Entry, io.ReadSeeker) error) error {
 	snapshot, err := s.inspect(ctx, token, ticket)
 	if err != nil {
-		return PublicEntry{}, nil, err
+		return err
 	}
 	if !s.authorized(snapshot) {
-		return PublicEntry{}, nil, model.ErrShareLocked
+		return model.ErrShareLocked
 	}
 	if !Within(snapshot.Entries, snapshot.Share.RootID, id) {
-		return PublicEntry{}, nil, model.ErrMissing
+		return model.ErrMissing
 	}
-	entry, content, err := s.files.Download(ctx, snapshot.Share.OwnerID, id)
-	if err != nil {
-		return PublicEntry{}, nil, err
-	}
-	// 读取对象期间可能移动到分享树外，重新授权且验证同一内容版本。
-	current, err := s.inspect(ctx, token, ticket)
-	if err != nil {
-		return PublicEntry{}, nil, err
-	}
-	if !s.authorized(current) {
-		return PublicEntry{}, nil, model.ErrShareLocked
-	}
-	latest, ok := model.Find(current.Entries, id)
-	if !ok || !model.Visible(current.Entries, latest) || !Within(current.Entries, current.Share.RootID, id) || latest.ObjectKey != entry.ObjectKey {
-		return PublicEntry{}, nil, model.ErrMissing
-	}
-	return publicEntry(entry), content, nil
+	return s.files.DownloadTo(ctx, snapshot.Share.OwnerID, id, func(entry model.Entry, reader io.ReadSeeker) error {
+		// 读取对象期间可能移动到分享树外，重新授权且验证同一内容版本。
+		current, err := s.inspect(ctx, token, ticket)
+		if err != nil {
+			return err
+		}
+		if !s.authorized(current) {
+			return model.ErrShareLocked
+		}
+		latest, ok := model.Find(current.Entries, id)
+		if !ok || !model.Visible(current.Entries, latest) || !Within(current.Entries, current.Share.RootID, id) || latest.ObjectKey != entry.ObjectKey {
+			return model.ErrMissing
+		}
+		return use(entry, reader)
+	})
 }

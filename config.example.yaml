@@ -261,6 +261,8 @@ http:
   maxHeaderBytes: 1048576
   # 单个业务请求的 application deadline，不替代 socket timeout。
   requestTimeout: 10s
+  # 只有 operation catalog 声明的传输入口采用此预算；普通业务请求仍为 10 秒。
+  transferTimeout: 5m
   maxRequestBodyBytes: 33554432
   # 单进程并发上限；超出返回 503 和受控 Retry-After。
   maxInFlight: 128
@@ -325,17 +327,31 @@ observability:
 
 # 私有文件的有界传输预算；变更后重启服务。
 files:
-  maxFileBytes: 33554432
+  maxFileBytes: 536870912
   quotaBytes: 1073741824
   concurrentUploads: 2
   maxTextBytes: 1048576
   maxArchiveBytes: 67108864
   maxBatchEntries: 500
   maxThumbnailBytes: 2097152
+  maxMediaBytes: 33554432
   maxGalleryEntries: 12
+  transfers:
+    stagingPath: .data/file-transfers
+    chunkBytes: 4194304
+    stagingBytes: 2147483648
+    ownerCount: 20
+    globalCount: 100
+    lifetime: 24h
+    lockTimeout: 5s
+    lockRetryInterval: 100ms
+    networkTimeout: 30s
+    completionTimeout: 5s
   sharing:
     maxAge: 720h
     grantTTL: 15m
     attemptWindow: 1m
     attemptLimit: 10
     kdfConcurrency: 2
+    downloadTTL: 1m
+    downloadLimit: 100

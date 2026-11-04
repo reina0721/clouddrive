@@ -28,6 +28,15 @@ type textInput struct {
 		Text             string `json:"text" maxLength:"1048576"`
 	}
 }
+
+type textCreateInput struct {
+	Body struct {
+		Name     string `json:"name" minLength:"1" maxLength:"255"`
+		ParentID string `json:"parentId" maxLength:"36"`
+		Key      string `json:"key" minLength:"16" maxLength:"128"`
+		Text     string `json:"text"`
+	}
+}
 type archiveInput struct {
 	Body struct {
 		IDs []string `json:"ids" minItems:"1" maxItems:"500"`
@@ -38,6 +47,17 @@ type archiveInput struct {
 const maxTextJSONBytes = 6*service.DefaultMaxTextBytes + 1024
 
 func registerOperations(api huma.API, h *handler.Handler, operation func(string, string, string, string, bool) huma.Operation) {
+	createText := operation("files.text.create", http.MethodPost, "/text", "files:write", true)
+	createText.MaxBodyBytes = maxTextJSONBytes
+	createText.Middlewares = append(createText.Middlewares, transferAdmission(h))
+	huma.Register(api, createText, func(ctx context.Context, input *textCreateInput) (*entryOutput, error) {
+		owner, err := h.Owner(ctx)
+		if err != nil {
+			return nil, h.Present(ctx, err)
+		}
+		entry, err := h.Service.CreateText(ctx, owner, input.Body.ParentID, input.Body.Name, input.Body.Key, input.Body.Text)
+		return result(ctx, h, entry, err)
+	})
 	huma.Register(api, operation("files.copy", http.MethodPost, "/{id}/copy", "files:write", true), func(ctx context.Context, input *copyInput) (*entryOutput, error) {
 		owner, err := h.Owner(ctx)
 		if err != nil {

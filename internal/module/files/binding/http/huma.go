@@ -2,7 +2,6 @@
 package httpbinding
 
 import (
-	"bytes"
 	"context"
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/reina0721/clouddrive/internal/module/files/handler"
@@ -10,7 +9,7 @@ import (
 	"github.com/reina0721/clouddrive/internal/module/files/service"
 	"github.com/reina0721/clouddrive/internal/transport/http/humabinding"
 	"github.com/reina0721/clouddrive/pkg/httpx"
-	"mime"
+	"io"
 	"net/http"
 )
 
@@ -45,12 +44,6 @@ type restoreInput struct {
 		ParentID *string `json:"parentId,omitempty"`
 	}
 }
-type uploadInput struct {
-	Name    string `query:"name" minLength:"1" maxLength:"255"`
-	Parent  string `query:"parent"`
-	Key     string `header:"Idempotency-Key" minLength:"16" maxLength:"128"`
-	RawBody []byte `contentType:"application/octet-stream"`
-}
 type detailOutput struct{ Body service.Detail }
 type contentOutput struct{ Body func(huma.Context) }
 
@@ -71,7 +64,7 @@ func HumaRegistration(h *handler.Handler, guard MutationGuard) humabinding.Regis
 func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 	operation := func(id, method, suffix, scope string, jsonBody bool) huma.Operation {
 		op := operation(id, method, suffix, scope, jsonBody)
-		if method != http.MethodGet {
+		if method != http.MethodGet && method != http.MethodHead && method != http.MethodOptions {
 			op.Middlewares = append(op.Middlewares, func(ctx huma.Context, next func(huma.Context)) {
 				request, writer := humabinding.UnwrapHTTP(ctx)
 				if guard == nil {
@@ -89,6 +82,7 @@ func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 	}
 	registerOperations(api, h, operation)
 	registerSharing(api, h, operation)
+	registerTransfers(api, h, operation)
 	huma.Register(api, operation("files.list", "GET", "", "files:read", false), func(ctx context.Context, input *listInput) (*listOutput, error) {
 		owner, err := h.Owner(ctx)
 		if err != nil {
@@ -108,37 +102,6 @@ func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 		entry, err := h.Service.Folder(ctx, owner, input.Body.ParentID, input.Body.Name)
 		return result(ctx, h, entry, err)
 	})
-	upload := operation("files.upload", "POST", "/upload", "files:write", false)
-	upload.MaxBodyBytes = service.DefaultMaxFileBytes
-	if h != nil {
-		upload.MaxBodyBytes = h.Service.MaxFileBytes()
-	}
-	upload.Middlewares = append(upload.Middlewares, func(ctx huma.Context, next func(huma.Context)) {
-		request, writer := humabinding.UnwrapHTTP(ctx)
-		mediaType, _, mediaErr := mime.ParseMediaType(request.Header.Get("Content-Type"))
-		if mediaErr != nil || mediaType != "application/octet-stream" {
-			httpx.WriteProblem(writer, request, &httpx.StatusError{StatusCode: 415, Code: "files_content_type", Message: "file upload requires application/octet-stream", Err: mediaErr})
-			return
-		}
-		release, err := h.Service.AcquireUpload(ctx.Context())
-		if err != nil {
-			request, writer := humabinding.UnwrapHTTP(ctx)
-			httpx.WriteProblem(writer, request, h.Present(ctx.Context(), err))
-			return
-		}
-		defer release()
-		next(ctx)
-	})
-	huma.Register(api, upload, func(ctx context.Context, input *uploadInput) (*entryOutput, error) {
-		owner, err := h.Owner(ctx)
-		if err != nil {
-			return nil, h.Present(ctx, err)
-		}
-		entry, err := h.Service.Upload(ctx, owner, input.Parent, input.Name, input.Key, input.RawBody)
-		return result(ctx, h, entry, err)
-	})
-	// 空文件也是有效上传；该固定声明在注册期完成，不在请求期间修改共享 operation。
-	api.OpenAPI().Paths[prefix+"/upload"].Post.RequestBody.Required = false
 	huma.Register(api, operation("files.detail", "GET", "/{id}", "files:read", false), func(ctx context.Context, input *pathInput) (*detailOutput, error) {
 		owner, err := h.Owner(ctx)
 		if err != nil {
@@ -174,27 +137,26 @@ func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 		entry, err := h.Service.Restore(ctx, owner, input.ID, input.Body.ParentID)
 		return result(ctx, h, entry, err)
 	})
-	download := operation("files.content", "GET", "/{id}/content", "files:read", false)
-	download.Middlewares = append(download.Middlewares, transferAdmission(h))
-	download.Responses = map[string]*huma.Response{"200": {Description: "文件原始内容", Content: map[string]*huma.MediaType{"application/octet-stream": {Schema: &huma.Schema{Type: "string", Format: "binary"}}}}}
-	huma.Register(api, download, func(ctx context.Context, input *pathInput) (*contentOutput, error) {
-		owner, err := h.Owner(ctx)
-		if err != nil {
-			return nil, h.Present(ctx, err)
+
+	for _, method := range []string{http.MethodGet, http.MethodHead} {
+		id := "files.content"
+		if method == http.MethodHead {
+			id = "files.content.head"
 		}
-		entry, content, err := h.Service.Download(ctx, owner, input.ID)
-		if err != nil {
-			return nil, h.Present(ctx, err)
-		}
-		return &contentOutput{Body: func(ctx huma.Context) {
-			request, writer := humabinding.UnwrapHTTP(ctx)
-			writer.Header().Set("Content-Type", "application/octet-stream")
-			writer.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": entry.Name}))
-			writer.Header().Set("X-Content-Type-Options", "nosniff")
-			writer.Header().Set("Cache-Control", "private, no-store")
-			http.ServeContent(writer, request, entry.Name, entry.UpdatedAt, bytes.NewReader(content))
-		}}, nil
-	})
+		download := transferBudget(operation(id, method, "/{id}/content", "files:read", false))
+		download.Middlewares = append(download.Middlewares, transferAdmission(h))
+		download.Responses = map[string]*huma.Response{"200": {Description: "文件原始内容和字节范围", Content: map[string]*huma.MediaType{"application/octet-stream": {Schema: &huma.Schema{Type: "string", Format: "binary"}}}}}
+		huma.Register(api, download, func(ctx context.Context, input *pathInput) (*contentOutput, error) {
+			owner, err := h.Owner(ctx)
+			if err != nil {
+				return nil, h.Present(ctx, err)
+			}
+			return contentResponse(ctx, h, func(ctx context.Context, use func(model.Entry, io.ReadSeeker) error) error {
+				return h.Service.DownloadTo(ctx, owner, input.ID, use)
+			}), nil
+		})
+	}
+
 }
 func result(ctx context.Context, h *handler.Handler, entry model.Entry, err error) (*entryOutput, error) {
 	if err != nil {

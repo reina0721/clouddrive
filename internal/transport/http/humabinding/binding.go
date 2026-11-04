@@ -28,11 +28,36 @@ const (
 // Definition 是项目拥有的稳定 operation/policy 元数据，不暴露 Huma 类型给消费者。
 type Definition struct {
 	ID, Method, Path, Security, Policy, Scope, Action string
+	Budget                                            RequestBudget
 }
+
+// RequestBudget 是静态声明的请求承载类别，不能由 query/header 自行选择。
+type RequestBudget string
+
+const (
+	BudgetDefault  RequestBudget = ""
+	BudgetTransfer RequestBudget = "transfer"
+)
 
 // UnwrapHTTP 只供模块级协议 middleware 读取原生 request/response；Router adapter
 // 的具体类型不会扩散到模块 binding。
 func UnwrapHTTP(ctx huma.Context) (*http.Request, http.ResponseWriter) {
+	return humachi.Unwrap(ctx)
+}
+
+// BeginRawHTTP 只供自有 Body 回调开始原始响应，避免普通 Problem 缓冲再次写入状态。
+func BeginRawHTTP(ctx huma.Context) (*http.Request, http.ResponseWriter) {
+	for current := ctx; current != nil; {
+		if raw, ok := current.(interface{ BeginRawResponse() }); ok {
+			raw.BeginRawResponse()
+			break
+		}
+		wrapped, ok := current.(interface{ Unwrap() huma.Context })
+		if !ok {
+			break
+		}
+		current = wrapped.Unwrap()
+	}
 	return humachi.Unwrap(ctx)
 }
 

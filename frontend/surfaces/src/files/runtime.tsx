@@ -1,6 +1,13 @@
 'use client';
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, type ReactNode, type ComponentType } from 'react';
+import {
+  createContext,
+  useContext,
+  useSyncExternalStore,
+  type ReactNode,
+  type ComponentType,
+} from 'react';
+import type { TransfersPort } from './transfers';
 import type { FilesPort, PublicFilesPort, FileEntry } from './model';
 
 export type FileMediaProps = Readonly<{
@@ -11,16 +18,35 @@ export type FileMediaProps = Readonly<{
 const MediaContext = createContext<ComponentType<FileMediaProps> | null>(null);
 
 const Context = createContext<FilesPort | null>(null);
+const TransfersContext = createContext<TransfersPort | null>(null);
 export function FilesProvider({
   port,
   children,
   media: Media,
-}: Readonly<{ port: FilesPort; children: ReactNode; media: ComponentType<FileMediaProps> }>) {
+  transfers,
+}: Readonly<{
+  port: FilesPort;
+  transfers: TransfersPort;
+  children: ReactNode;
+  media: ComponentType<FileMediaProps>;
+}>) {
   return (
     <Context value={port}>
-      <MediaContext value={Media}>{children}</MediaContext>
+      <TransfersContext value={transfers}>
+        <MediaContext value={Media}>{children}</MediaContext>
+      </TransfersContext>
     </Context>
   );
+}
+
+export function useTransfers() {
+  const port = useContext(TransfersContext);
+  if (!port) throw new Error('Transfer runtime is required');
+  return port;
+}
+export function useTransferSnapshot() {
+  const port = useTransfers();
+  return useSyncExternalStore(port.subscribe, port.getSnapshot, port.getSnapshot);
 }
 export function useFileMedia() {
   const renderer = useContext(MediaContext);

@@ -12,6 +12,8 @@ export type FilesErrorCode =
   | 'unsupported'
   | 'invalid'
   | 'locked'
+  | 'checksum'
+  | 'expired'
   | 'canceled';
 export class FilesError extends Error {
   constructor(
@@ -45,6 +47,7 @@ export const fileListingSchema = z.object({
   maxTextBytes: z.number().int().positive(),
   maxArchiveBytes: z.number().int().positive(),
   maxBatchEntries: z.number().int().positive(),
+  maxMediaBytes: z.number().int().positive(),
   maxThumbnailBytes: z.number().int().positive(),
   maxGalleryEntries: z.number().int().positive(),
 });
@@ -74,7 +77,11 @@ export type FileViewPreferences = Readonly<{
 }>;
 export type FileShortcut =
   'search' | 'refresh' | 'selectAll' | 'clearSelection' | 'rename' | 'trash' | 'newFolder' | 'open';
+export type FilesDestination = 'files' | 'shares' | 'transfers' | 'workspace' | 'account';
 export type FilesPort = Readonly<{
+  navigate(destination: FilesDestination): void;
+  destinationHref(destination: FilesDestination): string;
+  openFolder(parentId: string): void;
   list(query: FileQuery, signal?: AbortSignal): Promise<FileListing>;
   folder(parentId: string, name: string): Promise<FileEntry>;
   update(id: string, change: { name?: string; parentId?: string }): Promise<FileEntry>;
@@ -97,7 +104,6 @@ export type FilesPort = Readonly<{
   focusSearch(): void;
   focusFiles(): void;
   subscribeDrop(listener: (candidates: readonly UploadCandidate[]) => void): () => void;
-  upload(candidate: UploadCandidate, parentId: string, signal: AbortSignal): Promise<FileEntry>;
   releaseCandidate(id: string): void;
   download(entry: FileEntry): Promise<void>;
   preview(entry: FileEntry, signal?: AbortSignal): Promise<string>;
@@ -116,6 +122,11 @@ export const fileShareSchema = z.object({
   status: z.enum(['active', 'expired', 'revoked', 'unavailable']),
 });
 export type FileShare = z.infer<typeof fileShareSchema>;
+
+export const shareDownloadGrantSchema = z.object({
+  ticket: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+  expiresAt: z.string(),
+});
 
 export const publicFileEntrySchema = z.object({
   id: z.string(),

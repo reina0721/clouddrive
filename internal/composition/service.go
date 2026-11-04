@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/reina0721/clouddrive/internal/kernel"
 	kernelcomposition "github.com/reina0721/clouddrive/internal/kernel/composition"
@@ -99,6 +100,7 @@ func applicationRouter(
 	httpConfig httpx.ServerConfig,
 	apiRoutes http.Handler,
 	managementFacade http.Handler,
+	transferRoutes func(*http.Request) bool,
 ) (httpx.Router, error) {
 	if apiRoutes == nil {
 		return nil, fmt.Errorf("application API routes are nil")
@@ -123,8 +125,22 @@ func applicationRouter(
 		trustedProxy,
 		httpx.SecureHeaders(),
 		httpx.RejectUpgrade(),
-		httpx.RequestTimeout(httpConfig.RequestTimeout),
-		httpx.BodyLimit(httpConfig.MaxRequestBodyBytes),
+		httpx.RequestTimeoutPolicy(httpConfig.RequestTimeout, func(request *http.Request) (time.Duration, bool) {
+			if transferRoutes != nil && transferRoutes(request) {
+				return httpConfig.TransferTimeout, true
+			}
+			return 0, false
+		}),
+		func(next httpx.Handler) httpx.Handler {
+			ordinary := httpx.BodyLimit(httpConfig.MaxRequestBodyBytes)(next)
+			return func(ctx *httpx.Context) error {
+				// 分块路由在认证及准入后按文件模块的 chunkBytes 限流；其余请求保留普通上限。
+				if ctx.Request.Method == http.MethodPatch && transferRoutes != nil && transferRoutes(ctx.Request) {
+					return next(ctx)
+				}
+				return ordinary(ctx)
+			}
+		},
 		corsMiddleware,
 	}
 	switch httpConfig.RateLimit.Mode {

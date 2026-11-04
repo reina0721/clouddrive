@@ -493,7 +493,10 @@ func (f *applicationGenerationFactory) Prepare(
 	if err := files.ValidateStorage(ctx, databaseAccess, storageIdentity); err != nil {
 		return abort(err)
 	}
-	filesHandler, err := files.New(files.Dependencies{Passwords: iam.NewCredentialDigests(), SharePolicy: filesPolicy.SharePolicy(), PublicOrigins: httpConfig.CORS.AllowedOrigins, StorageIdentity: storageIdentity, Database: databaseAccess, Content: filesContentAdapter{access: generation.storage.value()}, Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: filesPolicy.Policy()})
+	if err := files.PrepareTransfers(ctx, databaseAccess, storageIdentity, filesPolicy.Transfers.StagingPath); err != nil {
+		return abort(err)
+	}
+	filesHandler, err := files.New(files.Dependencies{TransferContent: filesContentAdapter{access: generation.storage.value()}, TransferPolicy: filesPolicy.TransferPolicy(), StagingPath: filesPolicy.Transfers.StagingPath, Passwords: iam.NewCredentialDigests(), SharePolicy: filesPolicy.SharePolicy(), PublicOrigins: httpConfig.CORS.AllowedOrigins, StorageIdentity: storageIdentity, Database: databaseAccess, Content: filesContentAdapter{access: generation.storage.value()}, Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: filesPolicy.Policy()})
 	if err != nil {
 		return abort(err)
 	}
@@ -561,11 +564,15 @@ func (f *applicationGenerationFactory) Prepare(
 		generation.participants = append(generation.participants, participant)
 	}
 
+	transferRoutes, err := transferBudgetMatcher(f.blueprint.httpDefinitions)
+	if err != nil {
+		return abort(err)
+	}
 	router, err := applicationRouter(kernelcomposition.Capabilities{
 		Logger: generation.logger.value(), Clock: clock.System(), IDGenerator: idgen.UUID(), Validator: validation.New(),
 		Database: generation.database.value(), Cache: generation.cache.value(),
 		I18n: generation.i18n.value(), Storage: generation.storage.value(),
-	}, httpConfig, apiRoutes, generation.opsModule.ManagementHTTP)
+	}, httpConfig, apiRoutes, generation.opsModule.ManagementHTTP, transferRoutes)
 	if err != nil {
 		return abort(err)
 	}

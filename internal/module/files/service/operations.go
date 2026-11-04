@@ -19,6 +19,18 @@ import (
 
 const editedTextMediaType = "text/plain; charset=utf-8"
 
+// CreateText 为小型纯文本创建提供明确入口，普通文件统一使用持久传输。
+func (s *Service) CreateText(ctx context.Context, owner, parent, name, key, text string) (model.Entry, error) {
+	content := []byte(text)
+	if !utf8.Valid(content) || strings.ContainsRune(text, 0) {
+		return model.Entry{}, model.ErrInvalid
+	}
+	if int64(len(content)) > s.policy.MaxTextBytes {
+		return model.Entry{}, model.ErrTooLarge
+	}
+	return s.createSmallContent(ctx, owner, parent, name, key, content)
+}
+
 // Within 判断目录项是否位于指定根（含根本身），父链异常时拒绝访问。
 func Within(entries []model.Entry, root, id string) bool {
 	for remaining := len(entries) + 1; id != "" && remaining > 0; remaining-- {
@@ -253,7 +265,7 @@ func (s *Service) Archive(ctx context.Context, owner string, ids []string) ([]by
 		}
 		var content []byte
 		if member.entry.Kind == model.File {
-			current, payload, err := s.Download(ctx, owner, member.entry.ID)
+			current, payload, err := s.ReadSmall(ctx, owner, member.entry.ID, s.policy.MaxArchiveBytes)
 			if err != nil {
 				return nil, errors.Join(err, writer.Close())
 			}

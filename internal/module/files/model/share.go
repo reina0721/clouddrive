@@ -24,7 +24,9 @@ type Share struct {
 
 // ShareGrant 仅保存访问票据的摘要，不将票据视为 IAM 身份。
 type ShareGrant struct {
-	Digest    string
-	ShareID   string
-	ExpiresAt time.Time
+	Digest          string
+	ShareID         string
+	ExpiresAt       time.Time
+	EntryID         string
+	ContentRevision int64
 }

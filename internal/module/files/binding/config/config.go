@@ -10,15 +10,17 @@ import (
 )
 
 type Config struct {
-	MaxFileBytes      int64       `mapstructure:"maxFileBytes"`
-	QuotaBytes        int64       `mapstructure:"quotaBytes"`
-	ConcurrentUploads int         `mapstructure:"concurrentUploads"`
-	MaxTextBytes      int64       `mapstructure:"maxTextBytes"`
-	MaxArchiveBytes   int64       `mapstructure:"maxArchiveBytes"`
-	MaxBatchEntries   int         `mapstructure:"maxBatchEntries"`
-	MaxThumbnailBytes int64       `mapstructure:"maxThumbnailBytes"`
-	MaxGalleryEntries int         `mapstructure:"maxGalleryEntries"`
-	Sharing           ShareConfig `mapstructure:"sharing"`
+	MaxFileBytes      int64          `mapstructure:"maxFileBytes"`
+	QuotaBytes        int64          `mapstructure:"quotaBytes"`
+	ConcurrentUploads int            `mapstructure:"concurrentUploads"`
+	MaxTextBytes      int64          `mapstructure:"maxTextBytes"`
+	MaxArchiveBytes   int64          `mapstructure:"maxArchiveBytes"`
+	MaxBatchEntries   int            `mapstructure:"maxBatchEntries"`
+	MaxMediaBytes     int64          `mapstructure:"maxMediaBytes"`
+	MaxThumbnailBytes int64          `mapstructure:"maxThumbnailBytes"`
+	MaxGalleryEntries int            `mapstructure:"maxGalleryEntries"`
+	Sharing           ShareConfig    `mapstructure:"sharing"`
+	Transfers         TransferConfig `mapstructure:"transfers"`
 }
 
 type ShareConfig struct {
@@ -27,28 +29,34 @@ type ShareConfig struct {
 	AttemptWindow  time.Duration `mapstructure:"attemptWindow"`
 	AttemptLimit   int           `mapstructure:"attemptLimit"`
 	KDFConcurrency int           `mapstructure:"kdfConcurrency"`
+	DownloadTTL    time.Duration `mapstructure:"downloadTTL"`
+	DownloadLimit  int           `mapstructure:"downloadLimit"`
 }
 
 func (c Config) SharePolicy() service.SharePolicy {
 	p := c.Sharing
-	return service.SharePolicy{MaxAge: p.MaxAge, GrantTTL: p.GrantTTL, AttemptWindow: p.AttemptWindow, AttemptLimit: p.AttemptLimit, KDFConcurrency: p.KDFConcurrency}
+	return service.SharePolicy{MaxAge: p.MaxAge, GrantTTL: p.GrantTTL, AttemptWindow: p.AttemptWindow, AttemptLimit: p.AttemptLimit, KDFConcurrency: p.KDFConcurrency, DownloadTTL: p.DownloadTTL, DownloadLimit: p.DownloadLimit}
 }
 
 func (c Config) Policy() service.Policy {
-	return service.Policy{MaxFileBytes: c.MaxFileBytes, QuotaBytes: c.QuotaBytes, ConcurrentUploads: c.ConcurrentUploads, MaxTextBytes: c.MaxTextBytes, MaxArchiveBytes: c.MaxArchiveBytes, MaxBatchEntries: c.MaxBatchEntries, MaxThumbnailBytes: c.MaxThumbnailBytes, MaxGalleryEntries: c.MaxGalleryEntries}
+	return service.Policy{MaxFileBytes: c.MaxFileBytes, QuotaBytes: c.QuotaBytes, ConcurrentUploads: c.ConcurrentUploads, MaxTextBytes: c.MaxTextBytes, MaxArchiveBytes: c.MaxArchiveBytes, MaxBatchEntries: c.MaxBatchEntries, MaxThumbnailBytes: c.MaxThumbnailBytes, MaxMediaBytes: c.MaxMediaBytes, MaxGalleryEntries: c.MaxGalleryEntries}
 }
 func Decode(snapshot config.Snapshot) (Config, error) {
 	p := service.DefaultPolicy()
-	c := Config{MaxFileBytes: p.MaxFileBytes, QuotaBytes: p.QuotaBytes, ConcurrentUploads: p.ConcurrentUploads, MaxTextBytes: p.MaxTextBytes, MaxArchiveBytes: p.MaxArchiveBytes, MaxBatchEntries: p.MaxBatchEntries, MaxThumbnailBytes: p.MaxThumbnailBytes, MaxGalleryEntries: p.MaxGalleryEntries}
+	c := Config{MaxFileBytes: p.MaxFileBytes, QuotaBytes: p.QuotaBytes, ConcurrentUploads: p.ConcurrentUploads, MaxTextBytes: p.MaxTextBytes, MaxArchiveBytes: p.MaxArchiveBytes, MaxBatchEntries: p.MaxBatchEntries, MaxThumbnailBytes: p.MaxThumbnailBytes, MaxMediaBytes: p.MaxMediaBytes, MaxGalleryEntries: p.MaxGalleryEntries}
 	share := service.DefaultSharePolicy()
-	c.Sharing = ShareConfig{MaxAge: share.MaxAge, GrantTTL: share.GrantTTL, AttemptWindow: share.AttemptWindow, AttemptLimit: share.AttemptLimit, KDFConcurrency: share.KDFConcurrency}
+	c.Sharing = ShareConfig{MaxAge: share.MaxAge, GrantTTL: share.GrantTTL, AttemptWindow: share.AttemptWindow, AttemptLimit: share.AttemptLimit, KDFConcurrency: share.KDFConcurrency, DownloadTTL: share.DownloadTTL, DownloadLimit: share.DownloadLimit}
+	c.Transfers = defaultTransfers()
 	if err := snapshot.DecodeSection("files", &c); err != nil {
 		return Config{}, err
 	}
 	if err := c.Policy().Validate(); err != nil {
 		return Config{}, err
 	}
-	return c, c.SharePolicy().Validate()
+	if err := c.SharePolicy().Validate(); err != nil {
+		return Config{}, err
+	}
+	return c, c.validateTransfers()
 }
 func Binding() config.Binding {
 	return config.Binding{CapabilityID: "module.files", ConfigPath: "files", Contract: defaults{}, Validate: func(snapshot config.Snapshot) error { _, err := Decode(snapshot); return err }}
@@ -77,7 +85,7 @@ func (defaults) Defaults(ctx context.Context) (config.Object, config.Control, er
 	for _, budget := range []struct {
 		name  string
 		value int64
-	}{{"maxTextBytes", p.MaxTextBytes}, {"maxArchiveBytes", p.MaxArchiveBytes}, {"maxBatchEntries", int64(p.MaxBatchEntries)}, {"maxThumbnailBytes", p.MaxThumbnailBytes}, {"maxGalleryEntries", int64(p.MaxGalleryEntries)}} {
+	}{{"maxTextBytes", p.MaxTextBytes}, {"maxArchiveBytes", p.MaxArchiveBytes}, {"maxBatchEntries", int64(p.MaxBatchEntries)}, {"maxMediaBytes", p.MaxMediaBytes}, {"maxThumbnailBytes", p.MaxThumbnailBytes}, {"maxGalleryEntries", int64(p.MaxGalleryEntries)}} {
 		number, err := config.Number(fmt.Sprint(budget.value))
 		if err != nil {
 			return nil, config.Continue, err
@@ -93,6 +101,15 @@ func (defaults) Defaults(ctx context.Context) (config.Object, config.Control, er
 	if err != nil {
 		return nil, config.Continue, err
 	}
-	fields = append(fields, config.FieldOf("sharing", config.ObjectValue(config.Object{config.FieldOf("maxAge", config.String(share.MaxAge.String())), config.FieldOf("grantTTL", config.String(share.GrantTTL.String())), config.FieldOf("attemptWindow", config.String(share.AttemptWindow.String())), config.FieldOf("attemptLimit", limit), config.FieldOf("kdfConcurrency", kdf)})))
+	downloadLimit, err := config.Number(fmt.Sprint(share.DownloadLimit))
+	if err != nil {
+		return nil, config.Continue, err
+	}
+	fields = append(fields, config.FieldOf("sharing", config.ObjectValue(config.Object{config.FieldOf("maxAge", config.String(share.MaxAge.String())), config.FieldOf("grantTTL", config.String(share.GrantTTL.String())), config.FieldOf("attemptWindow", config.String(share.AttemptWindow.String())), config.FieldOf("attemptLimit", limit), config.FieldOf("kdfConcurrency", kdf), config.FieldOf("downloadTTL", config.String(share.DownloadTTL.String())), config.FieldOf("downloadLimit", downloadLimit)})))
+	transfers, err := transferDefaults(ctx)
+	if err != nil {
+		return nil, config.Continue, err
+	}
+	fields = append(fields, config.FieldOf("transfers", config.ObjectValue(transfers)))
 	return fields, config.Continue, nil
 }

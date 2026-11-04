@@ -11,14 +11,28 @@ import {
   type FileListing,
   type FileShortcut,
 } from '@clouddrive/surface/files';
-import { createJsonClient, ApiError } from '../api/json-client';
+import { createJsonClient, csrfTokenOf, ApiError } from '../api/json-client';
+import { createTransferRuntime } from './transfer-runtime';
+import { nativeDownload } from './native-download';
 
 const transferTimeoutMs = 120_000;
 const preferencesKey = 'clouddrive.files.view.v1';
 const defaultPreferences: FileViewPreferences = { view: 'grid', sort: 'name', desc: false };
+export const fileDestinationHrefs = {
+  files: '/home',
+  shares: '/home/shares',
+  transfers: '/home/transfers',
+  workspace: '/workspace',
+  account: '/account',
+} as const;
 
 /** createFilesRuntime 将文件句柄、网络、下载及拖拽生命周期留在浏览器 Host。 */
-export function createFilesRuntime(base: string, owner: () => string | null) {
+export function createFilesRuntime(
+  base: string,
+  owner: () => string | null,
+  navigate: FilesPort['navigate'],
+  openFolder: FilesPort['openFolder'],
+) {
   const transport = createJsonClient(base);
   const sources = new Map<string, File>();
   const openPickers = new Set<() => void>();
@@ -84,6 +98,9 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
         if (error.status === 401) code = 'unauthenticated';
         else if (error.status === 403) code = 'forbidden';
         else if (error.status === 404) code = 'missing';
+        else if (error.status === 410) code = 'expired';
+        else if (error.status === 422 && payload?.includes('files_transfer_checksum'))
+          code = 'checksum';
         else if (error.status === 409)
           code = payload?.includes('files_quota') ? 'quota' : 'conflict';
         else if (error.status === 413) code = 'large';
@@ -201,7 +218,37 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
     if (signal.aborted) throw new FilesError('canceled');
     return current;
   }
+  const transfers = createTransferRuntime({
+    call,
+    owner,
+    dataURL: (id) => base + native + '/transfers/' + encodeURIComponent(id) + '/data',
+    csrf: async (signal) =>
+      csrfTokenOf(
+        await transport('/auth/csrf', { signal: AbortSignal.any([signal, lifecycle.signal]) }),
+      ),
+    takeSource: (candidate) => sources.get(candidate.id),
+    releaseSource: (id) => {
+      sources.delete(id);
+    },
+    resolveParent: uploadParent,
+    chooseSource: async () => {
+      const candidates = await choose('files');
+      if (candidates.length !== 1) {
+        for (const candidate of candidates) sources.delete(candidate.id);
+        if (!candidates.length) return undefined;
+        throw new FilesError('invalid');
+      }
+      const candidate = candidates[0];
+      if (!candidate) return undefined;
+      const file = sources.get(candidate.id);
+      sources.delete(candidate.id);
+      return file;
+    },
+  });
   const port: FilesPort = {
+    navigate,
+    openFolder,
+    destinationHref: (destination) => fileDestinationHrefs[destination],
     list: async (query, signal) => {
       const params = new URLSearchParams({
         parent: query.parent,
@@ -235,21 +282,14 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
       fileEntrySchema.parse(
         await call(`/${encodeURIComponent(id)}/copy`, { method: 'POST', body: { parentId, name } }),
       ),
-    createText: async (parentId, name, text) => {
-      if (text.includes('\0')) throw new FilesError('invalid');
-      const params = new URLSearchParams({ parent: parentId, name });
-      return fileEntrySchema.parse(
-        await call(`/upload?${params}`, {
+    createText: async (parentId, name, text) =>
+      fileEntrySchema.parse(
+        await call('/text', {
           method: 'POST',
-          rawBody: new Blob([text], { type: 'application/octet-stream' }),
+          body: { parentId, name, text, key: crypto.randomUUID() },
           timeoutMs: transferTimeoutMs,
-          headers: {
-            'Content-Type': 'application/octet-stream',
-            'Idempotency-Key': crypto.randomUUID(),
-          },
         }),
-      );
-    },
+      ),
     textBytes: (text) => new TextEncoder().encode(text).byteLength,
     replaceText: async (id, expectedRevision, text) =>
       fileEntrySchema.parse(
@@ -342,27 +382,12 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
         dropListeners.delete(listener);
       };
     },
-    upload: async (candidate, parentId, signal) => {
-      const source = sources.get(candidate.id);
-      if (!source) throw new ApiError('protocol');
-      const target = await uploadParent(candidate, parentId, signal);
-      const params = new URLSearchParams({ name: candidate.name, parent: target });
-      return fileEntrySchema.parse(
-        await call(`/upload?${params}`, {
-          method: 'POST',
-          rawBody: source,
-          timeoutMs: transferTimeoutMs,
-          signal,
-          headers: { 'Content-Type': 'application/octet-stream', 'Idempotency-Key': candidate.id },
-        }),
-      );
-    },
     releaseCandidate: (id) => {
       sources.delete(id);
     },
     download: async (entry) => {
-      const blob = await content(entry.id);
-      downloadBlob(blob, entry.name);
+      await port.detail(entry.id);
+      nativeDownload(base + native + '/' + encodeURIComponent(entry.id) + '/content', entry.name);
     },
     preview: async (entry, signal) => {
       if (
@@ -414,6 +439,7 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
   };
   return {
     port,
+    transfers: transfers.port,
     readMedia: async (id: string, expectedSizeBytes: number, signal: AbortSignal) => {
       const previous = mediaTail;
       let release = () => {};
@@ -433,21 +459,24 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
     activate: () => {
       disposed = false;
       if (lifecycle.signal.aborted) lifecycle = new AbortController();
+      transfers.activate();
     },
     offer: (files: readonly File[]) => {
       if (!dropListeners.size || disposed) return;
       const candidates = register(files);
       for (const listener of dropListeners) listener(candidates);
     },
-    dispose: () => {
+    dispose: async () => {
       disposed = true;
       lifecycle.abort();
+      const stopping = transfers.dispose();
       directories.clear();
       limits = undefined;
       for (const cleanup of shortcutCleanups) cleanup();
       for (const cancel of openPickers) cancel();
       sources.clear();
       dropListeners.clear();
+      await stopping;
     },
   };
 }

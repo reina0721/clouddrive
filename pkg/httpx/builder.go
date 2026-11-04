@@ -56,6 +56,7 @@ func resolveServerConfig(cfg *ServerConfig) (resolvedServerConfig, error) {
 		IdleTimeout:         defaults.IdleTimeout,
 		MaxHeaderBytes:      defaults.MaxHeaderBytes,
 		RequestTimeout:      defaults.RequestTimeout,
+		TransferTimeout:     defaults.TransferTimeout,
 		MaxRequestBodyBytes: defaults.MaxRequestBodyBytes,
 		MaxInFlight:         defaults.MaxInFlight,
 		TrustedProxyCIDRs:   append([]string(nil), defaults.TrustedProxyCIDRs...),
@@ -71,6 +72,9 @@ func resolveServerConfig(cfg *ServerConfig) (resolvedServerConfig, error) {
 	}
 	if cfg.MaxHeaderBytes < 0 {
 		return resolvedServerConfig{}, fmt.Errorf("max header bytes must be non-negative")
+	}
+	if cfg.TransferTimeout < 0 || cfg.TransferTimeout > MaxServerTransferTimeout {
+		return resolvedServerConfig{}, fmt.Errorf("invalid transfer request budget")
 	}
 	if cfg.RequestTimeout < 0 || cfg.MaxRequestBodyBytes < 0 || cfg.MaxInFlight < 0 ||
 		cfg.RateLimit.RequestsPerSecond < 0 || cfg.RateLimit.Burst < 0 {
@@ -120,6 +124,9 @@ func resolveServerConfig(cfg *ServerConfig) (resolvedServerConfig, error) {
 	}
 	if cfg.RequestTimeout > 0 {
 		resolved.RequestTimeout = cfg.RequestTimeout
+	}
+	if cfg.TransferTimeout > 0 {
+		resolved.TransferTimeout = cfg.TransferTimeout
 	}
 	if cfg.MaxRequestBodyBytes > 0 {
 		resolved.MaxRequestBodyBytes = cfg.MaxRequestBodyBytes

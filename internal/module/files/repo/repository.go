@@ -92,6 +92,13 @@ func (r *Repository) ValidateStorage(ctx context.Context, identity string) error
 			if count > 0 || pending > 0 {
 				return fmt.Errorf("file storage location change requires content migration")
 			}
+			var transfers int64
+			if err := db.Model(&transferRecord{}).Where("state NOT IN ? OR cleanup_pending = ?", []model.TransferState{model.TransferCompleted, model.TransferCanceled, model.TransferExpired}, true).Count(&transfers).Error; err != nil {
+				return err
+			}
+			if transfers > 0 {
+				return fmt.Errorf("file storage location change requires transfer migration")
+			}
 			return db.Model(&binding).Update("identity", identity).Error
 		})
 	})

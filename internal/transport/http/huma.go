@@ -148,6 +148,7 @@ type humaResponseBuffer struct {
 	header http.Header
 	status int
 	body   bytes.Buffer
+	raw    bool
 }
 
 func (ctx *bufferedHumaContext) Unwrap() huma.Context { return ctx.embeddedHumaContext }
@@ -166,7 +167,21 @@ func (ctx *bufferedHumaContext) AppendHeader(name, value string) {
 }
 func (ctx *bufferedHumaContext) BodyWriter() io.Writer { return &ctx.response.body }
 
+func (ctx *bufferedHumaContext) BeginRawResponse() {
+	if ctx.response.raw {
+		return
+	}
+	ctx.response.raw = true
+	_, writer := humachi.Unwrap(ctx.embeddedHumaContext)
+	for name, values := range ctx.response.header {
+		writer.Header()[name] = append([]string(nil), values...)
+	}
+}
+
 func (ctx *bufferedHumaContext) flush() {
+	if ctx.response.raw {
+		return
+	}
 	request, writer := humachi.Unwrap(ctx.embeddedHumaContext)
 	if ctx.response.status >= http.StatusBadRequest && !isProjectProblem(ctx.response.body.Bytes()) {
 		status, code, message := humaValidationProblem(ctx.response.status)

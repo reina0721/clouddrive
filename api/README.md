@@ -13,11 +13,11 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 身份使用 HttpOnly Cookie。所有控制台写请求必须携带受信任 Origin、控制台 CSRF Cookie 和 X-CSRF-Token；GET /api/console/v1/auth/csrf 返回双提交令牌。原生转发还会执行原生权限和 CSRF 检查。
 
-私有文件接口位于 `/api/v1/files`，WebUI 通过 `/api/console/v1/native/files` 访问同一实现，使用 IAM Cookie 会话。上传为 `application/octet-stream`，文件名和目录通过经 schema 校验的查询参数提供，`Idempotency-Key` 必须稳定；下载返回原始 bytes。列表响应同时提供空间统计和传输预算，回收站用 `trash=true` 查询。详见[文件管理](../docs/operations/file-management.md)。
+私有文件接口位于 `/api/v1/files`，WebUI 通过 `/api/console/v1/native/files` 访问同一实现，使用 IAM Cookie 会话。`POST /transfers` 用稳定 key、目标、长度与完整 SHA-256 建立会话，`HEAD/PATCH /transfers/{id}/data` 使用 tus 核心协议接续，PATCH 为 `application/offset+octet-stream`；暂停、继续、取消、摘要校验、修正目标与提交发布分别有明确控制端点。旧 `/files/upload` 已移除，文本创建使用 `POST /files/text`。列表响应同时提供空间统计和传输预算，回收站用 `trash=true` 查询。详见[文件管理](../docs/operations/file-management.md)。
 
 文件复制为 `POST /api/v1/files/{id}/copy`；文本替换为 `PUT /{id}/text`，必须带 `expectedRevision`；ZIP 为 `POST /api/v1/files/archive`。分享管理使用 `/api/v1/files/shares` 和 `/{shareId}/revoke`，仍要求 IAM 会话、文件权限和写请求 CSRF。
 
-访客入口 `/api/v1/file-shares/{token}` 的 metadata、entries、unlock 和 content operation 显式声明 public，不放宽任何私有 files operation。解锁 POST 需要可信 Origin，票据通过 `X-Share-Grant` header 传递，不能用 IAM 会话代替。撤销、到期和范围检查在服务端执行；完整 code-first 结果为当前 81 个原生 operation。
+访客入口 `/api/v1/file-shares/{token}` 的 metadata、entries、unlock 和 content operation 显式声明 public，不放宽任何私有 files operation。解锁 POST 需要可信 Origin，票据通过 `X-Share-Grant` header 传递，不能用 IAM 会话代替。原生浏览器下载经 `POST /file-shares/{token}/content/{id}/download` 授权，随后以短期限定文件句柄访问 `GET/HEAD /file-downloads/{ticket}`。私有和公开下载提供 Range/条件请求，每次检查撤销、到期和范围；完整 code-first 结果为当前 97 个原生 operation。
 
 原生 OpenAPI 与 operation inventory 通过 `internal/composition/httpcatalog` 的同一清单生成；生成器不再单独选择模块，也不导入带资源的应用组合根。
 

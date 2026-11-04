@@ -18,9 +18,11 @@ type shareRecord model.Share
 func (shareRecord) TableName() string { return "files_shares" }
 
 type grantRecord struct {
-	Digest    string `gorm:"primaryKey"`
-	ShareID   string
-	ExpiresAt time.Time
+	Digest          string `gorm:"primaryKey"`
+	ShareID         string
+	ExpiresAt       time.Time
+	EntryID         string
+	ContentRevision int64
 }
 
 func (grantRecord) TableName() string { return "files_share_grants" }
@@ -131,7 +133,8 @@ func (r *Repository) ReadShare(ctx context.Context, digest, grantDigest string) 
 					return err
 				}
 				if err == nil {
-					snapshot.Grant = &model.ShareGrant{Digest: grant.Digest, ShareID: grant.ShareID, ExpiresAt: grant.ExpiresAt}
+					converted := model.ShareGrant(grant)
+					snapshot.Grant = &converted
 				}
 			}
 			return r.checkStorage(db)
@@ -169,6 +172,20 @@ func (r *Repository) ReserveShareAttempt(ctx context.Context, id string, now tim
 	})
 }
 func (r *Repository) PutShareGrant(ctx context.Context, grant model.ShareGrant, now time.Time) error {
+	if grant.EntryID != "" {
+		return model.ErrInvalid
+	}
+	return r.putGrant(ctx, grant, now, 0)
+}
+
+func (r *Repository) PutDownloadGrant(ctx context.Context, grant model.ShareGrant, now time.Time, limit int) error {
+	if grant.EntryID == "" || grant.ContentRevision < 1 || limit < 1 {
+		return model.ErrInvalid
+	}
+	return r.putGrant(ctx, grant, now, limit)
+}
+
+func (r *Repository) putGrant(ctx context.Context, grant model.ShareGrant, now time.Time, downloadLimit int) error {
 	return r.access.WithinTx(ctx, func(ctx context.Context, _ database.Client, tx database.Tx) error {
 		return database.UseGORMTx(ctx, tx, func(db *gorm.DB) error {
 			if err := db.Model(&shareRecord{}).Where("id = ?", grant.ShareID).UpdateColumn("unlock_attempts", gorm.Expr("unlock_attempts")).Error; err != nil {
@@ -188,8 +205,47 @@ func (r *Repository) PutShareGrant(ctx context.Context, grant model.ShareGrant, 
 			if err := db.Where("share_id = ? AND expires_at <= ?", grant.ShareID, now).Delete(&grantRecord{}).Error; err != nil {
 				return err
 			}
-			record := grantRecord{Digest: grant.Digest, ShareID: grant.ShareID, ExpiresAt: grant.ExpiresAt}
+			if downloadLimit > 0 {
+				var active int64
+				if err := db.Model(&grantRecord{}).Where("share_id = ? AND entry_id <> ?", grant.ShareID, "").Count(&active).Error; err != nil {
+					return err
+				}
+				if active >= int64(downloadLimit) {
+					return model.ErrBusy
+				}
+			}
+			record := grantRecord(grant)
 			return db.Create(&record).Error
 		})
 	})
+}
+
+func (r *Repository) ReadDownloadGrant(ctx context.Context, digest string) (service.ShareSnapshot, error) {
+	var snapshot service.ShareSnapshot
+	err := r.access.Use(ctx, func(client database.Client) error {
+		return database.UseGORM(ctx, client, func(db *gorm.DB) error {
+			var grant grantRecord
+			if err := db.First(&grant, "digest = ? AND entry_id <> ?", digest, "").Error; err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return errors.Join(model.ErrMissing, err)
+				}
+				return err
+			}
+			var share shareRecord
+			if err := db.First(&share, "id = ?", grant.ShareID).Error; err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return errors.Join(model.ErrMissing, err)
+				}
+				return err
+			}
+			entries, err := loadEntries(db, share.OwnerID)
+			if err != nil {
+				return err
+			}
+			converted := model.ShareGrant(grant)
+			snapshot = service.ShareSnapshot{Share: model.Share(share), Entries: entries, Grant: &converted}
+			return r.checkStorage(db)
+		})
+	})
+	return snapshot, err
 }

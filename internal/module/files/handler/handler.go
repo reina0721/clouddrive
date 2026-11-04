@@ -14,12 +14,19 @@ import (
 type ActorAccess interface {
 	Owner(context.Context) (string, bool)
 }
+
+// TransferProtocol 只处理已经经 service 加锁并授权的核心续传请求。
+type TransferProtocol interface {
+	Handle(http.ResponseWriter, *http.Request, string)
+}
 type Handler struct {
-	Service       *service.Service
-	Sharing       *service.Sharing
-	PublicOrigins []string
-	Actors        ActorAccess
-	Logger        logger.Logger
+	Service          *service.Service
+	Sharing          *service.Sharing
+	Transfers        *service.Transfers
+	TransferProtocol TransferProtocol
+	PublicOrigins    []string
+	Actors           ActorAccess
+	Logger           logger.Logger
 }
 
 func (h *Handler) Owner(ctx context.Context) (string, error) {
@@ -53,6 +60,10 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 		status, code = 429, "files_busy"
 	case errors.Is(err, model.ErrShareLocked):
 		status, code = 403, "files_share_locked"
+	case errors.Is(err, service.ErrTransferExpired):
+		status, code = 410, "files_transfer_expired"
+	case errors.Is(err, service.ErrTransferChecksum):
+		status, code = 422, "files_transfer_checksum"
 	case errors.Is(err, context.Canceled):
 		status, code = 499, "files_canceled"
 	case errors.Is(err, context.DeadlineExceeded):

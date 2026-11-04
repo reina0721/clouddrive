@@ -1,27 +1,35 @@
 'use client';
 import { useContext, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { FilesProvider, type FileMediaProps } from '@clouddrive/surface/files/runtime';
-import { FilesError } from '@clouddrive/surface/files';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
 import { Cloud } from 'lucide-react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
-import { AuthContext } from '../auth/context';
+import { AuthContext, useAuth } from '../auth/context';
 import { readAuthConfig } from '../auth/config';
-import { createFilesRuntime } from './backend';
+import { createFilesRuntime, fileDestinationHrefs } from './backend';
 import { FileMediaView } from './media-view';
 
-export function FilesRuntime({ children }: Readonly<{ children: ReactNode }>) {
+export function FilesRuntime({
+  children,
+  fileWorkspace,
+}: Readonly<{ children: ReactNode; fileWorkspace: boolean }>) {
   const { t } = useFrontendTranslation();
   const controller = useContext(AuthContext);
-  const [transferFailure, setTransferFailure] = useState('');
+  const account = useAuth().session?.user.id;
+  const router = useRouter();
+  const [transferFailure, setTransferFailure] = useState(false);
   const runtime = useMemo(() => {
     const config = readAuthConfig();
-    if (config.mode !== 'backend') return null;
+    if (config.mode !== 'backend' || !account) return null;
     return createFilesRuntime(
       config.apiBaseUrl,
       () => controller?.getState().session?.user.id ?? null,
+      (destination) => router.push(fileDestinationHrefs[destination]),
+      (parent) =>
+        router.push('/home' + (parent ? '?' + new URLSearchParams({ parent }).toString() : '')),
     );
-  }, [controller]);
+  }, [controller, account, router]);
   const Media = useMemo(
     () =>
       runtime
@@ -34,10 +42,12 @@ export function FilesRuntime({ children }: Readonly<{ children: ReactNode }>) {
   useLayoutEffect(() => {
     if (!runtime) return;
     runtime.activate();
-    return () => runtime.dispose();
+    return () => {
+      void runtime.dispose().catch(() => setTransferFailure(true));
+    };
   }, [runtime]);
   if (!runtime || !Media)
-    return (
+    return fileWorkspace ? (
       <main id="main-content">
         <StateSurface
           state="disabled"
@@ -46,9 +56,11 @@ export function FilesRuntime({ children }: Readonly<{ children: ReactNode }>) {
           description={t('common.filesUnavailableDescription')}
         />
       </main>
+    ) : (
+      children
     );
   return (
-    <FilesProvider port={runtime.port} media={Media}>
+    <FilesProvider port={runtime.port} media={Media} transfers={runtime.transfers}>
       <div
         onDragOver={(event) => {
           if (event.dataTransfer.types.includes('Files')) event.preventDefault();
@@ -58,11 +70,9 @@ export function FilesRuntime({ children }: Readonly<{ children: ReactNode }>) {
           event.preventDefault();
           try {
             runtime.offer(Array.from(event.dataTransfer.files));
-            setTransferFailure('');
-          } catch (error) {
-            setTransferFailure(
-              t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`),
-            );
+            setTransferFailure(false);
+          } catch {
+            setTransferFailure(true);
           }
         }}
         onPaste={(event) => {
@@ -75,17 +85,15 @@ export function FilesRuntime({ children }: Readonly<{ children: ReactNode }>) {
           event.preventDefault();
           try {
             runtime.offer(Array.from(event.clipboardData.files));
-            setTransferFailure('');
-          } catch (error) {
-            setTransferFailure(
-              t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`),
-            );
+            setTransferFailure(false);
+          } catch {
+            setTransferFailure(true);
           }
         }}
       >
         {transferFailure ? (
           <p role="alert" className="p-4 text-danger">
-            {transferFailure}
+            {t('common.fileTransferFailed')}
           </p>
         ) : null}
         {children}
