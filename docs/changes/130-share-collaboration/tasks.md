@@ -32,10 +32,12 @@
 - [x] V01 集中验收；前置20项接线齐备；完成条件：Go/前端/浏览器/权限失败与迁移/性能证据完整。
 - [x] V02 最新预览；前置V01；完成条件：两套最新服务、全部既有文件保留、访问资料与视觉检查。
 - [x] D01 当前文档与完整审阅；前置V01/V02；完成条件：authority同步、生成/凭据/旧契约检查。
-- [ ] C01 提交与推送；前置D01；完成条件：精确Conventional Commit及实际push成功，真实结果记录。
+- [x] C01 提交与推送；前置D01；完成条件：精确Conventional Commit及实际push成功，真实结果记录。
 
 实施证据：I01见ignored 130-baseline/prepare/freeze日志（两套一致备份、129稳定预览）；I02–I04见v12和真实HTTP/SQLite专项及时间回执断言；I05见130-implementation-ready（早于首个功能测试）、PublicFilesPort/Host/页面全接线。本节不替代F/V任务的验收证据。
 
 验收证据见[集中验证](verification.md)。F201–F220按真实HTTP/SQLite、Host边界和浏览器行为分别核验，未完成Cloudreve全量对齐；D01/C01仍按实际审阅、提交与推送进度更新。
 
 D01证据：完整任务路径审阅100项；旧分享调用与旧file-presentation入口检索无残留；原迁移SQL未修改；凭据/产物扫描、生成Golden、文档和格式检查通过。C01在实际提交和push后再勾选。
+
+C01实际证据：`e7c0f32b379e84d6806d9e67a4471203541c6811` — `feat(files): add scoped share collaboration`，99个Git变更条目（100个审阅路径，含移动）；`git push origin main`成功，远端从bb1820b推进到e7c0f32，未改变remote或强制推送。提交后工作区干净；本次纯文档提交同步交付状态。完整Cloudreve目标继续保持进行中。
