@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { annotationSummarySchema, annotationLimitsSchema } from './annotation-values';
 import type { AnnotationsPort } from './annotations';
+import type { FileClipboardPort } from './clipboard';
 import type { FileFilters } from './search';
 import type { FileViewPreferences } from './view-options';
 export type { FileViewPreferences } from './view-options';
@@ -91,6 +92,10 @@ export type UploadCandidate = Readonly<{
   relativePath?: string;
 }>;
 export type FileShortcut =
+  | 'copySelection'
+  | 'cutSelection'
+  | 'pasteSelection'
+  | 'parentFolder'
   | 'search'
   | 'refresh'
   | 'selectAll'
@@ -111,6 +116,7 @@ export type FileShortcut =
 export type FilesDestination =
   'files' | 'shares' | 'shared' | 'transfers' | 'connections' | 'workspace' | 'account';
 export type FilesPort = Readonly<{
+  clipboard: FileClipboardPort;
   annotations: AnnotationsPort;
   navigate(destination: FilesDestination): void;
   destinationHref(destination: FilesDestination): string;

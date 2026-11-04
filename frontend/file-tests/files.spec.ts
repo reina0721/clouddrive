@@ -114,10 +114,14 @@ test('真实文件闭环：目录、队列、预览、下载、移动、多选�
   await page.getByRole('button', { name: '搜索文件', exact: true }).click();
   await expect(page.getByRole('button', { name: renamed, exact: true })).toBeVisible();
   await page.goto('/home');
-  await page.getByRole('button', { name: '列表', exact: true }).click();
-  await page.getByRole('button', { name: /切换排序方向/ }).click();
+  await page.getByRole('button', { name: '视图', exact: true }).click();
+  await page.getByRole('menuitem', { name: '列表', exact: true }).click();
+  await page.getByRole('button', { name: '排序方式', exact: true }).click();
+  await page.getByRole('menuitem', { name: '降序', exact: true }).click();
   await page.reload();
-  await expect(page.getByRole('button', { name: /↓ 切换排序方向/ })).toBeVisible();
+  await page.getByRole('button', { name: '排序方式', exact: true }).click();
+  await expect(page.getByRole('menuitem', { name: /^降序/ })).toContainText('✓');
+  await page.keyboard.press('Escape');
   await fileAction(page, folder, '移入回收站');
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await expect(page.getByRole('button', { name: folder, exact: true })).toHaveCount(0);

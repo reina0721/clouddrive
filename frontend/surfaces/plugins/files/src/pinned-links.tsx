@@ -7,7 +7,13 @@ import { useFileNavigation, useFiles } from '../../../src/files/runtime';
 import { FilesError } from '../../../src/files/model';
 import type { Pin, PinListing, PinTarget } from '../../../src/files/navigation';
 
-export function PinnedLinks({ refreshKey = 0 }: { refreshKey?: number }) {
+export function PinnedLinks({
+  refreshKey = 0,
+  onNavigate,
+}: {
+  refreshKey?: number;
+  onNavigate?: () => void;
+}) {
   const nav = useFileNavigation(),
     files = useFiles(),
     { t } = useFrontendTranslation();
@@ -91,6 +97,7 @@ export function PinnedLinks({ refreshKey = 0 }: { refreshKey?: number }) {
                   ) {
                     event.preventDefault();
                     files.openFolder(pin.targetId);
+                    onNavigate?.();
                   }
                 }}
               >

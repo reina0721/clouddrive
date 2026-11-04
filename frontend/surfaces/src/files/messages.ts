@@ -3,8 +3,17 @@ import type { TranslationResources } from '@clouddrive/i18n';
 /** loadFileAnnotationMessages 只在文件运行域加载整理界面文案，不增加登录首屏资源。 */
 export async function loadFileAnnotationMessages(): Promise<TranslationResources> {
   const messages = await import('../../plugins/files/annotations-i18n');
+  const explorer = await import('../../plugins/files/explorer-i18n');
   return {
-    'zh-CN': { translation: { files: { annotations: messages.zhAnnotations } } },
-    en: { translation: { files: { annotations: messages.enAnnotations } } },
+    'zh-CN': {
+      translation: {
+        files: { annotations: messages.zhAnnotations, explorer: explorer.zhExplorer },
+      },
+    },
+    en: {
+      translation: {
+        files: { annotations: messages.enAnnotations, explorer: explorer.enExplorer },
+      },
+    },
   };
 }

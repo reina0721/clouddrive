@@ -62,6 +62,7 @@ export function FileItem({
   view,
   columns,
   selected,
+  cut,
   tabStop,
   thumbnail,
   actions,
@@ -77,6 +78,7 @@ export function FileItem({
   view: FileViewPreferences['view'];
   columns: readonly FileColumn[];
   selected: boolean;
+  cut: boolean;
   tabStop: boolean;
   thumbnail: ReactNode;
   actions: ReactNode;
@@ -152,12 +154,14 @@ export function FileItem({
         event.preventDefault();
         onContext();
       }}
-      className={`${isList ? 'flex min-w-0 items-center gap-3 border-b border-border py-3' : 'min-w-0 rounded-panel border border-border p-4'} ${selected ? 'bg-brand-soft' : 'hover:bg-surface-muted'}`}
+      data-file-cut={cut || undefined}
+      className={`${isList ? 'flex min-w-0 items-center gap-3 border-b border-border py-3' : 'min-w-0 rounded-panel border border-border p-4'} ${selected ? 'bg-brand-soft' : 'hover:bg-surface-muted'} ${cut ? 'opacity-50' : ''}`}
     >
       {isList ? (
         <>
           <div role="cell" className="w-5 shrink-0">
             {selection}
+            {cut ? <span className="sr-only">{t('files.explorer.cutMark')}</span> : null}
           </div>
           <div role="cell" className="flex min-w-0 flex-1 items-center gap-3">
             <div className="size-7 shrink-0 overflow-hidden [&_img]:size-full [&_img]:object-cover">
@@ -189,6 +193,9 @@ export function FileItem({
         <>
           <div className="mb-3 flex items-center justify-between gap-3">
             {selection}
+            {cut ? (
+              <span className="text-xs text-ink-muted">{t('files.explorer.cutMark')}</span>
+            ) : null}
             {actions}
           </div>
           <div className="flex min-w-0 flex-col items-center gap-3 py-3">

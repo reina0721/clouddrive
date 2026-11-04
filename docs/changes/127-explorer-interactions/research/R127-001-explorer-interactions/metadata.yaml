@@ -1,0 +1,31 @@
+schema_version: 1
+id: R127-001
+title: 文件浏览交互与响应式导航
+question: 如何缩小参考站文件浏览布局与跨目录操作差距，同时保留现有认证、传输和后端错误语义？
+research_type: current-project
+status: active
+topics: [explorer, responsive-navigation, file-clipboard]
+keywords: [移动端, 剪切, 复制, 粘贴, 祖先目录]
+applicable_scenarios: [私有文件页面, 同账号本标签页文件操作]
+non_applicable_scenarios: [操作系统文件剪贴板, 跨账号或跨标签页剪贴板, 原子多文件事务]
+summary: 复用DrawerSurface和MenuButton；Host拥有账号隔离的内存剪贴板，复用真实copy/update/detail接口，不引入存储或第二套客户端。
+evidence:
+  primary_sources:
+    - locator: frontend/surfaces/plugins/files/src/files-page.tsx
+      snapshot: a993983；导航占移动首屏，已有选择/右键/复制与移动dialog
+    - locator: frontend/apps/web/src/files/backend.ts
+      snapshot: a993983；账号生命周期、快捷键及copy/update/detail调用
+    - locator: frontend/packages/ui-adapter/src/drawer-surface.tsx
+      snapshot: a993983；既有HeroUI导航抽屉及焦点约束
+    - locator: report.md
+      snapshot: 2026-11-04参考站实际首页、视图及目录菜单截图观察
+researched_at: '2026-11-04'
+verified_at: '2026-11-04'
+validity:
+  mode: snapshot
+  refresh_triggers: [FilesRuntime生命周期变化, copy或update契约变化, 要求跨标签页或跨账号剪贴板, 需要原子批量移动]
+relations:
+  extends: [R125-001, R126-001]
+  supersedes: []
+  superseded_by: []
+report: report.md

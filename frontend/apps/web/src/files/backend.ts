@@ -20,6 +20,7 @@ import { createFileNavigationPort } from './navigation';
 import { fileShareAddress } from './share-address';
 import { fileListParameters } from './query';
 import { createAnnotationsPort } from './annotations';
+import { createFileClipboard } from './clipboard';
 import { fileDestinationHrefs } from './destinations';
 export { fileDestinationHrefs } from './destinations';
 
@@ -251,7 +252,13 @@ export function createFilesRuntime(
       return file;
     },
   });
+  const clipboard = createFileClipboard(assertCurrent, {
+    detail: (id) => port.detail(id),
+    copy: (id, parentId, name) => port.copy(id, parentId, name),
+    update: (id, change) => port.update(id, change),
+  });
   const port: FilesPort = {
+    clipboard: clipboard.port,
     annotations: createAnnotationsPort(call, assertCurrent),
     navigate,
     openFolder,
@@ -353,7 +360,19 @@ export function createFilesRuntime(
           return;
         let shortcut: FileShortcut | undefined;
         const command = event.ctrlKey || event.metaKey;
-        if (command && event.key.toLowerCase() === 'a') shortcut = 'selectAll';
+        if (event.altKey && !command && event.key === 'ArrowUp') shortcut = 'parentFolder';
+        else if (command && !event.altKey && event.key.toLowerCase() === 'c')
+          shortcut = 'copySelection';
+        else if (command && !event.altKey && event.key.toLowerCase() === 'x')
+          shortcut = 'cutSelection';
+        else if (
+          command &&
+          !event.altKey &&
+          event.key.toLowerCase() === 'v' &&
+          clipboard.port.getSnapshot().entries.length > 0
+        )
+          shortcut = 'pasteSelection';
+        else if (command && event.key.toLowerCase() === 'a') shortcut = 'selectAll';
         else if (command && event.shiftKey && event.key.toLowerCase() === 'n')
           shortcut = 'newFolder';
         else if (!command && !event.altKey) {
@@ -467,6 +486,7 @@ export function createFilesRuntime(
     },
     activate: () => {
       disposed = false;
+      clipboard.activate();
       if (lifecycle.signal.aborted) lifecycle = new AbortController();
       transfers.activate();
     },
@@ -476,6 +496,7 @@ export function createFilesRuntime(
       for (const listener of dropListeners) listener(candidates);
     },
     dispose: async () => {
+      clipboard.dispose();
       disposed = true;
       lifecycle.abort();
       const stopping = transfers.dispose();

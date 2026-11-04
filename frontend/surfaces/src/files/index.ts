@@ -7,3 +7,4 @@ export * from './view-options';
 export * from './selection';
 export * from './annotation-values';
 export * from './annotations';
+export * from './clipboard';

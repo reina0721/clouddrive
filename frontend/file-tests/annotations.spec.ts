@@ -392,7 +392,8 @@ test('副本与回收保留整理信息，画廊按本屏加载且可批量整�
     );
   if (!image) throw Error('Missing real uploaded image');
   await writeAnnotations(page, image.id, [{ name: tag, color }], [], '📷');
-  await page.getByRole('button', { name: '画廊', exact: true }).click();
+  await page.getByRole('button', { name: '视图', exact: true }).click();
+  await page.getByRole('menuitem', { name: '画廊', exact: true }).click();
   await expect(
     row(page, image.id).getByRole('button', {
       name: '按标签 ' + tag + ' 查看全部自有文件',

@@ -129,14 +129,16 @@ test('分页、列表列偏好、目录优先及当前页键盘范围选择', as
       key: randomUUID(),
     });
   await page.goto('/home?parent=' + folder.id);
-  await page.getByRole('button', { name: '列表', exact: true }).click();
+  await page.getByRole('button', { name: '视图', exact: true }).click();
+  await page.getByRole('menuitem', { name: '列表', exact: true }).click();
   await expect(entries(page)).toHaveCount(50);
   await page.getByRole('checkbox', { name: '选择本页全部项目', exact: true }).press('Space');
   await expect(page.getByText('已选择 50 项', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '下一页', exact: true }).click();
   await expect(entries(page)).toHaveCount(5);
   await expect(page.getByText('已选择 50 项', { exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: '视图选项', exact: true }).click();
+  await page.getByRole('button', { name: '视图', exact: true }).click();
+  await page.getByRole('menuitem', { name: '视图选项', exact: true }).click();
   await page.getByRole('dialog').getByLabel('目录优先', { exact: true }).press('Space');
   await page.getByRole('dialog').getByLabel('类型', { exact: true }).press('Space');
   await page.getByRole('dialog').getByLabel('创建日期', { exact: true }).press('Space');
@@ -223,7 +225,8 @@ test('真实图片缩略图数量与开关、UTC日期还原和过长条件保�
   }
   await expect(entries(page)).toHaveCount(13);
   await expect(entries(page).locator('img')).toHaveCount(12);
-  await page.getByRole('button', { name: '视图选项', exact: true }).click();
+  await page.getByRole('button', { name: '视图', exact: true }).click();
+  await page.getByRole('menuitem', { name: '视图选项', exact: true }).click();
   await page
     .getByRole('dialog')
     .getByRole('checkbox', { name: '显示缩略图', exact: true })

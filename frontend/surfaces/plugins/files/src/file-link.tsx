@@ -7,11 +7,13 @@ export function FileLink({
   target,
   children,
   className,
+  onNavigate,
   'aria-current': ariaCurrent,
 }: Readonly<{
   target: FilesDestination;
   children: ReactNode;
   className?: string;
+  onNavigate?: () => void;
   'aria-current'?: 'page';
 }>) {
   const port = useFiles();
@@ -31,6 +33,7 @@ export function FileLink({
         ) {
           event.preventDefault();
           port.navigate(target);
+          onNavigate?.();
         }
       }}
     >
