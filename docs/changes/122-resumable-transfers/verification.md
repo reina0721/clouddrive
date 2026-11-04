@@ -48,3 +48,7 @@
 普通开发4173/8080/9090、独立预览4180/8120/9120均已重启为本批最新代码，files schema实际升级到v6，原账号和文件保留。记录`.data/122-dev-restart.log`、`.data/122-preview-restart.log`；通过预览同源代理的已登录文件/传输请求200，确认512MiB/4MiB实际预算，两套页面均200，记录`.data/122-runtime-receipt.json`。访问资料`.data/preview-access.json`，交付导航`.data/122-delivery.json`，均不提交。服务保持运行。
 
 提交前推送预检仍返回403：当前Git身份rin721没有reina0721/clouddrive写权限，证据`.data/122-push-preflight.log`。本批代码按用户要求创建本地Conventional Commit并继续尝试实际推送，实际命令回执存`.data/122-push.log`；C01在远端核验前保持未勾选，不改remote、不覆盖远端历史。
+
+实际本地提交：f244c4e35e0ac2c754dd0d006978a681bd42ed62，`feat(files): add resumable transfers and streaming downloads`。实际`git push origin HEAD:codex/cloud-drive`返回403，当前身份rin721无写权限；远端交付未完成。
+
+收尾补正：先前未暂存diff检查不覆盖新增文件，暂存检查随后发现文档和v5 SQL末尾空行；命令串未及时中止就创建了上述提交。文档空行已清理，SQL已应用于本机数据库，按不可改写已应用迁移规则保留原文和SHA；这些六个SQL的末尾空行属于已记录的格式提示，不是功能验证通过的证据。后续检查与提交采用显式退出码中止，不改写已提交历史或数据库迁移记录。

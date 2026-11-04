@@ -29,4 +29,3 @@ HEAD/PATCH /files/transfers/{id}/data要求本账号授权。service.RunReceivin
 Host所有普通上传迁移tus；createText用语义化小文本创建API，移除POST /upload及UploadKey旧调用，迁移一并保留历史列作为已应用schema证据，但不留无调用入口。以前幂等语义迁至transfer id/key，原文本编辑CAS仍保留。遍历旧符号/路由/32MiB强制界限，更新API/权限/Host Port和对应测试。旧metadata字段仍被其他当前流程需要时保留，否则不暴露或继续写入。
 
 adapter可替换，退出tus时只需迁移活跃暂存与协议端点/Host实现，永久Entry/Storage和业务状态不绑定tus结构。多主机无共享暂存不支持，需未来新架构研究。文件影响：files model/service/repo/adapter/http/config/migration、composition装配与Storage identity、预览脚本、三方言SQL、API契约、权威说明。
-

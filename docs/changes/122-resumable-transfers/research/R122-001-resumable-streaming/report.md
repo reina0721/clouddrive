@@ -45,4 +45,3 @@
 安装所选tag后读取实际源码，发现tusd/filelocker的Unlock只通知轮询goroutine退出，没有等待完成，且有意忽略.stop删除错误；项目无法在其公开API上验证等待退出。该事实命中资源所有权条件，先刷新本节与设计，再继续锁实现，未先实现自研锁。采用[官方gofrs/flock v0.13.1](https://github.com/gofrs/flock/releases/tag/v0.13.1)的OS文件锁：2026-11-03 releases/latest确认2026-08-27发布，BSD-3-Clause，有Windows独占文件锁源码和context轮询获取API，无后台owner goroutine；Close释放锁并关闭句柄，锁文件不删除以免不同inode并发。相对tusd/filelocker，代价是没有主动打断前一个请求的.stop协议，收益是无需后台轮询和清理协议，取消由当前请求拥有，竞争者有界等待即可。SDK/协议仍采用tusd，未改为自写offset。官方安全页当前无公开公告，不等于全量漏洞扫描通过。
 
 实际MVS解析因tusd最低依赖将AWS SDK/S3/Smithy与x/crypto、x/net、x/text、grpc/protobuf推进到其要求版本，完整变更在go.mod/go.sum和忽略的.data/122-go-dependency.log；不尝试降到不满足上游要求的版本，后续集中校验这些真实依赖变动。
-

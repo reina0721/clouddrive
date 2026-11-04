@@ -25,4 +25,3 @@ Huma registration是唯一路由与OpenAPI源；HEAD/PATCH仅通过已认证oper
 ## 文件影响与验证
 
 pkg/storage/client、local、s3compat及stream；Kernel storage租约与文档；composition/files/service/generation及HTTP catalog；httpx超时/响应状态；files service/HTTP；API生成物。验证包含local错误/取消/size/close、S3受控httptest Range与Close、租约逃逸拒绝、真实>32MiB上传下载与partial/416、默认JSON预算不变。外部S3生产实例未提供时明确未验证。
-

@@ -21,4 +21,3 @@ FilesPort不再由Surface拥有queue/controller；新增TransfersPort提供snaps
 真实浏览器：受控生成大File，上传中暂停、导航、刷新重选、失败重试、批量操作、目标冲突改名、传输中心过滤、真实下载字节；桌面/手机截图核对参考密度、操作可达和无横向溢出。不操作参考站数据。已有前两批核心闭环回归覆盖分享、文本CAS、目录、图片及音视频资源释放。
 
 新增/调整 frontend/apps/web/src/files的host adapter与上层layout、surfaces/src/files ports、files插件的transfers子路由、i18n/生成路由、package.json/pnpm-lock、浏览器tests及临时fixture生成脚本。Go新增成熟依赖需审查MVS变化与可达漏洞；不因引入tusd顺手升级无关依赖。集中测试失败后只定向修复/复测；通过后两个本地服务重启、访问资料继续写ignored临时文件，最后精确提交并核验push。当前403若持续，如实记录，整体goal继续。
-
