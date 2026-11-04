@@ -131,14 +131,19 @@ test('紧凑导航、路径、搜索及选择菜单真实可用', async ({ page,
   await page.screenshot({ path: info.outputPath('explorer-desktop.png'), fullPage: false });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole('button', { name: '文件导航', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: '回收站', exact: true })).toHaveCount(0);
-  expect(
-    await page.locator('#main-content').evaluate((e) => e.getBoundingClientRect().top),
-  ).toBeLessThan(100);
+  await expect(page.getByRole('link', { name: '回收站', exact: true })).toHaveCount(0);
+  const mainTop = await page
+    .locator('#main-content')
+    .evaluate((e) => e.getBoundingClientRect().top);
+  const headerBottom = await page
+    .getByRole('banner')
+    .evaluate((e) => e.getBoundingClientRect().bottom);
+  expect(mainTop).toBeGreaterThanOrEqual(headerBottom);
+  expect(mainTop - headerBottom).toBeLessThanOrEqual(24);
   await page.screenshot({ path: info.outputPath('explorer-mobile.png'), fullPage: false });
   await page.getByRole('button', { name: '文件导航', exact: true }).click();
   await expect(page.getByRole('dialog', { name: '文件导航', exact: true })).toBeVisible();
-  await page.getByRole('dialog').getByRole('button', { name: '图片', exact: true }).click();
+  await page.getByRole('dialog').getByRole('link', { name: '图片', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page).toHaveURL(/category=image/);
   await expect(page.locator('#main-content')).toBeFocused();
@@ -278,7 +283,13 @@ test('空目录直接上传复用真实队列，筛选空结果不伪装为空�
   await expect(
     page.getByRole('button', { name: 'empty-action-' + f.suffix + '.txt', exact: true }),
   ).toBeVisible();
+  if (!(await page.getByRole('dialog', { name: '上传队列', exact: true }).isVisible()))
+    await page.getByRole('button', { name: /^上传队列/ }).click();
   await expect(page.getByText('上传完成', { exact: true })).toHaveCount(1);
+  await page
+    .getByRole('dialog', { name: '上传队列', exact: true })
+    .getByRole('button', { name: '关闭', exact: true })
+    .click();
   const search = page.getByRole('searchbox', { name: '搜索文件', exact: true });
   await search.fill('no-match-' + f.suffix);
   await search.press('Enter');

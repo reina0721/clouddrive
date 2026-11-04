@@ -4,6 +4,8 @@ export const resources = {
       brand: { name: 'clouddrive', edition: '管理工作空间' },
       auth: { loading: '正在加载…', logout: '退出登录' },
       common: {
+        filesWorkspaceTitle: '文件工作区',
+        filesWorkspaceDescription: '文件服务连接后可使用此工作区。',
         filesUnavailableTitle: '文件服务尚未连接',
         fileTransferFailed: '文件传输未能继续，请检查传输中心或重新选择文件。',
         filesUnavailableDescription: '当前演示环境不提供文件存储，请使用项目预览地址。',
@@ -234,6 +236,8 @@ export const resources = {
       brand: { name: 'clouddrive', edition: 'Management workspace' },
       auth: { loading: 'Loading…', logout: 'Sign out' },
       common: {
+        filesWorkspaceTitle: 'File workspace',
+        filesWorkspaceDescription: 'Use this workspace when the file service is connected.',
         filesUnavailableTitle: 'File storage is not connected',
         fileTransferFailed:
           'The file transfer could not continue. Check the transfer center or select the file again.',

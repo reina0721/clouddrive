@@ -1,19 +1,17 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Cloud } from '../../../src/files/icons';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Page, Toolbar } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
-import { FileLink } from './file-link';
-import { Cloud } from '../../../src/files/icons';
-import { filesAccentStyle } from '../../../src/files/appearance';
-import { useConnections } from '../../../src/files/runtime';
-import { FilesError } from '../../../src/files/model';
+import { useEffect, useState } from 'react';
 import type {
   ConnectionIssued,
   ConnectionListing,
   FileConnection,
 } from '../../../src/files/connections';
+import { FilesError } from '../../../src/files/model';
+import { useConnections } from '../../../src/files/runtime';
 import {
   ChangeConnectionDialog,
   CreateConnectionDialog,
@@ -64,27 +62,13 @@ export function ConnectionsPage() {
   }
   const available = !loading && !failure;
   return (
-    <main
-      id="main-content"
-      data-accent-preview="blue"
-      style={filesAccentStyle}
-      className="min-h-screen bg-canvas p-4 text-ink sm:p-6"
-    >
+    <>
       <Page>
         <Toolbar
           label={t('files.connections.title')}
-          primary={
-            <FileLink
-              target="files"
-              className="flex shrink-0 items-center gap-3 whitespace-nowrap font-semibold text-brand"
-            >
-              <Cloud className="size-7" />
-              {t('files.nav')}
-            </FileLink>
-          }
+          primary={<h1 className="text-2xl font-semibold">{t('files.connections.title')}</h1>}
           secondary={
             <div className="flex flex-wrap gap-2">
-              <FileLink target="transfers">{t('files.transferCenter')}</FileLink>
               <Action variant="secondary" disabled={loading} onPress={refresh}>
                 {t('files.refresh')}
               </Action>
@@ -98,7 +82,6 @@ export function ConnectionsPage() {
           }
         />
         <section className="rounded-panel border border-border bg-surface p-4 sm:p-6">
-          <h1 className="text-2xl font-semibold">{t('files.connections.title')}</h1>
           <p className="mt-2 text-sm text-ink-muted">{t('files.connections.subtitle')}</p>
           {notice ? (
             <p role="status" className="mt-4">
@@ -274,6 +257,6 @@ export function ConnectionsPage() {
           <IssuedConnectionDialog value={issued} onClose={() => setIssued(undefined)} />
         ) : null}
       </Page>
-    </main>
+    </>
   );
 }

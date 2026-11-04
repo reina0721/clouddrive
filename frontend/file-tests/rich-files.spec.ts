@@ -7,6 +7,8 @@ async function newAction(page: Page, label: string) {
   await page.getByRole('button', { name: '新建', exact: true }).click();
   await page.getByRole('menuitem', { name: label, exact: true }).click();
   await expect(page.getByRole('dialog', { name: '新建', exact: true })).toHaveCount(0);
+  if (['新建文本', '新建 Markdown', '上传文件', '上传目录'].includes(label))
+    await page.getByRole('dialog').getByRole('button', { name: '使用此位置', exact: true }).click();
 }
 async function fileAction(page: Page, name: string, label: string) {
   await page.getByRole('button', { name: name + ' 的操作', exact: true }).click();
@@ -311,7 +313,12 @@ test('目录层级上传与复制、图片画廊、真实音视频播放和剪�
   const choose = page.waitForEvent('filechooser');
   await newAction(page, '上传目录');
   await (await choose).setFiles(directory);
+  await expect(page.getByRole('dialog', { name: '上传队列', exact: true })).toBeVisible();
   await expect(page.getByText('上传完成', { exact: true })).toHaveCount(4);
+  await page
+    .getByRole('dialog', { name: '上传队列', exact: true })
+    .getByRole('button', { name: '关闭', exact: true })
+    .click();
   await page.getByRole('button', { name: folder, exact: true }).click();
   await page.evaluate(() => {
     const revoked: string[] = [];

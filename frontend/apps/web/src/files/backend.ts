@@ -1,34 +1,35 @@
 import {
+  defaultFileViewPreferences,
+  fileDetailSchema,
   fileEntrySchema,
   fileListingSchema,
-  fileDetailSchema,
-  fileShareSchema,
-  shareListingSchema,
   FilesError,
+  fileShareSchema,
   fileViewPreferencesSchema,
-  defaultFileViewPreferences,
+  shareListingSchema,
+  type FileListing,
   type FilesErrorCode,
+  type FileShortcut,
   type FilesPort,
   type UploadCandidate,
-  type FileListing,
-  type FileShortcut,
 } from '@clouddrive/surface/files';
-import { createJsonClient, csrfTokenOf, ApiError } from '../api/json-client';
-import { createTransferRuntime } from './transfer-runtime';
-import { nativeDownload, downloadBlob as saveBlob } from './native-download';
-import { createConnectionsPort } from './connections';
-import { createFileNavigationPort } from './navigation';
-import { fileShareAddress } from './share-address';
-import { fileListParameters } from './query';
+import { ApiError, createJsonClient, csrfTokenOf } from '../api/json-client';
 import { createAnnotationsPort } from './annotations';
 import { createFileClipboard } from './clipboard';
-import { createVersionsPort } from './versions';
+import { createConnectionsPort } from './connections';
+import { fileDestinationHref } from './destinations';
 import { createDownloadsRuntime } from './downloads';
-import { fileDestinationHrefs } from './destinations';
+import { nativeDownload, downloadBlob as saveBlob } from './native-download';
+import { createFileNavigationPort } from './navigation';
+import { fileListParameters } from './query';
+import { fileShareAddress } from './share-address';
+import { createTransferRuntime } from './transfer-runtime';
+import { createVersionsPort } from './versions';
 export { fileDestinationHrefs } from './destinations';
 
 const transferTimeoutMs = 120_000;
 const preferencesKey = 'clouddrive.files.view.v1';
+const sidebarPreferencesKey = 'clouddrive.files.sidebar.v1';
 
 /** createFilesRuntime 将文件句柄、网络、下载及拖拽生命周期留在浏览器 Host。 */
 export function createFilesRuntime(
@@ -266,7 +267,7 @@ export function createFilesRuntime(
     annotations: createAnnotationsPort(call, assertCurrent),
     navigate,
     openFolder,
-    destinationHref: (destination) => fileDestinationHrefs[destination],
+    destinationHref: fileDestinationHref,
     list: async (query, signal) => {
       const params = fileListParameters(query);
       const listing = fileListingSchema.parse(await call(`?${params}`, signal ? { signal } : {}));
@@ -368,10 +369,12 @@ export function createFilesRuntime(
     chooseFiles: () => choose('files'),
     chooseDirectory: () => choose('directory'),
     focusSearch: () =>
-      document.querySelector<HTMLInputElement>('#main-content input[type="search"]')?.focus(),
+      document
+        .querySelector<HTMLInputElement>('[data-file-workspace-search] input[type="search"]')
+        ?.focus(),
     focusFiles: () => document.getElementById('main-content')?.focus(),
     focusEntry: (id) => document.getElementById('file-entry-' + id)?.focus(),
-    subscribeShortcuts: (listener) => {
+    subscribeShortcuts: (listener, accepted) => {
       const handle = (event: KeyboardEvent) => {
         if (
           event.defaultPrevented ||
@@ -423,7 +426,7 @@ export function createFilesRuntime(
             else if (event.key === 'End') shortcut = event.shiftKey ? 'extendLast' : 'last';
           }
         }
-        if (shortcut) {
+        if (shortcut && (!accepted || accepted.includes(shortcut))) {
           event.preventDefault();
           listener(shortcut);
         }
@@ -468,6 +471,18 @@ export function createFilesRuntime(
       } catch (error) {
         throw new FilesError('unsupported', { cause: error });
       }
+    },
+    loadSidebarCollapsed: () => {
+      assertCurrent();
+      const raw = localStorage.getItem(sidebarPreferencesKey + '.' + account);
+      if (raw === null) return false;
+      const value: unknown = JSON.parse(raw);
+      if (typeof value !== 'boolean') throw new FilesError('invalid');
+      return value;
+    },
+    saveSidebarCollapsed: (collapsed) => {
+      assertCurrent();
+      localStorage.setItem(sidebarPreferencesKey + '.' + account, JSON.stringify(collapsed));
     },
     loadPreferences: () => {
       assertCurrent();

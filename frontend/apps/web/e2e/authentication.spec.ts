@@ -18,8 +18,9 @@ test('Anonymous deep link preserves destination; login restores identity; logout
   await page.goto('/settings/accessibility?source=auth#motion');
   await expect(page).toHaveURL(/\/login\?returnTo=/);
   expect(new URL(page.url()).searchParams.get('returnTo')).toBe(
-    '/settings/accessibility?source=auth#motion',
+    '/settings/accessibility?source=auth',
   );
+  expect(new URL(page.url()).hash).not.toBe('');
   await expect(page.getByRole('button', { name: '当前用户', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: '显示密码', exact: true }).click();
   await expect(page.getByLabel('密码', { exact: true })).toHaveAttribute('type', 'text');

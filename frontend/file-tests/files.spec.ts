@@ -6,6 +6,8 @@ async function newAction(page: Page, label: string) {
   await page.getByRole('button', { name: '新建', exact: true }).click();
   await page.getByRole('menuitem', { name: label, exact: true }).click();
   await expect(page.getByRole('dialog', { name: '新建', exact: true })).toHaveCount(0);
+  if (['新建文本', '新建 Markdown', '上传文件', '上传目录'].includes(label))
+    await page.getByRole('dialog').getByRole('button', { name: '使用此位置', exact: true }).click();
 }
 async function fileAction(page: Page, name: string, label: string) {
   await page.getByRole('button', { name: name + ' 的操作', exact: true }).click();
@@ -84,7 +86,12 @@ test('真实文件闭环：目录、队列、预览、下载、移动、多选�
     { name: textName, mimeType: 'text/plain', buffer: content },
     { name: imageName, mimeType: 'image/png', buffer: image },
   ]);
+  await expect(page.getByRole('dialog', { name: '上传队列', exact: true })).toBeVisible();
   await expect(page.getByText('上传完成', { exact: true })).toHaveCount(2);
+  await page
+    .getByRole('dialog', { name: '上传队列', exact: true })
+    .getByRole('button', { name: '关闭', exact: true })
+    .click();
   await page.getByRole('button', { name: textName, exact: true }).click();
   await expect(page.getByRole('dialog').locator('pre')).toContainText('<script>');
   expect(await page.evaluate(() => 'filePreviewExecuted' in window)).toBe(false);
@@ -107,9 +114,9 @@ test('真实文件闭环：目录、队列、预览、下载、移动、多选�
   await page.getByRole('button', { name: '移动', exact: true }).first().click();
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await expect(page.getByRole('button', { name: renamed, exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: '图片', exact: true }).click();
+  await page.getByRole('link', { name: '图片', exact: true }).click();
   await expect(page.getByRole('button', { name: imageName, exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '我的文件', exact: true }).first().click();
+  await page.getByRole('link', { name: '我的文件', exact: true }).first().click();
   await page.getByRole('searchbox', { name: '搜索文件' }).fill(renamed);
   await page.getByRole('button', { name: '搜索文件', exact: true }).click();
   await expect(page.getByRole('button', { name: renamed, exact: true })).toBeVisible();
@@ -125,10 +132,10 @@ test('真实文件闭环：目录、队列、预览、下载、移动、多选�
   await fileAction(page, folder, '移入回收站');
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await expect(page.getByRole('button', { name: folder, exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: '回收站', exact: true }).click();
+  await page.getByRole('link', { name: '回收站', exact: true }).click();
   await fileAction(page, folder, '恢复');
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
-  await page.getByRole('button', { name: '我的文件', exact: true }).first().click();
+  await page.getByRole('link', { name: '我的文件', exact: true }).first().click();
   await expect(page.getByRole('button', { name: folder, exact: true })).toBeVisible();
   await page.getByRole('checkbox', { name: `选择 ${folder}`, exact: true }).press('Space');
   await page.getByRole('checkbox', { name: `选择 ${renamed}`, exact: true }).press('Space');
@@ -194,12 +201,18 @@ test('拖拽上传使用同一队列，等待项可以取消并保持未提交�
       return value;
     }, names);
     await page.locator('main').dispatchEvent('drop', { dataTransfer: transfer });
+    await page.getByRole('button', { name: /^上传队列/ }).click();
     const canceled = page.getByRole('listitem').filter({ hasText: names[2] });
     await expect(canceled).toContainText('等待上传');
     await canceled.getByRole('button', { name: '取消', exact: true }).click();
     await expect(canceled).toContainText('已取消');
     release();
+    await expect(page.getByRole('dialog', { name: '上传队列', exact: true })).toBeVisible();
     await expect(page.getByText('上传完成', { exact: true })).toHaveCount(2);
+    await page
+      .getByRole('dialog', { name: '上传队列', exact: true })
+      .getByRole('button', { name: '关闭', exact: true })
+      .click();
     await expect(page.getByRole('button', { name: names[2], exact: true })).toHaveCount(0);
     await page.reload();
     await expect(page.getByRole('button', { name: names[0], exact: true })).toBeVisible();

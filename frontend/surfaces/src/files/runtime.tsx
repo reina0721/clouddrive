@@ -5,14 +5,14 @@ import {
   createElement,
   useContext,
   useSyncExternalStore,
-  type ReactNode,
   type ComponentType,
+  type ReactNode,
 } from 'react';
-import type { TransfersPort } from './transfers';
-import type { DownloadsPort } from './downloads';
 import type { ConnectionsPort } from './connections';
+import type { DownloadsPort } from './downloads';
+import type { FileEntry, FilesPort, PublicFilesPort } from './model';
 import type { NavigationPort } from './navigation';
-import type { FilesPort, PublicFilesPort, FileEntry } from './model';
+import type { TransfersPort } from './transfers';
 export { loadFileAnnotationMessages, loadPublicFileMessages } from './messages';
 
 export type FileMediaProps = Readonly<{
@@ -22,6 +22,7 @@ export type FileMediaProps = Readonly<{
   version?: number;
   labels?: Readonly<{ loading: string; unsupported: string; tooLarge: string; retry: string }>;
 }>;
+const AccountToolsContext = createContext<ComponentType | null>(null);
 const MediaContext = createContext<ComponentType<FileMediaProps> | null>(null);
 
 const Context = createContext<FilesPort | null>(null);
@@ -33,6 +34,7 @@ export function FilesProvider({
   port,
   children,
   media: Media,
+  accountTools: AccountTools,
   transfers,
   downloads,
   connections,
@@ -45,6 +47,7 @@ export function FilesProvider({
   navigation: NavigationPort;
   children: ReactNode;
   media: ComponentType<FileMediaProps>;
+  accountTools: ComponentType;
 }>) {
   return (
     <Context value={port}>
@@ -52,7 +55,9 @@ export function FilesProvider({
         <ConnectionsContext value={connections}>
           <NavigationContext value={navigation}>
             <DownloadsContext value={downloads}>
-              <MediaContext value={Media}>{children}</MediaContext>
+              <MediaContext value={Media}>
+                <AccountToolsContext value={AccountTools}>{children}</AccountToolsContext>
+              </MediaContext>
             </DownloadsContext>
           </NavigationContext>
         </ConnectionsContext>
@@ -116,4 +121,10 @@ export function usePublicFiles(): PublicFilesPort {
   const port = useContext(PublicContext);
   if (!port) throw new Error('Public files runtime is required');
   return port;
+}
+
+export function FileAccountTools() {
+  const renderer = useContext(AccountToolsContext);
+  if (!renderer) throw new Error('File account tools renderer is required');
+  return createElement(renderer);
 }

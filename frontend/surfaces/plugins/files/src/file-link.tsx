@@ -1,16 +1,20 @@
 import type { ReactNode } from 'react';
-import type { FilesDestination } from '../../../src/files/model';
+import type { FileBrowseQuery, FilesDestination } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
 
 /** FileLink 保留链接的原生行为，普通点击通过 Host 导航以保留进行中的上传。 */
 export function FileLink({
   target,
+  query,
+  title,
   children,
   className,
   onNavigate,
   'aria-current': ariaCurrent,
 }: Readonly<{
   target: FilesDestination;
+  query?: FileBrowseQuery;
+  title?: string;
   children: ReactNode;
   className?: string;
   onNavigate?: () => void;
@@ -19,8 +23,9 @@ export function FileLink({
   const port = useFiles();
   return (
     <a
-      href={port.destinationHref(target)}
+      href={port.destinationHref(target, query)}
       className={className}
+      title={title}
       aria-current={ariaCurrent}
       onClick={(event) => {
         if (
@@ -32,7 +37,7 @@ export function FileLink({
           !event.defaultPrevented
         ) {
           event.preventDefault();
-          port.navigate(target);
+          port.navigate(target, query);
           onNavigate?.();
         }
       }}

@@ -108,3 +108,6 @@
 - [127 文件浏览交互](127-explorer-interactions/README.md)：第八批 F141–F160，响应式导航、路径/选择菜单及同账号剪切复制粘贴。
 - [128 私有版本历史](128-file-version-history/README.md)：第九批 F161–F180，覆盖保留、旧版读取/恢复/另存与比较。
 - [129 HTTP离线下载](129-offline-downloads/README.md)：第十批 F181–F200，持久任务、受控来源、断点与批量管理；验收状态见任务清单。
+
+- [130 分享链接协作](130-share-collaboration/README.md)：第十一批 F201–F220，链接权限与访客协作、真实上传和目录整理。
+- [131 统一文件工作区](131-file-workspace/README.md)：第十二批 F221–F240，共用导航、全局创建/搜索、队列与账户工具；实施验证中。

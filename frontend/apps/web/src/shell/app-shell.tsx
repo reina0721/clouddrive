@@ -1,13 +1,12 @@
 'use client';
 
 import { flattenNavigationLeaves } from '@clouddrive/core';
-import { ShellRoot } from '@clouddrive/surface-foundation/shell-navigation';
+import { useFrontendTranslation } from '@clouddrive/i18n';
 import { PluginLocaleProvider } from '@clouddrive/plugin-framework/plugin';
-import type { NavigationNode, NavigationGroup } from '@clouddrive/types';
+import { ShellRoot } from '@clouddrive/surface-foundation/shell-navigation';
+import type { NavigationGroup, NavigationNode } from '@clouddrive/types';
 import { IconAction } from '@clouddrive/ui-adapter/icon-action';
 import { Skeleton } from '@clouddrive/ui-adapter/skeleton';
-import { NotificationAlerts } from '../host/notification-alerts';
-import { useDesktopNotificationGate } from '../host/use-desktop-notification';
 import {
   Languages,
   Lock,
@@ -15,36 +14,35 @@ import {
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
+  Search,
   Settings2,
   Sun,
-  Search,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { usePathname, useRouter } from 'next/navigation';
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { useFrontendTranslation } from '@clouddrive/i18n';
 import type { ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { NotificationAlerts } from '../host/notification-alerts';
+import { useDesktopNotificationGate } from '../host/use-desktop-notification';
 
-import { markForwardRouteIntent, pageTransitionTypes } from '../host/route-transition-constants';
-import { HostNavigationPortProvider } from '../host/navigation-port';
-import { routeTargetResolver } from '../host/route-target-resolver';
-import { proceedAfterLeaveConfirm } from '../host/leave-confirm';
-import { resolveScrollOption } from '../host/scroll-preference';
-import { useRecentVisitRecorder } from '../host/recent-visit-recorder';
-import { RouteTransition } from '../host/route-transition';
-import { DrawerSurface } from '@clouddrive/ui-adapter/overlays';
-import { TopProgress } from '../host/top-progress';
-import { useAuth } from '../auth/context';
-import { useLockStore } from '../state/use-lock-store';
-import { useShellStore } from '../state/use-shell-store';
 import { useCommandsPort } from '@clouddrive/plugin-framework/commands';
+import { DrawerSurface } from '@clouddrive/ui-adapter/overlays';
+import { useAuth } from '../auth/context';
+import { proceedAfterLeaveConfirm } from '../host/leave-confirm';
+import { HostNavigationPortProvider } from '../host/navigation-port';
+import { useRecentVisitRecorder } from '../host/recent-visit-recorder';
+import { routeTargetResolver } from '../host/route-target-resolver';
+import { RouteTransition } from '../host/route-transition';
+import { markForwardRouteIntent, pageTransitionTypes } from '../host/route-transition-constants';
+import { resolveScrollOption } from '../host/scroll-preference';
+import { TopProgress } from '../host/top-progress';
+import { useShellStore } from '../state/use-shell-store';
 import { BrandMark } from './brand-mark';
 import { HeaderNavigation } from './header-navigation';
-import { useIdleLock } from './use-idle-lock';
-import { WatermarkOverlay } from './watermark';
-import { useProductNavigation, useNavigationLabelOverrides } from './use-product-navigation';
 import { NotificationCenter } from './notification-center';
 import { usePageTabsRecorder } from './use-page-tabs-recorder';
+import { useNavigationLabelOverrides, useProductNavigation } from './use-product-navigation';
+import { WatermarkOverlay } from './watermark';
 
 const NavigationTree = lazy(() =>
   import('./navigation-tree').then((module) => ({ default: module.NavigationTree })),
@@ -75,9 +73,6 @@ const QuickPreferencesDrawer = dynamic(
   () => import('./quick-preferences-drawer').then((module) => module.QuickPreferencesDrawer),
   { ssr: false },
 );
-const LockScreen = dynamic(() => import('./lock-screen').then((module) => module.LockScreen), {
-  ssr: false,
-});
 
 function NavigationContent({
   groups: navigationGroups,
@@ -151,13 +146,9 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
   const layoutMode = useShellStore((state) => state.preferences.navigation.layoutMode);
   const watermarkEnabled = useShellStore((state) => state.preferences.security.watermark);
   const watermarkText = useShellStore((state) => state.preferences.security.watermarkText);
-  const idleLockMinutes = useShellStore((state) => state.preferences.security.idleLockMinutes);
-  const lockOnHidden = useShellStore((state) => state.preferences.security.lockOnHidden);
-  const locked = useLockStore((state) => state.locked);
   const auth = useAuth();
   const pathname = usePathname();
   const [quickPreferencesOpen, setQuickPreferencesOpen] = useState(false);
-  useIdleLock(auth.session?.user.id ?? null, { idleLockMinutes, lockOnHidden });
   useEffect(() => {
     const chrome = chromeRef.current;
     const shell = shellRef.current;
@@ -311,10 +302,7 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
         />
       ) : null}
       {layoutMode !== 'horizontal' ? (
-        <aside
-          className="sticky top-0 hidden h-screen min-w-0 flex-col border-r border-border bg-surface lg:flex"
-          inert={locked}
-        >
+        <aside className="sticky top-0 hidden h-screen min-w-0 flex-col border-r border-border bg-surface lg:flex">
           <NavigationContent
             groups={sidebarGroups}
             compact={sidebarCollapsed}
@@ -341,7 +329,7 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
       </DrawerSurface>
 
       <div className="min-w-0" ref={shellRef}>
-        <div className="sticky top-0 z-sticky" ref={chromeRef} inert={locked}>
+        <div className="sticky top-0 z-sticky" ref={chromeRef}>
           <header className="flex h-20 items-center gap-3 border-b border-border bg-canvas/90 px-4 backdrop-blur-xl sm:px-6 xl:px-8">
             <div className="lg:hidden">
               <IconAction label={t('shell.menu')} onPress={() => setMobileNavigationOpen(true)}>
@@ -461,11 +449,7 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
           {pageTabsEnabled && pageTabsPinned ? <PageTabs /> : null}
         </div>
         {pageTabsEnabled && !pageTabsPinned ? <PageTabs /> : null}
-        <main
-          className="mx-auto max-w-screen-2xl p-4 sm:p-6 xl:p-8"
-          id="main-content"
-          inert={locked}
-        >
+        <main className="mx-auto max-w-screen-2xl p-4 sm:p-6 xl:p-8" id="main-content">
           <RouteTransition>
             <PluginLocaleProvider
               port={{
@@ -483,7 +467,6 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
         </main>
       </div>
       <QuickPreferencesDrawer open={quickPreferencesOpen} onOpenChange={setQuickPreferencesOpen} />
-      <LockScreen />
     </ShellRoot>
   );
 }

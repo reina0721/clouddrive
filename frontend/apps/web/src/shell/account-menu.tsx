@@ -19,9 +19,11 @@ import { useShellStore } from '../state/use-shell-store';
 
 export function AccountMenu({
   compact,
+  presentation = 'identity',
   onNavigate,
 }: Readonly<{
   compact: boolean;
+  presentation?: 'identity' | 'avatar';
   onNavigate: (destination: 'settings' | 'account' | 'lock-screen') => void;
 }>) {
   const { t } = useFrontendTranslation();
@@ -45,15 +47,19 @@ export function AccountMenu({
       ariaLabel={t('shell.account')}
       submenuLayout={compact ? 'stacked' : 'adjacent'}
       label={
-        <>
-          <span className="md:hidden">
-            <Avatar name={user.name} size="sm" />
-          </span>
-          <span className="hidden md:inline-flex">
-            <UserIdentity avatarSize="sm" name={user.name} />
-          </span>
-          <ChevronDown aria-hidden="true" className="hidden size-3.5 text-ink-muted md:block" />
-        </>
+        presentation === 'avatar' ? (
+          <Avatar name={user.name} size="sm" />
+        ) : (
+          <>
+            <span className="md:hidden">
+              <Avatar name={user.name} size="sm" />
+            </span>
+            <span className="hidden md:inline-flex">
+              <UserIdentity avatarSize="sm" name={user.name} />
+            </span>
+            <ChevronDown aria-hidden="true" className="hidden size-3.5 text-ink-muted md:block" />
+          </>
+        )
       }
       header={
         <div className="flex items-center gap-3">

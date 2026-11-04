@@ -1,12 +1,12 @@
 import { z } from 'zod';
-import type { FileShare, ShareCreate, ShareQuery, ShareUpdate, ShareListing } from './sharing';
-export * from './sharing';
-import { annotationSummarySchema, annotationLimitsSchema } from './annotation-values';
+import { annotationLimitsSchema, annotationSummarySchema } from './annotation-values';
 import type { AnnotationsPort } from './annotations';
 import type { FileClipboardPort } from './clipboard';
-import type { VersionsPort } from './versions';
 import type { FileFilters } from './search';
+import type { FileShare, ShareCreate, ShareListing, ShareQuery, ShareUpdate } from './sharing';
+import type { VersionsPort } from './versions';
 import type { FileViewPreferences } from './view-options';
+export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
 export type FilesErrorCode =
@@ -118,6 +118,14 @@ export type FileShortcut =
   | 'extendPrevious'
   | 'extendFirst'
   | 'extendLast';
+export type FileBrowseQuery = Readonly<{
+  parent?: string;
+  category?: string;
+  trash?: string;
+  search?: string;
+  filter?: string;
+  page?: string;
+}>;
 export type FilesDestination =
   | 'files'
   | 'shares'
@@ -131,8 +139,8 @@ export type FilesPort = Readonly<{
   clipboard: FileClipboardPort;
   versions: VersionsPort;
   annotations: AnnotationsPort;
-  navigate(destination: FilesDestination): void;
-  destinationHref(destination: FilesDestination): string;
+  navigate(destination: FilesDestination, query?: FileBrowseQuery): void;
+  destinationHref(destination: FilesDestination, query?: FileBrowseQuery): string;
   openFolder(parentId: string): void;
   list(query: FileQuery, signal?: AbortSignal): Promise<FileListing>;
   folder(parentId: string, name: string): Promise<FileEntry>;
@@ -158,7 +166,10 @@ export type FilesPort = Readonly<{
   detail(id: string): Promise<z.infer<typeof fileDetailSchema>>;
   chooseFiles(): Promise<readonly UploadCandidate[]>;
   chooseDirectory(): Promise<readonly UploadCandidate[]>;
-  subscribeShortcuts(listener: (shortcut: FileShortcut) => void): () => void;
+  subscribeShortcuts(
+    listener: (shortcut: FileShortcut) => void,
+    accepted?: readonly FileShortcut[],
+  ): () => void;
   focusSearch(): void;
   focusFiles(): void;
   focusEntry(id: string): void;
@@ -166,6 +177,8 @@ export type FilesPort = Readonly<{
   releaseCandidate(id: string): void;
   download(entry: FileEntry): Promise<void>;
   preview(entry: FileEntry, signal?: AbortSignal): Promise<string>;
+  loadSidebarCollapsed(): boolean;
+  saveSidebarCollapsed(collapsed: boolean): void;
   loadPreferences(): FileViewPreferences;
   savePreferences(value: FileViewPreferences): void;
 }>;

@@ -39,6 +39,8 @@ export function TransferPanel({ compact = false }: Readonly<{ compact?: boolean 
   const errorText = (error: unknown) =>
     t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`);
   useEffect(() => {
+    // 紧凑面板展示本标签已载入的队列，保留刚完成的回执；完整历史由传输中心读取。
+    if (compact && port.getSnapshot().items.length) return;
     let current = true;
     void port.refresh(compact ? 'active' : '').catch((error) => {
       if (current)
@@ -106,15 +108,6 @@ export function TransferPanel({ compact = false }: Readonly<{ compact?: boolean 
   const visible = compact
     ? snapshot.items.slice(-compactItemCount)
     : snapshot.items.filter((item) => transferMatches(item, snapshot.filter));
-  if (
-    compact &&
-    !snapshot.items.length &&
-    !snapshot.loading &&
-    !snapshot.failure &&
-    !notice &&
-    !snapshot.persistenceFailure
-  )
-    return null;
   return (
     <section
       aria-label={t('files.uploads')}

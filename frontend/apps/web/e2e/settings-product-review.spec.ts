@@ -108,15 +108,6 @@ for (const category of [
           expect(labels).toHaveLength(3);
           for (const lines of labels) expect(lines).toBeLessThanOrEqual(2);
         }
-        const fields = await page
-          .getByRole('main')
-          .locator('[id^="settings-"]')
-          .evaluateAll((elements) =>
-            elements.map((element) => ({
-              id: element.id,
-              width: element.getBoundingClientRect().width,
-            })),
-          );
         const fieldCounts: Readonly<Record<string, number>> = {
           '': 10,
           navigation: 12,
@@ -128,6 +119,20 @@ for (const category of [
           security: 4,
           shortcuts: 2,
         };
+        const expectedCount = fieldCounts[category];
+        if (expectedCount === undefined) throw new Error('Missing field count for ' + category);
+        await expect(page.getByRole('main').locator('[id^="settings-"]')).toHaveCount(
+          expectedCount,
+        );
+        const fields = await page
+          .getByRole('main')
+          .locator('[id^="settings-"]')
+          .evaluateAll((elements) =>
+            elements.map((element) => ({
+              id: element.id,
+              width: element.getBoundingClientRect().width,
+            })),
+          );
         expect(fields.length).toBe(fieldCounts[category]);
         expect(new Set(fields.map((field) => field.id)).size).toBe(fields.length);
         for (const field of fields) expect(field.width, field.id).toBeGreaterThanOrEqual(44);

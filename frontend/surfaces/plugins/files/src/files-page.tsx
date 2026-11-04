@@ -1,67 +1,57 @@
 'use client';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Page, Toolbar } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { CheckboxField, TextField } from '@clouddrive/ui-adapter/form-field';
-import { SearchBox } from '@clouddrive/ui-adapter/search-box';
-import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
-import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
-import { ProgressMeter } from '@clouddrive/ui-adapter/progress-meter';
-import { ShareDialog } from './share-dialog';
-import { TransferPanel } from './transfer-panel';
-import { PinnedLinks, PinDialog } from './pinned-links';
-import { SaveShortcutDialog, ShortcutActionDialog } from './shortcut-dialogs';
-import type { PinTarget } from '../../../src/files/navigation';
-import { FileLink } from './file-link';
-import { TextDialog, type TextRequest } from './text-dialog';
-import { AdvancedSearchDialog } from './advanced-search-dialog';
-import { ActiveFilterChips } from './active-filter-chips';
-import { ViewOptionsDialog } from './view-options-dialog';
-import { ExplorerNavigation } from './explorer-navigation';
-import { fileClipboardMaxEntries, type FileClipboardMode } from '../../../src/files/clipboard';
-import { AnnotationPanel } from './annotation-panel';
-import { VersionsPanel } from './versions-panel';
-import { TagsBatchDialog } from './tags-batch-dialog';
-import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
-import { FileItem, FileListHeader, type FileSelectionGesture } from './file-item';
-import { formatFileBytes as bytes } from '../../../src/files/format';
-import { decodeFileFilters, encodeFileFilters, type FileFilters } from '../../../src/files/search';
-import {
-  fileViewPreferencesSchema,
-  defaultFileViewPreferences,
-} from '../../../src/files/view-options';
-import { fileSelectionRange, nextFileFocus } from '../../../src/files/selection';
 import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
+import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
+import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
+import { fileClipboardMaxEntries, type FileClipboardMode } from '../../../src/files/clipboard';
+import { formatFileBytes as bytes } from '../../../src/files/format';
 import {
+  ArrowUpDown,
   Cloud,
-  Home,
+  LayoutGrid,
+  MoreHorizontal,
+  RefreshCw,
   Trash2,
   Upload,
-  FolderPlus,
-  RefreshCw,
-  LayoutGrid,
-  Settings,
-  FileGlyph,
-  HardDrive,
-  MoreHorizontal,
-  ArrowUpDown,
 } from '../../../src/files/icons';
-import {
-  useFiles,
-  useFileNavigation,
-  FileMedia,
-  useTransfers,
-  useTransferSnapshot,
-} from '../../../src/files/runtime';
-import { filesAccentStyle } from '../../../src/files/appearance';
 import {
   FilesError,
   type FileEntry,
   type FileListing,
-  type UploadCandidate,
   type FileViewPreferences,
+  type UploadCandidate,
 } from '../../../src/files/model';
+import type { PinTarget } from '../../../src/files/navigation';
+import {
+  FileMedia,
+  useFileNavigation,
+  useFiles,
+  useTransfers,
+  useTransferSnapshot,
+} from '../../../src/files/runtime';
+import { decodeFileFilters, encodeFileFilters, type FileFilters } from '../../../src/files/search';
+import { fileSelectionRange, nextFileFocus } from '../../../src/files/selection';
+import {
+  defaultFileViewPreferences,
+  fileViewPreferencesSchema,
+} from '../../../src/files/view-options';
+import { useWorkspaceCreate, useWorkspaceRevision } from '../stores/workspace';
+import { ActiveFilterChips } from './active-filter-chips';
+import { AdvancedSearchDialog } from './advanced-search-dialog';
+import { AnnotationPanel } from './annotation-panel';
+import { FileItem, FileListHeader, type FileSelectionGesture } from './file-item';
+import { PinDialog } from './pinned-links';
+import { ShareDialog } from './share-dialog';
+import { SaveShortcutDialog, ShortcutActionDialog } from './shortcut-dialogs';
+import { TagsBatchDialog } from './tags-batch-dialog';
+import { TextDialog, type TextRequest } from './text-dialog';
+import { VersionsPanel } from './versions-panel';
+import { ViewOptionsDialog } from './view-options-dialog';
 
 type Props = Readonly<{
   parent: string;
@@ -74,7 +64,7 @@ type Props = Readonly<{
   navigate: (query: Record<string, string>) => void;
 }>;
 type Dialog = {
-  mode: 'folder' | 'rename' | 'move' | 'copy' | 'remove' | 'restore';
+  mode: 'rename' | 'move' | 'copy' | 'remove' | 'restore';
   targets: FileEntry[];
 };
 export function FilesPage({
@@ -113,7 +103,8 @@ export function FilesPage({
   );
   const [failure, setFailure] = useState('');
   const [notice, setNotice] = useState('');
-  const [revision, setRevision] = useState(0);
+  const [revision, setRevision] = useWorkspaceRevision();
+  const createInWorkspace = useWorkspaceCreate();
   const [saveShortcut, setSaveShortcut] = useState(false);
   const [purgeTarget, setPurgeTarget] = useState<FileEntry>();
   const [pinTarget, setPinTarget] = useState<PinTarget>();
@@ -125,7 +116,6 @@ export function FilesPage({
   const [focusedEntry, setFocusedEntry] = useState(''),
     [selectionAnchor, setSelectionAnchor] = useState('');
   const [selected, setSelected] = useState<string[]>([]);
-  const [searchText, setSearchText] = useState(search);
   const [dialog, setDialog] = useState<Dialog>();
   const [shareTarget, setShareTarget] = useState<FileEntry>();
   const [textRequest, setTextRequest] = useState<TextRequest>();
@@ -155,7 +145,7 @@ export function FilesPage({
       t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`),
     [t],
   );
-  const reload = useCallback(() => setRevision((value) => value + 1), []);
+  const reload = useCallback(() => setRevision((value) => value + 1), [setRevision]);
 
   useEffect(() => {
     try {
@@ -232,9 +222,6 @@ export function FilesPage({
     errorText,
     t,
   ]);
-  useEffect(() => {
-    setSearchText(search);
-  }, [search]);
   useEffect(() => {
     if (!destinationDialogOpen) return;
     const controller = new AbortController();
@@ -340,7 +327,11 @@ export function FilesPage({
     }
   }
   const openDialog = useCallback(
-    (mode: Dialog['mode'], targets: FileEntry[] = []) => {
+    (mode: Dialog['mode'] | 'folder', targets: FileEntry[] = []) => {
+      if (mode === 'folder') {
+        createInWorkspace('folder');
+        return;
+      }
       setNotice('');
       setDialogFailure('');
       const source = targets[0];
@@ -352,14 +343,13 @@ export function FilesPage({
       setDestination('');
       setDialog({ mode, targets });
     },
-    [t],
+    [t, createInWorkspace],
   );
   async function confirmDialog() {
     if (!dialog) return;
     setDialogFailure('');
     try {
-      if (dialog.mode === 'folder') await port.folder(parent, name);
-      else {
+      {
         const failures: FileEntry[] = [];
         let lastError: unknown;
         for (const entry of dialog.targets) {
@@ -652,871 +642,686 @@ export function FilesPage({
     : category
       ? t(`files.${category}`)
       : (listing?.breadcrumbs.at(-1)?.name ?? t('files.nav'));
-  const navItems = [
-    { key: '', label: t('files.nav'), icon: <Home /> },
-    ...['image', 'video', 'audio', 'document'].map((key) => ({
-      key,
-      label: t(`files.${key}`),
-      icon: (
-        <FileGlyph size="small" kind="file" mediaType={`${key === 'document' ? 'text' : key}/`} />
-      ),
-    })),
-  ];
-
   return (
-    <div
-      data-accent-preview="blue"
-      style={filesAccentStyle}
-      className="min-h-screen bg-canvas font-sans text-ink"
-    >
-      <div className="min-h-screen md:flex">
-        <ExplorerNavigation onFocusFiles={port.focusFiles}>
-          {(closeNavigation) => (
+    <>
+      <Page>
+        <h1 className="sr-only">{title}</h1>
+        <Toolbar
+          label={title}
+          primary={
             <>
-              <FileLink
-                onNavigate={closeNavigation}
-                target="files"
-                className="flex items-center gap-3 px-3 py-3 text-xl font-bold"
-              >
-                <Cloud className="size-8 text-brand" />
-                {t('files.brand')}
-              </FileLink>
-              <nav aria-label={t('files.nav')} className="mt-3 flex flex-col gap-1">
-                {navItems.map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    aria-current={!trash && category === item.key ? 'page' : undefined}
-                    onClick={() => {
-                      navigate({ category: item.key });
-                      closeNavigation();
-                    }}
-                    className={`flex items-center gap-3 rounded-control px-4 py-2.5 text-sm text-left hover:bg-surface-muted ${!trash && category === item.key ? 'bg-brand-soft text-brand font-semibold' : 'text-ink-muted'}`}
-                  >
-                    <span className="size-5 overflow-hidden" aria-hidden="true">
-                      {item.icon}
-                    </span>
-                    {item.label}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  aria-current={trash ? 'page' : undefined}
-                  onClick={() => {
-                    navigate({ trash: 'true' });
-                    closeNavigation();
-                  }}
-                  className={`flex items-center gap-3 rounded-control px-4 py-2.5 text-sm text-left hover:bg-surface-muted ${trash ? 'bg-brand-soft text-brand font-semibold' : 'text-ink-muted'}`}
-                >
-                  <Trash2 className="size-5" />
-                  {t('files.trash')}
-                </button>
-              </nav>
-              <div className="mt-5 flex flex-col gap-3 px-4 text-sm text-ink-muted">
-                <FileLink onNavigate={closeNavigation} target="shared" className="hover:text-brand">
-                  {t('files.navigation.title')}
-                </FileLink>
-                <FileLink onNavigate={closeNavigation} target="shares" className="hover:text-brand">
-                  {t('files.myShares')}
-                </FileLink>
-                <FileLink
-                  onNavigate={closeNavigation}
-                  target="transfers"
-                  className="hover:text-brand"
-                >
-                  {t('files.transferCenter')}
-                </FileLink>
-                <FileLink
-                  onNavigate={closeNavigation}
-                  target="downloads"
-                  className="hover:text-brand"
-                >
-                  {t('files.downloads.title')}
-                </FileLink>
-                <FileLink
-                  onNavigate={closeNavigation}
-                  target="connections"
-                  className="hover:text-brand"
-                >
-                  {t('files.connections.title')}
-                </FileLink>
-                <FileLink
-                  onNavigate={closeNavigation}
-                  target="workspace"
-                  className="flex items-center gap-3 hover:text-brand"
-                >
-                  <Settings className="size-5" />
-                  {t('files.management')}
-                </FileLink>
-                <FileLink
-                  onNavigate={closeNavigation}
-                  target="account"
-                  className="hover:text-brand"
-                >
-                  {t('files.account')}
-                </FileLink>
-              </div>
-              <PinnedLinks refreshKey={revision} onNavigate={closeNavigation} />
-              {listing ? (
-                <div className="mt-8 rounded-panel border border-border bg-surface p-4 text-xs text-ink-muted">
-                  <div className="mb-3 flex items-center gap-2 font-semibold text-ink">
-                    <HardDrive className="size-4" />
-                    {t('files.storage')}
-                  </div>
-                  <ProgressMeter
-                    value={Math.round((listing.usedBytes / listing.quotaBytes) * 100)}
-                    label={`${bytes(listing.usedBytes)} / ${bytes(listing.quotaBytes)}`}
-                  />
-                </div>
-              ) : null}
-            </>
-          )}
-        </ExplorerNavigation>
-        <main id="main-content" tabIndex={-1} className="min-w-0 p-3 md:flex-1 md:p-4">
-          <Page>
-            <div className="flex flex-wrap items-center gap-3">
-              <MenuButton
-                ariaLabel={t('files.new')}
-                label={
-                  <span className="flex items-center gap-2">
-                    <FolderPlus className="size-5" />
-                    {t('files.new')}
-                  </span>
-                }
-                items={[
-                  {
-                    id: 'upload',
-                    label: t('files.upload'),
-                    disabled: trash || !listing || loading || navigating,
-                  },
-                  {
-                    id: 'directory',
-                    label: t('files.uploadDirectory'),
-                    disabled: trash || !listing || loading || navigating,
-                  },
-                  {
-                    id: 'clipboard',
-                    label: t('files.uploadClipboard'),
-                    disabled: trash || !listing || loading || navigating,
-                  },
-                  {
-                    id: 'folder',
-                    label: t('files.newFolder'),
-                    disabled: trash || !listing || loading || navigating,
-                  },
-                  {
-                    id: 'text',
-                    label: t('files.newText'),
-                    disabled: trash || !listing || loading || navigating,
-                  },
-                  {
-                    id: 'markdown',
-                    label: t('files.newMarkdown'),
-                    disabled: trash || !listing || loading || navigating,
-                  },
-                  { id: 'downloads', label: t('files.downloads.title'), disabled: navigating },
-                ]}
-                onAction={(action) => {
-                  if (action === 'folder') openDialog('folder');
-                  else if (action === 'downloads') port.navigate('downloads');
-                  else if (action === 'text' || action === 'markdown')
-                    setTextRequest({ mode: action, parentId: parent });
-                  else if (action === 'clipboard') {
-                    port.focusFiles();
-                    setNotice(t('files.clipboardHint'));
-                  } else
-                    void (action === 'directory' ? port.chooseDirectory() : port.chooseFiles())
-                      .then(enqueue)
-                      .catch((error: unknown) => setNotice(errorText(error)));
-                }}
-              />
-              <form
-                className="flex w-full min-w-0 items-center gap-2 md:w-auto md:flex-1"
-                onKeyDownCapture={(event) => {
-                  if (event.key === 'Escape') {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    setSearchText(search);
-                    port.focusFiles();
-                  }
-                }}
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  if (loading || navigating) return;
-                  navigate({
-                    parent,
-                    category,
-                    ...(trash ? { trash: 'true' } : {}),
-                    search: searchText,
-                    filter: filterKey,
-                  });
-                }}
-              >
-                <SearchBox
-                  label={t('files.search')}
-                  placeholder={t('files.searchPlaceholder')}
-                  value={searchText}
-                  disabled={loading || navigating}
-                  onValueChange={setSearchText}
-                />
-                <Action type="submit" variant="secondary" disabled={loading || navigating}>
-                  {t('files.search')}
-                </Action>
-              </form>
-              {search || searchText ? (
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <Action
                   size="sm"
                   variant="quiet"
-                  disabled={loading || navigating}
-                  onPress={() => {
-                    setSearchText('');
-                    navigate({ parent, category, trash: trash ? 'true' : '', filter: filterKey });
-                  }}
+                  disabled={!parent || trash || !!category || loading || navigating}
+                  onPress={() => navigate({ parent: listing?.breadcrumbs.at(-2)?.id ?? '' })}
                 >
-                  {t('files.explorer.clearSearch')}
+                  {t('files.explorer.parent')}
                 </Action>
-              ) : null}
-              <Action
-                variant="secondary"
-                disabled={loading || navigating}
-                onPress={() => setAdvancedOpen(true)}
-              >
-                {t('files.discovery.advanced')}
-              </Action>
-            </div>
-            <Toolbar
-              label={title}
-              primary={
-                <>
-                  <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <Action
-                      size="sm"
-                      variant="quiet"
-                      disabled={!parent || trash || !!category || loading || navigating}
-                      onPress={() => navigate({ parent: listing?.breadcrumbs.at(-2)?.id ?? '' })}
-                    >
-                      {t('files.explorer.parent')}
-                    </Action>
-                    <MenuButton
-                      ariaLabel={t('files.explorer.ancestors')}
-                      label={<MoreHorizontal className="size-4" />}
-                      triggerSize="sm"
-                      items={[
-                        { id: 'root', label: t('files.nav') },
-                        ...(listing?.breadcrumbs.map((entry, index) => ({
-                          id: entry.id,
-                          label:
-                            index === 0 ? '/' + entry.name : String(index + 1) + '. ' + entry.name,
-                        })) ?? []),
-                      ]}
-                      onAction={(id) => navigate({ parent: id === 'root' ? '' : id })}
-                    />
+                <MenuButton
+                  ariaLabel={t('files.explorer.ancestors')}
+                  label={<MoreHorizontal className="size-4" />}
+                  triggerSize="sm"
+                  items={[
+                    { id: 'root', label: t('files.nav') },
+                    ...(listing?.breadcrumbs.map((entry, index) => ({
+                      id: entry.id,
+                      label: index === 0 ? '/' + entry.name : String(index + 1) + '. ' + entry.name,
+                    })) ?? []),
+                  ]}
+                  onAction={(id) => navigate({ parent: id === 'root' ? '' : id })}
+                />
+                <button
+                  type="button"
+                  onClick={() => navigate({})}
+                  className="text-sm font-semibold text-brand"
+                >
+                  {t('files.nav')}
+                </button>
+                {listing?.breadcrumbs.map((entry) => (
+                  <span key={entry.id} className="flex min-w-0 items-center gap-2 text-sm">
+                    <span aria-hidden="true">/</span>
                     <button
                       type="button"
-                      onClick={() => navigate({})}
-                      className="text-sm font-semibold text-brand"
+                      onClick={() => navigate({ parent: entry.id })}
+                      title={entry.name}
+                      className="max-w-28 truncate hover:text-brand"
                     >
-                      {t('files.nav')}
+                      {entry.name}
                     </button>
-                    {listing?.breadcrumbs.map((entry) => (
-                      <span key={entry.id} className="flex min-w-0 items-center gap-2 text-sm">
-                        <span aria-hidden="true">/</span>
-                        <button
-                          type="button"
-                          onClick={() => navigate({ parent: entry.id })}
-                          title={entry.name}
-                          className="max-w-28 truncate hover:text-brand"
-                        >
-                          {entry.name}
-                        </button>
-                      </span>
-                    ))}
-                    {trash || category ? (
-                      <span className="text-sm text-ink-muted">/ {title}</span>
-                    ) : null}
-                    <Action size="sm" variant="quiet" leadingIcon={<RefreshCw />} onPress={reload}>
-                      {t('files.refresh')}
-                    </Action>
-                    <MenuButton
-                      label={<MoreHorizontal className="size-5" />}
-                      ariaLabel={t('files.discovery.folderActions')}
-                      triggerSize="sm"
-                      items={[
-                        { id: 'save-shortcut', label: t('files.navigation.save') },
-                        { id: 'pin-folder', label: t('files.navigation.pin') },
-                        { id: 'copy-path', label: t('files.explorer.copyPath') },
-                        {
-                          id: 'select-all',
-                          label: t('files.selectAll'),
-                          disabled: loading || navigating || !visibleIds.length,
-                        },
-                        {
-                          id: 'select-none',
-                          label: t('files.explorer.none'),
-                          disabled: !selected.length,
-                        },
-                        {
-                          id: 'select-invert',
-                          label: t('files.explorer.invert'),
-                          disabled: loading || navigating || !visibleIds.length,
-                        },
-                      ]}
-                      onAction={(action) => {
-                        if (action === 'copy-path')
-                          void port.annotations
-                            .copyText(
-                              '/' +
-                                (listing?.breadcrumbs.map((entry) => entry.name).join('/') ?? ''),
-                            )
-                            .then(() => setNotice(t('files.explorer.pathCopied')))
-                            .catch((error) => setNotice(errorText(error)));
-                        else if (action === 'select-all') setSelected([...visibleIds]);
-                        else if (action === 'select-none') setSelected([]);
-                        else if (action === 'select-invert')
-                          setSelected(visibleIds.filter((id) => !selected.includes(id)));
-                        else if (action === 'save-shortcut') setSaveShortcut(true);
-                        else if (action === 'pin-folder')
-                          setPinTarget({ targetKind: 'folder', targetId: parent });
-                      }}
-                    />
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <MenuButton
-                      triggerSize="sm"
-                      ariaLabel={t('files.explorer.view')}
-                      label={
-                        <span className="flex items-center gap-2">
-                          <LayoutGrid className="size-4" />
-                          {t('files.explorer.view')}
-                        </span>
-                      }
-                      items={['grid', 'list', 'gallery']
-                        .map((view) => ({
-                          id: view,
-                          label: t('files.' + view),
-                          description: preferences.view === view ? '✓' : '',
-                        }))
-                        .concat([
-                          {
-                            id: 'options',
-                            label: t('files.discovery.viewOptions'),
-                            description: '',
-                          },
-                        ])}
-                      onAction={(view) =>
-                        view === 'options'
-                          ? setViewOptionsOpen(true)
-                          : savePreferences({
-                              ...preferences,
-                              view: view as FileViewPreferences['view'],
-                            })
-                      }
-                    />
-                    <MenuButton
-                      triggerSize="sm"
-                      ariaLabel={t('files.explorer.sort')}
-                      label={
-                        <span className="flex items-center gap-2">
-                          <ArrowUpDown className="size-4" />
-                          {t('files.explorer.sort')}
-                        </span>
-                      }
-                      items={[
-                        ...['name', 'size', 'updated', 'created'].map((sort) => ({
-                          id: sort,
-                          label: t('files.' + sort + 'Sort'),
-                          description: preferences.sort === sort ? '✓' : '',
-                        })),
-                        {
-                          id: 'asc',
-                          label: t('files.explorer.ascending'),
-                          description: !preferences.desc ? '✓' : '',
-                        },
-                        {
-                          id: 'desc',
-                          label: t('files.explorer.descending'),
-                          description: preferences.desc ? '✓' : '',
-                        },
-                      ]}
-                      onAction={(sort) =>
-                        savePreferences({
-                          ...preferences,
-                          ...(sort === 'asc' || sort === 'desc'
-                            ? { desc: sort === 'desc' }
-                            : { sort: sort as FileViewPreferences['sort'] }),
-                        })
-                      }
-                    />
-                  </div>
-                </>
-              }
-            />
-            {listing && !loading && !navigating ? (
-              <p role="status" className="text-xs text-ink-muted">
-                {t('files.explorer.results', {
-                  count: listing.total,
-                  scope: trash
-                    ? t('files.explorer.scopeTrash')
-                    : filters.scope === 'tree'
-                      ? t('files.explorer.scopeTree')
-                      : filters.scope === 'all' ||
-                          (!filters.scope &&
-                            (search ||
-                              category ||
-                              filters.keywords ||
-                              filters.tagFilter ||
-                              filters.property))
-                        ? t('files.explorer.scopeAll')
-                        : t('files.explorer.scopeFolder'),
-                })}
-              </p>
-            ) : null}
-            {clipboard.entries.length ? (
-              <section
-                aria-label={t(
-                  clipboard.mode === 'cut'
-                    ? 'files.explorer.clipboardCut'
-                    : 'files.explorer.clipboardCopy',
-                  { count: clipboard.entries.length },
-                )}
-                className="rounded-control border border-brand bg-brand-soft p-3 text-sm"
-              >
-                <p className="font-semibold">
-                  {t(
-                    clipboard.mode === 'cut'
-                      ? 'files.explorer.clipboardCut'
-                      : 'files.explorer.clipboardCopy',
-                    { count: clipboard.entries.length },
-                  )}
-                </p>
-                <p
-                  className="truncate text-xs"
-                  title={clipboard.entries.map((entry) => entry.name).join(', ')}
+                  </span>
+                ))}
+                {trash || category ? (
+                  <span className="text-sm text-ink-muted">/ {title}</span>
+                ) : null}
+                <Action size="sm" variant="quiet" leadingIcon={<RefreshCw />} onPress={reload}>
+                  {t('files.refresh')}
+                </Action>
+                <MenuButton
+                  label={<MoreHorizontal className="size-5" />}
+                  ariaLabel={t('files.discovery.folderActions')}
+                  triggerSize="sm"
+                  items={[
+                    { id: 'save-shortcut', label: t('files.navigation.save') },
+                    { id: 'pin-folder', label: t('files.navigation.pin') },
+                    { id: 'copy-path', label: t('files.explorer.copyPath') },
+                    {
+                      id: 'select-all',
+                      label: t('files.selectAll'),
+                      disabled: loading || navigating || !visibleIds.length,
+                    },
+                    {
+                      id: 'select-none',
+                      label: t('files.explorer.none'),
+                      disabled: !selected.length,
+                    },
+                    {
+                      id: 'select-invert',
+                      label: t('files.explorer.invert'),
+                      disabled: loading || navigating || !visibleIds.length,
+                    },
+                  ]}
+                  onAction={(action) => {
+                    if (action === 'copy-path')
+                      void port.annotations
+                        .copyText(
+                          '/' + (listing?.breadcrumbs.map((entry) => entry.name).join('/') ?? ''),
+                        )
+                        .then(() => setNotice(t('files.explorer.pathCopied')))
+                        .catch((error) => setNotice(errorText(error)));
+                    else if (action === 'select-all') setSelected([...visibleIds]);
+                    else if (action === 'select-none') setSelected([]);
+                    else if (action === 'select-invert')
+                      setSelected(visibleIds.filter((id) => !selected.includes(id)));
+                    else if (action === 'save-shortcut') setSaveShortcut(true);
+                    else if (action === 'pin-folder')
+                      setPinTarget({ targetKind: 'folder', targetId: parent });
+                  }}
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Action
+                  size="sm"
+                  variant="secondary"
+                  disabled={loading || navigating}
+                  onPress={() => setAdvancedOpen(true)}
                 >
-                  {clipboard.entries.map((entry) => entry.name).join(', ')}
-                </p>
-                <p className="mt-1 text-xs text-ink-muted">{t('files.explorer.clipboardHint')}</p>
-                <div className="mt-2 flex flex-wrap gap-2">
+                  {t('files.discovery.advanced')}
+                </Action>
+                <MenuButton
+                  triggerSize="sm"
+                  ariaLabel={t('files.explorer.view')}
+                  label={
+                    <span className="flex items-center gap-2">
+                      <LayoutGrid className="size-4" />
+                      {t('files.explorer.view')}
+                    </span>
+                  }
+                  items={['grid', 'list', 'gallery']
+                    .map((view) => ({
+                      id: view,
+                      label: t('files.' + view),
+                      description: preferences.view === view ? '✓' : '',
+                    }))
+                    .concat([
+                      {
+                        id: 'options',
+                        label: t('files.discovery.viewOptions'),
+                        description: '',
+                      },
+                    ])}
+                  onAction={(view) =>
+                    view === 'options'
+                      ? setViewOptionsOpen(true)
+                      : savePreferences({
+                          ...preferences,
+                          view: view as FileViewPreferences['view'],
+                        })
+                  }
+                />
+                <MenuButton
+                  triggerSize="sm"
+                  ariaLabel={t('files.explorer.sort')}
+                  label={
+                    <span className="flex items-center gap-2">
+                      <ArrowUpDown className="size-4" />
+                      {t('files.explorer.sort')}
+                    </span>
+                  }
+                  items={[
+                    ...['name', 'size', 'updated', 'created'].map((sort) => ({
+                      id: sort,
+                      label: t('files.' + sort + 'Sort'),
+                      description: preferences.sort === sort ? '✓' : '',
+                    })),
+                    {
+                      id: 'asc',
+                      label: t('files.explorer.ascending'),
+                      description: !preferences.desc ? '✓' : '',
+                    },
+                    {
+                      id: 'desc',
+                      label: t('files.explorer.descending'),
+                      description: preferences.desc ? '✓' : '',
+                    },
+                  ]}
+                  onAction={(sort) =>
+                    savePreferences({
+                      ...preferences,
+                      ...(sort === 'asc' || sort === 'desc'
+                        ? { desc: sort === 'desc' }
+                        : { sort: sort as FileViewPreferences['sort'] }),
+                    })
+                  }
+                />
+              </div>
+            </>
+          }
+        />
+        {listing && !loading && !navigating ? (
+          <p role="status" className="text-xs text-ink-muted">
+            {t('files.explorer.results', {
+              count: listing.total,
+              scope: trash
+                ? t('files.explorer.scopeTrash')
+                : filters.scope === 'tree'
+                  ? t('files.explorer.scopeTree')
+                  : filters.scope === 'all' ||
+                      (!filters.scope &&
+                        (search ||
+                          category ||
+                          filters.keywords ||
+                          filters.tagFilter ||
+                          filters.property))
+                    ? t('files.explorer.scopeAll')
+                    : t('files.explorer.scopeFolder'),
+            })}
+          </p>
+        ) : null}
+        {clipboard.entries.length ? (
+          <section
+            aria-label={t(
+              clipboard.mode === 'cut'
+                ? 'files.explorer.clipboardCut'
+                : 'files.explorer.clipboardCopy',
+              { count: clipboard.entries.length },
+            )}
+            className="rounded-control border border-brand bg-brand-soft p-3 text-sm"
+          >
+            <p className="font-semibold">
+              {t(
+                clipboard.mode === 'cut'
+                  ? 'files.explorer.clipboardCut'
+                  : 'files.explorer.clipboardCopy',
+                { count: clipboard.entries.length },
+              )}
+            </p>
+            <p
+              className="truncate text-xs"
+              title={clipboard.entries.map((entry) => entry.name).join(', ')}
+            >
+              {clipboard.entries.map((entry) => entry.name).join(', ')}
+            </p>
+            <p className="mt-1 text-xs text-ink-muted">{t('files.explorer.clipboardHint')}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Action
+                size="sm"
+                disabled={!pasteAllowed || clipboard.pending}
+                loading={clipboard.pending}
+                onPress={() => void pasteClipboard()}
+              >
+                {t('files.explorer.paste')}
+              </Action>
+              <Action
+                size="sm"
+                variant="quiet"
+                disabled={clipboard.pending}
+                onPress={() => {
+                  port.clipboard.clear();
+                  setPasteFailures([]);
+                }}
+              >
+                {t('files.explorer.clearClipboard')}
+              </Action>
+            </div>
+            {!pasteAllowed ? (
+              <p className="mt-1 text-xs">{t('files.explorer.pasteLocation')}</p>
+            ) : null}
+          </section>
+        ) : null}
+        {pasteFailures.length ? (
+          <ul role="alert" className="rounded-control border border-danger p-3 text-sm text-danger">
+            {pasteFailures.map((failure, index) => (
+              <li key={index}>{t('files.explorer.pasteFailed', failure)}</li>
+            ))}
+          </ul>
+        ) : null}
+        <ActiveFilterChips
+          filters={filters}
+          onChange={(next) =>
+            navigate({
+              parent,
+              category,
+              trash: trash ? 'true' : '',
+              search,
+              filter: encodeFileFilters(next),
+            })
+          }
+        />
+        {queryInvalid ? (
+          <Action
+            variant="secondary"
+            onPress={() => navigate({ parent, category, trash: trash ? 'true' : '' })}
+          >
+            {t('files.discovery.clear')}
+          </Action>
+        ) : null}
+        {notice ? (
+          <p role="status" className="rounded-control border border-border bg-surface p-3 text-sm">
+            {notice}
+          </p>
+        ) : null}
+        {galleryAnnotationsLoading ? (
+          <p role="status" className="text-sm text-ink-muted">
+            {t('files.annotations.loading')}
+          </p>
+        ) : null}
+        {galleryAnnotationFailure ? (
+          <p role="alert" className="text-sm text-danger">
+            {galleryAnnotationFailure}
+          </p>
+        ) : null}
+        {listing?.items.length ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="min-w-32">
+              <CheckboxField
+                label={t('files.discovery.selectPage')}
+                checked={selected.length === visibleItems.length}
+                onCheckedChange={(checked) => {
+                  setSelectionAnchor('');
+                  setSelected(checked ? visibleItems.map((entry) => entry.id) : []);
+                }}
+              />
+            </div>
+            {targets.length ? (
+              <>
+                {!trash ? (
+                  <>
+                    <Action
+                      size="sm"
+                      variant="secondary"
+                      disabled={clipboard.pending}
+                      onPress={() => queueClipboard('copy', targets)}
+                    >
+                      {t('files.explorer.copyPending')}
+                    </Action>
+                    <Action
+                      size="sm"
+                      variant="secondary"
+                      disabled={clipboard.pending}
+                      onPress={() => queueClipboard('cut', targets)}
+                    >
+                      {t('files.explorer.cutPending')}
+                    </Action>
+                  </>
+                ) : null}
+                {!trash ? (
                   <Action
                     size="sm"
-                    disabled={!pasteAllowed || clipboard.pending}
-                    loading={clipboard.pending}
-                    onPress={() => void pasteClipboard()}
-                  >
-                    {t('files.explorer.paste')}
-                  </Action>
-                  <Action
-                    size="sm"
-                    variant="quiet"
-                    disabled={clipboard.pending}
+                    variant="secondary"
+                    loading={archiving}
+                    disabled={archiving || targets.some((entry) => entry.kind === 'shortcut')}
                     onPress={() => {
-                      port.clipboard.clear();
-                      setPasteFailures([]);
+                      setArchiving(true);
+                      setNotice('');
+                      void port
+                        .archive(selected)
+                        .then(() => setNotice(t('files.archiveReady')))
+                        .catch((error: unknown) => setNotice(errorText(error)))
+                        .finally(() => setArchiving(false));
                     }}
                   >
-                    {t('files.explorer.clearClipboard')}
+                    {t('files.archive')}
                   </Action>
-                </div>
-                {!pasteAllowed ? (
-                  <p className="mt-1 text-xs">{t('files.explorer.pasteLocation')}</p>
                 ) : null}
-              </section>
+                <span className="text-sm text-ink-muted">
+                  {t('files.selected', { count: targets.length })}
+                </span>
+                <span className="text-xs text-ink-muted">
+                  {t('files.explorer.selectedBytes', {
+                    size: bytes(
+                      targets.reduce(
+                        (sum, entry) => sum + (entry.kind === 'file' ? entry.sizeBytes : 0),
+                        0,
+                      ),
+                    ),
+                  })}
+                </span>
+                {!trash ? (
+                  <>
+                    <Action
+                      size="sm"
+                      variant="secondary"
+                      disabled={
+                        loading ||
+                        navigating ||
+                        galleryAnnotationsLoading ||
+                        !!galleryAnnotationFailure
+                      }
+                      onPress={() => openTagsBatch('add')}
+                    >
+                      {t('files.annotations.batchAdd')}
+                    </Action>
+                    <Action
+                      size="sm"
+                      variant="secondary"
+                      disabled={
+                        loading ||
+                        navigating ||
+                        galleryAnnotationsLoading ||
+                        !!galleryAnnotationFailure
+                      }
+                      onPress={() => openTagsBatch('remove')}
+                    >
+                      {t('files.annotations.batchRemove')}
+                    </Action>
+                  </>
+                ) : null}
+                {trash ? (
+                  <Action
+                    variant="secondary"
+                    size="sm"
+                    onPress={() => openDialog('restore', targets)}
+                  >
+                    {t('files.restore')}
+                  </Action>
+                ) : (
+                  <>
+                    <Action
+                      variant="secondary"
+                      size="sm"
+                      onPress={() => openDialog('move', targets)}
+                    >
+                      {t('files.move')}
+                    </Action>
+                    <Action
+                      variant="danger"
+                      size="sm"
+                      onPress={() => openDialog('remove', targets)}
+                    >
+                      {t('files.remove')}
+                    </Action>
+                  </>
+                )}
+              </>
             ) : null}
-            {pasteFailures.length ? (
-              <ul
-                role="alert"
-                className="rounded-control border border-danger p-3 text-sm text-danger"
-              >
-                {pasteFailures.map((failure, index) => (
-                  <li key={index}>{t('files.explorer.pasteFailed', failure)}</li>
-                ))}
-              </ul>
-            ) : null}
-            <ActiveFilterChips
-              filters={filters}
-              onChange={(next) =>
+          </div>
+        ) : null}
+        <section
+          aria-label={title}
+          aria-busy={loading || navigating}
+          className="min-h-96 rounded-panel border border-border bg-surface p-4"
+        >
+          <h1 className="sr-only">{title}</h1>
+          {loading || navigating ? (
+            <StateSurface
+              state="loading"
+              icon={<Cloud />}
+              title={t('files.loading')}
+              description={t('files.loadingDescription')}
+            />
+          ) : failure ? (
+            <StateSurface
+              state="error"
+              icon={<Cloud />}
+              title={t('files.error')}
+              description={failure}
+              actionLabel={t('files.retry')}
+              onAction={reload}
+            />
+          ) : !listing?.items.length ? (
+            <StateSurface
+              state="empty"
+              icon={trash ? <Trash2 /> : <Upload />}
+              title={t(
+                trash
+                  ? 'files.emptyTrash'
+                  : search || category
+                    ? 'files.emptySearch'
+                    : 'files.empty',
+              )}
+              description={t(
+                search || category ? 'files.emptySearchDescription' : 'files.emptyDescription',
+              )}
+              {...(!trash && !search && !category && !filterKey
+                ? {
+                    actionLabel: t('files.upload'),
+                    onAction: () => {
+                      void port
+                        .chooseFiles()
+                        .then(enqueue)
+                        .catch((error: unknown) => setNotice(errorText(error)));
+                    },
+                  }
+                : {})}
+            />
+          ) : (
+            <div
+              role={preferences.view === 'list' ? 'table' : undefined}
+              aria-label={preferences.view === 'list' ? title : undefined}
+              className={
+                preferences.view === 'grid'
+                  ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                  : 'flex flex-col divide-y divide-border'
+              }
+            >
+              {preferences.view === 'list' ? (
+                <FileListHeader
+                  preferences={preferences}
+                  onSort={(sort) =>
+                    savePreferences({
+                      ...preferences,
+                      sort,
+                      desc: preferences.sort === sort ? !preferences.desc : false,
+                    })
+                  }
+                />
+              ) : null}
+              {visibleItems.map((entry, index) => (
+                <FileItem
+                  key={entry.id}
+                  entry={entry}
+                  annotation={annotationMap.get(entry.id)}
+                  onTag={(name) =>
+                    navigate({
+                      filter: encodeFileFilters({
+                        scope: 'all',
+                        tagFilter: { names: [name], match: 'all' },
+                      }),
+                    })
+                  }
+                  view={preferences.view}
+                  columns={preferences.columns}
+                  selected={selected.includes(entry.id)}
+                  cut={
+                    clipboard.mode === 'cut' &&
+                    clipboard.entries.some((item) => item.id === entry.id)
+                  }
+                  tabStop={focusedEntry === entry.id || (!focusedEntry && index === 0)}
+                  onFocus={() => setFocusedEntry(entry.id)}
+                  onOpen={() => {
+                    if (trash) openDialog('restore', [entry]);
+                    else if (entry.kind === 'folder') navigate({ parent: entry.id });
+                    else void showPreview(entry);
+                  }}
+                  onSelect={(gesture) => selectEntry(entry.id, gesture)}
+                  onChecked={(checked) => {
+                    setSelectionAnchor(entry.id);
+                    setSelected((current) =>
+                      checked
+                        ? [...new Set([...current, entry.id])]
+                        : current.filter((id) => id !== entry.id),
+                    );
+                  }}
+                  onContext={() => {
+                    setContextEntry(entry.id);
+                    setSelectionAnchor(entry.id);
+                    if (!selected.includes(entry.id)) setSelected([entry.id]);
+                  }}
+                  thumbnail={
+                    preferences.thumbnails &&
+                    thumbnailIds.has(entry.id) &&
+                    listing &&
+                    entry.sizeBytes <= listing.maxThumbnailBytes ? (
+                      <FileMedia
+                        key={entry.id + ':' + entry.contentRevision}
+                        entry={entry}
+                        mode="thumbnail"
+                        maxBytes={listing.maxThumbnailBytes}
+                      />
+                    ) : null
+                  }
+                  actions={
+                    <MenuButton
+                      label={<MoreHorizontal className="size-5" />}
+                      ariaLabel={t('files.actionsFor', { name: entry.name })}
+                      triggerSize="sm"
+                      isOpen={contextEntry === entry.id}
+                      onOpenChange={(open) => setContextEntry(open ? entry.id : undefined)}
+                      items={
+                        trash
+                          ? [
+                              { id: 'restore', label: t('files.restore') },
+                              ...(entry.kind === 'shortcut'
+                                ? [
+                                    {
+                                      id: 'purge',
+                                      label: t('files.navigation.purge'),
+                                      tone: 'danger' as const,
+                                    },
+                                  ]
+                                : []),
+                            ]
+                          : [
+                              { id: 'details', label: t('files.details') },
+                              {
+                                id: 'queue-copy',
+                                label: t('files.explorer.copyPending'),
+                                disabled: clipboard.pending || entry.kind === 'shortcut',
+                              },
+                              {
+                                id: 'queue-cut',
+                                label: t('files.explorer.cutPending'),
+                                disabled: clipboard.pending || entry.kind === 'shortcut',
+                              },
+                              { id: 'rename', label: t('files.rename') },
+                              { id: 'move', label: t('files.move') },
+                              { id: 'copy', label: t('files.copy') },
+                              ...(entry.kind === 'file'
+                                ? [
+                                    { id: 'download', label: t('files.download') },
+                                    { id: 'versions', label: t('files.versions.title') },
+                                    { id: 'upload-version', label: t('files.versions.upload') },
+                                    ...(entry.mediaType.startsWith('text/') ||
+                                    /\.(md|txt)$/i.test(entry.name)
+                                      ? [{ id: 'edit', label: t('files.edit') }]
+                                      : []),
+                                  ]
+                                : []),
+                              ...(entry.kind === 'shortcut'
+                                ? []
+                                : [{ id: 'share', label: t('files.share') }]),
+                              ...(entry.kind === 'folder' || entry.kind === 'shortcut'
+                                ? [{ id: 'pin', label: t('files.navigation.pin') }]
+                                : []),
+                              { id: 'remove', label: t('files.remove'), tone: 'danger' },
+                            ]
+                      }
+                      onAction={(action) => {
+                        setContextEntry(undefined);
+                        if (action === 'versions') setVersionEntry(entry);
+                        else if (action === 'upload-version') void uploadVersion(entry);
+                        else if (action === 'queue-copy' || action === 'queue-cut')
+                          queueClipboard(
+                            action === 'queue-copy' ? 'copy' : 'cut',
+                            selected.includes(entry.id) ? targets : [entry],
+                          );
+                        else if (action === 'details') void showDetails(entry);
+                        else if (action === 'purge') setPurgeTarget(entry);
+                        else if (
+                          action === 'pin' &&
+                          (entry.kind === 'folder' || entry.kind === 'shortcut')
+                        )
+                          setPinTarget({ targetKind: entry.kind, targetId: entry.id });
+                        else if (action === 'download') void download(entry);
+                        else if (action === 'share') setShareTarget(entry);
+                        else if (action === 'edit') setTextRequest({ mode: 'edit', entry });
+                        else if (
+                          action === 'rename' ||
+                          action === 'move' ||
+                          action === 'copy' ||
+                          action === 'remove' ||
+                          action === 'restore'
+                        )
+                          openDialog(action, [entry]);
+                      }}
+                    />
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </section>
+        {listing && preferences.view !== 'gallery' ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <Action
+              variant="secondary"
+              size="sm"
+              disabled={loading || page <= 1}
+              onPress={() =>
                 navigate({
                   parent,
                   category,
                   trash: trash ? 'true' : '',
                   search,
-                  filter: encodeFileFilters(next),
+                  filter: filterKey,
+                  page: String(page - 1),
                 })
               }
-            />
-            {queryInvalid ? (
-              <Action
-                variant="secondary"
-                onPress={() => navigate({ parent, category, trash: trash ? 'true' : '' })}
-              >
-                {t('files.discovery.clear')}
-              </Action>
-            ) : null}
-            {notice ? (
-              <p
-                role="status"
-                className="rounded-control border border-border bg-surface p-3 text-sm"
-              >
-                {notice}
-              </p>
-            ) : null}
-            {galleryAnnotationsLoading ? (
-              <p role="status" className="text-sm text-ink-muted">
-                {t('files.annotations.loading')}
-              </p>
-            ) : null}
-            {galleryAnnotationFailure ? (
-              <p role="alert" className="text-sm text-danger">
-                {galleryAnnotationFailure}
-              </p>
-            ) : null}
-            {listing?.items.length ? (
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="min-w-32">
-                  <CheckboxField
-                    label={t('files.discovery.selectPage')}
-                    checked={selected.length === visibleItems.length}
-                    onCheckedChange={(checked) => {
-                      setSelectionAnchor('');
-                      setSelected(checked ? visibleItems.map((entry) => entry.id) : []);
-                    }}
-                  />
-                </div>
-                {targets.length ? (
-                  <>
-                    {!trash ? (
-                      <>
-                        <Action
-                          size="sm"
-                          variant="secondary"
-                          disabled={clipboard.pending}
-                          onPress={() => queueClipboard('copy', targets)}
-                        >
-                          {t('files.explorer.copyPending')}
-                        </Action>
-                        <Action
-                          size="sm"
-                          variant="secondary"
-                          disabled={clipboard.pending}
-                          onPress={() => queueClipboard('cut', targets)}
-                        >
-                          {t('files.explorer.cutPending')}
-                        </Action>
-                      </>
-                    ) : null}
-                    {!trash ? (
-                      <Action
-                        size="sm"
-                        variant="secondary"
-                        loading={archiving}
-                        disabled={archiving || targets.some((entry) => entry.kind === 'shortcut')}
-                        onPress={() => {
-                          setArchiving(true);
-                          setNotice('');
-                          void port
-                            .archive(selected)
-                            .then(() => setNotice(t('files.archiveReady')))
-                            .catch((error: unknown) => setNotice(errorText(error)))
-                            .finally(() => setArchiving(false));
-                        }}
-                      >
-                        {t('files.archive')}
-                      </Action>
-                    ) : null}
-                    <span className="text-sm text-ink-muted">
-                      {t('files.selected', { count: targets.length })}
-                    </span>
-                    <span className="text-xs text-ink-muted">
-                      {t('files.explorer.selectedBytes', {
-                        size: bytes(
-                          targets.reduce(
-                            (sum, entry) => sum + (entry.kind === 'file' ? entry.sizeBytes : 0),
-                            0,
-                          ),
-                        ),
-                      })}
-                    </span>
-                    {!trash ? (
-                      <>
-                        <Action
-                          size="sm"
-                          variant="secondary"
-                          disabled={
-                            loading ||
-                            navigating ||
-                            galleryAnnotationsLoading ||
-                            !!galleryAnnotationFailure
-                          }
-                          onPress={() => openTagsBatch('add')}
-                        >
-                          {t('files.annotations.batchAdd')}
-                        </Action>
-                        <Action
-                          size="sm"
-                          variant="secondary"
-                          disabled={
-                            loading ||
-                            navigating ||
-                            galleryAnnotationsLoading ||
-                            !!galleryAnnotationFailure
-                          }
-                          onPress={() => openTagsBatch('remove')}
-                        >
-                          {t('files.annotations.batchRemove')}
-                        </Action>
-                      </>
-                    ) : null}
-                    {trash ? (
-                      <Action
-                        variant="secondary"
-                        size="sm"
-                        onPress={() => openDialog('restore', targets)}
-                      >
-                        {t('files.restore')}
-                      </Action>
-                    ) : (
-                      <>
-                        <Action
-                          variant="secondary"
-                          size="sm"
-                          onPress={() => openDialog('move', targets)}
-                        >
-                          {t('files.move')}
-                        </Action>
-                        <Action
-                          variant="danger"
-                          size="sm"
-                          onPress={() => openDialog('remove', targets)}
-                        >
-                          {t('files.remove')}
-                        </Action>
-                      </>
-                    )}
-                  </>
-                ) : null}
-              </div>
-            ) : null}
-            <section
-              aria-label={title}
-              aria-busy={loading || navigating}
-              className="min-h-96 rounded-panel border border-border bg-surface p-4"
             >
-              <h1 className="sr-only">{title}</h1>
-              {loading || navigating ? (
-                <StateSurface
-                  state="loading"
-                  icon={<Cloud />}
-                  title={t('files.loading')}
-                  description={t('files.loadingDescription')}
-                />
-              ) : failure ? (
-                <StateSurface
-                  state="error"
-                  icon={<Cloud />}
-                  title={t('files.error')}
-                  description={failure}
-                  actionLabel={t('files.retry')}
-                  onAction={reload}
-                />
-              ) : !listing?.items.length ? (
-                <StateSurface
-                  state="empty"
-                  icon={trash ? <Trash2 /> : <Upload />}
-                  title={t(
-                    trash
-                      ? 'files.emptyTrash'
-                      : search || category
-                        ? 'files.emptySearch'
-                        : 'files.empty',
-                  )}
-                  description={t(
-                    search || category ? 'files.emptySearchDescription' : 'files.emptyDescription',
-                  )}
-                  {...(!trash && !search && !category && !filterKey
-                    ? {
-                        actionLabel: t('files.upload'),
-                        onAction: () => {
-                          void port
-                            .chooseFiles()
-                            .then(enqueue)
-                            .catch((error: unknown) => setNotice(errorText(error)));
-                        },
-                      }
-                    : {})}
-                />
-              ) : (
-                <div
-                  role={preferences.view === 'list' ? 'table' : undefined}
-                  aria-label={preferences.view === 'list' ? title : undefined}
-                  className={
-                    preferences.view === 'grid'
-                      ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                      : 'flex flex-col divide-y divide-border'
-                  }
-                >
-                  {preferences.view === 'list' ? (
-                    <FileListHeader
-                      preferences={preferences}
-                      onSort={(sort) =>
-                        savePreferences({
-                          ...preferences,
-                          sort,
-                          desc: preferences.sort === sort ? !preferences.desc : false,
-                        })
-                      }
-                    />
-                  ) : null}
-                  {visibleItems.map((entry, index) => (
-                    <FileItem
-                      key={entry.id}
-                      entry={entry}
-                      annotation={annotationMap.get(entry.id)}
-                      onTag={(name) =>
-                        navigate({
-                          filter: encodeFileFilters({
-                            scope: 'all',
-                            tagFilter: { names: [name], match: 'all' },
-                          }),
-                        })
-                      }
-                      view={preferences.view}
-                      columns={preferences.columns}
-                      selected={selected.includes(entry.id)}
-                      cut={
-                        clipboard.mode === 'cut' &&
-                        clipboard.entries.some((item) => item.id === entry.id)
-                      }
-                      tabStop={focusedEntry === entry.id || (!focusedEntry && index === 0)}
-                      onFocus={() => setFocusedEntry(entry.id)}
-                      onOpen={() => {
-                        if (trash) openDialog('restore', [entry]);
-                        else if (entry.kind === 'folder') navigate({ parent: entry.id });
-                        else void showPreview(entry);
-                      }}
-                      onSelect={(gesture) => selectEntry(entry.id, gesture)}
-                      onChecked={(checked) => {
-                        setSelectionAnchor(entry.id);
-                        setSelected((current) =>
-                          checked
-                            ? [...new Set([...current, entry.id])]
-                            : current.filter((id) => id !== entry.id),
-                        );
-                      }}
-                      onContext={() => {
-                        setContextEntry(entry.id);
-                        setSelectionAnchor(entry.id);
-                        if (!selected.includes(entry.id)) setSelected([entry.id]);
-                      }}
-                      thumbnail={
-                        preferences.thumbnails &&
-                        thumbnailIds.has(entry.id) &&
-                        listing &&
-                        entry.sizeBytes <= listing.maxThumbnailBytes ? (
-                          <FileMedia
-                            key={entry.id + ':' + entry.contentRevision}
-                            entry={entry}
-                            mode="thumbnail"
-                            maxBytes={listing.maxThumbnailBytes}
-                          />
-                        ) : null
-                      }
-                      actions={
-                        <MenuButton
-                          label={<MoreHorizontal className="size-5" />}
-                          ariaLabel={t('files.actionsFor', { name: entry.name })}
-                          triggerSize="sm"
-                          isOpen={contextEntry === entry.id}
-                          onOpenChange={(open) => setContextEntry(open ? entry.id : undefined)}
-                          items={
-                            trash
-                              ? [
-                                  { id: 'restore', label: t('files.restore') },
-                                  ...(entry.kind === 'shortcut'
-                                    ? [
-                                        {
-                                          id: 'purge',
-                                          label: t('files.navigation.purge'),
-                                          tone: 'danger' as const,
-                                        },
-                                      ]
-                                    : []),
-                                ]
-                              : [
-                                  { id: 'details', label: t('files.details') },
-                                  {
-                                    id: 'queue-copy',
-                                    label: t('files.explorer.copyPending'),
-                                    disabled: clipboard.pending || entry.kind === 'shortcut',
-                                  },
-                                  {
-                                    id: 'queue-cut',
-                                    label: t('files.explorer.cutPending'),
-                                    disabled: clipboard.pending || entry.kind === 'shortcut',
-                                  },
-                                  { id: 'rename', label: t('files.rename') },
-                                  { id: 'move', label: t('files.move') },
-                                  { id: 'copy', label: t('files.copy') },
-                                  ...(entry.kind === 'file'
-                                    ? [
-                                        { id: 'download', label: t('files.download') },
-                                        { id: 'versions', label: t('files.versions.title') },
-                                        { id: 'upload-version', label: t('files.versions.upload') },
-                                        ...(entry.mediaType.startsWith('text/') ||
-                                        /\.(md|txt)$/i.test(entry.name)
-                                          ? [{ id: 'edit', label: t('files.edit') }]
-                                          : []),
-                                      ]
-                                    : []),
-                                  ...(entry.kind === 'shortcut'
-                                    ? []
-                                    : [{ id: 'share', label: t('files.share') }]),
-                                  ...(entry.kind === 'folder' || entry.kind === 'shortcut'
-                                    ? [{ id: 'pin', label: t('files.navigation.pin') }]
-                                    : []),
-                                  { id: 'remove', label: t('files.remove'), tone: 'danger' },
-                                ]
-                          }
-                          onAction={(action) => {
-                            setContextEntry(undefined);
-                            if (action === 'versions') setVersionEntry(entry);
-                            else if (action === 'upload-version') void uploadVersion(entry);
-                            else if (action === 'queue-copy' || action === 'queue-cut')
-                              queueClipboard(
-                                action === 'queue-copy' ? 'copy' : 'cut',
-                                selected.includes(entry.id) ? targets : [entry],
-                              );
-                            else if (action === 'details') void showDetails(entry);
-                            else if (action === 'purge') setPurgeTarget(entry);
-                            else if (
-                              action === 'pin' &&
-                              (entry.kind === 'folder' || entry.kind === 'shortcut')
-                            )
-                              setPinTarget({ targetKind: entry.kind, targetId: entry.id });
-                            else if (action === 'download') void download(entry);
-                            else if (action === 'share') setShareTarget(entry);
-                            else if (action === 'edit') setTextRequest({ mode: 'edit', entry });
-                            else if (
-                              action === 'rename' ||
-                              action === 'move' ||
-                              action === 'copy' ||
-                              action === 'remove' ||
-                              action === 'restore'
-                            )
-                              openDialog(action, [entry]);
-                          }}
-                        />
-                      }
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-            {listing && preferences.view !== 'gallery' ? (
-              <div className="flex flex-wrap items-center gap-3">
+              {t('files.previousPage')}
+            </Action>
+            <span className="text-sm text-ink-muted">
+              {t('files.discovery.page', {
+                current: page,
+                pages: Math.max(1, Math.ceil(listing.total / preferences.pageSize)),
+                total: listing.total,
+              })}
+            </span>
+            <Action
+              variant="secondary"
+              size="sm"
+              disabled={loading || page * preferences.pageSize >= listing.total}
+              onPress={() =>
+                navigate({
+                  parent,
+                  category,
+                  trash: trash ? 'true' : '',
+                  search,
+                  filter: filterKey,
+                  page: String(page + 1),
+                })
+              }
+            >
+              {t('files.nextPage')}
+            </Action>
+            {!listing.items.length && page > 1 ? (
+              <>
+                <span className="text-sm text-ink-muted">{t('files.discovery.outOfRange')}</span>
                 <Action
-                  variant="secondary"
                   size="sm"
-                  disabled={loading || page <= 1}
+                  variant="quiet"
                   onPress={() =>
                     navigate({
                       parent,
@@ -1524,120 +1329,72 @@ export function FilesPage({
                       trash: trash ? 'true' : '',
                       search,
                       filter: filterKey,
-                      page: String(page - 1),
                     })
                   }
                 >
-                  {t('files.previousPage')}
+                  {t('files.discovery.firstPage')}
                 </Action>
-                <span className="text-sm text-ink-muted">
-                  {t('files.discovery.page', {
-                    current: page,
-                    pages: Math.max(1, Math.ceil(listing.total / preferences.pageSize)),
-                    total: listing.total,
-                  })}
-                </span>
-                <Action
-                  variant="secondary"
-                  size="sm"
-                  disabled={loading || page * preferences.pageSize >= listing.total}
-                  onPress={() =>
-                    navigate({
-                      parent,
-                      category,
-                      trash: trash ? 'true' : '',
-                      search,
-                      filter: filterKey,
-                      page: String(page + 1),
-                    })
-                  }
-                >
-                  {t('files.nextPage')}
-                </Action>
-                {!listing.items.length && page > 1 ? (
-                  <>
-                    <span className="text-sm text-ink-muted">
-                      {t('files.discovery.outOfRange')}
-                    </span>
-                    <Action
-                      size="sm"
-                      variant="quiet"
-                      onPress={() =>
-                        navigate({
-                          parent,
-                          category,
-                          trash: trash ? 'true' : '',
-                          search,
-                          filter: filterKey,
-                        })
-                      }
-                    >
-                      {t('files.discovery.firstPage')}
-                    </Action>
-                  </>
-                ) : null}
-              </div>
+              </>
             ) : null}
-            {listing && preferences.view === 'gallery' ? (
-              <p className="text-xs text-ink-muted">
-                {t('files.discovery.galleryBudget', { count: listing.maxGalleryEntries })}
-              </p>
-            ) : null}
-            <p className="text-xs text-ink-muted">{t('files.discovery.keyboardHint')}</p>
-            {listing && preferences.thumbnails && thumbnailIds.size > 0 ? (
-              <p className="text-xs text-ink-muted">
-                {t('files.discovery.thumbnailBudget', { count: listing.maxGalleryEntries })}
-              </p>
-            ) : null}
-            {listing && preferences.view === 'gallery' && pageCount > 1 ? (
-              <div className="flex flex-wrap items-center gap-3">
-                <Action
-                  variant="secondary"
-                  size="sm"
-                  disabled={currentGalleryPage === 0}
-                  onPress={() => {
-                    setGalleryPage(currentGalleryPage - 1);
-                    setSelected([]);
-                    setSelectionAnchor('');
-                    setFocusedEntry('');
-                  }}
-                >
-                  {t('files.previousPage')}
-                </Action>
-                <span className="text-sm text-ink-muted">
-                  {t('files.galleryPage', { current: currentGalleryPage + 1, pages: pageCount })}
-                </span>
-                <Action
-                  variant="secondary"
-                  size="sm"
-                  disabled={currentGalleryPage + 1 >= pageCount}
-                  onPress={() => {
-                    setGalleryPage(currentGalleryPage + 1);
-                    setSelected([]);
-                    setSelectionAnchor('');
-                    setFocusedEntry('');
-                  }}
-                >
-                  {t('files.nextPage')}
-                </Action>
-              </div>
-            ) : null}
-            {listing ? (
-              <p className="text-xs text-ink-muted">
-                {t('files.uploadLimit', {
-                  size: bytes(listing.maxFileBytes),
-                  count: listing.concurrentUploads,
-                })}
-              </p>
-            ) : null}
-            <TransferPanel compact />
-          </Page>
-        </main>
-      </div>
+          </div>
+        ) : null}
+        {listing && preferences.view === 'gallery' ? (
+          <p className="text-xs text-ink-muted">
+            {t('files.discovery.galleryBudget', { count: listing.maxGalleryEntries })}
+          </p>
+        ) : null}
+        <p className="text-xs text-ink-muted">{t('files.discovery.keyboardHint')}</p>
+        {listing && preferences.thumbnails && thumbnailIds.size > 0 ? (
+          <p className="text-xs text-ink-muted">
+            {t('files.discovery.thumbnailBudget', { count: listing.maxGalleryEntries })}
+          </p>
+        ) : null}
+        {listing && preferences.view === 'gallery' && pageCount > 1 ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <Action
+              variant="secondary"
+              size="sm"
+              disabled={currentGalleryPage === 0}
+              onPress={() => {
+                setGalleryPage(currentGalleryPage - 1);
+                setSelected([]);
+                setSelectionAnchor('');
+                setFocusedEntry('');
+              }}
+            >
+              {t('files.previousPage')}
+            </Action>
+            <span className="text-sm text-ink-muted">
+              {t('files.galleryPage', { current: currentGalleryPage + 1, pages: pageCount })}
+            </span>
+            <Action
+              variant="secondary"
+              size="sm"
+              disabled={currentGalleryPage + 1 >= pageCount}
+              onPress={() => {
+                setGalleryPage(currentGalleryPage + 1);
+                setSelected([]);
+                setSelectionAnchor('');
+                setFocusedEntry('');
+              }}
+            >
+              {t('files.nextPage')}
+            </Action>
+          </div>
+        ) : null}
+        {listing ? (
+          <p className="text-xs text-ink-muted">
+            {t('files.uploadLimit', {
+              size: bytes(listing.maxFileBytes),
+              count: listing.concurrentUploads,
+            })}
+          </p>
+        ) : null}
+      </Page>
       {dialog ? (
         <DialogSurface
-          triggerLabel={t(`files.${dialog.mode === 'folder' ? 'newFolder' : dialog.mode}`)}
-          title={t(`files.${dialog.mode === 'folder' ? 'newFolder' : dialog.mode}`)}
+          triggerLabel={t(`files.${dialog.mode}`)}
+          title={t(`files.${dialog.mode}`)}
           description={t(
             dialog.mode === 'remove'
               ? 'files.removeHint'
@@ -1656,7 +1413,7 @@ export function FilesPage({
           {...(dialogFailure ? { failureMessage: dialogFailure } : {})}
           onConfirm={confirmDialog}
           confirmDisabled={
-            dialog.mode === 'folder' || dialog.mode === 'rename'
+            dialog.mode === 'rename'
               ? !name.trim()
               : dialog.mode === 'copy'
                 ? !folders || !name.trim()
@@ -1672,7 +1429,7 @@ export function FilesPage({
               onChange={(event) => setName(event.target.value)}
             />
           ) : null}
-          {dialog.mode === 'folder' || dialog.mode === 'rename' ? (
+          {dialog.mode === 'rename' ? (
             <TextField
               label={t('files.name')}
               value={name}
@@ -1872,6 +1629,6 @@ export function FilesPage({
           </div>
         </DialogSurface>
       ) : null}
-    </div>
+    </>
   );
 }

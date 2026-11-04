@@ -48,7 +48,9 @@ test('lock screen blocks content and requires the account password to unlock', a
   await page.getByRole('button', { name: '锁定屏幕', exact: true }).click();
   const lock = page.getByRole('dialog', { name: '锁屏' });
   await expect(lock).toBeVisible();
-  await expect(page.locator('#main-content')).toHaveAttribute('inert', '');
+  await expect(
+    page.locator('#main-content').locator('xpath=ancestor-or-self::*[@inert]'),
+  ).toHaveCount(1);
 
   await lock.getByLabel('账号密码', { exact: true }).fill('wrong-password');
   await lock.getByRole('button', { name: '解锁', exact: true }).click();
@@ -60,5 +62,7 @@ test('lock screen blocks content and requires the account password to unlock', a
   await lock.getByLabel('账号密码', { exact: true }).fill('CommunityDemo2026!');
   await lock.getByRole('button', { name: '解锁', exact: true }).click();
   await expect(page.getByRole('dialog', { name: '锁屏' })).toHaveCount(0);
-  await expect(page.locator('#main-content')).not.toHaveAttribute('inert', '');
+  await expect(
+    page.locator('#main-content').locator('xpath=ancestor-or-self::*[@inert]'),
+  ).toHaveCount(0);
 });

@@ -147,11 +147,8 @@ test('侧边栏：搜索顶置 + 分组导航 + 每分类语义图标（SET-011�
 test('分类切换复用主 Shell route-enter 动效：内容区段淡入、壳静止（SET-012）', async ({ page }) => {
   await page.goto('/settings');
   await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
-  await page.waitForTimeout(700);
-  // 路由内容容器存在（layout 壳页面契约）。
-  expect(await page.evaluate(() => Boolean(document.querySelector('[data-route-content]')))).toBe(
-    true,
-  );
+  // 全局 hydration 完成时，设置内容仍可能在加载；等待真正的内容容器。
+  await expect(page.locator('[data-route-content]')).toBeVisible();
   // 切到另一分类：动画采样期直接语义区段应命中 route-enter recipe，
   // 壳（PageHeader）opacity 恒 1（不参与 route-enter、不闪）。
   let sawFade = false;

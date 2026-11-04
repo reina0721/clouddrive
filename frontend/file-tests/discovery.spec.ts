@@ -214,6 +214,7 @@ test('真实图片缩略图数量与开关、UTC日期还原和过长条件保�
     const chooser = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: '新建', exact: true }).click();
     await page.getByRole('menuitem', { name: '上传文件', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: '使用此位置', exact: true }).click();
     await (
       await chooser
     ).setFiles({
@@ -222,6 +223,9 @@ test('真实图片缩略图数量与开关、UTC日期还原和过长条件保�
       buffer: Buffer.from(png, 'base64'),
     });
     await expect(entries(page)).toHaveCount(index + 1);
+    const tray = page.getByRole('dialog', { name: '上传队列', exact: true });
+    if (await tray.isVisible())
+      await tray.getByRole('button', { name: '关闭', exact: true }).click();
   }
   await expect(entries(page)).toHaveCount(13);
   await expect(entries(page).locator('img')).toHaveCount(12);

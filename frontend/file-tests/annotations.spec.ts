@@ -357,13 +357,13 @@ test('副本与回收保留整理信息，画廊按本屏加载且可批量整�
   dialog = page.getByRole('dialog');
   await dialog.getByRole('button', { name: '确认', exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  await page.getByRole('button', { name: '回收站', exact: true }).click();
+  await page.getByRole('link', { name: '回收站', exact: true }).click();
   await expect(row(page, value.root.id)).toContainText('📚');
   await action(page, value.name, '恢复');
   dialog = page.getByRole('dialog');
   await dialog.getByRole('button', { name: '确认', exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  await page.getByRole('button', { name: '我的文件', exact: true }).first().click();
+  await page.getByRole('link', { name: '我的文件', exact: true }).first().click();
   await expect(page.getByRole('button', { name: value.name, exact: true })).toBeVisible();
   await page.getByRole('button', { name: value.name, exact: true }).click();
   const png = await page.evaluate(() => {
@@ -378,6 +378,7 @@ test('副本与回收保留整理信息，画廊按本屏加载且可批量整�
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: '新建', exact: true }).click();
   await page.getByRole('menuitem', { name: '上传文件', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '使用此位置', exact: true }).click();
   await (
     await chooser
   ).setFiles({
@@ -385,7 +386,12 @@ test('副本与回收保留整理信息，画廊按本屏加载且可批量整�
     mimeType: 'image/png',
     buffer: Buffer.from(png, 'base64'),
   });
+  await expect(page.getByRole('dialog', { name: '上传队列', exact: true })).toBeVisible();
   await expect(page.getByText('上传完成', { exact: true })).toHaveCount(1);
+  await page
+    .getByRole('dialog', { name: '上传队列', exact: true })
+    .getByRole('button', { name: '关闭', exact: true })
+    .click();
   const listing = await api(page, '?parent=' + String(value.root.id)),
     image = (listing.items as { id: string; name: string }[]).find(
       (item) => item.name === 'photo-' + value.suffix + '.png',

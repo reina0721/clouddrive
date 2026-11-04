@@ -1,43 +1,31 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
 import { formatDate, useFrontendTranslation } from '@clouddrive/i18n';
-import { Action } from '@clouddrive/ui-adapter/action';
-import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
-import { ProgressMeter } from '@clouddrive/ui-adapter/progress-meter';
 import { Page, PageHeader, Section } from '@clouddrive/surface-foundation/layout';
+import { Action } from '@clouddrive/ui-adapter/action';
 import {
   CheckboxField,
   SelectField,
-  TextField,
   SwitchField,
+  TextField,
 } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface, DrawerSurface } from '@clouddrive/ui-adapter/overlays';
-import { FilesError, type FilesDestination } from '../../../src/files/model';
+import { ProgressMeter } from '@clouddrive/ui-adapter/progress-meter';
+import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  downloadFinished,
   downloadBatchError,
+  downloadFinished,
+  type DownloadBatch,
+  type DownloadBatchAction,
+  type DownloadCommand,
+  type DownloadFilter,
   type DownloadListing,
   type OfflineDownload,
-  type DownloadCommand,
-  type DownloadBatchAction,
-  type DownloadFilter,
-  type DownloadBatch,
 } from '../../../src/files/downloads';
-import { useDownloads, useFiles } from '../../../src/files/runtime';
-import {
-  Cloud,
-  Download,
-  RefreshCw,
-  Home,
-  HardDrive,
-  Upload,
-  Settings,
-  Info,
-  Menu,
-} from '../../../src/files/icons';
-import { filesAccentStyle } from '../../../src/files/appearance';
-import { FileLink } from './file-link';
 import { formatFileBytes as bytes } from '../../../src/files/format';
+import { Download, Info, RefreshCw } from '../../../src/files/icons';
+import { FilesError } from '../../../src/files/model';
+import { useDownloads, useFiles } from '../../../src/files/runtime';
 import { DownloadCreateDialog, DownloadTargetDialog } from './download-dialogs';
 
 type Confirmation = Readonly<{
@@ -83,7 +71,6 @@ export function DownloadsPage() {
   const [batchFailures, setBatchFailures] = useState<
     readonly { id: string; name: string; message: string }[]
   >([]);
-  const [navigationOpen, setNavigationOpen] = useState(false);
   const refresh = useCallback(() => setRevision((value) => value + 1), []);
   const errorText = (error: unknown) =>
     t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`);
@@ -168,16 +155,6 @@ export function DownloadsPage() {
       setBusy(false);
     }
   }
-  const nav: readonly [FilesDestination, string, typeof Cloud][] = [
-    ['files', 'files.nav', Home],
-    ['shared', 'files.navigation.title', Cloud],
-    ['shares', 'files.myShares', Cloud],
-    ['connections', 'files.connections.title', HardDrive],
-    ['transfers', 'files.transferCenter', Upload],
-    ['downloads', 'files.downloads.title', Download],
-    ['workspace', 'files.management', Settings],
-    ['account', 'files.account', Info],
-  ];
   const controlsDisabled = busy || loading || Boolean(failure);
   const canDownload = Boolean(page?.available && !page.metadataLimited);
   function card(task: OfflineDownload) {
@@ -356,306 +333,263 @@ export function DownloadsPage() {
     );
   }
   return (
-    <main
-      id="main-content"
-      data-accent-preview="blue"
-      style={filesAccentStyle}
-      className="min-h-screen bg-canvas text-ink"
-    >
+    <>
       <Page>
-        <div className="flex min-h-screen flex-col md:flex-row">
-          <div className="flex items-center justify-between border-b border-border p-4 md:hidden">
-            <FileLink target="files" className="flex items-center gap-3 text-xl font-semibold">
-              <Cloud className="size-7 text-brand" />
-              clouddrive
-            </FileLink>
-            <Action
-              variant="quiet"
-              leadingIcon={<Menu className="size-5" />}
-              onPress={() => setNavigationOpen(true)}
-            >
-              {t('files.downloads.navigation')}
+        <section className="flex min-w-0 flex-1 flex-col">
+          <header className="flex flex-wrap items-center justify-between gap-4">
+            <Action disabled={!canDownload || loading} onPress={() => setCreating(true)}>
+              {t('files.downloads.create')}
             </Action>
-          </div>
-          <aside
-            aria-label={t('files.nav')}
-            className="hidden w-60 shrink-0 border-r border-border p-4 md:block"
-          >
-            <FileLink target="files" className="mb-5 flex items-center gap-3 text-xl font-semibold">
-              <Cloud className="size-8 text-brand" />
-              clouddrive
-            </FileLink>
-            <nav className="flex flex-wrap gap-1 md:flex-col">
-              {nav.map(([destination, label, Icon]) => (
-                <FileLink
-                  key={destination}
-                  target={destination}
-                  {...(destination === 'downloads' ? { 'aria-current': 'page' as const } : {})}
-                  className={`flex items-center gap-3 rounded-control px-4 py-2.5 text-sm ${destination === 'downloads' ? 'bg-brand-soft font-semibold text-brand' : 'text-ink-muted hover:bg-surface-muted'}`}
+            <div className="w-fit">
+              <SwitchField
+                label={t('files.downloads.autoRefresh')}
+                description=""
+                presentation="row"
+                checked={auto}
+                onCheckedChange={setAuto}
+              />
+            </div>
+          </header>
+          <section className="mt-5 flex-1 rounded-panel border border-border bg-surface p-4 sm:p-6">
+            <PageHeader
+              title={t('files.downloads.title')}
+              description={t('files.downloads.subtitle')}
+              actions={
+                <Action
+                  variant="quiet"
+                  disabled={busy}
+                  leadingIcon={<RefreshCw className="size-4" />}
+                  onPress={refresh}
                 >
-                  <Icon className="size-4 shrink-0" />
-                  {t(label)}
-                </FileLink>
-              ))}
-            </nav>
-          </aside>
-          <section className="flex min-w-0 flex-1 flex-col p-4 sm:p-6">
-            <header className="flex flex-wrap items-center justify-between gap-4">
-              <Action disabled={!canDownload || loading} onPress={() => setCreating(true)}>
-                {t('files.downloads.create')}
-              </Action>
-              <div className="w-fit">
-                <SwitchField
-                  label={t('files.downloads.autoRefresh')}
-                  description=""
-                  presentation="row"
-                  checked={auto}
-                  onCheckedChange={setAuto}
+                  {t('files.downloads.refresh')}
+                </Action>
+              }
+            />
+            {page && !page.available ? (
+              <p role="status" className="mt-3 text-sm text-ink-muted">
+                {t('files.downloads.unavailable')}
+              </p>
+            ) : null}
+            {page?.metadataLimited ? (
+              <p role="status" className="mt-3 text-sm text-ink-muted">
+                {t('files.downloads.metadataLimited')}
+              </p>
+            ) : null}
+            <form
+              className="my-5 flex flex-wrap items-end gap-3"
+              onSubmit={(event) => {
+                event.preventDefault();
+                filter({ search });
+              }}
+            >
+              <div className="min-w-48 flex-1">
+                <TextField
+                  label={t('files.downloads.search')}
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
                 />
               </div>
-            </header>
-            <section className="mt-5 flex-1 rounded-panel border border-border bg-surface p-4 sm:p-6">
-              <PageHeader
-                title={t('files.downloads.title')}
-                description={t('files.downloads.subtitle')}
-                actions={
-                  <Action
-                    variant="quiet"
-                    disabled={busy}
-                    leadingIcon={<RefreshCw className="size-4" />}
-                    onPress={refresh}
-                  >
-                    {t('files.downloads.refresh')}
-                  </Action>
-                }
+              <div className="w-full sm:w-52">
+                <SelectField
+                  label={t('files.downloads.statusFilter')}
+                  value={query.state}
+                  options={[
+                    { value: '', label: t('files.downloads.anyStatus') },
+                    ...statusValues.map((state) => ({
+                      value: state,
+                      label: t(`files.downloads.state.${state}`),
+                    })),
+                  ]}
+                  onValueChange={(value) => filter({ state: value as DownloadFilter['state'] })}
+                />
+              </div>
+              <Action type="submit" variant="secondary">
+                {t('files.downloads.searchAction')}
+              </Action>
+            </form>
+            <div className="mb-4 flex flex-wrap gap-2">
+              {(['all', 'active', 'finished'] as const).map((section) => (
+                <Action
+                  key={section}
+                  variant={query.section === section ? 'primary' : 'quiet'}
+                  onPress={() => filter({ section })}
+                >
+                  {t(`files.downloads.${section}`)}{' '}
+                  {section === 'active'
+                    ? (page?.activeCount ?? 0)
+                    : section === 'finished'
+                      ? (page?.finishedCount ?? 0)
+                      : (page?.totalCount ?? 0)}
+                </Action>
+              ))}
+            </div>
+            <div
+              role="status"
+              aria-live="polite"
+              className="my-3 break-words text-sm text-ink-muted"
+            >
+              {notice}
+            </div>
+            {failure ? (
+              <StateSurface
+                compact
+                state="error"
+                icon={<Info />}
+                title={failure}
+                description={t('files.downloads.readLatest')}
+                actionLabel={t('files.downloads.readLatest')}
+                onAction={refresh}
+                announcement="urgent"
               />
-              {page && !page.available ? (
-                <p role="status" className="mt-3 text-sm text-ink-muted">
-                  {t('files.downloads.unavailable')}
-                </p>
-              ) : null}
-              {page?.metadataLimited ? (
-                <p role="status" className="mt-3 text-sm text-ink-muted">
-                  {t('files.downloads.metadataLimited')}
-                </p>
-              ) : null}
-              <form
-                className="my-5 flex flex-wrap items-end gap-3"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  filter({ search });
+            ) : null}
+            {batchFailures.length ? (
+              <ul role="status" className="my-3 space-y-2 text-sm text-danger">
+                {batchFailures.map((item) => (
+                  <li key={item.id} className="break-words">
+                    {item.name}: {item.message}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {loading ? (
+              <StateSurface
+                compact
+                state="loading"
+                icon={<RefreshCw />}
+                title={t('files.downloads.loading')}
+                description={t('files.downloads.subtitle')}
+                announcement="polite"
+              />
+            ) : null}
+            {page?.items.length ? (
+              <div className="my-4 flex flex-wrap items-center gap-2">
+                <div className="w-fit">
+                  <CheckboxField
+                    label={t('files.downloads.selectAll')}
+                    checked={page.items.every((task) => selected.includes(task.id))}
+                    disabled={controlsDisabled}
+                    onCheckedChange={(checked) =>
+                      setSelected(checked ? page.items.map((task) => task.id) : [])
+                    }
+                  />
+                </div>
+                <span className="text-sm text-ink-muted">
+                  {t('files.downloads.selected', { count: selectedTasks.length })}
+                </span>
+                {selectedTasks.length ? (
+                  <>
+                    <Action
+                      size="sm"
+                      variant="quiet"
+                      disabled={!selectedTasks.length || controlsDisabled}
+                      onPress={() => setSelected([])}
+                    >
+                      {t('files.downloads.clearSelection')}
+                    </Action>
+                    <Action
+                      size="sm"
+                      variant="secondary"
+                      disabled={!selectedTasks.length || controlsDisabled}
+                      onPress={() => {
+                        setBusy(true);
+                        void batch(selectedTasks, 'pause')
+                          .catch((error: unknown) => setNotice(errorText(error)))
+                          .finally(() => setBusy(false));
+                      }}
+                    >
+                      {t('files.downloads.batchPause')}
+                    </Action>
+                    <Action
+                      size="sm"
+                      variant="secondary"
+                      disabled={!selectedTasks.length || controlsDisabled || !canDownload}
+                      onPress={() => {
+                        setBusy(true);
+                        void batch(selectedTasks, 'resume')
+                          .catch((error: unknown) => setNotice(errorText(error)))
+                          .finally(() => setBusy(false));
+                      }}
+                    >
+                      {t('files.downloads.batchResume')}
+                    </Action>
+                    <Action
+                      size="sm"
+                      variant="secondary"
+                      disabled={!selectedTasks.length || controlsDisabled}
+                      onPress={() => setConfirmation({ action: 'cancel', tasks: selectedTasks })}
+                    >
+                      {t('files.downloads.batchCancel')}
+                    </Action>
+                    <Action
+                      size="sm"
+                      variant="secondary"
+                      disabled={!selectedTasks.length || controlsDisabled}
+                      onPress={() => setConfirmation({ action: 'remove', tasks: selectedTasks })}
+                    >
+                      {t('files.downloads.batchRemove')}
+                    </Action>
+                  </>
+                ) : null}
+              </div>
+            ) : null}
+            {(['active', 'finished'] as const).map((section) => {
+              if (query.section !== 'all' && query.section !== section) return null;
+              const tasks =
+                page?.items.filter((task) => downloadFinished(task) === (section === 'finished')) ??
+                [];
+              return (
+                <Section
+                  key={section}
+                  title={t(`files.downloads.${section}`)}
+                  appearance="embedded"
+                >
+                  {tasks.length ? (
+                    <ul className="grid gap-3 xl:grid-cols-2">{tasks.map(card)}</ul>
+                  ) : !loading && !failure ? (
+                    <StateSurface
+                      compact
+                      state="empty"
+                      icon={<Download />}
+                      title={t('files.downloads.empty')}
+                      description={t('files.downloads.emptyHint')}
+                    />
+                  ) : null}
+                </Section>
+              );
+            })}
+            <nav
+              aria-label={t('files.downloads.title')}
+              className="mt-6 flex justify-between gap-3"
+            >
+              <Action
+                variant="quiet"
+                disabled={loading || !previous.length}
+                onPress={() => {
+                  const cursor = previous.at(-1) ?? '';
+                  setPrevious((value) => value.slice(0, -1));
+                  setSelected([]);
+                  setLoading(true);
+                  setQuery((value) => ({ ...value, cursor }));
                 }}
               >
-                <div className="min-w-48 flex-1">
-                  <TextField
-                    label={t('files.downloads.search')}
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                  />
-                </div>
-                <div className="w-full sm:w-52">
-                  <SelectField
-                    label={t('files.downloads.statusFilter')}
-                    value={query.state}
-                    options={[
-                      { value: '', label: t('files.downloads.anyStatus') },
-                      ...statusValues.map((state) => ({
-                        value: state,
-                        label: t(`files.downloads.state.${state}`),
-                      })),
-                    ]}
-                    onValueChange={(value) => filter({ state: value as DownloadFilter['state'] })}
-                  />
-                </div>
-                <Action type="submit" variant="secondary">
-                  {t('files.downloads.searchAction')}
-                </Action>
-              </form>
-              <div className="mb-4 flex flex-wrap gap-2">
-                {(['all', 'active', 'finished'] as const).map((section) => (
-                  <Action
-                    key={section}
-                    variant={query.section === section ? 'primary' : 'quiet'}
-                    onPress={() => filter({ section })}
-                  >
-                    {t(`files.downloads.${section}`)}{' '}
-                    {section === 'active'
-                      ? (page?.activeCount ?? 0)
-                      : section === 'finished'
-                        ? (page?.finishedCount ?? 0)
-                        : (page?.totalCount ?? 0)}
-                  </Action>
-                ))}
-              </div>
-              <div
-                role="status"
-                aria-live="polite"
-                className="my-3 break-words text-sm text-ink-muted"
+                {t('files.downloads.previous')}
+              </Action>
+              <Action
+                variant="quiet"
+                disabled={loading || !page?.nextCursor}
+                onPress={() => {
+                  if (!page?.nextCursor) return;
+                  setPrevious((value) => [...value, query.cursor]);
+                  setSelected([]);
+                  setLoading(true);
+                  setQuery((value) => ({ ...value, cursor: page.nextCursor }));
+                }}
               >
-                {notice}
-              </div>
-              {failure ? (
-                <StateSurface
-                  compact
-                  state="error"
-                  icon={<Info />}
-                  title={failure}
-                  description={t('files.downloads.readLatest')}
-                  actionLabel={t('files.downloads.readLatest')}
-                  onAction={refresh}
-                  announcement="urgent"
-                />
-              ) : null}
-              {batchFailures.length ? (
-                <ul role="status" className="my-3 space-y-2 text-sm text-danger">
-                  {batchFailures.map((item) => (
-                    <li key={item.id} className="break-words">
-                      {item.name}: {item.message}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-              {loading ? (
-                <StateSurface
-                  compact
-                  state="loading"
-                  icon={<RefreshCw />}
-                  title={t('files.downloads.loading')}
-                  description={t('files.downloads.subtitle')}
-                  announcement="polite"
-                />
-              ) : null}
-              {page?.items.length ? (
-                <div className="my-4 flex flex-wrap items-center gap-2">
-                  <div className="w-fit">
-                    <CheckboxField
-                      label={t('files.downloads.selectAll')}
-                      checked={page.items.every((task) => selected.includes(task.id))}
-                      disabled={controlsDisabled}
-                      onCheckedChange={(checked) =>
-                        setSelected(checked ? page.items.map((task) => task.id) : [])
-                      }
-                    />
-                  </div>
-                  <span className="text-sm text-ink-muted">
-                    {t('files.downloads.selected', { count: selectedTasks.length })}
-                  </span>
-                  {selectedTasks.length ? (
-                    <>
-                      <Action
-                        size="sm"
-                        variant="quiet"
-                        disabled={!selectedTasks.length || controlsDisabled}
-                        onPress={() => setSelected([])}
-                      >
-                        {t('files.downloads.clearSelection')}
-                      </Action>
-                      <Action
-                        size="sm"
-                        variant="secondary"
-                        disabled={!selectedTasks.length || controlsDisabled}
-                        onPress={() => {
-                          setBusy(true);
-                          void batch(selectedTasks, 'pause')
-                            .catch((error: unknown) => setNotice(errorText(error)))
-                            .finally(() => setBusy(false));
-                        }}
-                      >
-                        {t('files.downloads.batchPause')}
-                      </Action>
-                      <Action
-                        size="sm"
-                        variant="secondary"
-                        disabled={!selectedTasks.length || controlsDisabled || !canDownload}
-                        onPress={() => {
-                          setBusy(true);
-                          void batch(selectedTasks, 'resume')
-                            .catch((error: unknown) => setNotice(errorText(error)))
-                            .finally(() => setBusy(false));
-                        }}
-                      >
-                        {t('files.downloads.batchResume')}
-                      </Action>
-                      <Action
-                        size="sm"
-                        variant="secondary"
-                        disabled={!selectedTasks.length || controlsDisabled}
-                        onPress={() => setConfirmation({ action: 'cancel', tasks: selectedTasks })}
-                      >
-                        {t('files.downloads.batchCancel')}
-                      </Action>
-                      <Action
-                        size="sm"
-                        variant="secondary"
-                        disabled={!selectedTasks.length || controlsDisabled}
-                        onPress={() => setConfirmation({ action: 'remove', tasks: selectedTasks })}
-                      >
-                        {t('files.downloads.batchRemove')}
-                      </Action>
-                    </>
-                  ) : null}
-                </div>
-              ) : null}
-              {(['active', 'finished'] as const).map((section) => {
-                if (query.section !== 'all' && query.section !== section) return null;
-                const tasks =
-                  page?.items.filter(
-                    (task) => downloadFinished(task) === (section === 'finished'),
-                  ) ?? [];
-                return (
-                  <Section
-                    key={section}
-                    title={t(`files.downloads.${section}`)}
-                    appearance="embedded"
-                  >
-                    {tasks.length ? (
-                      <ul className="grid gap-3 xl:grid-cols-2">{tasks.map(card)}</ul>
-                    ) : !loading && !failure ? (
-                      <StateSurface
-                        compact
-                        state="empty"
-                        icon={<Download />}
-                        title={t('files.downloads.empty')}
-                        description={t('files.downloads.emptyHint')}
-                      />
-                    ) : null}
-                  </Section>
-                );
-              })}
-              <nav
-                aria-label={t('files.downloads.title')}
-                className="mt-6 flex justify-between gap-3"
-              >
-                <Action
-                  variant="quiet"
-                  disabled={loading || !previous.length}
-                  onPress={() => {
-                    const cursor = previous.at(-1) ?? '';
-                    setPrevious((value) => value.slice(0, -1));
-                    setSelected([]);
-                    setLoading(true);
-                    setQuery((value) => ({ ...value, cursor }));
-                  }}
-                >
-                  {t('files.downloads.previous')}
-                </Action>
-                <Action
-                  variant="quiet"
-                  disabled={loading || !page?.nextCursor}
-                  onPress={() => {
-                    if (!page?.nextCursor) return;
-                    setPrevious((value) => [...value, query.cursor]);
-                    setSelected([]);
-                    setLoading(true);
-                    setQuery((value) => ({ ...value, cursor: page.nextCursor }));
-                  }}
-                >
-                  {t('files.downloads.next')}
-                </Action>
-              </nav>
-            </section>
+                {t('files.downloads.next')}
+              </Action>
+            </nav>
           </section>
-        </div>
+        </section>
       </Page>
       {creating && page ? (
         <DownloadCreateDialog
@@ -663,32 +597,6 @@ export function DownloadsPage() {
           onClose={() => setCreating(false)}
           onCreated={refresh}
         />
-      ) : null}
-      {navigationOpen ? (
-        <DrawerSurface
-          triggerLabel={t('files.downloads.navigation')}
-          title={t('files.downloads.navigation')}
-          description={t('files.downloads.title')}
-          closeLabel={t('files.downloads.close')}
-          placement="left"
-          composition="navigation"
-          isOpen
-          onOpenChange={setNavigationOpen}
-        >
-          <nav className="flex flex-col gap-2">
-            {nav.map(([destination, label, Icon]) => (
-              <FileLink
-                key={destination}
-                target={destination}
-                onNavigate={() => setNavigationOpen(false)}
-                className={`flex items-center gap-3 rounded-control px-4 py-2.5 text-sm ${destination === 'downloads' ? 'bg-brand-soft font-semibold text-brand' : 'text-ink-muted'}`}
-              >
-                <Icon className="size-4 shrink-0" />
-                {t(label)}
-              </FileLink>
-            ))}
-          </nav>
-        </DrawerSurface>
       ) : null}
       {target ? (
         <DownloadTargetDialog
@@ -819,6 +727,6 @@ export function DownloadsPage() {
           </ul>
         </DialogSurface>
       ) : null}
-    </main>
+    </>
   );
 }

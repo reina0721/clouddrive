@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 
+test.use({ actionTimeout: 15_000 });
+
 test('大文件暂停、跨路由、刷新重选校验、断点接续和原生下载', async ({ page }) => {
   test.setTimeout(180_000);
   const access = JSON.parse(
@@ -39,7 +41,7 @@ test('大文件暂停、跨路由、刷新重选校验、断点接续和原生�
         await route.fulfill({ status: 503, body: 'temporary test outage' });
         return;
       }
-      if (++chunks === 2) await gate;
+      if (++chunks >= 2) await gate;
     }
     await route.continue();
   });
@@ -47,9 +49,16 @@ test('大文件暂停、跨路由、刷新重选校验、断点接续和原生�
     const chooser = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: '新建', exact: true }).click();
     await page.getByRole('menuitem', { name: '上传文件', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: '使用此位置', exact: true }).click();
     await (await chooser).setFiles(source);
     const row = page.locator('[data-transfer-id]').filter({ hasText: name });
     await expect.poll(() => chunks).toBeGreaterThanOrEqual(2);
+    const globalTray = page.getByRole('dialog', { name: '上传队列', exact: true });
+    await expect(globalTray).toBeVisible();
+    await row.getByRole('button', { name: '暂停', exact: true }).click();
+    await expect(row).toContainText('已暂停');
+    await row.getByRole('button', { name: '继续', exact: true }).click();
+    await globalTray.getByRole('button', { name: '关闭', exact: true }).click();
     await page.getByRole('link', { name: '传输中心', exact: true }).first().click();
     await expect(page).toHaveURL(/\/home\/transfers$/);
     await expect(row).toContainText('上传中');
@@ -80,7 +89,11 @@ test('大文件暂停、跨路由、刷新重选校验、断点接续和原生�
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);
     await page.screenshot({ path: 'test-results/files/transfers-mobile.png', fullPage: true });
-    await page.getByRole('link', { name: '我的文件', exact: true }).first().click();
+    await page.getByRole('button', { name: '文件导航', exact: true }).click();
+    await page
+      .getByRole('dialog', { name: '文件导航', exact: true })
+      .getByRole('link', { name: '我的文件', exact: true })
+      .click();
     await page.getByRole('button', { name: name + ' 的操作', exact: true }).click();
     const downloadEvent = page.waitForEvent('download');
     await page.getByRole('menuitem', { name: '下载', exact: true }).click();
@@ -95,6 +108,6 @@ test('大文件暂停、跨路由、刷新重选校验、断点接续和原生�
     expect(errors).toEqual([]);
   } finally {
     release();
-    await page.unroute('**/native/files/transfers/*/data');
+    if (!page.isClosed()) await page.unroute('**/native/files/transfers/*/data');
   }
 });

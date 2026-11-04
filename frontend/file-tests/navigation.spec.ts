@@ -96,7 +96,7 @@ test('分享快捷方式、三类固定、CAS排序、回收恢复与引用移�
   await page
     .getByRole('searchbox', { name: '搜索快捷方式', exact: true })
     .fill(fixtureValue.suffix);
-  await page.getByRole('button', { name: '搜索文件', exact: true }).click();
+  await page.getByRole('main').getByRole('button', { name: '搜索快捷方式', exact: true }).click();
   await page.getByRole('button', { name: '保存分享快捷方式', exact: true }).first().click();
   let dialog = page.getByRole('dialog');
   await dialog
@@ -166,16 +166,16 @@ test('分享快捷方式、三类固定、CAS排序、回收恢复与引用移�
   await confirm(page, '关闭');
   await rowAction(page, renamed, '移入回收站');
   await confirm(page, '确认');
-  await page.getByRole('button', { name: '回收站', exact: true }).click();
+  await page.getByRole('link', { name: '回收站', exact: true }).click();
   await rowAction(page, renamed, '恢复');
   await confirm(page, '确认');
   await page
     .getByRole('navigation', { name: '我的文件', exact: true })
-    .getByRole('button', { name: '我的文件', exact: true })
+    .getByRole('link', { name: '我的文件', exact: true })
     .click();
   await rowAction(page, renamed, '移入回收站');
   await confirm(page, '确认');
-  await page.getByRole('button', { name: '回收站', exact: true }).click();
+  await page.getByRole('link', { name: '回收站', exact: true }).click();
   await rowAction(page, renamed, '永久移除快捷方式');
   await expect(page.getByRole('dialog')).toContainText('不会删除原分享或原文件');
   await confirm(page, '永久移除快捷方式');
@@ -184,7 +184,7 @@ test('分享快捷方式、三类固定、CAS排序、回收恢复与引用移�
   await page
     .getByRole('searchbox', { name: '搜索快捷方式', exact: true })
     .fill(fixtureValue.suffix);
-  await page.getByRole('button', { name: '搜索文件', exact: true }).click();
+  await page.getByRole('button', { name: '搜索快捷方式', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: '副本-' + fixtureValue.suffix, exact: true }),
   ).toBeVisible();
@@ -218,7 +218,7 @@ test('匿名分享保存经过登录返回，密码授权与原分享撤销仍�
   await confirm(page, '保存');
   expect(new URL(page.url()).hash).toBe('');
   await page.getByRole('searchbox', { name: '搜索快捷方式', exact: true }).fill(value.suffix);
-  await page.getByRole('button', { name: '搜索文件', exact: true }).click();
+  await page.getByRole('button', { name: '搜索快捷方式', exact: true }).click();
   const row = page
     .getByRole('listitem')
     .filter({ has: page.getByRole('heading', { name: alias, exact: true }) });
@@ -254,7 +254,7 @@ test('保存引用搜索、当前状态筛选和稳定游标翻页', async ({ pa
     }
     await page.getByRole('link', { name: '与我共享', exact: true }).first().click();
     await page.getByRole('searchbox', { name: '搜索快捷方式', exact: true }).fill(prefix);
-    await page.getByRole('button', { name: '搜索文件', exact: true }).click();
+    await page.getByRole('button', { name: '搜索快捷方式', exact: true }).click();
     await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(20);
     await page.getByRole('button', { name: '下一页', exact: true }).click();
     await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(1);

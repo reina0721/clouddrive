@@ -1,0 +1,15 @@
+schema_version: 1
+change: 131-file-workspace
+areas:
+  - id: repository
+    decision: updated
+    documents: [README.md, docs/repository-scope.md]
+    reason: 更新文件专项240项范围及未完成的全站截图检查、后端解锁边界。
+  - id: webui
+    decision: updated
+    documents: [README.md]
+    reason: 六个文件页面共用导航、创建、搜索与队列入口；启动方式不变。
+  - id: frontend
+    decision: updated
+    documents: [docs/repository-scope.md]
+    reason: 更新统一文件工作区范围；Host边界与单一运行域保持，未引入新框架或依赖。

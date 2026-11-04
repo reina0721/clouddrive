@@ -203,7 +203,13 @@ test('上传新版本复用真实 tus，媒体旧版可预览', async ({ page })
     mimeType: 'image/png',
     buffer: Buffer.from(png, 'base64'),
   });
+  if (!(await page.getByRole('dialog', { name: '上传队列', exact: true }).isVisible()))
+    await page.getByRole('button', { name: /^上传队列/ }).click();
   await expect(page.getByText('上传完成', { exact: true })).toHaveCount(1);
+  await page
+    .getByRole('dialog', { name: '上传队列', exact: true })
+    .getByRole('button', { name: '关闭', exact: true })
+    .click();
   const history = await api(page, '/' + String(f.file.id) + '/versions');
   expect(history.total).toBe(2);
   expect((history.entry as { name: string }).name).toBe(f.file.name);
@@ -313,9 +319,14 @@ test('历史音视频实际解码播放，关闭释放媒体资源', async ({ pa
     await (
       await chooser
     ).setFiles({ name: 'source.' + (kind === 'audio' ? 'wav' : 'webm'), mimeType: mime, buffer });
+    await page.getByRole('button', { name: /^上传队列/ }).click();
     await expect(
       page.locator('[data-transfer-id]').filter({ hasText: String(target.name) }),
     ).toContainText('上传完成');
+    await page
+      .getByRole('dialog', { name: '上传队列', exact: true })
+      .getByRole('button', { name: '关闭', exact: true })
+      .click();
     await api(page, '/' + String(target.id) + '/text', 'PUT', {
       expectedRevision: 2,
       text: 'new current',

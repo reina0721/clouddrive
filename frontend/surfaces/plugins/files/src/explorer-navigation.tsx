@@ -1,15 +1,17 @@
 'use client';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { DrawerSurface } from '@clouddrive/ui-adapter/overlays';
-import { Menu, Cloud } from '../../../src/files/icons';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Cloud, Menu } from '../../../src/files/icons';
 
 export function ExplorerNavigation({
   children,
+  collapsed = false,
   onFocusFiles,
 }: {
-  children: (onNavigate: () => void) => ReactNode;
+  children: (onNavigate: () => void, mobile: boolean) => ReactNode;
+  collapsed?: boolean;
   onFocusFiles: () => void;
 }) {
   const { t } = useFrontendTranslation();
@@ -21,8 +23,13 @@ export function ExplorerNavigation({
   }, [open, onFocusFiles]);
   return (
     <>
-      <aside className="hidden h-screen overflow-y-auto border-r border-border px-4 py-3 md:sticky md:top-0 md:block md:w-60 md:shrink-0">
-        {children(() => {})}
+      <aside
+        className={
+          'hidden h-screen overflow-y-auto border-r border-border py-3 md:sticky md:top-0 md:block md:shrink-0 ' +
+          (collapsed ? 'md:w-20' : 'md:w-60 px-4')
+        }
+      >
+        {children(() => {}, false)}
       </aside>
       <div className="flex items-center gap-3 border-b border-border px-4 py-2 md:hidden">
         <Action size="sm" variant="quiet" onPress={() => setOpen(true)} leadingIcon={<Menu />}>
@@ -42,7 +49,7 @@ export function ExplorerNavigation({
           isOpen
           onOpenChange={setOpen}
         >
-          <div className="px-4 py-3">{children(() => setOpen(false))}</div>
+          <div className="px-4 py-3">{children(() => setOpen(false), true)}</div>
         </DrawerSurface>
       ) : null}
     </>

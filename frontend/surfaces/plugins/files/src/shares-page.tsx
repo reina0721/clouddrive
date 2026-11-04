@@ -1,23 +1,21 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Cloud } from '../../../src/files/icons';
 import { formatDate, useFrontendTranslation } from '@clouddrive/i18n';
-import { Page, PageHeader, Toolbar, Section } from '@clouddrive/surface-foundation/layout';
+import { Page, PageHeader, Section } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
-import { FileLink } from './file-link';
-import { Cloud } from '../../../src/files/icons';
-import { useFiles } from '../../../src/files/runtime';
-import { filesAccentStyle } from '../../../src/files/appearance';
+import { useEffect, useState } from 'react';
 import {
   FilesError,
   type FileShare,
   type ShareListing,
   type ShareQuery,
 } from '../../../src/files/model';
+import { useFiles } from '../../../src/files/runtime';
 import { sharePermissionPreset } from '../../../src/files/sharing';
-import { ShareSettingsDialog, ShareDetailDrawer } from './share-settings-dialog';
+import { ShareDetailDrawer, ShareSettingsDialog } from './share-settings-dialog';
 
 export function MySharesPage() {
   const port = useFiles(),
@@ -70,29 +68,15 @@ export function MySharesPage() {
     return () => controller.abort();
   }, [port, query, revision, t]);
   return (
-    <main
-      id="main-content"
-      data-accent-preview="blue"
-      style={filesAccentStyle}
-      className="min-h-screen bg-canvas p-4 text-ink sm:p-6"
-    >
+    <>
       <Page>
-        <Toolbar
-          label={t('files.myShares')}
-          primary={
-            <FileLink target="files" className="flex items-center gap-3 font-semibold text-brand">
-              <Cloud className="size-7" />
-              {t('files.nav')}
-            </FileLink>
-          }
-          secondary={
+        <PageHeader
+          title={t('files.myShares')}
+          actions={
             <Action variant="secondary" disabled={loading} onPress={refresh}>
               {t('files.refresh')}
             </Action>
           }
-        />
-        <PageHeader
-          title={t('files.myShares')}
           description={t('files.collaboration.managementHint')}
         />
         <Section title={t('files.collaboration.links')} contentInset>
@@ -346,6 +330,6 @@ export function MySharesPage() {
           </DialogSurface>
         ) : null}
       </Page>
-    </main>
+    </>
   );
 }
