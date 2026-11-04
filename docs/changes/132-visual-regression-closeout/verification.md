@@ -23,4 +23,4 @@
 
 真实后端模式的4181注册页通过实际浏览器读取并核对新clouddrive说明；公开注册仍关闭，没有因文案调整开放账号注册。主预览重新验证登录、7类已认证文件读接口、两入口页面和CSRF合计11项就绪检查通过，原有文件数量、逐行SHA256及schema12保持。普通开发库只检查就绪，不冒称普通账号登录。证据`.data/132-runtime-receipt.json`。访问地址、账号、密码及Cookie/CSRF/设置Token位置见ignored的`.data/132-preview-guide.txt`与`.data/preview-access.json`。
 
-提交/推送及最终进程状态在交付步骤再次核验；截图基线包含明确Mock示例，不含真实预览凭据。
+提交`b9f946637d6090746a3bcb2af0ae8ab6ac364e7b`（`fix(web): stabilize visual checks and registration branding`）已推送main并核验远端一致。最终确认4173/4181/8080/8120/9090/9120均监听，两个开发/生产前端为本轮启动；后端源码未变，保留原后端进程。再次执行11项运行及文件摘要检查通过，工作区清洁。截图基线包含明确Mock示例，不含真实预览凭据。
