@@ -28,3 +28,5 @@
 收尾门禁：文档guard及本次手写前端文件格式检查通过；Next16.4.5在dev启动时将Web AGENTS自动生成块标题从一级改为二级，已核对其generate-agent-files.js，与依赖升级一起记录，不修改项目手写约束。
 
 提交检查发现ReportLab PDF被Git当作文本；已仅将本批PDF夹具标记为binary，保留原始字节和xref偏移，不清理PDF内部空格。其余手写/生成代码的cached diff检查通过。
+
+功能提交13428f227cca64a313a68f9c50c26cf99de0bf99（feat(files): add bounded PDF reader and annotation export）已推送main，ls-remote与HEAD一致。交付后再次通过16项运行检查和两个原库摘要，5个已提交夹具与本地字节完全一致；服务持续运行。验收总数为66个不同浏览器场景及669项单测，重复的24例不另计。剩余整个Cloudreve对齐goal继续有效，不宣称所有差距解决。

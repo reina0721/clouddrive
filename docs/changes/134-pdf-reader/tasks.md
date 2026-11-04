@@ -25,7 +25,7 @@
 - [x] F279 临时标注与撤销/重做；依赖F270，成熟编辑器、原文件不变。
 - [x] F280 导出含标注副本；依赖F279，再次解析证明并非原文件字节。
 - [x] V134 集中验证；前置I134及全部20项源接通，之后才生成/测试，记录真实PDF字节、安全、资源、回归、视觉、构建与双重性能结果。
-- [ ] D134 authority同步、完整diff、提交推送与最新服务；前置V134，保留数据、临时凭据和预览地址、远端revision一致且服务持续运行。
+- [x] D134 authority同步、完整diff、提交推送与最新服务；前置V134，保留数据、临时凭据和预览地址、远端revision一致且服务持续运行。
 
 B134证据：.data/134-implementation-baseline.json、.data/134-delivery-baseline.json；revision78b41c6未变，仅本任务文档新增，未命中刷新触发器，原数据一致备份0/120条目/schema12。直接执行确认的I134/F261–F280，不重开全量研究。
 
@@ -34,3 +34,5 @@ B134证据：.data/134-implementation-baseline.json、.data/134-delivery-baselin
 - [x] R134-E SDK真实边界复核；前置集中图像与绘图测试，证据R134-003。
 
 实施/验证证据统一见[verification](verification.md)，原始日志位于ignored .data；F261–F280由11个真实PDF浏览器场景覆盖，20项接通时间先于首次生成/测试。
+
+D134：功能提交13428f227cca64a313a68f9c50c26cf99de0bf99已推送origin/main并逐字核验远端；两套服务保持运行，最终16项运行检查和原0/120条目摘要通过，5个已提交PDF夹具字节与本地一致。凭据/Token仅ignored .data，工作区在功能提交后干净。
