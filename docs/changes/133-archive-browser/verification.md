@@ -32,10 +32,12 @@
 
 实际鉴权写检查还发现ignored预览配置沿用了4180的允许来源。先备份该临时配置，再将唯一来源精确改为当前4181并重启该后端；未增添通配来源，未修改仓库或普通开发配置。随后通过4181前端代理执行真实登录，更新临时会话资料；15项运行检查全部通过，包括四个新operation在已认证/合法CSRF下对不存在源返回404，既有七个文件读取入口与四个前端/CSRF就绪检查。没有向原库上传验收夹具。
 
-原文件条目0/120及schema12、逐行摘要再次一致。最新访问地址、用户名、密码、Cookie、CSRF、首次设置Token位置与检查方法已保存到ignored `.data/133-preview-guide.txt`、`.data/preview-access.json`，指针 `.data/latest-preview.txt` 已更新。服务保持运行。提交与远端复核仍由D133任务关闭。
+原文件条目0/120及schema12、逐行摘要再次一致。最新访问地址、用户名、密码、Cookie、CSRF、首次设置Token位置与检查方法已保存到ignored `.data/133-preview-guide.txt`、`.data/preview-access.json`，指针 `.data/latest-preview.txt` 已更新。服务保持运行。提交与远端复核已由D133任务关闭。
 
-最终审阅补充：7Z临时密码不应复用账号current-password语义，PasswordField增加transient目的（autocomplete=off），认证现有current/new保持原语义；为三个真实7Z浏览器场景增加DOM属性断言，按实际重测结果收口。此补充不新增功能计数。
+最终审阅补充：7Z临时密码不应复用账号current-password语义，PasswordField增加transient目的（autocomplete=off），认证现有current/new保持原语义；为三个真实7Z浏览器场景增加DOM属性断言，已按后文列出的实际重测结果收口。此补充不新增功能计数。
 
 临时密码最终复测：三个真实7Z场景（普通/加密头/加密数据）包含autocomplete=off断言并全部通过（.data/133-transient-browser.log），不重复计入31例。最终主产物为.next/133-final-primary，冻结到.next/validated-133-final；QA为.next/133-final-qa。最终gzip initial347176、最大路由444619、union2184029、CSS49067、最大chunk84704字节，预算全部通过；类型由最终生产构建复核，改动文件lint/format与架构/foundation再测通过。原接口总数的过期115/121断言已改为引用当前API authority，避免并列数字。
 
 协议预算最终复核：响应同时携带清单路径和内容路径，因此按两份JSON最坏转义元数据计算stdout上限；未提高源/展开/成员数或worker内存预算。解析进程与Service定向测试再次通过，Linux最终交叉构建通过；两套后端更新至clouddrive-133-final.exe，15项运行校验及0/120原条目摘要再次通过。
+
+交付闭环：功能提交49ead00（feat(files): add bounded ZIP and 7Z archive workspace）已推送origin/main，远端revision逐项复核一致。主预览4181、开发4173及四个后端/管理端口持续运行；最终15项检查、原0/120条目摘要和schema12一致。D133关闭，后续仅补记这份交付记录。整个goal并未标记完成。
