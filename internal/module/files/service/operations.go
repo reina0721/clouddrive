@@ -301,6 +301,8 @@ func (s *Service) copyTree(entries []model.Entry, id, parent, name, normalized s
 		entry.ID, entry.CreatedAt, entry.UpdatedAt = ids[originalID], now, now
 		entry.UploadKey, entry.TrashedAt = "", nil
 		entry.ContentRevision = 1
+		entry.Annotations = model.CloneAnnotations(entry.Annotations)
+		entry.AnnotationRevision = 0
 		if index == 0 {
 			entry.ParentID, entry.Name, entry.NormalizedName = parent, name, normalized
 		} else {

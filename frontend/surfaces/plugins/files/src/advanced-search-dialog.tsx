@@ -16,6 +16,7 @@ import {
   type FileSizeUnit,
 } from '../../../src/files/search';
 import { FilesError } from '../../../src/files/model';
+import { TagNamesInput } from './annotation-fields';
 
 function SearchTags({
   field,
@@ -102,6 +103,14 @@ export function AdvancedSearchDialog({
   const [keywords, setKeywords] = useState(filters.keywords ?? (search ? [search] : [])),
     [extensions, setExtensions] = useState(filters.extensions ?? []),
     [kinds, setKinds] = useState(filters.kinds ?? []);
+  const [tagNames, setTagNames] = useState(filters.tagFilter?.names ?? []),
+    [allTags, setAllTags] = useState(filters.tagFilter?.match !== 'any');
+  const [propertyEnabled, setPropertyEnabled] = useState(!!filters.property),
+    [propertyKey, setPropertyKey] = useState(filters.property?.key ?? ''),
+    [propertyValue, setPropertyValue] = useState(filters.property?.value ?? ''),
+    [propertyMatch, setPropertyMatch] = useState<NonNullable<FileFilters['property']>['match']>(
+      filters.property?.match ?? 'exists',
+    );
   const [scope, setScope] = useState<FileFilters['scope']>(
       filters.scope ?? (parent ? 'tree' : 'all'),
     ),
@@ -152,6 +161,18 @@ export function AdvancedSearchDialog({
             ...(upperCreated ? { createdTo: upperCreated } : {}),
             ...(lowerModified ? { modifiedFrom: lowerModified } : {}),
             ...(upperModified ? { modifiedTo: upperModified } : {}),
+            ...(tagNames.length
+              ? { tagFilter: { names: tagNames, match: allTags ? 'all' : 'any' } }
+              : {}),
+            ...(propertyEnabled
+              ? {
+                  property: {
+                    key: propertyKey,
+                    match: propertyMatch,
+                    ...(propertyMatch === 'exists' ? {} : { value: propertyValue }),
+                  },
+                }
+              : {}),
           });
           onApply(next);
         } catch (error) {
@@ -192,6 +213,49 @@ export function AdvancedSearchDialog({
           />
         </div>
         <SearchTags field="extensions" value={extensions} onChange={setExtensions} />
+        <section className="space-y-3" aria-label={t('files.annotations.tags')}>
+          <TagNamesInput value={tagNames} onChange={setTagNames} />
+          <CheckboxField
+            label={t('files.annotations.tagAll')}
+            checked={allTags}
+            onCheckedChange={setAllTags}
+          />
+          <p className="text-xs text-ink-muted">{t('files.annotations.tagCaseHint')}</p>
+        </section>
+        <section className="space-y-3" aria-label={t('files.annotations.propertyFilter')}>
+          <CheckboxField
+            label={t('files.annotations.enableProperty')}
+            checked={propertyEnabled}
+            onCheckedChange={setPropertyEnabled}
+          />
+          {propertyEnabled ? (
+            <>
+              <TextField
+                label={t('files.annotations.filterKey')}
+                value={propertyKey}
+                onChange={(event) => setPropertyKey(event.target.value)}
+              />
+              <SelectField
+                label={t('files.annotations.propertyMatch')}
+                value={propertyMatch}
+                options={(['exists', 'equals', 'contains'] as const).map((value) => ({
+                  value,
+                  label: t('files.annotations.' + value),
+                }))}
+                onValueChange={(value) =>
+                  setPropertyMatch(value as NonNullable<FileFilters['property']>['match'])
+                }
+              />
+              {propertyMatch !== 'exists' ? (
+                <TextField
+                  label={t('files.annotations.filterValue')}
+                  value={propertyValue}
+                  onChange={(event) => setPropertyValue(event.target.value)}
+                />
+              ) : null}
+            </>
+          ) : null}
+        </section>
         <fieldset className="space-y-2">
           <legend className="mb-2 text-sm font-semibold">{t('files.discovery.kinds')}</legend>
           {(['file', 'folder', 'shortcut'] as const).map((kind) => (

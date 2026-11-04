@@ -11,6 +11,7 @@ import type { TransfersPort } from './transfers';
 import type { ConnectionsPort } from './connections';
 import type { NavigationPort } from './navigation';
 import type { FilesPort, PublicFilesPort, FileEntry } from './model';
+export { loadFileAnnotationMessages } from './messages';
 
 export type FileMediaProps = Readonly<{
   entry: FileEntry;

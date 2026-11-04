@@ -665,6 +665,8 @@ func (s *Transfers) commit(ctx context.Context, owner, id string, sourceKind mod
 				entry.CreatedAt = original.CreatedAt
 				entry.ContentRevision = original.ContentRevision + 1
 				entry.UploadKey = original.UploadKey
+				entry.Annotations = model.CloneAnnotations(original.Annotations)
+				entry.AnnotationRevision = original.AnnotationRevision
 			}
 			current.State = model.TransferCompleted
 			current.EntryID = entryID

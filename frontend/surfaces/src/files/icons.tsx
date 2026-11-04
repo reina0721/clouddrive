@@ -47,7 +47,24 @@ export function FileGlyph({
   kind,
   mediaType,
   size = 'large',
-}: Readonly<{ kind: string; mediaType: string; size?: 'small' | 'large' }>) {
+  emoji,
+  color,
+}: Readonly<{
+  kind: string;
+  mediaType: string;
+  size?: 'small' | 'large';
+  emoji?: string | undefined;
+  color?: string | undefined;
+}>) {
+  if (emoji)
+    return (
+      <span
+        aria-hidden="true"
+        className={`grid shrink-0 place-items-center overflow-hidden leading-none ${size === 'small' ? 'size-7 text-xl' : 'size-12 text-4xl'}`}
+      >
+        {emoji}
+      </span>
+    );
   const Icon =
     kind === 'folder'
       ? Folder
@@ -67,6 +84,7 @@ export function FileGlyph({
       aria-hidden="true"
       className={`${size === 'small' ? 'size-5' : 'size-12'} ${kind === 'folder' ? 'text-warning' : 'text-brand'}`}
       strokeWidth={1.5}
+      style={kind === 'folder' && color ? { color } : undefined}
     />
   );
 }

@@ -9,7 +9,10 @@ import (
 func (*listInput) Resolve(ctx huma.Context) []error {
 	address := ctx.URL()
 	parameters := address.Query()
-	for _, name := range []string{"keywords", "kinds", "extensions", "scope", "match", "caseSensitive", "minBytes", "maxBytes", "createdFrom", "createdTo", "modifiedFrom", "modifiedTo", "foldersFirst", "page", "pageSize"} {
+	if (parameters.Has("propertyMatch") || parameters.Has("propertyValue")) && !parameters.Has("propertyKey") {
+		return []error{&huma.ErrorDetail{Location: "query.propertyKey", Message: "property key is required"}}
+	}
+	for _, name := range []string{"tags", "tagMatch", "propertyKey", "propertyMatch", "keywords", "kinds", "extensions", "scope", "match", "caseSensitive", "minBytes", "maxBytes", "createdFrom", "createdTo", "modifiedFrom", "modifiedTo", "foldersFirst", "page", "pageSize"} {
 		for _, value := range parameters[name] {
 			if strings.TrimSpace(value) == "" {
 				return []error{&huma.ErrorDetail{Location: "query." + name, Message: "search parameter must not be empty"}}

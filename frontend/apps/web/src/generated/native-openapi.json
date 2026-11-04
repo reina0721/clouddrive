@@ -144,6 +144,250 @@
         ],
         "type": "object"
       },
+      "AnnotationBatchResult": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AnnotationSummary"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "AnnotationDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "annotation": {
+            "$ref": "#/components/schemas/AnnotationDocument"
+          },
+          "breadcrumbs": {
+            "items": {
+              "$ref": "#/components/schemas/Entry"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "entry": {
+            "$ref": "#/components/schemas/Entry"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/AnnotationLimits"
+          },
+          "statistics": {
+            "$ref": "#/components/schemas/EntryStatistics"
+          }
+        },
+        "required": [
+          "entry",
+          "breadcrumbs",
+          "annotation",
+          "limits",
+          "statistics"
+        ],
+        "type": "object"
+      },
+      "AnnotationDocument": {
+        "additionalProperties": false,
+        "properties": {
+          "emoji": {
+            "type": "string"
+          },
+          "folderColor": {
+            "type": "string"
+          },
+          "properties": {
+            "items": {
+              "$ref": "#/components/schemas/Property"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "revision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "updatedAt",
+          "tags",
+          "properties",
+          "emoji",
+          "folderColor"
+        ],
+        "type": "object"
+      },
+      "AnnotationLimits": {
+        "additionalProperties": false,
+        "properties": {
+          "defaultTagColor": {
+            "type": "string"
+          },
+          "maxBatchEntries": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxEmojiRunes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxPathBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxProperties": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxPropertyKeyRunes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxPropertyValueRunes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxTagNameRunes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxTags": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "maxBytes",
+          "maxTags",
+          "maxProperties",
+          "maxBatchEntries",
+          "maxTagNameRunes",
+          "maxPropertyKeyRunes",
+          "maxPropertyValueRunes",
+          "maxEmojiRunes",
+          "defaultTagColor",
+          "maxPathBytes"
+        ],
+        "type": "object"
+      },
+      "AnnotationSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "emoji": {
+            "type": "string"
+          },
+          "entryId": {
+            "type": "string"
+          },
+          "folderColor": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "entryId",
+          "revision",
+          "tags",
+          "emoji",
+          "folderColor"
+        ],
+        "type": "object"
+      },
+      "AnnotationTarget": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "revision"
+        ],
+        "type": "object"
+      },
+      "AnnotationUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "emoji": {
+            "maxLength": 16,
+            "type": "string"
+          },
+          "expectedRevision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "folderColor": {
+            "maxLength": 7,
+            "type": "string"
+          },
+          "properties": {
+            "items": {
+              "$ref": "#/components/schemas/Property"
+            },
+            "maxItems": 8,
+            "nullable": true,
+            "type": "array"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            },
+            "maxItems": 8,
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "tags",
+          "properties",
+          "emoji",
+          "folderColor"
+        ],
+        "type": "object"
+      },
       "ApiTokenBatchRevokeInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -1261,6 +1505,34 @@
         ],
         "type": "object"
       },
+      "EntryStatistics": {
+        "additionalProperties": false,
+        "properties": {
+          "files": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "folders": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "logicalBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "shortcuts": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "files",
+          "folders",
+          "shortcuts",
+          "logicalBytes"
+        ],
+        "type": "object"
+      },
       "ErrorModel": {
         "additionalProperties": false,
         "properties": {
@@ -1494,6 +1766,16 @@
       "Listing": {
         "additionalProperties": false,
         "properties": {
+          "annotationLimits": {
+            "$ref": "#/components/schemas/AnnotationLimits"
+          },
+          "annotationSummaries": {
+            "items": {
+              "$ref": "#/components/schemas/AnnotationSummary"
+            },
+            "nullable": true,
+            "type": "array"
+          },
           "breadcrumbs": {
             "items": {
               "$ref": "#/components/schemas/Entry"
@@ -1601,7 +1883,9 @@
           "maxPageSize",
           "searchTreeEntries",
           "maxKeywords",
-          "maxExtensions"
+          "maxExtensions",
+          "annotationSummaries",
+          "annotationLimits"
         ],
         "type": "object"
       },
@@ -2246,6 +2530,22 @@
         ],
         "type": "object"
       },
+      "Property": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object"
+      },
       "PublicEntry": {
         "additionalProperties": false,
         "properties": {
@@ -2857,6 +3157,58 @@
         },
         "required": [
           "status"
+        ],
+        "type": "object"
+      },
+      "Tag": {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "color"
+        ],
+        "type": "object"
+      },
+      "TagsBatch": {
+        "additionalProperties": false,
+        "properties": {
+          "add": {
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            },
+            "maxItems": 8,
+            "nullable": true,
+            "type": "array"
+          },
+          "remove": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8,
+            "nullable": true,
+            "type": "array"
+          },
+          "targets": {
+            "items": {
+              "$ref": "#/components/schemas/AnnotationTarget"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "targets",
+          "add",
+          "remove"
         ],
         "type": "object"
       },
@@ -4285,6 +4637,62 @@
               "minimum": 0,
               "type": "integer"
             }
+          },
+          {
+            "explode": true,
+            "in": "query",
+            "name": "tags",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 8,
+              "nullable": true,
+              "type": "array"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "tagMatch",
+            "schema": {
+              "enum": [
+                "all",
+                "any"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "propertyKey",
+            "schema": {
+              "maxLength": 64,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "propertyMatch",
+            "schema": {
+              "enum": [
+                "exists",
+                "equals",
+                "contains"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "propertyValue",
+            "schema": {
+              "maxLength": 256,
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -4293,6 +4701,115 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Listing"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/annotations/summaries": {
+      "get": {
+        "operationId": "files.annotations.summaries",
+        "parameters": [
+          {
+            "explode": true,
+            "in": "query",
+            "name": "ids",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 200,
+              "minItems": 1,
+              "nullable": true,
+              "type": "array"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "visibility",
+            "schema": {
+              "default": "active",
+              "enum": [
+                "active",
+                "trash"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationBatchResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/annotations/tags-batch": {
+      "post": {
+        "operationId": "files.annotations.tags-batch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagsBatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationBatchResult"
                 }
               }
             },
@@ -5907,6 +6424,108 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Entry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/{id}/annotations": {
+      "get": {
+        "operationId": "files.annotations.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationDetail"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "put": {
+        "operationId": "files.annotations.replace",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnnotationUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationDocument"
                 }
               }
             },

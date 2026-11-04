@@ -18,6 +18,9 @@ import { TextDialog, type TextRequest } from './text-dialog';
 import { AdvancedSearchDialog } from './advanced-search-dialog';
 import { ActiveFilterChips } from './active-filter-chips';
 import { ViewOptionsDialog } from './view-options-dialog';
+import { AnnotationPanel } from './annotation-panel';
+import { TagsBatchDialog } from './tags-batch-dialog';
+import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
 import { FileItem, FileListHeader, type FileSelectionGesture } from './file-item';
 import { formatFileBytes as bytes } from './file-presentation';
 import { decodeFileFilters, encodeFileFilters, type FileFilters } from '../../../src/files/search';
@@ -134,7 +137,14 @@ export function FilesPage({
   const [destination, setDestination] = useState('');
   const [folders, setFolders] = useState<FileListing>();
   const [dialogFailure, setDialogFailure] = useState('');
-  const [detail, setDetail] = useState<{ entry: FileEntry; path: string }>();
+  const [detail, setDetail] = useState<FileEntry>();
+  const [tagsBatch, setTagsBatch] = useState<{
+    mode: 'add' | 'remove';
+    targets: FileAnnotationSummary[];
+  }>();
+  const [galleryAnnotations, setGalleryAnnotations] = useState<FileAnnotationSummary[]>([]),
+    [galleryAnnotationsLoading, setGalleryAnnotationsLoading] = useState(false),
+    [galleryAnnotationFailure, setGalleryAnnotationFailure] = useState('');
   const [preview, setPreview] = useState<{ entry: FileEntry; text: string; loading: boolean }>();
   const previewController = useRef<AbortController | undefined>(undefined);
   const errorText = useCallback(
@@ -335,16 +345,8 @@ export function FilesPage({
       throw error;
     }
   }
-  async function showDetails(entry: FileEntry) {
-    try {
-      const value = await port.detail(entry.id);
-      setDetail({
-        entry: value.entry,
-        path: `${t('files.nav')}/${value.breadcrumbs.map((item) => item.name).join('/')}`,
-      });
-    } catch (error) {
-      setNotice(errorText(error));
-    }
+  function showDetails(entry: FileEntry) {
+    setDetail(entry);
   }
   const showPreview = useCallback(
     async (entry: FileEntry) => {
@@ -408,6 +410,57 @@ export function FilesPage({
     [parent, category, trash, search, filterKey, preferences.view],
   );
   const visibleIds = useMemo(() => visibleItems.map((entry) => entry.id), [visibleItems]);
+  useEffect(() => {
+    const controller = new AbortController();
+    setGalleryAnnotations([]);
+    setGalleryAnnotationFailure('');
+    if (preferences.view !== 'gallery' || !visibleIds.length) {
+      setGalleryAnnotationsLoading(false);
+      return () => controller.abort();
+    }
+    setGalleryAnnotationsLoading(true);
+    void port.annotations
+      .summaries(visibleIds, trash ? 'trash' : 'active', controller.signal)
+      .then((value) => {
+        if (!controller.signal.aborted) setGalleryAnnotations(value.items);
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) setGalleryAnnotationFailure(errorText(error));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setGalleryAnnotationsLoading(false);
+      });
+    return () => controller.abort();
+  }, [port, preferences.view, trash, visibleIds, revision, errorText]);
+  const annotationMap = useMemo(
+    () =>
+      new Map(
+        (preferences.view === 'gallery'
+          ? galleryAnnotations
+          : (listing?.annotationSummaries ?? [])
+        ).map((value) => [value.entryId, value]),
+      ),
+    [preferences.view, galleryAnnotations, listing],
+  );
+  function openTagsBatch(mode: 'add' | 'remove') {
+    if (!listing || !targets.length) return;
+    if (targets.length > listing.annotationLimits.maxBatchEntries) {
+      setNotice(
+        t('files.annotations.batchLimit', { count: listing.annotationLimits.maxBatchEntries }),
+      );
+      return;
+    }
+    const summaries: FileAnnotationSummary[] = [];
+    for (const entry of targets) {
+      const summary = annotationMap.get(entry.id);
+      if (!summary) {
+        setNotice(t('files.errors.unavailable'));
+        return;
+      }
+      summaries.push(summary);
+    }
+    setTagsBatch({ mode, targets: summaries });
+  }
   const thumbnailIds = useMemo(
     () =>
       new Set(
@@ -415,6 +468,7 @@ export function FilesPage({
           .filter(
             (entry) =>
               entry.kind === 'file' &&
+              !annotationMap.get(entry.id)?.emoji &&
               entry.mediaType.startsWith('image/') &&
               listing &&
               entry.sizeBytes <= listing.maxThumbnailBytes,
@@ -422,7 +476,7 @@ export function FilesPage({
           .slice(0, listing?.maxGalleryEntries ?? 0)
           .map((entry) => entry.id),
       ),
-    [visibleItems, listing],
+    [visibleItems, listing, annotationMap],
   );
   function selectEntry(id: string, gesture: FileSelectionGesture) {
     if (gesture.extend) {
@@ -816,6 +870,16 @@ export function FilesPage({
                 {notice}
               </p>
             ) : null}
+            {galleryAnnotationsLoading ? (
+              <p role="status" className="text-sm text-ink-muted">
+                {t('files.annotations.loading')}
+              </p>
+            ) : null}
+            {galleryAnnotationFailure ? (
+              <p role="alert" className="text-sm text-danger">
+                {galleryAnnotationFailure}
+              </p>
+            ) : null}
             {listing?.items.length ? (
               <div className="flex flex-wrap items-center gap-3">
                 <div className="min-w-32">
@@ -852,6 +916,36 @@ export function FilesPage({
                     <span className="text-sm text-ink-muted">
                       {t('files.selected', { count: targets.length })}
                     </span>
+                    {!trash ? (
+                      <>
+                        <Action
+                          size="sm"
+                          variant="secondary"
+                          disabled={
+                            loading ||
+                            navigating ||
+                            galleryAnnotationsLoading ||
+                            !!galleryAnnotationFailure
+                          }
+                          onPress={() => openTagsBatch('add')}
+                        >
+                          {t('files.annotations.batchAdd')}
+                        </Action>
+                        <Action
+                          size="sm"
+                          variant="secondary"
+                          disabled={
+                            loading ||
+                            navigating ||
+                            galleryAnnotationsLoading ||
+                            !!galleryAnnotationFailure
+                          }
+                          onPress={() => openTagsBatch('remove')}
+                        >
+                          {t('files.annotations.batchRemove')}
+                        </Action>
+                      </>
+                    ) : null}
                     {trash ? (
                       <Action
                         variant="secondary"
@@ -945,6 +1039,15 @@ export function FilesPage({
                     <FileItem
                       key={entry.id}
                       entry={entry}
+                      annotation={annotationMap.get(entry.id)}
+                      onTag={(name) =>
+                        navigate({
+                          filter: encodeFileFilters({
+                            scope: 'all',
+                            tagFilter: { names: [name], match: 'all' },
+                          }),
+                        })
+                      }
                       view={preferences.view}
                       columns={preferences.columns}
                       selected={selected.includes(entry.id)}
@@ -1355,38 +1458,25 @@ export function FilesPage({
         </DialogSurface>
       ) : null}
       {detail ? (
-        <DialogSurface
-          triggerLabel={t('files.details')}
-          title={detail.entry.name}
-          description={t('files.details')}
-          cancelLabel={t('files.close')}
-          isOpen
-          onOpenChange={(open) => {
-            if (!open) setDetail(undefined);
+        <AnnotationPanel
+          key={detail.id}
+          entry={detail}
+          onClose={() => setDetail(undefined)}
+          onSaved={reload}
+        />
+      ) : null}
+      {tagsBatch && listing ? (
+        <TagsBatchDialog
+          mode={tagsBatch.mode}
+          targets={tagsBatch.targets}
+          limits={listing.annotationLimits}
+          onClose={() => setTagsBatch(undefined)}
+          onUpdated={() => {
+            setTagsBatch(undefined);
+            setNotice(t('files.annotations.batchDone'));
+            reload();
           }}
-        >
-          <dl className="grid grid-cols-2 gap-3 text-sm">
-            {[
-              [
-                t('files.type'),
-                detail.entry.kind === 'folder'
-                  ? t('files.folder')
-                  : detail.entry.kind === 'shortcut'
-                    ? t('files.navigation.shortcut')
-                    : detail.entry.mediaType,
-              ],
-              [t('files.size'), `${detail.entry.sizeBytes} B`],
-              [t('files.path'), detail.path],
-              [t('files.created'), new Date(detail.entry.createdAt).toLocaleString()],
-              [t('files.updated'), new Date(detail.entry.updatedAt).toLocaleString()],
-            ].map(([label, value]) => (
-              <div key={label} className="col-span-2">
-                <dt className="text-ink-muted">{label}</dt>
-                <dd className="mt-1 break-words">{value}</dd>
-              </div>
-            ))}
-          </dl>
-        </DialogSurface>
+        />
       ) : null}
       {preview ? (
         <DialogSurface

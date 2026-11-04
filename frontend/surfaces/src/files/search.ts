@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { FilesError, fileKindSchema } from './model';
+import { annotationTagNamesSchema, annotationPropertyFilterSchema } from './annotation-values';
 
 export const fileSearchLimits = {
   keywords: 8,
@@ -56,6 +57,11 @@ export const fileFiltersSchema = z
     createdTo: instant.optional(),
     modifiedFrom: instant.optional(),
     modifiedTo: instant.optional(),
+    tagFilter: z
+      .object({ names: annotationTagNamesSchema, match: z.enum(['all', 'any']) })
+      .strict()
+      .optional(),
+    property: annotationPropertyFilterSchema.optional(),
   })
   .strict()
   .superRefine((filter, ctx) => {
@@ -87,6 +93,8 @@ export const fileFilterKeys = [
   'createdTo',
   'modifiedFrom',
   'modifiedTo',
+  'tagFilter',
+  'property',
 ] as const;
 
 /** decodeFileFilters 对畸形深链接明确失败，不默默改成无限制查询。 */

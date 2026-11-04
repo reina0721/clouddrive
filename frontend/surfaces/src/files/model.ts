@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { annotationSummarySchema, annotationLimitsSchema } from './annotation-values';
+import type { AnnotationsPort } from './annotations';
 import type { FileFilters } from './search';
 import type { FileViewPreferences } from './view-options';
 export type { FileViewPreferences } from './view-options';
@@ -62,6 +64,8 @@ export const fileListingSchema = z.object({
   searchTreeEntries: z.number().int().positive(),
   maxKeywords: z.number().int().positive(),
   maxExtensions: z.number().int().positive(),
+  annotationSummaries: z.array(annotationSummarySchema),
+  annotationLimits: annotationLimitsSchema,
 });
 export type FileListing = z.infer<typeof fileListingSchema>;
 export const fileDetailSchema = z.object({
@@ -107,6 +111,7 @@ export type FileShortcut =
 export type FilesDestination =
   'files' | 'shares' | 'shared' | 'transfers' | 'connections' | 'workspace' | 'account';
 export type FilesPort = Readonly<{
+  annotations: AnnotationsPort;
   navigate(destination: FilesDestination): void;
   destinationHref(destination: FilesDestination): string;
   openFolder(parentId: string): void;

@@ -40,11 +40,7 @@ func (r *Connections) entries(db *gorm.DB, owner string) ([]model.Entry, error) 
 	if len(records) > r.treeLimit {
 		return nil, model.ErrTooLarge
 	}
-	entries := make([]model.Entry, len(records))
-	for index, record := range records {
-		entries[index] = model.Entry(record)
-	}
-	return entries, nil
+	return entryModels(records)
 }
 
 func (r *Connections) ReadConnection(ctx context.Context, id string) (model.Connection, error) {

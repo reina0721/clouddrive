@@ -48,11 +48,7 @@ func loadBoundedEntries(db *gorm.DB, owner string, limit int) ([]model.Entry, er
 	if len(records) > limit {
 		return nil, model.ErrTooLarge
 	}
-	entries := make([]model.Entry, len(records))
-	for index, record := range records {
-		entries[index] = model.Entry(record)
-	}
-	return entries, nil
+	return entryModels(records)
 }
 func readNavigationRevision(db *gorm.DB, owner string) (int64, error) {
 	var state navigationState

@@ -1,0 +1,41 @@
+schema_version: 1
+id: R126-001
+title: 文件标签、私有属性和个性化边界
+question: 如何补齐参考站的标签/元数据检索及图标个性化，并保证复制、覆盖、回收、权限和本地数据不丢失？
+research_type: current-project
+topics: [file-tags, custom-properties, annotation-cas, bounded-file-snapshot]
+keywords: [标签, 属性, Emoji, 目录颜色, 原子批量修改]
+applicable_scenarios: [自有文件目录项, 私有检索, 同账号副本和回收恢复]
+non_applicable_scenarios: [媒体提取索引, 公共注解协作, 跨站元数据兼容, 属性管理平台]
+status: active
+summary: 保留标准JSON与现有GORM租约，模型拥有有界类型化注解；具体持久记录隔离JSON字符串，新增v9且不改v1–v8。
+evidence:
+  types: [source-code, browser-observation, official-documentation]
+  primary_sources:
+    - title: 当前项目快照
+      locator: internal/module/files/repo/repository.go
+      snapshot: e6821bfd7f0a872479911f988111abd2096a2696；工作树干净
+    - title: 参考站实际高级搜索
+      locator: report.md
+      snapshot: 2026-11-04只读打开标签、元数据条件，取消草稿；未创建参考文件
+    - title: Cloudreve官方元数据语义
+      locator: https://docs.cloudreve.org/zh/api/metadata
+      snapshot: 2026-11-04；tag、customize、props命名空间和字符串值
+    - title: Cloudreve官方内置搜索边界
+      locator: https://docs.cloudreve.org/zh/usage/search/
+      snapshot: 2026-11-04；内置属性搜索与外部全文索引的区别
+    - title: 现有成熟存储及序列化
+      locator: report.md
+      snapshot: Go1.26.10 encoding/json、GORM1.31.2、Huma2.39.1及既有SQLite事务装配
+researched_at: '2026-11-04'
+verified_at: '2026-11-04'
+validity:
+  mode: snapshot
+  review_after: '2026-12-04'
+  refresh_triggers: [条目存储或复制契约变化, 扫描超过账号树预算, 要求公共属性或标签目录服务, 新媒体提取或全文服务, 多机注解协作]
+relations:
+  extends: [R125-001]
+  related: [R124-001, R123-001]
+  supersedes: []
+  superseded_by: []
+report: report.md

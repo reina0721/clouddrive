@@ -69,29 +69,34 @@ type Query struct {
 	FoldersFirst  bool
 	Page          int
 	PageSize      int
+	Tags          []string
+	TagMatch      KeywordMatch
+	Property      *AnnotationPropertyFilter
 }
 
 type Listing struct {
-	Items             []model.Entry `json:"items"`
-	Breadcrumbs       []model.Entry `json:"breadcrumbs"`
-	UsedBytes         int64         `json:"usedBytes"`
-	QuotaBytes        int64         `json:"quotaBytes"`
-	MaxFileBytes      int64         `json:"maxFileBytes"`
-	ConcurrentUploads int           `json:"concurrentUploads"`
-	MaxTextBytes      int64         `json:"maxTextBytes"`
-	MaxArchiveBytes   int64         `json:"maxArchiveBytes"`
-	MaxBatchEntries   int           `json:"maxBatchEntries"`
-	MaxThumbnailBytes int64         `json:"maxThumbnailBytes"`
-	MaxMediaBytes     int64         `json:"maxMediaBytes"`
-	MaxGalleryEntries int           `json:"maxGalleryEntries"`
-	Total             int           `json:"total"`
-	Page              int           `json:"page"`
-	PageSize          int           `json:"pageSize"`
-	DefaultPageSize   int           `json:"defaultPageSize"`
-	MaxPageSize       int           `json:"maxPageSize"`
-	SearchTreeEntries int           `json:"searchTreeEntries"`
-	MaxKeywords       int           `json:"maxKeywords"`
-	MaxExtensions     int           `json:"maxExtensions"`
+	Items               []model.Entry       `json:"items"`
+	Breadcrumbs         []model.Entry       `json:"breadcrumbs"`
+	UsedBytes           int64               `json:"usedBytes"`
+	QuotaBytes          int64               `json:"quotaBytes"`
+	MaxFileBytes        int64               `json:"maxFileBytes"`
+	ConcurrentUploads   int                 `json:"concurrentUploads"`
+	MaxTextBytes        int64               `json:"maxTextBytes"`
+	MaxArchiveBytes     int64               `json:"maxArchiveBytes"`
+	MaxBatchEntries     int                 `json:"maxBatchEntries"`
+	MaxThumbnailBytes   int64               `json:"maxThumbnailBytes"`
+	MaxMediaBytes       int64               `json:"maxMediaBytes"`
+	MaxGalleryEntries   int                 `json:"maxGalleryEntries"`
+	Total               int                 `json:"total"`
+	Page                int                 `json:"page"`
+	PageSize            int                 `json:"pageSize"`
+	DefaultPageSize     int                 `json:"defaultPageSize"`
+	MaxPageSize         int                 `json:"maxPageSize"`
+	SearchTreeEntries   int                 `json:"searchTreeEntries"`
+	MaxKeywords         int                 `json:"maxKeywords"`
+	MaxExtensions       int                 `json:"maxExtensions"`
+	AnnotationSummaries []AnnotationSummary `json:"annotationSummaries"`
+	AnnotationLimits    AnnotationLimits    `json:"annotationLimits"`
 }
 
 func validSearchText(value string) bool {
@@ -106,6 +111,11 @@ func validSearchText(value string) bool {
 	return true
 }
 func (s *Service) prepareQuery(q Query) (Query, error) {
+	var annotationError error
+	q, annotationError = s.prepareAnnotationQuery(q)
+	if annotationError != nil {
+		return Query{}, annotationError
+	}
 	if !validSearchText(q.Search) || len(q.Keywords) > MaxQueryKeywords || len(q.Extensions) > MaxQueryExtensions || len(q.Kinds) > 3 {
 		return Query{}, model.ErrInvalid
 	}
@@ -126,7 +136,7 @@ func (s *Service) prepareQuery(q Query) (Query, error) {
 	}
 	if q.Scope == ScopeAutomatic {
 		q.Scope = ScopeFolder
-		if q.Search != "" || len(q.Keywords) > 0 || q.Category != "" || q.Trash {
+		if q.Search != "" || len(q.Keywords) > 0 || q.Category != "" || q.Trash || len(q.Tags) > 0 || q.Property != nil {
 			q.Scope = ScopeAll
 		}
 	}
@@ -269,6 +279,9 @@ func (t *queryTree) walk(ctx context.Context, id string, mode queryWalkMode) (bo
 }
 
 func (s *Service) matchesQuery(entry model.Entry, q Query) bool {
+	if !s.matchesAnnotationQuery(entry.Annotations, q) {
+		return false
+	}
 	name := s.names.Normalize(entry.Name)
 	if !q.CaseSensitive {
 		name = strings.ToLower(name)
@@ -360,6 +373,8 @@ func (s *Service) List(ctx context.Context, owner string, input Query) (Listing,
 		return Listing{}, err
 	}
 	result := Listing{Items: []model.Entry{}, Breadcrumbs: []model.Entry{}, UsedBytes: model.Used(entries), QuotaBytes: s.policy.QuotaBytes, MaxFileBytes: s.policy.MaxFileBytes, ConcurrentUploads: s.policy.ConcurrentUploads, MaxTextBytes: s.policy.MaxTextBytes, MaxArchiveBytes: s.policy.MaxArchiveBytes, MaxBatchEntries: s.policy.MaxBatchEntries, MaxThumbnailBytes: s.policy.MaxThumbnailBytes, MaxMediaBytes: s.policy.MaxMediaBytes, MaxGalleryEntries: s.policy.MaxGalleryEntries, DefaultPageSize: DefaultListPageSize, MaxPageSize: MaxListPageSize, SearchTreeEntries: s.policy.SearchTreeEntries, MaxKeywords: MaxQueryKeywords, MaxExtensions: MaxQueryExtensions}
+	result.AnnotationSummaries = []AnnotationSummary{}
+	result.AnnotationLimits = s.annotationLimits()
 	if q.ParentID != "" {
 		parent, exists := tree.entries[q.ParentID]
 		if !exists || parent.Kind != model.Folder {
@@ -468,6 +483,11 @@ func (s *Service) List(ctx context.Context, owner string, input Query) (Listing,
 			result.Items = []model.Entry{}
 		} else {
 			result.Items = result.Items[start:min(start+q.PageSize, result.Total)]
+		}
+	}
+	if q.PageSize > 0 {
+		for _, entry := range result.Items {
+			result.AnnotationSummaries = append(result.AnnotationSummaries, annotationSummary(entry))
 		}
 	}
 	return result, nil

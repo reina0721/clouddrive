@@ -32,23 +32,28 @@ const (
 )
 
 type Policy struct {
-	MaxFileBytes      int64
-	QuotaBytes        int64
-	ConcurrentUploads int
-	MaxTextBytes      int64
-	MaxArchiveBytes   int64
-	MaxBatchEntries   int
-	MaxThumbnailBytes int64
-	MaxMediaBytes     int64
-	MaxGalleryEntries int
-	SearchTreeEntries int
-	ShortcutLimit     int
+	MaxFileBytes           int64
+	QuotaBytes             int64
+	ConcurrentUploads      int
+	MaxTextBytes           int64
+	MaxArchiveBytes        int64
+	MaxBatchEntries        int
+	MaxThumbnailBytes      int64
+	MaxMediaBytes          int64
+	MaxGalleryEntries      int
+	SearchTreeEntries      int
+	ShortcutLimit          int
+	AnnotationMaxBytes     int
+	AnnotationBatchEntries int
 }
 
 func DefaultPolicy() Policy {
-	return Policy{MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries, ShortcutLimit: DefaultShortcutLimit, SearchTreeEntries: DefaultSearchTreeEntries}
+	return Policy{MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries, ShortcutLimit: DefaultShortcutLimit, SearchTreeEntries: DefaultSearchTreeEntries, AnnotationMaxBytes: model.MaxAnnotationBytes, AnnotationBatchEntries: DefaultAnnotationBatchEntries}
 }
 func (p Policy) Validate() error {
+	if p.AnnotationMaxBytes < 1 || p.AnnotationMaxBytes > model.MaxAnnotationBytes || p.AnnotationBatchEntries < 1 || p.AnnotationBatchEntries > DefaultAnnotationBatchEntries {
+		return fmt.Errorf("invalid file annotation budgets")
+	}
 	if p.SearchTreeEntries < 1 || p.SearchTreeEntries > DefaultSearchTreeEntries {
 		return fmt.Errorf("invalid file search tree limit")
 	}
@@ -72,6 +77,7 @@ type Repository interface {
 	ReadBounded(context.Context, string, int) ([]model.Entry, error)
 	Change(context.Context, string, func([]model.Entry) (model.Entry, error)) (model.Entry, error)
 	ChangeMany(context.Context, string, func([]model.Entry) ([]model.Entry, error)) ([]model.Entry, error)
+	ChangeManyBounded(context.Context, string, int, func([]model.Entry) ([]model.Entry, error)) ([]model.Entry, error)
 	RecordCleanup(context.Context, string, string) error
 }
 type Content interface {

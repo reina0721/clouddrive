@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/reina0721/clouddrive/internal/module/files/model"
+	"github.com/reina0721/clouddrive/internal/module/files/service"
 	"github.com/reina0721/clouddrive/pkg/database"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -22,20 +23,12 @@ type Repository struct {
 
 const primaryStorageID = "primary"
 
-type entryRecord model.Entry
-
-func (entryRecord) TableName() string { return "files_entries" }
-
 func loadEntries(db *gorm.DB, owner string) ([]model.Entry, error) {
 	records := []entryRecord{}
 	if err := db.Where("owner_id = ?", owner).Find(&records).Error; err != nil {
 		return nil, err
 	}
-	entries := make([]model.Entry, len(records))
-	for index, record := range records {
-		entries[index] = model.Entry(record)
-	}
-	return entries, nil
+	return entryModels(records)
 }
 
 func (r *Repository) checkStorage(db *gorm.DB) error {
@@ -159,13 +152,25 @@ func (r *Repository) Change(ctx context.Context, owner string, change func([]mod
 
 // ChangeMany 在同一存储和 owner 锁内保存整个变化集合，任何一项失败都会回滚。
 func (r *Repository) ChangeMany(ctx context.Context, owner string, change func([]model.Entry) ([]model.Entry, error)) ([]model.Entry, error) {
+	return r.changeMany(ctx, owner, loadEntries, change)
+}
+
+// ChangeManyBounded 在同一owner事务内拒绝截断快照，避免新注解写入绕过树预算。
+func (r *Repository) ChangeManyBounded(ctx context.Context, owner string, limit int, change func([]model.Entry) ([]model.Entry, error)) ([]model.Entry, error) {
+	if limit < 1 || limit > service.DefaultSearchTreeEntries {
+		return nil, model.ErrInvalid
+	}
+	return r.changeMany(ctx, owner, func(db *gorm.DB, owner string) ([]model.Entry, error) { return loadBoundedEntries(db, owner, limit) }, change)
+}
+
+func (r *Repository) changeMany(ctx context.Context, owner string, load func(*gorm.DB, string) ([]model.Entry, error), change func([]model.Entry) ([]model.Entry, error)) ([]model.Entry, error) {
 	var result []model.Entry
 	err := r.access.WithinTx(ctx, func(ctx context.Context, _ database.Client, tx database.Tx) error {
 		return database.UseGORMTx(ctx, tx, func(db *gorm.DB) error {
 			if err := r.lockOwner(db, owner); err != nil {
 				return err
 			}
-			entries, err := loadEntries(db, owner)
+			entries, err := load(db, owner)
 			if err != nil {
 				return err
 			}
@@ -191,7 +196,10 @@ func saveEntryChanges(db *gorm.DB, owner string, entries, changed []model.Entry)
 			return fmt.Errorf("files mutation identity invariant")
 		}
 		seen[entry.ID] = true
-		record := entryRecord(entry)
+		record, err := entryRecordFromModel(entry)
+		if err != nil {
+			return err
+		}
 		if _, exists := model.Find(entries, entry.ID); exists {
 			if err := db.Model(&entryRecord{}).Where("id = ? AND owner_id = ?", entry.ID, owner).Select("*").Updates(&record).Error; err != nil {
 				return err

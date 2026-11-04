@@ -5,3 +5,5 @@ export * from './navigation';
 export * from './search';
 export * from './view-options';
 export * from './selection';
+export * from './annotation-values';
+export * from './annotations';

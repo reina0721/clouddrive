@@ -286,7 +286,10 @@ func (r *Transfers) ChangeTransfer(ctx context.Context, owner, id, key string, c
 				if entry.OwnerID != owner || entry.ID == "" || changed.EntryID != entry.ID || changed.State != model.TransferCompleted {
 					return fmt.Errorf("transfer publication invariant")
 				}
-				record := entryRecord(*entry)
+				record, err := entryRecordFromModel(*entry)
+				if err != nil {
+					return err
+				}
 				if _, exists := model.Find(entries, entry.ID); exists {
 					if changed.Source != model.TransferSourceWebDAV || changed.ExpectedEntryID != entry.ID {
 						return model.ErrConflict

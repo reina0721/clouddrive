@@ -25,6 +25,68 @@ export function ActiveFilterChips({
       className="flex flex-wrap items-center gap-2"
     >
       {fileFilterKeys.flatMap((key) => {
+        if (key === 'tagFilter') {
+          const group = filters.tagFilter;
+          return group
+            ? group.names.map((name, index) => (
+                <Action
+                  key={'tag-' + index}
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => {
+                    const next = { ...filters },
+                      names = group.names.filter((_, position) => position !== index);
+                    if (names.length) next.tagFilter = { ...group, names };
+                    else delete next.tagFilter;
+                    onChange(next);
+                  }}
+                >
+                  <span className="block max-w-44 truncate" title={name}>
+                    {t('files.discovery.remove', {
+                      value:
+                        t('files.annotations.tags') +
+                        ': ' +
+                        name +
+                        ' (' +
+                        t(
+                          group.match === 'all'
+                            ? 'files.annotations.tagAll'
+                            : 'files.annotations.tagAny',
+                        ) +
+                        ')',
+                    })}
+                  </span>
+                </Action>
+              ))
+            : [];
+        }
+        if (key === 'property') {
+          const property = filters.property;
+          if (!property) return [];
+          const label =
+            t('files.annotations.properties') +
+            ': ' +
+            property.key +
+            ' ' +
+            t('files.annotations.' + property.match) +
+            (property.match === 'exists' ? '' : ' ' + (property.value ?? ''));
+          return [
+            <Action
+              key="property"
+              size="sm"
+              variant="secondary"
+              onPress={() => {
+                const next = { ...filters };
+                delete next.property;
+                onChange(next);
+              }}
+            >
+              <span className="block max-w-44 truncate" title={label}>
+                {t('files.discovery.remove', { value: label })}
+              </span>
+            </Action>,
+          ];
+        }
         const field = filters[key];
         if (field === undefined) return [];
         const values = Array.isArray(field) ? field : [field];

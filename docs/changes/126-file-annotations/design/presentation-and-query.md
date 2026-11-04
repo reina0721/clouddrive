@@ -1,0 +1,13 @@
+# 界面与查询
+
+Surface公开AnnotationValues、Summary、Limits、Detail和AnnotationsPort窄契约；FilesPort显式拥有该注解能力，Host复用既有call/CSRF/owner guard和剪贴板。无第二客户端、Session、Provider或共享全局状态。基础值schema独立于Entry，避免model、query、annotation的运行时循环依赖。
+
+私有List仅对普通分页附加每条id/revision/标签/Emoji/颜色摘要，最多200条；非分页结果不附全量注解，避免把一万条完整属性送进界面。画廊通过批量摘要窄接口只读当前屏ID，同样支持显示及批量整理；读取失败明确提示，不能把未知注解当为空。核心Entry JSON保持私有字段隐藏。FileItem消费摘要，在网格/列表显示标签和个性化；Emoji优先于缩略图，颜色是验证过的用户RGB值，只影响局部图标/小圆点，文字沿现有语义Token。标签点击明确清除旧条件，查全部自有文件。
+
+新增文案通过Surface现有runtime公共入口异步提供，Host在既有FilesRuntime动态装配前登记资源，不扩大登录首屏。基于125的最大路由预算余量很小这一证据进行接线，不提高性能阈值，也不让Surface导入Host。
+
+原属性Dialog替换为现有DrawerSurface承载的属性面板，显示真实类型、时间、名称、位置及目录有效后代统计；标签/属性和个性化编辑使用原TextField/SelectField/Action，明确保存与清除。关闭丢弃未提交草稿，写失败保留草稿；CAS冲突不更新expectedRevision自动重试，提供显式放弃草稿重新读取。加载/卸载取消当前读取；写入有pending边界，不重复提交。剪贴板失败通过Host映射受控错误，不能宣称复制成功。
+
+新增多选添加/移除标签Dialog，目标版本来自当前分页摘要，不在后台自动更新版本。大于100项明确提示，不能悄悄只写前100项。回收站不提供写动作。使用原i18n/滚动弹窗/键盘隔离，短屏与窄屏可操作。
+
+FileFilters扩展嵌套tagFilter(names/match)及property(key/match/value)，避免条件残留时的隐式关系。Host序列化为重复tags、tagMatch、propertyKey/Match/Value，逗号原样保留。PropertyMatch为exists/equals/contains，空字符串可以精确匹配而不代表缺失。Service在原有有界树过滤中按NFC与现有caseSensitive执行属性比较，标签名忽略大小写；条件全部AND组合，标签内all/any。URL沿现有4096编码字节预算；chips支持逐标签移除、整属性条件移除和全部清空，最后标签移除时一并删除其match。

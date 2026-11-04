@@ -22,6 +22,15 @@ type memoryRepository struct {
 
 func (r *memoryRepository) RecordCleanup(context.Context, string, string) error { return nil }
 
+func (r *memoryRepository) ChangeManyBounded(ctx context.Context, owner string, limit int, change func([]model.Entry) ([]model.Entry, error)) ([]model.Entry, error) {
+	return r.ChangeMany(ctx, owner, func(entries []model.Entry) ([]model.Entry, error) {
+		if len(entries) > limit {
+			return nil, model.ErrTooLarge
+		}
+		return change(entries)
+	})
+}
+
 func (r *memoryRepository) ReadBounded(ctx context.Context, owner string, limit int) ([]model.Entry, error) {
 	entries, err := r.Read(ctx, owner)
 	if err != nil {

@@ -24,6 +24,7 @@ type Config struct {
 	Connections       ConnectionConfig `mapstructure:"connections"`
 	Navigation        NavigationConfig `mapstructure:"navigation"`
 	Search            SearchConfig     `mapstructure:"search"`
+	Annotations       AnnotationConfig `mapstructure:"annotations"`
 }
 
 type ShareConfig struct {
@@ -42,7 +43,7 @@ func (c Config) SharePolicy() service.SharePolicy {
 }
 
 func (c Config) Policy() service.Policy {
-	return service.Policy{MaxFileBytes: c.MaxFileBytes, QuotaBytes: c.QuotaBytes, ConcurrentUploads: c.ConcurrentUploads, MaxTextBytes: c.MaxTextBytes, MaxArchiveBytes: c.MaxArchiveBytes, MaxBatchEntries: c.MaxBatchEntries, MaxThumbnailBytes: c.MaxThumbnailBytes, MaxMediaBytes: c.MaxMediaBytes, MaxGalleryEntries: c.MaxGalleryEntries, ShortcutLimit: c.Navigation.ShortcutLimit, SearchTreeEntries: c.Search.TreeEntries}
+	return service.Policy{MaxFileBytes: c.MaxFileBytes, QuotaBytes: c.QuotaBytes, ConcurrentUploads: c.ConcurrentUploads, MaxTextBytes: c.MaxTextBytes, MaxArchiveBytes: c.MaxArchiveBytes, MaxBatchEntries: c.MaxBatchEntries, MaxThumbnailBytes: c.MaxThumbnailBytes, MaxMediaBytes: c.MaxMediaBytes, MaxGalleryEntries: c.MaxGalleryEntries, ShortcutLimit: c.Navigation.ShortcutLimit, SearchTreeEntries: c.Search.TreeEntries, AnnotationMaxBytes: c.Annotations.MaxBytes, AnnotationBatchEntries: c.Annotations.BatchEntries}
 }
 func Decode(snapshot config.Snapshot) (Config, error) {
 	p := service.DefaultPolicy()
@@ -53,6 +54,7 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 	c.Connections = defaultConnections()
 	c.Navigation = defaultNavigation()
 	c.Search = SearchConfig{TreeEntries: service.DefaultSearchTreeEntries}
+	c.Annotations = AnnotationConfig{MaxBytes: p.AnnotationMaxBytes, BatchEntries: p.AnnotationBatchEntries}
 	if err := snapshot.DecodeSection("files", &c); err != nil {
 		return Config{}, err
 	}
@@ -141,5 +143,10 @@ func (defaults) Defaults(ctx context.Context) (config.Object, config.Control, er
 		return nil, config.Continue, err
 	}
 	fields = append(fields, config.FieldOf("search", config.ObjectValue(search)))
+	annotations, err := annotationDefaults(ctx)
+	if err != nil {
+		return nil, config.Continue, err
+	}
+	fields = append(fields, config.FieldOf("annotations", config.ObjectValue(annotations)))
 	return fields, config.Continue, nil
 }

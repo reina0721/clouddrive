@@ -14,6 +14,10 @@ const (
 	OperationAuthAuditRead                  OperationID = "auth.audit.read"
 	OperationCompleteTodo                   OperationID = "completeTodo"
 	OperationCreateTodo                     OperationID = "createTodo"
+	OperationFilesAnnotationsRead           OperationID = "files.annotations.read"
+	OperationFilesAnnotationsReplace        OperationID = "files.annotations.replace"
+	OperationFilesAnnotationsSummaries      OperationID = "files.annotations.summaries"
+	OperationFilesAnnotationsTagsBatch      OperationID = "files.annotations.tags-batch"
 	OperationFilesArchive                   OperationID = "files.archive"
 	OperationFilesConnectionsCreate         OperationID = "files.connections.create"
 	OperationFilesConnectionsList           OperationID = "files.connections.list"
@@ -128,6 +132,10 @@ var operationInventory = [...]Operation{
 	{ID: OperationAuthAuditRead, Method: "GET", Path: "/api/v1/auth/audit/{eventId}", Policy: "protected", Scope: "auth:audit:read", Action: "read"},
 	{ID: OperationCompleteTodo, Method: "PATCH", Path: "/api/v1/todos/{id}/complete", Policy: "protected", Scope: "todos:write", Action: "todo.complete"},
 	{ID: OperationCreateTodo, Method: "POST", Path: "/api/v1/todos", Policy: "protected", Scope: "todos:write", Action: "todo.create"},
+	{ID: OperationFilesAnnotationsRead, Method: "GET", Path: "/api/v1/files/{id}/annotations", Policy: "protected", Scope: "files:read", Action: "files.annotations.read"},
+	{ID: OperationFilesAnnotationsReplace, Method: "PUT", Path: "/api/v1/files/{id}/annotations", Policy: "protected", Scope: "files:write", Action: "files.annotations.replace"},
+	{ID: OperationFilesAnnotationsSummaries, Method: "GET", Path: "/api/v1/files/annotations/summaries", Policy: "protected", Scope: "files:read", Action: "files.annotations.summaries"},
+	{ID: OperationFilesAnnotationsTagsBatch, Method: "POST", Path: "/api/v1/files/annotations/tags-batch", Policy: "protected", Scope: "files:write", Action: "files.annotations.tags-batch"},
 	{ID: OperationFilesArchive, Method: "POST", Path: "/api/v1/files/archive", Policy: "protected", Scope: "files:read", Action: "files.archive"},
 	{ID: OperationFilesConnectionsCreate, Method: "POST", Path: "/api/v1/files/connections", Policy: "protected", Scope: "files:write", Action: "files.connections.create"},
 	{ID: OperationFilesConnectionsList, Method: "GET", Path: "/api/v1/files/connections", Policy: "protected", Scope: "files:read", Action: "files.connections.list"},

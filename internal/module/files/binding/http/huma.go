@@ -38,6 +38,11 @@ type listInput struct {
 	FoldersFirst  bool                            `query:"foldersFirst"`
 	Page          int                             `query:"page" default:"1" minimum:"1" maximum:"10000"`
 	PageSize      int                             `query:"pageSize" minimum:"0" maximum:"200"`
+	Tags          []string                        `query:"tags,explode" maxItems:"8"`
+	TagMatch      service.KeywordMatch            `query:"tagMatch" enum:"all,any"`
+	PropertyKey   string                          `query:"propertyKey" maxLength:"64"`
+	PropertyMatch service.PropertyMatch           `query:"propertyMatch" enum:"exists,equals,contains"`
+	PropertyValue string                          `query:"propertyValue" maxLength:"256"`
 }
 type listOutput struct{ Body service.Listing }
 type entryOutput struct{ Body model.Entry }
@@ -101,6 +106,7 @@ func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 	registerTransfers(api, h, operation)
 	registerConnections(api, h, operation)
 	registerNavigation(api, h, operation)
+	registerAnnotations(api, h, operation)
 	huma.Register(api, operation("files.list", "GET", "", "files:read", false), func(ctx context.Context, input *listInput) (*listOutput, error) {
 		owner, err := h.Owner(ctx)
 		if err != nil {
@@ -110,7 +116,11 @@ func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 		for index, kind := range input.Kinds {
 			kinds[index] = model.Kind(kind)
 		}
-		result, err := h.Service.List(ctx, owner, service.Query{ParentID: input.Parent, Search: input.Search, Category: input.Category, Trash: input.Trash, Sort: input.Sort, Desc: input.Desc, Scope: input.Scope, Keywords: input.Keywords, CaseSensitive: input.CaseSensitive, Match: input.Match, Kinds: kinds, Extensions: input.Extensions, MinBytes: input.MinBytes.Pointer(), MaxBytes: input.MaxBytes.Pointer(), CreatedFrom: input.CreatedFrom.Pointer(), CreatedTo: input.CreatedTo.Pointer(), ModifiedFrom: input.ModifiedFrom.Pointer(), ModifiedTo: input.ModifiedTo.Pointer(), FoldersFirst: input.FoldersFirst, Page: input.Page, PageSize: input.PageSize})
+		var property *service.AnnotationPropertyFilter
+		if input.PropertyKey != "" || input.PropertyMatch != "" || input.PropertyValue != "" {
+			property = &service.AnnotationPropertyFilter{Key: input.PropertyKey, Match: input.PropertyMatch, Value: input.PropertyValue}
+		}
+		result, err := h.Service.List(ctx, owner, service.Query{ParentID: input.Parent, Search: input.Search, Category: input.Category, Trash: input.Trash, Sort: input.Sort, Desc: input.Desc, Scope: input.Scope, Keywords: input.Keywords, CaseSensitive: input.CaseSensitive, Match: input.Match, Kinds: kinds, Extensions: input.Extensions, MinBytes: input.MinBytes.Pointer(), MaxBytes: input.MaxBytes.Pointer(), CreatedFrom: input.CreatedFrom.Pointer(), CreatedTo: input.CreatedTo.Pointer(), ModifiedFrom: input.ModifiedFrom.Pointer(), ModifiedTo: input.ModifiedTo.Pointer(), FoldersFirst: input.FoldersFirst, Page: input.Page, PageSize: input.PageSize, Tags: input.Tags, TagMatch: input.TagMatch, Property: property})
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}

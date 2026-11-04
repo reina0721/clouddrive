@@ -10,11 +10,17 @@ import (
 //go:embed sqlite/*.sql postgres/*.sql mysql/*.sql
 var sqlFiles embed.FS
 
-const CurrentVersion uint = 8
+const CurrentVersion uint = 9
 const TableName = "files_schema_migrations"
 
 func Set() dbmigrate.Set {
 	return dbmigrate.Set{Name: "files", FS: sqlFiles, CurrentVersion: CurrentVersion, MigrationsTable: TableName, DriverPaths: map[database.Driver]string{database.DriverSQLite: "sqlite", database.DriverPostgres: "postgres", database.DriverMySQL: "mysql"}, SHA256ByFile: map[string]string{
+		"sqlite/000009_annotations.up.sql":          "3cf286a18fcc9da0aa1268d3a4d6193b2d5519c5a6ec321440706d84436cc6c6",
+		"sqlite/000009_annotations.down.sql":        "5d80842a30b6aa4cfc5aeaad582e67251e26662b292b7c6b6848e09789321e49",
+		"postgres/000009_annotations.up.sql":        "3cf286a18fcc9da0aa1268d3a4d6193b2d5519c5a6ec321440706d84436cc6c6",
+		"postgres/000009_annotations.down.sql":      "5d80842a30b6aa4cfc5aeaad582e67251e26662b292b7c6b6848e09789321e49",
+		"mysql/000009_annotations.up.sql":           "3cf286a18fcc9da0aa1268d3a4d6193b2d5519c5a6ec321440706d84436cc6c6",
+		"mysql/000009_annotations.down.sql":         "5d80842a30b6aa4cfc5aeaad582e67251e26662b292b7c6b6848e09789321e49",
 		"sqlite/000008_navigation.up.sql":           "507c2e4a3e09aba4d149bb686ffa28b042db2e23f2a2bbaa053b25408e564188",
 		"sqlite/000008_navigation.down.sql":         "9020793223afa3d907bc7a15c7fa8041d896b814915f27e802593e78e3a32451",
 		"postgres/000008_navigation.up.sql":         "ed45d5db0414eae7940b34f1adcfdeb246d8b98824703b0196ca766756ff98fe",

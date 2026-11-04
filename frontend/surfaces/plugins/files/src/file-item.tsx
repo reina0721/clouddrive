@@ -7,6 +7,8 @@ import type { FileEntry } from '../../../src/files/model';
 import type { FileViewPreferences, FileColumn } from '../../../src/files/view-options';
 import { FileGlyph } from '../../../src/files/icons';
 import { formatFileBytes } from './file-presentation';
+import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
+import { TagBadges } from './tag-badges';
 
 export type FileSelectionGesture = Readonly<{ extend: boolean; toggle: boolean }>;
 export function FileListHeader({
@@ -68,6 +70,8 @@ export function FileItem({
   onSelect,
   onFocus,
   onContext,
+  annotation,
+  onTag,
 }: {
   entry: FileEntry;
   view: FileViewPreferences['view'];
@@ -81,6 +85,8 @@ export function FileItem({
   onSelect: (gesture: FileSelectionGesture) => void;
   onFocus: () => void;
   onContext: () => void;
+  annotation?: FileAnnotationSummary | undefined;
+  onTag: (name: string) => void;
 }) {
   const { t } = useFrontendTranslation(),
     isList = view === 'list';
@@ -116,9 +122,17 @@ export function FileItem({
       onCheckedChange={onChecked}
     />
   );
-  const icon = thumbnail || (
-    <FileGlyph kind={entry.kind} mediaType={entry.mediaType} size={isList ? 'small' : 'large'} />
+  const glyph = (
+    <FileGlyph
+      kind={entry.kind}
+      mediaType={entry.mediaType}
+      size={isList ? 'small' : 'large'}
+      emoji={annotation?.emoji}
+      color={annotation?.folderColor}
+    />
   );
+  const icon = annotation?.emoji ? glyph : thumbnail || glyph;
+  const tags = annotation ? <TagBadges tags={annotation.tags} onTag={onTag} /> : null;
   const columnValue = (column: FileColumn) =>
     column === 'kind'
       ? kind
@@ -151,6 +165,7 @@ export function FileItem({
             </div>
             <div className="min-w-0 flex-1">
               {title}
+              {tags}
               <p className="mt-1 text-xs text-ink-muted sm:hidden">
                 {entry.kind === 'file' ? formatFileBytes(entry.sizeBytes) : kind}
               </p>
@@ -180,6 +195,7 @@ export function FileItem({
             {icon}
             <div className="min-w-0 max-w-full">
               {title}
+              {tags}
               <p className="mt-1 text-xs text-ink-muted">
                 {entry.kind === 'file' ? formatFileBytes(entry.sizeBytes) : kind}
               </p>

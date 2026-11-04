@@ -19,6 +19,7 @@ import { createConnectionsPort } from './connections';
 import { createFileNavigationPort } from './navigation';
 import { fileShareAddress } from './share-address';
 import { fileListParameters } from './query';
+import { createAnnotationsPort } from './annotations';
 import { fileDestinationHrefs } from './destinations';
 export { fileDestinationHrefs } from './destinations';
 
@@ -251,6 +252,7 @@ export function createFilesRuntime(
     },
   });
   const port: FilesPort = {
+    annotations: createAnnotationsPort(call, assertCurrent),
     navigate,
     openFolder,
     destinationHref: (destination) => fileDestinationHrefs[destination],
