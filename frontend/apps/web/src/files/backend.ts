@@ -2,16 +2,18 @@ import {
   fileEntrySchema,
   fileListingSchema,
   fileDetailSchema,
+  fileShareSchema,
   FilesError,
   type FilesErrorCode,
   type FilesPort,
   type UploadCandidate,
   type FileViewPreferences,
+  type FileListing,
+  type FileShortcut,
 } from '@clouddrive/surface/files';
 import { createJsonClient, ApiError } from '../api/json-client';
 
 const transferTimeoutMs = 120_000;
-const maxPreviewBytes = 1 << 20;
 const preferencesKey = 'clouddrive.files.view.v1';
 const defaultPreferences: FileViewPreferences = { view: 'grid', sort: 'name', desc: false };
 
@@ -21,21 +23,57 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
   const sources = new Map<string, File>();
   const openPickers = new Set<() => void>();
   let disposed = false;
+  let lifecycle = new AbortController();
+  let limits: FileListing | undefined;
+  let mediaTail = Promise.resolve();
+  const directories = new Map<string, Promise<string>>();
+  const shortcutCleanups = new Set<() => void>();
   const dropListeners = new Set<(candidates: readonly UploadCandidate[]) => void>();
   const native = '/native/files';
   function register(files: readonly File[]): UploadCandidate[] {
     if (disposed) return [];
+    for (const file of files)
+      if (file.webkitRelativePath) {
+        const parts = file.webkitRelativePath.split('/');
+        if (
+          parts.at(-1) !== file.name ||
+          parts.some(
+            (part) =>
+              !part ||
+              part === '.' ||
+              part === '..' ||
+              part.trim() !== part ||
+              part.includes('\\') ||
+              Array.from(part).some(
+                (character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127,
+              ) ||
+              Array.from(part).length > 255,
+          )
+        )
+          throw new FilesError('unsupported');
+      }
     return files.map((file) => {
-      const candidate = { id: crypto.randomUUID(), name: file.name, sizeBytes: file.size };
+      const candidate = {
+        id: crypto.randomUUID(),
+        name: file.name,
+        sizeBytes: file.size,
+        ...(file.webkitRelativePath ? { relativePath: file.webkitRelativePath } : {}),
+      };
       sources.set(candidate.id, file);
       return candidate;
     });
   }
   const call: typeof transport = async (path, options) => {
+    if (disposed) throw new FilesError('canceled');
     const original = owner();
     if (!original) throw new ApiError('http', 401);
     try {
-      const value = await transport(native + path, options);
+      const value = await transport(native + path, {
+        ...options,
+        signal: options?.signal
+          ? AbortSignal.any([options.signal, lifecycle.signal])
+          : lifecycle.signal,
+      });
       if (original !== owner()) throw new ApiError('http', 401);
       return value;
     } catch (error) {
@@ -50,6 +88,7 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
           code = payload?.includes('files_quota') ? 'quota' : 'conflict';
         else if (error.status === 413) code = 'large';
         else if (error.status === 429) code = 'busy';
+        else if (error.status === 400 || error.status === 422) code = 'invalid';
       }
       throw new FilesError(code, { cause: error });
     }
@@ -63,6 +102,105 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
     if (!(value instanceof Blob)) throw new ApiError('protocol');
     return value;
   }
+
+  function downloadBlob(blob: Blob, name: string) {
+    if (disposed) throw new FilesError('canceled');
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = name;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+  function shareLink(token: string) {
+    if (!/^[A-Za-z0-9_-]{43}$/.test(token)) throw new FilesError('missing');
+    return `${location.origin}/share#${new URLSearchParams({ token })}`;
+  }
+  function choose(mode: 'files' | 'directory'): Promise<readonly UploadCandidate[]> {
+    if (disposed) return Promise.reject(new FilesError('canceled'));
+    return new Promise((resolve, reject) => {
+      const picker = document.createElement('input');
+      picker.type = 'file';
+      picker.multiple = true;
+      picker.hidden = true;
+      if (mode === 'directory') picker.webkitdirectory = true;
+      let finished = false;
+      const finish = (files: readonly File[]) => {
+        if (finished) return;
+        finished = true;
+        picker.remove();
+        openPickers.delete(cancelPicker);
+        try {
+          if (mode === 'directory' && files.length) {
+            if (!limits) throw new FilesError('unavailable');
+            const paths = new Set<string>();
+            for (const file of files) {
+              const parts = file.webkitRelativePath.split('/');
+              if (parts.length < 2) throw new FilesError('unsupported');
+              for (let index = 1; index < parts.length; index++)
+                paths.add(parts.slice(0, index).join('/'));
+            }
+            if (paths.size + files.length > limits.maxBatchEntries) throw new FilesError('large');
+          }
+          resolve(register(files));
+        } catch (error) {
+          reject(error instanceof Error ? error : new FilesError('unavailable', { cause: error }));
+        }
+      };
+      const cancelPicker = () => finish([]);
+      openPickers.add(cancelPicker);
+      picker.addEventListener('change', () => finish(Array.from(picker.files ?? [])), {
+        once: true,
+      });
+      picker.addEventListener('cancel', cancelPicker, { once: true });
+      document.body.append(picker);
+      picker.click();
+    });
+  }
+  async function uploadParent(candidate: UploadCandidate, parent: string, signal: AbortSignal) {
+    if (!candidate.relativePath) return parent;
+    const parts = candidate.relativePath.split('/').slice(0, -1);
+    let current = parent;
+    for (const name of parts) {
+      if (signal.aborted) throw new FilesError('canceled');
+      const root = current;
+      const key = JSON.stringify([owner(), root, name.normalize('NFC').toLowerCase()]);
+      let pending = directories.get(key);
+      if (!pending) {
+        pending = (async () => {
+          try {
+            return fileEntrySchema.parse(
+              await call('/folders', { method: 'POST', body: { parentId: root, name } }),
+            ).id;
+          } catch (error) {
+            if (!(error instanceof FilesError) || error.code !== 'conflict') throw error;
+            const listing = fileListingSchema.parse(
+              await call(`?${new URLSearchParams({ parent: root })}`),
+            );
+            const existing = listing.items.find(
+              (entry) =>
+                entry.kind === 'folder' &&
+                entry.name.normalize('NFC').toLowerCase() === name.normalize('NFC').toLowerCase(),
+            );
+            if (!existing) throw error;
+            return existing.id;
+          }
+        })();
+        if (limits && directories.size >= limits.maxBatchEntries) directories.clear();
+        directories.set(key, pending);
+      }
+      try {
+        current = await pending;
+      } catch (error) {
+        directories.delete(key);
+        throw error;
+      }
+    }
+    if (signal.aborted) throw new FilesError('canceled');
+    return current;
+  }
   const port: FilesPort = {
     list: async (query, signal) => {
       const params = new URLSearchParams({
@@ -73,7 +211,9 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
         sort: query.sort,
         desc: String(query.desc),
       });
-      return fileListingSchema.parse(await call(`?${params}`, signal ? { signal } : {}));
+      const listing = fileListingSchema.parse(await call(`?${params}`, signal ? { signal } : {}));
+      limits = listing;
+      return listing;
     },
     folder: async (parentId, name) =>
       fileEntrySchema.parse(await call('/folders', { method: 'POST', body: { parentId, name } })),
@@ -91,30 +231,111 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
         }),
       ),
     detail: async (id) => fileDetailSchema.parse(await call(`/${encodeURIComponent(id)}`)),
-    chooseFiles: () =>
-      new Promise((resolve) => {
-        // 系统文件选择器属于 Browser Adapter；不向 Surface 传递 File 或 DOM 句柄。
-        const picker = document.createElement('input');
-        picker.type = 'file';
-        picker.multiple = true;
-        picker.hidden = true;
-        let finished = false;
-        const finish = (files: readonly File[]) => {
-          if (finished) return;
-          finished = true;
-          picker.remove();
-          openPickers.delete(cancelPicker);
-          resolve(register(files));
-        };
-        const cancelPicker = () => finish([]);
-        openPickers.add(cancelPicker);
-        picker.addEventListener('change', () => finish(Array.from(picker.files ?? [])), {
-          once: true,
-        });
-        picker.addEventListener('cancel', () => finish([]), { once: true });
-        document.body.append(picker);
-        picker.click();
-      }),
+    copy: async (id, parentId, name) =>
+      fileEntrySchema.parse(
+        await call(`/${encodeURIComponent(id)}/copy`, { method: 'POST', body: { parentId, name } }),
+      ),
+    createText: async (parentId, name, text) => {
+      if (text.includes('\0')) throw new FilesError('invalid');
+      const params = new URLSearchParams({ parent: parentId, name });
+      return fileEntrySchema.parse(
+        await call(`/upload?${params}`, {
+          method: 'POST',
+          rawBody: new Blob([text], { type: 'application/octet-stream' }),
+          timeoutMs: transferTimeoutMs,
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'Idempotency-Key': crypto.randomUUID(),
+          },
+        }),
+      );
+    },
+    textBytes: (text) => new TextEncoder().encode(text).byteLength,
+    replaceText: async (id, expectedRevision, text) =>
+      fileEntrySchema.parse(
+        await call(`/${encodeURIComponent(id)}/text`, {
+          method: 'PUT',
+          body: { expectedRevision, text },
+          timeoutMs: transferTimeoutMs,
+        }),
+      ),
+    archive: async (ids) => {
+      const blob = await call('/archive', {
+        method: 'POST',
+        body: { ids },
+        responseType: 'blob',
+        timeoutMs: transferTimeoutMs,
+      });
+      if (!(blob instanceof Blob)) throw new FilesError('unavailable');
+      downloadBlob(blob, 'files.zip');
+    },
+    shares: async (signal) =>
+      fileShareSchema.array().parse(await call('/shares', signal ? { signal } : {})),
+    createShare: async (rootId, password, expiresAt) =>
+      fileShareSchema.parse(
+        await call('/shares', {
+          method: 'POST',
+          body: { rootId, password, ...(expiresAt === undefined ? {} : { expiresAt }) },
+        }),
+      ),
+    revokeShare: async (id) =>
+      fileShareSchema.parse(
+        await call(`/shares/${encodeURIComponent(id)}/revoke`, { method: 'POST' }),
+      ),
+    shareLink,
+    copyShareLink: async (token) => {
+      try {
+        await navigator.clipboard.writeText(shareLink(token));
+      } catch (error) {
+        throw new FilesError('unavailable', { cause: error });
+      }
+    },
+    chooseFiles: () => choose('files'),
+    chooseDirectory: () => choose('directory'),
+    focusSearch: () =>
+      document.querySelector<HTMLInputElement>('#main-content input[type="search"]')?.focus(),
+    focusFiles: () => document.getElementById('main-content')?.focus(),
+    subscribeShortcuts: (listener) => {
+      const handle = (event: KeyboardEvent) => {
+        if (
+          event.defaultPrevented ||
+          event.isComposing ||
+          disposed ||
+          document.querySelector('[role="dialog"],[role="menu"]')
+        )
+          return;
+        const target = event.target;
+        if (
+          target instanceof Element &&
+          target.closest('input,textarea,select,[contenteditable="true"]')
+        )
+          return;
+        let shortcut: FileShortcut | undefined;
+        const command = event.ctrlKey || event.metaKey;
+        if (command && event.key.toLowerCase() === 'a') shortcut = 'selectAll';
+        else if (command && event.shiftKey && event.key.toLowerCase() === 'n')
+          shortcut = 'newFolder';
+        else if (!command && !event.altKey) {
+          if (event.key === '/') shortcut = 'search';
+          else if (event.key === 'F5') shortcut = 'refresh';
+          else if (event.key === 'F2') shortcut = 'rename';
+          else if (event.key === 'Delete') shortcut = 'trash';
+          else if (event.key === 'Escape') shortcut = 'clearSelection';
+          else if (event.key === 'Enter') shortcut = 'open';
+        }
+        if (shortcut) {
+          event.preventDefault();
+          listener(shortcut);
+        }
+      };
+      document.addEventListener('keydown', handle);
+      const cleanup = () => {
+        document.removeEventListener('keydown', handle);
+        shortcutCleanups.delete(cleanup);
+      };
+      shortcutCleanups.add(cleanup);
+      return cleanup;
+    },
     subscribeDrop: (listener) => {
       dropListeners.add(listener);
       return () => {
@@ -124,7 +345,8 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
     upload: async (candidate, parentId, signal) => {
       const source = sources.get(candidate.id);
       if (!source) throw new ApiError('protocol');
-      const params = new URLSearchParams({ name: candidate.name, parent: parentId });
+      const target = await uploadParent(candidate, parentId, signal);
+      const params = new URLSearchParams({ name: candidate.name, parent: target });
       return fileEntrySchema.parse(
         await call(`/upload?${params}`, {
           method: 'POST',
@@ -140,19 +362,12 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
     },
     download: async (entry) => {
       const blob = await content(entry.id);
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = entry.name;
-      document.body.append(anchor);
-      anchor.click();
-      anchor.remove();
-      // 给下载导航一次事件循环的消费机会，然后释放本次 Blob URL。
-      setTimeout(() => URL.revokeObjectURL(url), 0);
+      downloadBlob(blob, entry.name);
     },
     preview: async (entry, signal) => {
       if (
-        entry.sizeBytes > maxPreviewBytes ||
+        !limits ||
+        entry.sizeBytes > limits.maxTextBytes ||
         !(
           entry.mediaType.startsWith('text/') ||
           /\.(md|txt|csv|json|xml|html|css|js|log)$/i.test(entry.name)
@@ -160,7 +375,7 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
       )
         throw new FilesError('unsupported');
       const blob = await content(entry.id, signal);
-      if (blob.size > maxPreviewBytes) throw new ApiError('http', 413);
+      if (!limits || blob.size > limits.maxTextBytes) throw new ApiError('http', 413);
       const bytes = new Uint8Array(await blob.arrayBuffer());
       if (bytes.includes(0)) throw new FilesError('unsupported');
       try {
@@ -183,7 +398,7 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
         )
           return defaultPreferences;
         if (
-          (value.view !== 'grid' && value.view !== 'list') ||
+          (value.view !== 'grid' && value.view !== 'list' && value.view !== 'gallery') ||
           !['name', 'size', 'updated', 'created'].includes(String(value.sort)) ||
           typeof value.desc !== 'boolean'
         )
@@ -199,8 +414,25 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
   };
   return {
     port,
+    readMedia: async (id: string, expectedSizeBytes: number, signal: AbortSignal) => {
+      const previous = mediaTail;
+      let release = () => {};
+      mediaTail = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      await previous;
+      try {
+        if (signal.aborted || disposed) throw new FilesError('canceled');
+        const blob = await content(id, signal);
+        if (blob.size !== expectedSizeBytes) throw new FilesError('conflict');
+        return blob;
+      } finally {
+        release();
+      }
+    },
     activate: () => {
       disposed = false;
+      if (lifecycle.signal.aborted) lifecycle = new AbortController();
     },
     offer: (files: readonly File[]) => {
       if (!dropListeners.size || disposed) return;
@@ -209,6 +441,10 @@ export function createFilesRuntime(base: string, owner: () => string | null) {
     },
     dispose: () => {
       disposed = true;
+      lifecycle.abort();
+      directories.clear();
+      limits = undefined;
+      for (const cleanup of shortcutCleanups) cleanup();
       for (const cancel of openPickers) cancel();
       sources.clear();
       dropListeners.clear();

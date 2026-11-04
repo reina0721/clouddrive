@@ -35,4 +35,6 @@ IAM 通过窄 facet 对外输出：`Sessions`（Session 解析）、`Authorizati
 
 ## 其他
 
+`NewCredentialDigests` 提供无资源的 `Hash/Verify` 窄 facet，复用本模块已封装的 Argon2id 并只返回匹配结果。composition 可将其注入 files 的访问密码契约，不直接导入 IAM adapter；该 facet 不创建 Session、Principal 或额外权限，也不把 IAM Service 暴露给其他模块。
+
 IAM 通过独立 `iam_schema_migrations` 管理三驱动 schema（含 authorization revision 单例行），通过 `iam.local` 管理 setup、lockout 和 Session budget。密码学由 Go 官方 `x/crypto/argon2` 实现；IAM Adapter 在执行 Argon2id 前严格限制 PHC 版本、参数、salt、digest 与资源预算，Service 只消费项目自有校验结果，并在成功登录事务内把历史参数渐进迁移到当前 policy。IAM 不导入 Auth，也不把数据库、Casbin 或 Argon2id 类型暴露给调用方。

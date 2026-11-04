@@ -1,0 +1,42 @@
+schema_version: 1
+id: R121-001
+title: 文件分享与丰富操作承载边界
+question: 如何在首批文件基础上提供真实分享、目录传输与内容操作，同时控制匿名访问和资源预算？
+research_type: current-project
+topics: [file-sharing, file-management, browser-media, security]
+keywords: [Cloudreve, 分享, 访问码, 目录上传, 复制, 媒体预览]
+applicable_scenarios: [本地第二批20项网盘功能]
+non_applicable_scenarios: [生产部署, 任意大文件续传, 外部挂载, 离线下载引擎]
+status: active
+summary: 保留现有设施；files 拥有分享与树操作，匿名契约独立声明，Host 拥有目录选择与媒体资源。
+evidence:
+  types: [source-code, browser-observation, official-documentation]
+  primary_sources:
+    - title: 当前实现
+      locator: internal/module/files
+      snapshot: 998f63ca9ddee3f11de3e30fb96bfb2c78e7b3fe
+    - title: 参考站只读界面
+      locator: report.md
+      snapshot: 2026-11-03
+    - title: Go ZIP 标准库
+      locator: https://pkg.go.dev/archive/zip
+      snapshot: 2026-11-03；实际工具链 Go1.26.6
+    - title: 浏览器目录选择
+      locator: https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory
+      snapshot: 2026-11-03
+researched_at: '2026-11-03'
+verified_at: '2026-11-03'
+validity:
+  mode: snapshot
+  review_after: '2026-12-03'
+  refresh_triggers:
+    - Storage bytes契约、文件大小或内容位置治理改变
+    - 匿名operation gate、日志URL脱敏或代理路由变化
+    - 分享变为可写协作、持久登录授权或多存储路由
+    - Surface Host边界、公开路由装配或媒体安全策略变化
+relations:
+  extends: [R120-001]
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

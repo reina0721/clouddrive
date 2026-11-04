@@ -137,41 +137,51 @@ func (ownerLock) TableName() string { return "files_owners" }
 
 // Change 先锁定存储身份再锁 owner；防止空库换存储时旧代上传提交到新位置的元数据。
 func (r *Repository) Change(ctx context.Context, owner string, change func([]model.Entry) (model.Entry, error)) (model.Entry, error) {
-	var result model.Entry
+	entries, err := r.ChangeMany(ctx, owner, func(entries []model.Entry) ([]model.Entry, error) {
+		entry, err := change(entries)
+		if err != nil {
+			return nil, err
+		}
+		return []model.Entry{entry}, nil
+	})
+	if err != nil {
+		return model.Entry{}, err
+	}
+	return entries[0], nil
+}
+
+// ChangeMany 在同一存储和 owner 锁内保存整个变化集合，任何一项失败都会回滚。
+func (r *Repository) ChangeMany(ctx context.Context, owner string, change func([]model.Entry) ([]model.Entry, error)) ([]model.Entry, error) {
+	var result []model.Entry
 	err := r.access.WithinTx(ctx, func(ctx context.Context, _ database.Client, tx database.Tx) error {
 		return database.UseGORMTx(ctx, tx, func(db *gorm.DB) error {
-			if err := db.Model(&storageBinding{}).Where("id = ?", primaryStorageID).UpdateColumn("identity", gorm.Expr("identity")).Error; err != nil {
-				return err
-			}
-			if err := r.checkStorage(db); err != nil {
-				return err
-			}
-			if err := db.Clauses(clause.OnConflict{DoNothing: true}).Create(&ownerLock{OwnerID: owner}).Error; err != nil {
-				return err
-			}
-			if err := db.Model(&ownerLock{}).Where("owner_id = ?", owner).UpdateColumn("revision", gorm.Expr("revision + 1")).Error; err != nil {
+			if err := r.lockOwner(db, owner); err != nil {
 				return err
 			}
 			entries, err := loadEntries(db, owner)
 			if err != nil {
 				return err
 			}
-			entry, err := change(entries)
+			changed, err := change(entries)
 			if err != nil {
 				return err
 			}
-			if entry.OwnerID != owner {
-				return fmt.Errorf("files owner invariant")
-			}
-			record := entryRecord(entry)
-			if _, exists := model.Find(entries, entry.ID); exists {
-				if err := db.Model(&entryRecord{}).Where("id = ? AND owner_id = ?", entry.ID, owner).Select("*").Updates(&record).Error; err != nil {
+			seen := make(map[string]bool, len(changed))
+			for _, entry := range changed {
+				if entry.OwnerID != owner || entry.ID == "" || seen[entry.ID] {
+					return fmt.Errorf("files mutation identity invariant")
+				}
+				seen[entry.ID] = true
+				record := entryRecord(entry)
+				if _, exists := model.Find(entries, entry.ID); exists {
+					if err := db.Model(&entryRecord{}).Where("id = ? AND owner_id = ?", entry.ID, owner).Select("*").Updates(&record).Error; err != nil {
+						return err
+					}
+				} else if err := db.Create(&record).Error; err != nil {
 					return err
 				}
-			} else if err := db.Create(&record).Error; err != nil {
-				return err
 			}
-			result = entry
+			result = changed
 			return nil
 		})
 	})

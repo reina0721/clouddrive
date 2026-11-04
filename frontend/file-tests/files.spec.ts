@@ -1,6 +1,17 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+
+async function newAction(page: Page, label: string) {
+  await page.getByRole('button', { name: '新建', exact: true }).click();
+  await page.getByRole('menuitem', { name: label, exact: true }).click();
+  await expect(page.getByRole('dialog', { name: '新建', exact: true })).toHaveCount(0);
+}
+async function fileAction(page: Page, name: string, label: string) {
+  await page.getByRole('button', { name: name + ' 的操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: label, exact: true }).click();
+  await expect(page.getByRole('dialog', { name: name + ' 的操作', exact: true })).toHaveCount(0);
+}
 
 const accessPath = resolve(__dirname, '../../.data/preview-access.json');
 test.beforeEach(async ({ page }) => {
@@ -13,7 +24,7 @@ test.beforeEach(async ({ page }) => {
   await page.getByLabel('密码', { exact: true }).fill(access.password);
   await page.getByRole('button', { name: '登录', exact: true }).click();
   await expect(page).toHaveURL(/\/home$/);
-  await expect(page.getByRole('button', { name: '创建文件夹', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: '新建', exact: true })).toBeEnabled();
 });
 
 test('多选部分失败逐项呈现，键盘选择和已成功移动的结果保持一致', async ({ page }) => {
@@ -21,7 +32,7 @@ test('多选部分失败逐项呈现，键盘选择和已成功移动的结果�
   const first = `批量目标-${suffix}`;
   const second = `批量子项-${suffix}`;
   for (const name of [first, second]) {
-    await page.getByRole('button', { name: '创建文件夹', exact: true }).click();
+    await newAction(page, '创建文件夹');
     await page.getByRole('dialog').getByLabel('名称', { exact: true }).fill(name);
     await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
     await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
@@ -29,7 +40,7 @@ test('多选部分失败逐项呈现，键盘选择和已成功移动的结果�
   const firstCheckbox = page.getByRole('checkbox', { name: `选择 ${first}`, exact: true });
   await firstCheckbox.press('Space');
   await expect(firstCheckbox).toBeChecked();
-  await page.getByText(`选择 ${second}`, { exact: true }).click();
+  await page.getByRole('checkbox', { name: `选择 ${second}`, exact: true }).press('Space');
   await page.getByRole('button', { name: '移动', exact: true }).first().click();
   await page.getByRole('dialog').getByRole('button', { name: first, exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
@@ -38,11 +49,7 @@ test('多选部分失败逐项呈现，键盘选择和已成功移动的结果�
   await page.reload();
   await expect(page.getByRole('button', { name: first, exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: second, exact: true })).toHaveCount(0);
-  await page
-    .locator('article')
-    .filter({ has: page.getByRole('button', { name: first, exact: true }) })
-    .getByRole('button', { name: '移入回收站', exact: true })
-    .click();
+  await fileAction(page, first, '移入回收站');
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await expect(page.getByRole('button', { name: first, exact: true })).toHaveCount(0);
 });
@@ -61,13 +68,13 @@ test('真实文件闭环：目录、队列、预览、下载、移动、多选�
     'base64',
   );
 
-  await page.getByRole('button', { name: '创建文件夹', exact: true }).click();
+  await newAction(page, '创建文件夹');
   await page.getByRole('dialog').getByLabel('名称', { exact: true }).fill(folder);
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await page.getByRole('button', { name: folder, exact: true }).click();
   await expect(page).toHaveURL(/parent=/);
   const choose = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: '上传文件', exact: true }).click();
+  await newAction(page, '上传文件');
   await (
     await choose
   ).setFiles([
@@ -79,24 +86,21 @@ test('真实文件闭环：目录、队列、预览、下载、移动、多选�
   await expect(page.getByRole('dialog').locator('pre')).toContainText('<script>');
   expect(await page.evaluate(() => 'filePreviewExecuted' in window)).toBe(false);
   await page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true }).click();
-  const article = page
-    .locator('article')
-    .filter({ has: page.getByRole('button', { name: textName, exact: true }) });
-  await article.getByRole('button', { name: '属性', exact: true }).click();
+  await fileAction(page, textName, '属性');
   await expect(page.getByRole('dialog')).toContainText(`${content.length} B`);
   await page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true }).click();
   const downloadEvent = page.waitForEvent('download');
-  await article.getByRole('button', { name: '下载', exact: true }).click();
+  await fileAction(page, textName, '下载');
   const download = await downloadEvent;
   expect(download.suggestedFilename()).toBe(textName);
   const downloadPath = await download.path();
   expect(downloadPath).not.toBeNull();
   expect(await readFile(downloadPath)).toEqual(content);
-  await article.getByRole('button', { name: '重命名', exact: true }).click();
+  await fileAction(page, textName, '重命名');
   await page.getByRole('dialog').getByLabel('名称', { exact: true }).fill(renamed);
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await expect(page.getByRole('button', { name: renamed, exact: true })).toBeVisible();
-  await page.getByText(`选择 ${renamed}`, { exact: true }).click();
+  await page.getByRole('checkbox', { name: `选择 ${renamed}`, exact: true }).press('Space');
   await page.getByRole('button', { name: '移动', exact: true }).first().click();
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await expect(page.getByRole('button', { name: renamed, exact: true })).toHaveCount(0);
@@ -111,22 +115,16 @@ test('真实文件闭环：目录、队列、预览、下载、移动、多选�
   await page.getByRole('button', { name: /切换排序方向/ }).click();
   await page.reload();
   await expect(page.getByRole('button', { name: /↓ 切换排序方向/ })).toBeVisible();
-  const folderArticle = page
-    .locator('article')
-    .filter({ has: page.getByRole('button', { name: folder, exact: true }) });
-  await folderArticle.getByRole('button', { name: '移入回收站', exact: true }).click();
+  await fileAction(page, folder, '移入回收站');
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await expect(page.getByRole('button', { name: folder, exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: '回收站', exact: true }).click();
-  const trashed = page
-    .locator('article')
-    .filter({ has: page.getByRole('button', { name: folder, exact: true }) });
-  await trashed.getByRole('button', { name: '恢复', exact: true }).click();
+  await fileAction(page, folder, '恢复');
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await page.getByRole('button', { name: '我的文件', exact: true }).first().click();
   await expect(page.getByRole('button', { name: folder, exact: true })).toBeVisible();
-  await page.getByText(`选择 ${folder}`, { exact: true }).click();
-  await page.getByText(`选择 ${renamed}`, { exact: true }).click();
+  await page.getByRole('checkbox', { name: `选择 ${folder}`, exact: true }).press('Space');
+  await page.getByRole('checkbox', { name: `选择 ${renamed}`, exact: true }).press('Space');
   await page.getByRole('button', { name: '移入回收站', exact: true }).first().click();
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await expect(page.getByRole('button', { name: folder, exact: true })).toHaveCount(0);
@@ -137,7 +135,7 @@ test('真实文件闭环：目录、队列、预览、下载、移动、多选�
 test('桌面和窄屏视觉、无横向溢出、2 MiB 实际上传与未登录隔离', async ({ page, browser }) => {
   const name = `large-${Date.now()}.txt`;
   const choose = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: '上传文件', exact: true }).click();
+  await newAction(page, '上传文件');
   await (
     await choose
   ).setFiles({ name, mimeType: 'text/plain', buffer: Buffer.alloc(2 << 20, 'a') });
@@ -168,7 +166,11 @@ test('桌面和窄屏视觉、无横向溢出、2 MiB 实际上传与未登录�
 
 test('拖拽上传使用同一队列，等待项可以取消并保持未提交状态', async ({ page }) => {
   const suffix = Date.now().toString(36);
-  const names = [`drop-one-${suffix}.txt`, `drop-two-${suffix}.txt`, `drop-canceled-${suffix}.txt`] as const;
+  const names = [
+    `drop-one-${suffix}.txt`,
+    `drop-two-${suffix}.txt`,
+    `drop-canceled-${suffix}.txt`,
+  ] as const;
   let release = () => {};
   const gate = new Promise<void>((resolveGate) => {
     release = resolveGate;

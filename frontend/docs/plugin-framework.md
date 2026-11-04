@@ -276,6 +276,8 @@ Discovery → Framework Contract Validation → Static Framework Descriptors
     `page` 仍保持 `re-export + generateStaticParams` 转发（构建期枚举需要 Server Module），
     `layout`/`loading`/`error`/`not-found` 也保持 re-export。下一节性能证据记录该决策。
   - 两层都不出现：params 拦截、Context 包装、children 包装、生命周期逻辑、第二套匹配器。
+
+  Host 对公开分享 `/share` 明确选择 `(file-shares)` 组，而非 `(app)` 或带登录品牌框架的 `(public)` 组；该位置由 Host generator 决定，Plugin Contract 不增加认证字段。此路由的手写 Host layout 只注入独立 PublicFilesPort，其他插件仍受 `(app)` 的 ProtectedGate 保护。
 - **Registry（`packages/plugin-framework`，运行时）只保留真实需要的结构**：
   `navigation-resolution.ts` 单一 authority 解析 Group Alias + Parent/Child →
   `registry.navigation`（Group → Parent → Child，含 href）；`registry.routes` 是

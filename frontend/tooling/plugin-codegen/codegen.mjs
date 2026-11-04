@@ -647,9 +647,11 @@ function surfaceShimSourceSpecifier(pluginDirName, routeRelDir, kind) {
   return `${up}plugins/${pluginDirName}/routes/${relDir}${kind}`;
 }
 
-/** Host owns the authenticated route-group layout; Plugin contracts remain layout-agnostic. */
+/** Host 选择私有与公开路由部署组，Plugin Contract 不承担认证框架或布局职责。 */
 function hostAdapterPath(descriptor, kind) {
-  return join(hostAppRoot, '(app)', descriptor.pattern.replace(/^\//, ''), `${kind}.tsx`);
+  // 公开分享的部署位置由 Host 选择，不在 Plugin Contract 增加认证或路由标记。
+  const group = descriptor.pattern === '/share' ? '(file-shares)' : '(app)';
+  return join(hostAppRoot, group, descriptor.pattern.replace(/^\//, ''), `${kind}.tsx`);
 }
 
 /** (A) shim 经 package exports 的公共 subpath（Host import 用）。 */

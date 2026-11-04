@@ -12,7 +12,7 @@ dependency ownership、module resolution、typecheck 与 test 服务。
   Web 注入实现，Plugin 与 Shell 消费同一契约。不公开 Plugin 私有组件或 Store，
   不在 Surface 契约实现 HTTP、Storage、Session 或后端授权。
   `./administration` 开放当前产品的组织、菜单、字典、待办、运维、Token 和账户偏好模型及 Port；`./administration/runtime` 仅开放 Provider 与 hook，避免将响应校验载入初始 Shell。
-  `./files` 开放私有文件模型、Schema 与语义 Port；`./files/runtime` 仅开放 Provider/hook。文件句柄、拖拽与下载生命周期留在 Web Host，插件通过候选 ID 上传，不接触 File/DOM/Session。
+  `./files` 开放私有/公开文件与分享模型、Schema 和分别授权的语义 Port；`./files/runtime` 开放 Provider/hook 与媒体呈现的窄 Props。文件句柄、目录/剪贴板、快捷键、媒体和下载 URL 生命周期留在 Web Host；Surface 注入媒体呈现组件，不持有 File/Blob/DOM/Session。公开页不使用私有 FilesPort。
 - Route Catalog、业务 Route IDs 与 module shims 全部位于 `generated/`；
   产物带 `// @generated` 头，**禁止手改**——修改后运行 `pnpm codegen:plugins` 重新生成，
   并用 `pnpm codegen:plugins:check` 复核 freshness。

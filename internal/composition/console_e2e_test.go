@@ -73,8 +73,11 @@ func (c *consoleTestClient) request(t *testing.T, method, path string, body any,
 			t.Fatal(err)
 		}
 	}
-	if token, ok := result["token"].(string); ok {
-		c.csrf = token
+	// 只有 CSRF 端点可以更新双提交令牌；分享等业务的 token 不是会话令牌。
+	if path == "/auth/csrf" {
+		if token, ok := result["token"].(string); ok {
+			c.csrf = token
+		}
 	}
 	return result
 }

@@ -14,11 +14,21 @@ const (
 	OperationAuthAuditRead                  OperationID = "auth.audit.read"
 	OperationCompleteTodo                   OperationID = "completeTodo"
 	OperationCreateTodo                     OperationID = "createTodo"
+	OperationFilesArchive                   OperationID = "files.archive"
 	OperationFilesContent                   OperationID = "files.content"
+	OperationFilesCopy                      OperationID = "files.copy"
 	OperationFilesDetail                    OperationID = "files.detail"
 	OperationFilesFolder                    OperationID = "files.folder"
 	OperationFilesList                      OperationID = "files.list"
+	OperationFilesPublicContent             OperationID = "files.public.content"
+	OperationFilesPublicEntries             OperationID = "files.public.entries"
+	OperationFilesPublicMetadata            OperationID = "files.public.metadata"
+	OperationFilesPublicUnlock              OperationID = "files.public.unlock"
 	OperationFilesRestore                   OperationID = "files.restore"
+	OperationFilesSharesCreate              OperationID = "files.shares.create"
+	OperationFilesSharesList                OperationID = "files.shares.list"
+	OperationFilesSharesRevoke              OperationID = "files.shares.revoke"
+	OperationFilesTextReplace               OperationID = "files.text.replace"
 	OperationFilesTrash                     OperationID = "files.trash"
 	OperationFilesUpdate                    OperationID = "files.update"
 	OperationFilesUpload                    OperationID = "files.upload"
@@ -88,11 +98,21 @@ var operationInventory = [...]Operation{
 	{ID: OperationAuthAuditRead, Method: "GET", Path: "/api/v1/auth/audit/{eventId}", Policy: "protected", Scope: "auth:audit:read", Action: "read"},
 	{ID: OperationCompleteTodo, Method: "PATCH", Path: "/api/v1/todos/{id}/complete", Policy: "protected", Scope: "todos:write", Action: "todo.complete"},
 	{ID: OperationCreateTodo, Method: "POST", Path: "/api/v1/todos", Policy: "protected", Scope: "todos:write", Action: "todo.create"},
+	{ID: OperationFilesArchive, Method: "POST", Path: "/api/v1/files/archive", Policy: "protected", Scope: "files:read", Action: "files.archive"},
 	{ID: OperationFilesContent, Method: "GET", Path: "/api/v1/files/{id}/content", Policy: "protected", Scope: "files:read", Action: "files.content"},
+	{ID: OperationFilesCopy, Method: "POST", Path: "/api/v1/files/{id}/copy", Policy: "protected", Scope: "files:write", Action: "files.copy"},
 	{ID: OperationFilesDetail, Method: "GET", Path: "/api/v1/files/{id}", Policy: "protected", Scope: "files:read", Action: "files.detail"},
 	{ID: OperationFilesFolder, Method: "POST", Path: "/api/v1/files/folders", Policy: "protected", Scope: "files:write", Action: "files.folder"},
 	{ID: OperationFilesList, Method: "GET", Path: "/api/v1/files", Policy: "protected", Scope: "files:read", Action: "files.list"},
+	{ID: OperationFilesPublicContent, Method: "GET", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicEntries, Method: "GET", Path: "/api/v1/file-shares/{token}/entries", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicMetadata, Method: "GET", Path: "/api/v1/file-shares/{token}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicUnlock, Method: "POST", Path: "/api/v1/file-shares/{token}/unlock", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesRestore, Method: "POST", Path: "/api/v1/files/{id}/restore", Policy: "protected", Scope: "files:write", Action: "files.restore"},
+	{ID: OperationFilesSharesCreate, Method: "POST", Path: "/api/v1/files/shares", Policy: "protected", Scope: "files:write", Action: "files.shares.create"},
+	{ID: OperationFilesSharesList, Method: "GET", Path: "/api/v1/files/shares", Policy: "protected", Scope: "files:read", Action: "files.shares.list"},
+	{ID: OperationFilesSharesRevoke, Method: "POST", Path: "/api/v1/files/shares/{shareId}/revoke", Policy: "protected", Scope: "files:write", Action: "files.shares.revoke"},
+	{ID: OperationFilesTextReplace, Method: "PUT", Path: "/api/v1/files/{id}/text", Policy: "protected", Scope: "files:write", Action: "files.text.replace"},
 	{ID: OperationFilesTrash, Method: "POST", Path: "/api/v1/files/{id}/trash", Policy: "protected", Scope: "files:write", Action: "files.trash"},
 	{ID: OperationFilesUpdate, Method: "PATCH", Path: "/api/v1/files/{id}", Policy: "protected", Scope: "files:write", Action: "files.update"},
 	{ID: OperationFilesUpload, Method: "POST", Path: "/api/v1/files/upload", Policy: "protected", Scope: "files:write", Action: "files.upload"},

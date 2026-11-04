@@ -32,13 +32,26 @@ func (r *memoryRepository) Read(ctx context.Context, owner string) ([]model.Entr
 	return result, ctx.Err()
 }
 func (r *memoryRepository) Change(ctx context.Context, owner string, change func([]model.Entry) (model.Entry, error)) (model.Entry, error) {
+	entries, err := r.ChangeMany(ctx, owner, func(entries []model.Entry) ([]model.Entry, error) {
+		entry, err := change(entries)
+		if err != nil {
+			return nil, err
+		}
+		return []model.Entry{entry}, nil
+	})
+	if err != nil {
+		return model.Entry{}, err
+	}
+	return entries[0], nil
+}
+func (r *memoryRepository) ChangeMany(ctx context.Context, owner string, change func([]model.Entry) ([]model.Entry, error)) ([]model.Entry, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if err := ctx.Err(); err != nil {
-		return model.Entry{}, err
+		return nil, err
 	}
 	if r.fail != nil {
-		return model.Entry{}, r.fail
+		return nil, r.fail
 	}
 	entries := []model.Entry{}
 	for _, entry := range r.entries {
@@ -46,18 +59,34 @@ func (r *memoryRepository) Change(ctx context.Context, owner string, change func
 			entries = append(entries, entry)
 		}
 	}
-	entry, err := change(entries)
+	changed, err := change(entries)
 	if err != nil {
-		return model.Entry{}, err
+		return nil, err
 	}
-	for index, old := range r.entries {
-		if old.ID == entry.ID {
-			r.entries[index] = entry
-			return entry, nil
+	candidate := append([]model.Entry(nil), r.entries...)
+	seen := map[string]bool{}
+	for _, entry := range changed {
+		if entry.OwnerID != owner || entry.ID == "" || seen[entry.ID] {
+			return nil, model.ErrInvalid
+		}
+		seen[entry.ID] = true
+		updated := false
+		for index, old := range candidate {
+			if old.ID == entry.ID {
+				if old.OwnerID != owner {
+					return nil, model.ErrConflict
+				}
+				candidate[index] = entry
+				updated = true
+				break
+			}
+		}
+		if !updated {
+			candidate = append(candidate, entry)
 		}
 	}
-	r.entries = append(r.entries, entry)
-	return entry, nil
+	r.entries = candidate
+	return changed, nil
 }
 
 type memoryContent struct {
@@ -184,7 +213,9 @@ func TestListingFiltersAndStableSizeOrder(t *testing.T) {
 }
 
 func TestUploadIdempotencyQuotaRaceAndCompensation(t *testing.T) {
-	policy := Policy{MaxFileBytes: 4, QuotaBytes: 6, ConcurrentUploads: 2}
+	policy := DefaultPolicy()
+	policy.MaxFileBytes = 4
+	policy.QuotaBytes = 6
 	s, repository, content := newTestService(t, policy)
 	ctx := t.Context()
 	entry, err := s.Upload(ctx, "owner", "", "a.txt", "stable-upload-key-001", []byte("abcd"))

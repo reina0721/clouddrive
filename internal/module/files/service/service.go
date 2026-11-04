@@ -22,6 +22,11 @@ const (
 	DefaultMaxFileBytes      int64 = 32 << 20
 	DefaultQuotaBytes        int64 = 1 << 30
 	DefaultConcurrentUploads       = 2
+	DefaultMaxTextBytes      int64 = 1 << 20
+	DefaultMaxArchiveBytes   int64 = 64 << 20
+	DefaultMaxBatchEntries         = 500
+	DefaultMaxThumbnailBytes int64 = 2 << 20
+	DefaultMaxGalleryEntries       = 12
 	cleanupTimeout                 = 5 * time.Second
 )
 
@@ -29,14 +34,25 @@ type Policy struct {
 	MaxFileBytes      int64
 	QuotaBytes        int64
 	ConcurrentUploads int
+	MaxTextBytes      int64
+	MaxArchiveBytes   int64
+	MaxBatchEntries   int
+	MaxThumbnailBytes int64
+	MaxGalleryEntries int
 }
 
 func DefaultPolicy() Policy {
-	return Policy{DefaultMaxFileBytes, DefaultQuotaBytes, DefaultConcurrentUploads}
+	return Policy{MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxGalleryEntries: DefaultMaxGalleryEntries}
 }
 func (p Policy) Validate() error {
 	if p.MaxFileBytes < 1 || p.MaxFileBytes > DefaultMaxFileBytes || p.QuotaBytes < p.MaxFileBytes || p.ConcurrentUploads < 1 || p.ConcurrentUploads > DefaultConcurrentUploads {
 		return fmt.Errorf("invalid files budgets")
+	}
+	if p.MaxTextBytes < 1 || p.MaxTextBytes > DefaultMaxTextBytes || p.MaxArchiveBytes < 1 || p.MaxArchiveBytes > DefaultMaxArchiveBytes || p.MaxBatchEntries < 1 || p.MaxBatchEntries > DefaultMaxBatchEntries {
+		return fmt.Errorf("invalid files operation budgets")
+	}
+	if p.MaxThumbnailBytes < 1 || p.MaxThumbnailBytes > DefaultMaxThumbnailBytes || p.MaxGalleryEntries < 1 || p.MaxGalleryEntries > DefaultMaxGalleryEntries {
+		return fmt.Errorf("invalid file media budgets")
 	}
 	return nil
 }
@@ -44,6 +60,7 @@ func (p Policy) Validate() error {
 type Repository interface {
 	Read(context.Context, string) ([]model.Entry, error)
 	Change(context.Context, string, func([]model.Entry) (model.Entry, error)) (model.Entry, error)
+	ChangeMany(context.Context, string, func([]model.Entry) ([]model.Entry, error)) ([]model.Entry, error)
 	RecordCleanup(context.Context, string, string) error
 }
 type Content interface {
@@ -94,6 +111,11 @@ type Listing struct {
 	QuotaBytes        int64         `json:"quotaBytes"`
 	MaxFileBytes      int64         `json:"maxFileBytes"`
 	ConcurrentUploads int           `json:"concurrentUploads"`
+	MaxTextBytes      int64         `json:"maxTextBytes"`
+	MaxArchiveBytes   int64         `json:"maxArchiveBytes"`
+	MaxBatchEntries   int           `json:"maxBatchEntries"`
+	MaxThumbnailBytes int64         `json:"maxThumbnailBytes"`
+	MaxGalleryEntries int           `json:"maxGalleryEntries"`
 }
 
 func (s *Service) read(ctx context.Context, owner string) ([]model.Entry, error) {
@@ -114,6 +136,8 @@ func (s *Service) List(ctx context.Context, owner string, q Query) (Listing, err
 		return Listing{}, model.ErrInvalid
 	}
 	result := Listing{Items: []model.Entry{}, Breadcrumbs: []model.Entry{}, UsedBytes: model.Used(entries), QuotaBytes: s.policy.QuotaBytes, MaxFileBytes: s.policy.MaxFileBytes, ConcurrentUploads: s.policy.ConcurrentUploads}
+	result.MaxTextBytes, result.MaxArchiveBytes, result.MaxBatchEntries = s.policy.MaxTextBytes, s.policy.MaxArchiveBytes, s.policy.MaxBatchEntries
+	result.MaxThumbnailBytes, result.MaxGalleryEntries = s.policy.MaxThumbnailBytes, s.policy.MaxGalleryEntries
 	if !q.Trash {
 		if err := model.Parent(entries, q.ParentID); err != nil {
 			return Listing{}, err
@@ -198,7 +222,7 @@ func (s *Service) Folder(ctx context.Context, owner, parent, name string) (model
 		if err := model.Available(entries, "", parent, normalized); err != nil {
 			return model.Entry{}, err
 		}
-		return model.Entry{ID: id, OwnerID: owner, ParentID: parent, Name: name, NormalizedName: normalized, Kind: model.Folder, CreatedAt: now, UpdatedAt: now}, nil
+		return model.Entry{ID: id, OwnerID: owner, ParentID: parent, Name: name, NormalizedName: normalized, Kind: model.Folder, CreatedAt: now, UpdatedAt: now, ContentRevision: 1}, nil
 	})
 }
 
@@ -257,7 +281,7 @@ func (s *Service) Upload(ctx context.Context, owner, parent, name, key string, c
 		return model.Entry{}, s.compensate(ctx, owner, objectKey, fmt.Errorf("write file content: %w", err))
 	}
 	now := s.clock.Now().UTC()
-	entry := model.Entry{ID: id, OwnerID: owner, ParentID: parent, Kind: model.File, Name: name, NormalizedName: normalized, ObjectKey: objectKey, SizeBytes: int64(len(content)), MediaType: mediaType, CreatedAt: now, UpdatedAt: now, UploadKey: key, ContentSHA: hash}
+	entry := model.Entry{ID: id, OwnerID: owner, ParentID: parent, Kind: model.File, Name: name, NormalizedName: normalized, ObjectKey: objectKey, SizeBytes: int64(len(content)), MediaType: mediaType, CreatedAt: now, UpdatedAt: now, UploadKey: key, ContentSHA: hash, ContentRevision: 1}
 	result, err := s.repo.Change(ctx, owner, func(entries []model.Entry) (model.Entry, error) {
 		if previous, ok, err := previousUpload(entries, key, parent, normalized, hash); ok || err != nil {
 			return previous, err

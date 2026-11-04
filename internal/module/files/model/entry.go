@@ -29,20 +29,21 @@ var (
 
 // Entry 保存单个目录项；ObjectKey 和幂等校验信息永不对外输出。
 type Entry struct {
-	ID             string     `json:"id"`
-	OwnerID        string     `json:"-"`
-	ParentID       string     `json:"parentId"`
-	Kind           Kind       `json:"kind"`
-	Name           string     `json:"name"`
-	NormalizedName string     `json:"-"`
-	ObjectKey      string     `json:"-"`
-	SizeBytes      int64      `json:"sizeBytes"`
-	MediaType      string     `json:"mediaType"`
-	CreatedAt      time.Time  `json:"createdAt"`
-	UpdatedAt      time.Time  `json:"updatedAt"`
-	TrashedAt      *time.Time `json:"trashedAt"`
-	UploadKey      string     `json:"-"`
-	ContentSHA     string     `json:"-"`
+	ID              string     `json:"id"`
+	OwnerID         string     `json:"-"`
+	ParentID        string     `json:"parentId"`
+	Kind            Kind       `json:"kind"`
+	Name            string     `json:"name"`
+	NormalizedName  string     `json:"-"`
+	ObjectKey       string     `json:"-"`
+	SizeBytes       int64      `json:"sizeBytes"`
+	MediaType       string     `json:"mediaType"`
+	CreatedAt       time.Time  `json:"createdAt"`
+	UpdatedAt       time.Time  `json:"updatedAt"`
+	TrashedAt       *time.Time `json:"trashedAt"`
+	UploadKey       string     `json:"-"`
+	ContentSHA      string     `json:"-"`
+	ContentRevision int64      `json:"contentRevision"`
 }
 
 // ValidateName 不把用户名称解释为路径，并限制名称的字符与长度。

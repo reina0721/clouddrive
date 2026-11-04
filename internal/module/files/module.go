@@ -31,6 +31,9 @@ type Dependencies struct {
 	Logger          logger.Logger
 	Policy          service.Policy
 	StorageIdentity string
+	Passwords       service.PasscodeHasher
+	SharePolicy     service.SharePolicy
+	PublicOrigins   []string
 }
 
 func New(deps Dependencies) (*handler.Handler, error) {
@@ -45,5 +48,9 @@ func New(deps Dependencies) (*handler.Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &handler.Handler{Service: useCases, Actors: deps.Actors, Logger: deps.Logger}, nil
+	sharing, err := service.NewSharing(useCases, repository, deps.Passwords, deps.SharePolicy)
+	if err != nil {
+		return nil, err
+	}
+	return &handler.Handler{Service: useCases, Sharing: sharing, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}, nil
 }

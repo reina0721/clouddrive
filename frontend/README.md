@@ -2,7 +2,7 @@
 
 当前与根目录 Go 后端一起运行，默认 backend + server 模式；业务地址 /api/console/v1，通过 Next.js 同源代理访问。完整启动和部署命令以 [项目 README](../README.md) 为准。下文保留 console-web 组件、插件、布局和质量检查的工程说明。
 
-文件插件位于 `/home`，消费 `surfaces/src/files` 的语义 Port；Web Host 拥有文件选择器、拖拽、网络、下载与视图偏好持久化，Surface 不持有 File/DOM/Session。使用、预算和专用预览统一见[文件管理运行说明](../docs/operations/file-management.md)。
+文件插件位于 `/home`，分享管理在 `/home/shares`；独立访客插件 `/share` 由 Host 放入不含认证品牌框架的 `(file-shares)` 组，消费 `surfaces/src/files` 的语义 Port；Web Host 拥有文件/目录选择器、拖拽/剪贴板文件、快捷键、网络、媒体/下载 URL 释放与视图偏好持久化，Surface 不持有 File/DOM/Session。使用、预算和专用预览统一见[文件管理运行说明](../docs/operations/file-management.md)。
 
 `/frontend` 是统一后台管理产品的前端 Monorepo。当前首要成果不是组件库或模板发行，而是可持续演进的 Product Foundation：普通后台业务只选择既有 Layout、Element、Form、State、Motion 与 Page Pattern，Feature 负责业务语义、Schema、数据、权限和 i18n。
 

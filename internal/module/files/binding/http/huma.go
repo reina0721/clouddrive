@@ -87,6 +87,8 @@ func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 		}
 		return op
 	}
+	registerOperations(api, h, operation)
+	registerSharing(api, h, operation)
 	huma.Register(api, operation("files.list", "GET", "", "files:read", false), func(ctx context.Context, input *listInput) (*listOutput, error) {
 		owner, err := h.Owner(ctx)
 		if err != nil {
@@ -173,6 +175,7 @@ func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 		return result(ctx, h, entry, err)
 	})
 	download := operation("files.content", "GET", "/{id}/content", "files:read", false)
+	download.Middlewares = append(download.Middlewares, transferAdmission(h))
 	download.Responses = map[string]*huma.Response{"200": {Description: "文件原始内容", Content: map[string]*huma.MediaType{"application/octet-stream": {Schema: &huma.Schema{Type: "string", Format: "binary"}}}}}
 	huma.Register(api, download, func(ctx context.Context, input *pathInput) (*contentOutput, error) {
 		owner, err := h.Owner(ctx)

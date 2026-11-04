@@ -1,0 +1,48 @@
+const zh = {
+  showPassword: '显示密码',
+  hidePassword: '隐藏密码',
+  title: '文件分享',
+  refresh: '刷新',
+  loading: '正在读取分享…',
+  password: '访问密码',
+  unlock: '访问分享',
+  path: '分享目录路径',
+  open: '打开目录',
+  download: '下载文件',
+  empty: '目录为空',
+  emptyDescription: '此分享目录目前没有可见文件。',
+  errors: {
+    missing: '分享已撤销、已到期或内容不可访问。',
+    locked: '请输入正确的访问密码；访问凭据可能已经过期。',
+    busy: '尝试次数过多或服务繁忙，请稍后重试。',
+    large: '此目录超过当前浏览预算。',
+    unavailable: '暂时无法读取分享，请重试。',
+    canceled: '操作已取消。',
+  },
+};
+const en = {
+  showPassword: 'Show password',
+  hidePassword: 'Hide password',
+  title: 'Shared files',
+  refresh: 'Refresh',
+  loading: 'Loading share…',
+  password: 'Access password',
+  unlock: 'Open share',
+  path: 'Shared folder path',
+  open: 'Open folder',
+  download: 'Download file',
+  empty: 'Empty folder',
+  emptyDescription: 'This shared folder has no visible files.',
+  errors: {
+    missing: 'This share is revoked, expired, or unavailable.',
+    locked: 'Enter the correct password. Your access grant may have expired.',
+    busy: 'Too many attempts or the service is busy. Try again later.',
+    large: 'This folder exceeds the current browsing budget.',
+    unavailable: 'Unable to load this share. Try again.',
+    canceled: 'Operation canceled.',
+  },
+};
+export const pluginI18nResources = {
+  'zh-CN': { translation: { publicFiles: zh } },
+  en: { translation: { publicFiles: en } },
+};

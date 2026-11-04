@@ -493,7 +493,7 @@ func (f *applicationGenerationFactory) Prepare(
 	if err := files.ValidateStorage(ctx, databaseAccess, storageIdentity); err != nil {
 		return abort(err)
 	}
-	filesHandler, err := files.New(files.Dependencies{StorageIdentity: storageIdentity, Database: databaseAccess, Content: filesContentAdapter{access: generation.storage.value()}, Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: filesPolicy.Policy()})
+	filesHandler, err := files.New(files.Dependencies{Passwords: iam.NewCredentialDigests(), SharePolicy: filesPolicy.SharePolicy(), PublicOrigins: httpConfig.CORS.AllowedOrigins, StorageIdentity: storageIdentity, Database: databaseAccess, Content: filesContentAdapter{access: generation.storage.value()}, Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: filesPolicy.Policy()})
 	if err != nil {
 		return abort(err)
 	}

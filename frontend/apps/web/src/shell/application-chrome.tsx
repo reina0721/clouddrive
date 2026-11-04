@@ -7,7 +7,7 @@ import { RouteTransition } from '../host/route-transition';
 
 export function ApplicationChrome({ children }: Readonly<{ children: ReactNode }>) {
   const pathname = usePathname();
-  if (pathname === '/home')
+  if (pathname === '/home' || pathname.startsWith('/home/'))
     return (
       <FilesRuntime>
         <RouteTransition>{children}</RouteTransition>

@@ -152,6 +152,8 @@ anatomy。`submenuLayout` adjacent用于桌面、stacked用于窄屏触摸，Hos
 由HeroUI管理。Menu的轻量淡入淡出复用现役Motion Primitive与control duration，避免
 缩放改变聚焦滚动计算；视口宽度和最大高度受限，overflow保留可操作内容。
 
+`MenuButton` 支持可选 `isOpen/onOpenChange`，供文件右键等语义入口打开同一菜单，不另建浮层或焦点系统；默认仍由 HeroUI 管理非受控状态。`CheckboxField` 的 `presentation="control-only"` 只隐藏可见标签，保留完整 accessible name 和原有选择/键盘行为，用于已经显示文件名的紧凑条目。
+
 Dialog/Confirm 的主操作与普通 Action 消费同一 `bg-brand` / `text-on-brand` 配对；危险操作使用 `bg-danger` / `text-on-danger`。不得固定白色文字：深色主题的强调背景较亮，前景必须随主题与强调色一起变化，并在真实打开态验证对比度。
 
 `PopoverCard` 当前只承载与 Trigger 直接相关的短说明，使用内容宽度和稳定的 `bottom start` Placement；打开时 HeroUI 将焦点移入 Popover Dialog，Escape 关闭后再返回 Trigger。它不是表单值选择、命令列表或强制确认。更短且不可交互的补充说明使用 `TooltipAction`，操作集合使用 `MenuButton`，必须阻断主流程并等待决策时使用 `DialogSurface`。外部参考出现更多方向或内容组合，不自动扩大项目 API；只有真实产品场景需要时才新增可验证的交互内容或 Placement 语义。

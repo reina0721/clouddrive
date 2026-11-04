@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Page, Toolbar } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
@@ -8,6 +8,9 @@ import { SearchBox } from '@clouddrive/ui-adapter/search-box';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { ProgressMeter } from '@clouddrive/ui-adapter/progress-meter';
+import { ShareDialog } from './share-dialog';
+import { TextDialog, type TextRequest } from './text-dialog';
+import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
 import {
   Cloud,
   Home,
@@ -20,8 +23,10 @@ import {
   Settings,
   FileGlyph,
   HardDrive,
+  MoreHorizontal,
 } from '../../../src/files/icons';
-import { useFiles } from '../../../src/files/runtime';
+import { useFiles, useFileMedia } from '../../../src/files/runtime';
+import { filesAccentStyle } from '../../../src/files/appearance';
 import {
   FilesError,
   type FileEntry,
@@ -42,7 +47,10 @@ type QueueItem = UploadCandidate & {
   state: 'waiting' | 'uploading' | 'succeeded' | 'failed' | 'canceled';
   failure?: string | undefined;
 };
-type Dialog = { mode: 'folder' | 'rename' | 'move' | 'remove' | 'restore'; targets: FileEntry[] };
+type Dialog = {
+  mode: 'folder' | 'rename' | 'move' | 'copy' | 'remove' | 'restore';
+  targets: FileEntry[];
+};
 const initialPreferences: FileViewPreferences = { view: 'grid', sort: 'name', desc: false };
 
 function bytes(value: number): string {
@@ -52,11 +60,26 @@ function bytes(value: number): string {
   return `${(value / 1024 ** 3).toFixed(1)} GiB`;
 }
 
-export function FilesPage({ parent, category, trash, search, navigate }: Props) {
+export function FilesPage({ parent, category, trash, search, navigate: routeNavigate }: Props) {
   const port = useFiles();
+  const Media = useFileMedia();
   const { t } = useFrontendTranslation();
   const [listing, setListing] = useState<FileListing>();
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
+  const navigate = useCallback(
+    (query: Record<string, string>) => {
+      if (
+        (query.parent ?? '') !== parent ||
+        (query.category ?? '') !== category ||
+        (query.trash === 'true') !== trash ||
+        (query.search ?? '') !== search
+      )
+        setNavigating(true);
+      routeNavigate(query);
+    },
+    [routeNavigate, parent, category, trash, search],
+  );
   const [failure, setFailure] = useState('');
   const [notice, setNotice] = useState('');
   const [revision, setRevision] = useState(0);
@@ -66,7 +89,14 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const controllers = useRef(new Map<string, AbortController>());
   const [dialog, setDialog] = useState<Dialog>();
-  const destinationDialogOpen = dialog?.mode === 'move' || dialog?.mode === 'restore';
+  const [shareTarget, setShareTarget] = useState<FileEntry>();
+  const [textRequest, setTextRequest] = useState<TextRequest>();
+  const [mediaEntry, setMediaEntry] = useState<FileEntry>();
+  const [contextEntry, setContextEntry] = useState<string>();
+  const [galleryPage, setGalleryPage] = useState(0);
+  const [archiving, setArchiving] = useState(false);
+  const destinationDialogOpen =
+    dialog?.mode === 'move' || dialog?.mode === 'restore' || dialog?.mode === 'copy';
   const [name, setName] = useState('');
   const [destination, setDestination] = useState('');
   const [folders, setFolders] = useState<FileListing>();
@@ -108,7 +138,10 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
         }
       })
       .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+          setNavigating(false);
+        }
       });
     return () => controller.abort();
   }, [
@@ -222,13 +255,21 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
       setNotice(t('files.preferencesFailure'));
     }
   }
-  function openDialog(mode: Dialog['mode'], targets: FileEntry[] = []) {
-    setNotice('');
-    setDialogFailure('');
-    setName(mode === 'rename' ? (targets[0]?.name ?? '') : '');
-    setDestination('');
-    setDialog({ mode, targets });
-  }
+  const openDialog = useCallback(
+    (mode: Dialog['mode'], targets: FileEntry[] = []) => {
+      setNotice('');
+      setDialogFailure('');
+      const source = targets[0];
+      const dot = source?.kind === 'file' ? source.name.lastIndexOf('.') : -1;
+      const copyName = source
+        ? `${t('files.copyName', { name: dot > 0 ? source.name.slice(0, dot) : source.name })}${dot > 0 ? source.name.slice(dot) : ''}`
+        : '';
+      setName(mode === 'rename' ? (source?.name ?? '') : mode === 'copy' ? copyName : '');
+      setDestination('');
+      setDialog({ mode, targets });
+    },
+    [t],
+  );
   async function confirmDialog() {
     if (!dialog) return;
     setDialogFailure('');
@@ -240,6 +281,7 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
         for (const entry of dialog.targets) {
           try {
             if (dialog.mode === 'rename') await port.update(entry.id, { name });
+            else if (dialog.mode === 'copy') await port.copy(entry.id, destination, name);
             else if (dialog.mode === 'move') await port.update(entry.id, { parentId: destination });
             else if (dialog.mode === 'remove') await port.trash(entry.id);
             else await port.restore(entry.id, destination);
@@ -283,26 +325,35 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
       setNotice(errorText(error));
     }
   }
-  async function showPreview(entry: FileEntry) {
-    previewController.current?.abort();
-    const controller = new AbortController();
-    previewController.current = controller;
-    setPreview({ entry, text: '', loading: true });
-    try {
-      const text = await port.preview(entry, controller.signal);
-      if (!controller.signal.aborted) setPreview({ entry, text, loading: false });
-    } catch (error) {
-      if (!controller.signal.aborted)
-        setPreview({
-          entry,
-          text:
-            error instanceof FilesError && error.code === 'unsupported'
-              ? t('files.unsupportedPreview')
-              : errorText(error),
-          loading: false,
-        });
-    }
-  }
+  const showPreview = useCallback(
+    async (entry: FileEntry) => {
+      if (/^(image|audio|video)\//.test(entry.mediaType)) {
+        setPreview(undefined);
+        setMediaEntry(entry);
+        return;
+      }
+      setMediaEntry(undefined);
+      previewController.current?.abort();
+      const controller = new AbortController();
+      previewController.current = controller;
+      setPreview({ entry, text: '', loading: true });
+      try {
+        const text = await port.preview(entry, controller.signal);
+        if (!controller.signal.aborted) setPreview({ entry, text, loading: false });
+      } catch (error) {
+        if (!controller.signal.aborted)
+          setPreview({
+            entry,
+            text:
+              error instanceof FilesError && error.code === 'unsupported'
+                ? t('files.unsupportedPreview')
+                : errorText(error),
+            loading: false,
+          });
+      }
+    },
+    [port, t, errorText],
+  );
   async function download(entry: FileEntry) {
     try {
       await port.download(entry);
@@ -311,6 +362,42 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
     }
   }
   const targets = listing?.items.filter((entry) => selected.includes(entry.id)) ?? [];
+  const pageCount = listing
+    ? Math.max(1, Math.ceil(listing.items.length / listing.maxGalleryEntries))
+    : 0;
+  const currentGalleryPage = Math.min(galleryPage, Math.max(0, pageCount - 1));
+  const visibleItems = listing
+    ? preferences.view === 'gallery'
+      ? listing.items.slice(
+          currentGalleryPage * listing.maxGalleryEntries,
+          (currentGalleryPage + 1) * listing.maxGalleryEntries,
+        )
+      : listing.items
+    : [];
+  useEffect(() => setGalleryPage(0), [parent, category, trash, search]);
+  useEffect(
+    () =>
+      port.subscribeShortcuts((shortcut) => {
+        const chosen = listing?.items.filter((entry) => selected.includes(entry.id)) ?? [];
+        if (shortcut === 'search') port.focusSearch();
+        else if (shortcut === 'refresh') reload();
+        else if (shortcut === 'selectAll')
+          setSelected(listing?.items.map((entry) => entry.id) ?? []);
+        else if (shortcut === 'clearSelection') setSelected([]);
+        else if (shortcut === 'newFolder' && !trash && listing) openDialog('folder');
+        else if (shortcut === 'rename' && !trash && chosen.length === 1)
+          openDialog('rename', chosen);
+        else if (shortcut === 'trash' && !trash && chosen.length) openDialog('remove', chosen);
+        else if (shortcut === 'open' && chosen.length === 1) {
+          const entry = chosen[0];
+          if (!entry) return;
+          if (trash) openDialog('restore', [entry]);
+          else if (entry.kind === 'folder') navigate({ parent: entry.id });
+          else void showPreview(entry);
+        }
+      }),
+    [port, listing, selected, trash, navigate, openDialog, showPreview, reload],
+  );
   const title = trash
     ? t('files.trash')
     : category
@@ -330,14 +417,7 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
   return (
     <div
       data-accent-preview="blue"
-      style={
-        {
-          '--color-brand': 'var(--ds-brand)',
-          '--color-brand-strong': 'var(--ds-brand-strong)',
-          '--color-brand-soft': 'var(--ds-brand-soft)',
-          '--color-on-brand': 'var(--ds-on-brand)',
-        } as CSSProperties
-      }
+      style={filesAccentStyle}
       className="min-h-screen bg-canvas font-sans text-ink"
     >
       <div className="mx-auto grid min-h-screen max-w-screen-2xl md:grid-cols-5">
@@ -372,6 +452,9 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
             </button>
           </nav>
           <div className="mt-6 flex flex-wrap gap-3 px-4 text-sm text-ink-muted md:flex-col">
+            <a href="/home/shares" className="hover:text-brand">
+              {t('files.myShares')}
+            </a>
             <a href="/workspace" className="flex items-center gap-3 hover:text-brand">
               <Settings className="size-5" />
               {t('files.management')}
@@ -393,29 +476,62 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
             </div>
           ) : null}
         </aside>
-        <main id="main-content" className="min-w-0 p-4 md:col-span-4 md:p-5">
+        <main id="main-content" tabIndex={-1} className="min-w-0 p-4 md:col-span-4 md:p-5">
           <Page>
             <div className="flex flex-wrap items-center gap-3">
-              <Action
-                leadingIcon={<Upload />}
-                disabled={trash || !listing}
-                onPress={() => {
-                  void port
-                    .chooseFiles()
-                    .then(enqueue)
-                    .catch((error: unknown) => setNotice(errorText(error)));
+              <MenuButton
+                ariaLabel={t('files.new')}
+                label={
+                  <span className="flex items-center gap-2">
+                    <FolderPlus className="size-5" />
+                    {t('files.new')}
+                  </span>
+                }
+                items={[
+                  {
+                    id: 'upload',
+                    label: t('files.upload'),
+                    disabled: trash || !listing || loading || navigating,
+                  },
+                  {
+                    id: 'directory',
+                    label: t('files.uploadDirectory'),
+                    disabled: trash || !listing || loading || navigating,
+                  },
+                  {
+                    id: 'clipboard',
+                    label: t('files.uploadClipboard'),
+                    disabled: trash || !listing || loading || navigating,
+                  },
+                  {
+                    id: 'folder',
+                    label: t('files.newFolder'),
+                    disabled: trash || !listing || loading || navigating,
+                  },
+                  {
+                    id: 'text',
+                    label: t('files.newText'),
+                    disabled: trash || !listing || loading || navigating,
+                  },
+                  {
+                    id: 'markdown',
+                    label: t('files.newMarkdown'),
+                    disabled: trash || !listing || loading || navigating,
+                  },
+                ]}
+                onAction={(action) => {
+                  if (action === 'folder') openDialog('folder');
+                  else if (action === 'text' || action === 'markdown')
+                    setTextRequest({ mode: action, parentId: parent });
+                  else if (action === 'clipboard') {
+                    port.focusFiles();
+                    setNotice(t('files.clipboardHint'));
+                  } else
+                    void (action === 'directory' ? port.chooseDirectory() : port.chooseFiles())
+                      .then(enqueue)
+                      .catch((error: unknown) => setNotice(errorText(error)));
                 }}
-              >
-                {t('files.upload')}
-              </Action>
-              <Action
-                variant="secondary"
-                leadingIcon={<FolderPlus />}
-                disabled={trash || !listing}
-                onPress={() => openDialog('folder')}
-              >
-                {t('files.newFolder')}
-              </Action>
+              />
               <form
                 className="flex w-full min-w-0 items-center gap-2 md:w-auto md:flex-1"
                 onSubmit={(event) => {
@@ -487,6 +603,13 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
                     >
                       {t('files.list')}
                     </Action>
+                    <Action
+                      size="sm"
+                      variant={preferences.view === 'gallery' ? 'secondary' : 'quiet'}
+                      onPress={() => savePreferences({ ...preferences, view: 'gallery' })}
+                    >
+                      {t('files.gallery')}
+                    </Action>
                     <SelectField
                       label={t('files.sort')}
                       presentation="toolbar"
@@ -529,6 +652,25 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
                 </div>
                 {targets.length ? (
                   <>
+                    {!trash ? (
+                      <Action
+                        size="sm"
+                        variant="secondary"
+                        loading={archiving}
+                        disabled={archiving}
+                        onPress={() => {
+                          setArchiving(true);
+                          setNotice('');
+                          void port
+                            .archive(selected)
+                            .then(() => setNotice(t('files.archiveReady')))
+                            .catch((error: unknown) => setNotice(errorText(error)))
+                            .finally(() => setArchiving(false));
+                        }}
+                      >
+                        {t('files.archive')}
+                      </Action>
+                    ) : null}
                     <span className="text-sm text-ink-muted">
                       {t('files.selected', { count: targets.length })}
                     </span>
@@ -564,11 +706,11 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
             ) : null}
             <section
               aria-label={title}
-              aria-busy={loading}
+              aria-busy={loading || navigating}
               className="min-h-96 rounded-panel border border-border bg-surface p-4"
             >
               <h1 className="sr-only">{title}</h1>
-              {loading ? (
+              {loading || navigating ? (
                 <StateSurface
                   state="loading"
                   icon={<Cloud />}
@@ -607,9 +749,14 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
                       : 'flex flex-col divide-y divide-border'
                   }
                 >
-                  {listing.items.map((entry) => (
+                  {visibleItems.map((entry) => (
                     <article
                       key={entry.id}
+                      onContextMenu={(event) => {
+                        event.preventDefault();
+                        setContextEntry(entry.id);
+                        if (!selected.includes(entry.id)) setSelected([entry.id]);
+                      }}
                       className={
                         preferences.view === 'grid'
                           ? 'min-w-0 rounded-panel border border-border p-4 hover:bg-surface-muted'
@@ -619,12 +766,13 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
                       <div
                         className={
                           preferences.view === 'grid'
-                            ? 'mb-4 flex items-start justify-between gap-3'
-                            : 'w-full sm:w-48'
+                            ? 'mb-3 flex items-center justify-between gap-3'
+                            : 'flex w-full items-center justify-between gap-3 sm:w-auto'
                         }
                       >
                         <CheckboxField
                           label={t('files.selectFile', { name: entry.name })}
+                          presentation="control-only"
                           checked={selected.includes(entry.id)}
                           onCheckedChange={(checked) =>
                             setSelected((current) =>
@@ -634,9 +782,74 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
                             )
                           }
                         />
+                        <MenuButton
+                          label={<MoreHorizontal className="size-5" />}
+                          ariaLabel={t('files.actionsFor', { name: entry.name })}
+                          triggerSize="sm"
+                          isOpen={contextEntry === entry.id}
+                          onOpenChange={(open) => setContextEntry(open ? entry.id : undefined)}
+                          items={
+                            trash
+                              ? [{ id: 'restore', label: t('files.restore') }]
+                              : [
+                                  { id: 'details', label: t('files.details') },
+                                  { id: 'rename', label: t('files.rename') },
+                                  { id: 'move', label: t('files.move') },
+                                  { id: 'copy', label: t('files.copy') },
+                                  ...(entry.kind === 'file'
+                                    ? [
+                                        { id: 'download', label: t('files.download') },
+                                        ...(entry.mediaType.startsWith('text/') ||
+                                        /\.(md|txt)$/i.test(entry.name)
+                                          ? [{ id: 'edit', label: t('files.edit') }]
+                                          : []),
+                                      ]
+                                    : []),
+                                  { id: 'share', label: t('files.share') },
+                                  { id: 'remove', label: t('files.remove'), tone: 'danger' },
+                                ]
+                          }
+                          onAction={(action) => {
+                            setContextEntry(undefined);
+                            if (action === 'details') void showDetails(entry);
+                            else if (action === 'download') void download(entry);
+                            else if (action === 'share') setShareTarget(entry);
+                            else if (action === 'edit') setTextRequest({ mode: 'edit', entry });
+                            else if (
+                              action === 'rename' ||
+                              action === 'move' ||
+                              action === 'copy' ||
+                              action === 'remove' ||
+                              action === 'restore'
+                            )
+                              openDialog(action, [entry]);
+                          }}
+                        />
                       </div>
-                      <div className="flex min-w-0 flex-1 items-center gap-3">
-                        <FileGlyph kind={entry.kind} mediaType={entry.mediaType} />
+                      <div
+                        className={
+                          preferences.view === 'list'
+                            ? 'flex min-w-0 flex-1 items-center gap-3'
+                            : 'flex min-w-0 flex-col items-center gap-3 py-3'
+                        }
+                      >
+                        {preferences.view === 'gallery' &&
+                        entry.kind === 'file' &&
+                        entry.mediaType.startsWith('image/') &&
+                        listing ? (
+                          <Media
+                            key={entry.id + ':' + entry.contentRevision}
+                            entry={entry}
+                            mode="thumbnail"
+                            maxBytes={listing.maxThumbnailBytes}
+                          />
+                        ) : (
+                          <FileGlyph
+                            kind={entry.kind}
+                            mediaType={entry.mediaType}
+                            size={preferences.view === 'list' ? 'small' : 'large'}
+                          />
+                        )}
                         <div className="min-w-0">
                           <button
                             type="button"
@@ -657,66 +870,34 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
                           </p>
                         </div>
                       </div>
-                      <div className="mt-3 flex flex-wrap gap-1">
-                        {trash ? (
-                          <Action
-                            size="sm"
-                            variant="secondary"
-                            onPress={() => openDialog('restore', [entry])}
-                          >
-                            {t('files.restore')}
-                          </Action>
-                        ) : (
-                          <>
-                            <Action
-                              size="sm"
-                              variant="quiet"
-                              onPress={() => {
-                                void showDetails(entry);
-                              }}
-                            >
-                              {t('files.details')}
-                            </Action>
-                            <Action
-                              size="sm"
-                              variant="quiet"
-                              onPress={() => openDialog('rename', [entry])}
-                            >
-                              {t('files.rename')}
-                            </Action>
-                            <Action
-                              size="sm"
-                              variant="quiet"
-                              onPress={() => openDialog('move', [entry])}
-                            >
-                              {t('files.move')}
-                            </Action>
-                            {entry.kind === 'file' ? (
-                              <Action
-                                size="sm"
-                                variant="quiet"
-                                onPress={() => {
-                                  void download(entry);
-                                }}
-                              >
-                                {t('files.download')}
-                              </Action>
-                            ) : null}
-                            <Action
-                              size="sm"
-                              variant="quiet"
-                              onPress={() => openDialog('remove', [entry])}
-                            >
-                              {t('files.remove')}
-                            </Action>
-                          </>
-                        )}
-                      </div>
                     </article>
                   ))}
                 </div>
               )}
             </section>
+            {listing && preferences.view === 'gallery' && pageCount > 1 ? (
+              <div className="flex flex-wrap items-center gap-3">
+                <Action
+                  variant="secondary"
+                  size="sm"
+                  disabled={currentGalleryPage === 0}
+                  onPress={() => setGalleryPage(currentGalleryPage - 1)}
+                >
+                  {t('files.previousPage')}
+                </Action>
+                <span className="text-sm text-ink-muted">
+                  {t('files.galleryPage', { current: currentGalleryPage + 1, pages: pageCount })}
+                </span>
+                <Action
+                  variant="secondary"
+                  size="sm"
+                  disabled={currentGalleryPage + 1 >= pageCount}
+                  onPress={() => setGalleryPage(currentGalleryPage + 1)}
+                >
+                  {t('files.nextPage')}
+                </Action>
+              </div>
+            ) : null}
             {listing ? (
               <p className="text-xs text-ink-muted">
                 {t('files.uploadLimit', {
@@ -813,18 +994,27 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
           confirmDisabled={
             dialog.mode === 'folder' || dialog.mode === 'rename'
               ? !name.trim()
-              : dialog.mode === 'move' || dialog.mode === 'restore'
-                ? !folders
-                : false
+              : dialog.mode === 'copy'
+                ? !folders || !name.trim()
+                : dialog.mode === 'move' || dialog.mode === 'restore'
+                  ? !folders
+                  : false
           }
         >
+          {dialog.mode === 'copy' ? (
+            <TextField
+              label={t('files.name')}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
+          ) : null}
           {dialog.mode === 'folder' || dialog.mode === 'rename' ? (
             <TextField
               label={t('files.name')}
               value={name}
               onChange={(event) => setName(event.target.value)}
             />
-          ) : dialog.mode === 'move' || dialog.mode === 'restore' ? (
+          ) : dialog.mode === 'move' || dialog.mode === 'restore' || dialog.mode === 'copy' ? (
             <div className="space-y-3">
               <Action variant="secondary" onPress={() => setDestination('')}>
                 {t('files.nav')}
@@ -858,6 +1048,49 @@ export function FilesPage({ parent, category, trash, search, navigate }: Props) 
               ))}
             </ul>
           )}
+        </DialogSurface>
+      ) : null}
+      {shareTarget ? (
+        <ShareDialog entry={shareTarget} onClose={() => setShareTarget(undefined)} />
+      ) : null}
+      {textRequest && listing ? (
+        <TextDialog
+          request={textRequest}
+          maxBytes={listing.maxTextBytes}
+          onClose={() => setTextRequest(undefined)}
+          onSaved={() => {
+            setNotice(t('files.operationDone'));
+            reload();
+          }}
+        />
+      ) : null}
+      {mediaEntry && listing ? (
+        <DialogSurface
+          triggerLabel={t('files.mediaPreview')}
+          title={mediaEntry.name}
+          description={t('files.mediaPreview')}
+          cancelLabel={t('files.close')}
+          isOpen
+          onOpenChange={(open) => {
+            if (!open) setMediaEntry(undefined);
+          }}
+        >
+          <div className="space-y-4">
+            <Media
+              key={mediaEntry.id + ':' + mediaEntry.contentRevision}
+              entry={mediaEntry}
+              mode="preview"
+              maxBytes={listing.maxFileBytes}
+            />
+            <Action
+              variant="secondary"
+              onPress={() => {
+                void download(mediaEntry);
+              }}
+            >
+              {t('files.download')}
+            </Action>
+          </div>
         </DialogSurface>
       ) : null}
       {detail ? (

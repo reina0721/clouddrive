@@ -339,6 +339,24 @@
         ],
         "type": "object"
       },
+      "ArchiveInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "type": "object"
+      },
       "Assignment": {
         "additionalProperties": false,
         "properties": {
@@ -611,6 +629,25 @@
         "required": [
           "currentPassword",
           "newPassword"
+        ],
+        "type": "object"
+      },
+      "CopyInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          }
+        },
+        "required": [
+          "parentId",
+          "name"
         ],
         "type": "object"
       },
@@ -902,6 +939,10 @@
       "Entry": {
         "additionalProperties": false,
         "properties": {
+          "contentRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -944,7 +985,8 @@
           "mediaType",
           "createdAt",
           "updatedAt",
-          "trashedAt"
+          "trashedAt",
+          "contentRevision"
         ],
         "type": "object"
       },
@@ -1199,7 +1241,27 @@
             "nullable": true,
             "type": "array"
           },
+          "maxArchiveBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxBatchEntries": {
+            "format": "int64",
+            "type": "integer"
+          },
           "maxFileBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxGalleryEntries": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxTextBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxThumbnailBytes": {
             "format": "int64",
             "type": "integer"
           },
@@ -1218,7 +1280,12 @@
           "usedBytes",
           "quotaBytes",
           "maxFileBytes",
-          "concurrentUploads"
+          "concurrentUploads",
+          "maxTextBytes",
+          "maxArchiveBytes",
+          "maxBatchEntries",
+          "maxThumbnailBytes",
+          "maxGalleryEntries"
         ],
         "type": "object"
       },
@@ -1719,6 +1786,97 @@
         ],
         "type": "object"
       },
+      "PublicEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "mediaType": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "sizeBytes",
+          "mediaType",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "PublicListing": {
+        "additionalProperties": false,
+        "properties": {
+          "breadcrumbs": {
+            "items": {
+              "$ref": "#/components/schemas/PublicEntry"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PublicEntry"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "breadcrumbs"
+        ],
+        "type": "object"
+      },
+      "PublicShare": {
+        "additionalProperties": false,
+        "properties": {
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "locked": {
+            "type": "boolean"
+          },
+          "root": {
+            "$ref": "#/components/schemas/PublicEntry"
+          }
+        },
+        "required": [
+          "locked",
+          "expiresAt"
+        ],
+        "type": "object"
+      },
+      "PublicUnlockInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "password": {
+            "maxLength": 128,
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
+        ],
+        "type": "object"
+      },
       "ReplaceAssignmentRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2060,6 +2218,70 @@
         ],
         "type": "object"
       },
+      "ShareCreateInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 128,
+            "type": "string"
+          },
+          "rootId": {
+            "maxLength": 36,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "rootId"
+        ],
+        "type": "object"
+      },
+      "ShareSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "hasPassword": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rootId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "token",
+          "rootId",
+          "name",
+          "hasPassword",
+          "createdAt",
+          "expiresAt",
+          "status"
+        ],
+        "type": "object"
+      },
       "StatusInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -2073,6 +2295,25 @@
         },
         "required": [
           "status"
+        ],
+        "type": "object"
+      },
+      "TextInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "expectedRevision": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "text": {
+            "maxLength": 1048576,
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "text"
         ],
         "type": "object"
       },
@@ -2138,6 +2379,23 @@
           "offset",
           "limit",
           "total"
+        ],
+        "type": "object"
+      },
+      "UnlockResult": {
+        "additionalProperties": false,
+        "properties": {
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "ticket": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket",
+          "expiresAt"
         ],
         "type": "object"
       },
@@ -2586,6 +2844,233 @@
         ]
       }
     },
+    "/api/v1/file-shares/{token}": {
+      "get": {
+        "operationId": "files.public.metadata",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicShare"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/content/{id}": {
+      "get": {
+        "operationId": "files.public.content",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                  "x-contentMediaType": "application/octet-stream"
+                }
+              }
+            },
+            "description": "分享授权范围内的原始文件"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/entries": {
+      "get": {
+        "operationId": "files.public.entries",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "parent",
+            "schema": {
+              "maxLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicListing"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/unlock": {
+      "post": {
+        "operationId": "files.public.unlock",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicUnlockInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnlockResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
     "/api/v1/files": {
       "get": {
         "operationId": "files.list",
@@ -2672,6 +3157,53 @@
         ]
       }
     },
+    "/api/v1/files/archive": {
+      "post": {
+        "operationId": "files.archive",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                  "x-contentMediaType": "application/octet-stream"
+                }
+              }
+            },
+            "description": "有界文件 ZIP"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
     "/api/v1/files/folders": {
       "post": {
         "operationId": "files.folder",
@@ -2691,6 +3223,135 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Entry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/shares": {
+      "get": {
+        "operationId": "files.shares.list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ShareSummary"
+                  },
+                  "nullable": true,
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "post": {
+        "operationId": "files.shares.create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShareCreateInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareSummary"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/shares/{shareId}/revoke": {
+      "post": {
+        "operationId": "files.shares.revoke",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shareId",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareSummary"
                 }
               }
             },
@@ -2941,6 +3602,63 @@
         ]
       }
     },
+    "/api/v1/files/{id}/copy": {
+      "post": {
+        "operationId": "files.copy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CopyInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
     "/api/v1/files/{id}/restore": {
       "post": {
         "operationId": "files.restore",
@@ -2959,6 +3677,63 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RestoreInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/{id}/text": {
+      "put": {
+        "operationId": "files.text.replace",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TextInputBody"
               }
             }
           },

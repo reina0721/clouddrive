@@ -10,6 +10,8 @@ export type FilesErrorCode =
   | 'large'
   | 'busy'
   | 'unsupported'
+  | 'invalid'
+  | 'locked'
   | 'canceled';
 export class FilesError extends Error {
   constructor(
@@ -30,6 +32,7 @@ export const fileEntrySchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   trashedAt: z.string().nullable(),
+  contentRevision: z.number().int().positive(),
 });
 export type FileEntry = z.infer<typeof fileEntrySchema>;
 export const fileListingSchema = z.object({
@@ -39,6 +42,11 @@ export const fileListingSchema = z.object({
   quotaBytes: z.number().positive(),
   maxFileBytes: z.number().positive(),
   concurrentUploads: z.number().int().positive(),
+  maxTextBytes: z.number().int().positive(),
+  maxArchiveBytes: z.number().int().positive(),
+  maxBatchEntries: z.number().int().positive(),
+  maxThumbnailBytes: z.number().int().positive(),
+  maxGalleryEntries: z.number().int().positive(),
 });
 export type FileListing = z.infer<typeof fileListingSchema>;
 export const fileDetailSchema = z.object({
@@ -53,16 +61,41 @@ export type FileQuery = Readonly<{
   sort: string;
   desc: boolean;
 }>;
-export type UploadCandidate = Readonly<{ id: string; name: string; sizeBytes: number }>;
-export type FileViewPreferences = Readonly<{ view: 'grid' | 'list'; sort: string; desc: boolean }>;
+export type UploadCandidate = Readonly<{
+  id: string;
+  name: string;
+  sizeBytes: number;
+  relativePath?: string;
+}>;
+export type FileViewPreferences = Readonly<{
+  view: 'grid' | 'list' | 'gallery';
+  sort: string;
+  desc: boolean;
+}>;
+export type FileShortcut =
+  'search' | 'refresh' | 'selectAll' | 'clearSelection' | 'rename' | 'trash' | 'newFolder' | 'open';
 export type FilesPort = Readonly<{
   list(query: FileQuery, signal?: AbortSignal): Promise<FileListing>;
   folder(parentId: string, name: string): Promise<FileEntry>;
   update(id: string, change: { name?: string; parentId?: string }): Promise<FileEntry>;
   trash(id: string): Promise<FileEntry>;
   restore(id: string, parentId?: string): Promise<FileEntry>;
+  copy(id: string, parentId: string, name: string): Promise<FileEntry>;
+  createText(parentId: string, name: string, text: string): Promise<FileEntry>;
+  textBytes(text: string): number;
+  replaceText(id: string, expectedRevision: number, text: string): Promise<FileEntry>;
+  archive(ids: readonly string[]): Promise<void>;
+  shares(signal?: AbortSignal): Promise<readonly FileShare[]>;
+  createShare(rootId: string, password: string, expiresAt?: string): Promise<FileShare>;
+  revokeShare(id: string): Promise<FileShare>;
+  shareLink(token: string): string;
+  copyShareLink(token: string): Promise<void>;
   detail(id: string): Promise<z.infer<typeof fileDetailSchema>>;
   chooseFiles(): Promise<readonly UploadCandidate[]>;
+  chooseDirectory(): Promise<readonly UploadCandidate[]>;
+  subscribeShortcuts(listener: (shortcut: FileShortcut) => void): () => void;
+  focusSearch(): void;
+  focusFiles(): void;
   subscribeDrop(listener: (candidates: readonly UploadCandidate[]) => void): () => void;
   upload(candidate: UploadCandidate, parentId: string, signal: AbortSignal): Promise<FileEntry>;
   releaseCandidate(id: string): void;
@@ -70,4 +103,42 @@ export type FilesPort = Readonly<{
   preview(entry: FileEntry, signal?: AbortSignal): Promise<string>;
   loadPreferences(): FileViewPreferences;
   savePreferences(value: FileViewPreferences): void;
+}>;
+
+export const fileShareSchema = z.object({
+  id: z.string(),
+  token: z.string(),
+  rootId: z.string(),
+  name: z.string(),
+  hasPassword: z.boolean(),
+  createdAt: z.string(),
+  expiresAt: z.string(),
+  status: z.enum(['active', 'expired', 'revoked', 'unavailable']),
+});
+export type FileShare = z.infer<typeof fileShareSchema>;
+
+export const publicFileEntrySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  kind: z.enum(['file', 'folder']),
+  sizeBytes: z.number().int().nonnegative(),
+  mediaType: z.string(),
+  updatedAt: z.string(),
+});
+export type PublicFileEntry = z.infer<typeof publicFileEntrySchema>;
+export const publicShareSchema = z.object({
+  locked: z.boolean(),
+  root: publicFileEntrySchema.optional(),
+  expiresAt: z.string(),
+});
+export const publicFileListingSchema = z.object({
+  items: z.array(publicFileEntrySchema),
+  breadcrumbs: z.array(publicFileEntrySchema),
+});
+export const shareUnlockSchema = z.object({ ticket: z.string(), expiresAt: z.string() });
+export type PublicFilesPort = Readonly<{
+  metadata(signal?: AbortSignal): Promise<z.infer<typeof publicShareSchema>>;
+  unlock(password: string, signal?: AbortSignal): Promise<void>;
+  entries(parent: string, signal?: AbortSignal): Promise<z.infer<typeof publicFileListingSchema>>;
+  download(entry: PublicFileEntry): Promise<void>;
 }>;

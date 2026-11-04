@@ -2,7 +2,7 @@
 
 浏览器统一使用 frontend/ 的 console-web 插件体系；Go binding/webui 仅保留后端所需的模块、菜单、权限元数据。
 
-[Files](files/README.md) 拥有新增的私有文件目录、传输、回收状态、配额与幂等；复用现有 IAM 与 Kernel Storage，不引入第二套认证或存储客户端。
+[Files](files/README.md) 拥有私有文件目录、传输、回收状态、配额、幂等、内容编辑及只读分享授权；复用现有 IAM 与 Kernel Storage，不引入第二套认证或存储客户端。分享密码通过 composition 注入 IAM 根公开的无状态凭据摘要能力，Files 不导入 IAM 私有 Adapter，也不复用浏览器 Session 作为访客票据。
 
 `internal/module` 保存由应用组合根显式选择的纵向模块。这里的 Module 是进程内业务单元，不是 Go module、Kernel Component 或动态插件。每个模块按业务名称收口 Model、Service、Repository、协议 Adapter、binding 与 contribution；底层资源仍由 Kernel 统一创建，模块对象不进入 Kernel Plan。
 

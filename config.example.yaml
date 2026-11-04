@@ -328,3 +328,14 @@ files:
   maxFileBytes: 33554432
   quotaBytes: 1073741824
   concurrentUploads: 2
+  maxTextBytes: 1048576
+  maxArchiveBytes: 67108864
+  maxBatchEntries: 500
+  maxThumbnailBytes: 2097152
+  maxGalleryEntries: 12
+  sharing:
+    maxAge: 720h
+    grantTTL: 15m
+    attemptWindow: 1m
+    attemptLimit: 10
+    kdfConcurrency: 2

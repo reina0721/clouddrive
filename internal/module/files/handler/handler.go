@@ -15,9 +15,11 @@ type ActorAccess interface {
 	Owner(context.Context) (string, bool)
 }
 type Handler struct {
-	Service *service.Service
-	Actors  ActorAccess
-	Logger  logger.Logger
+	Service       *service.Service
+	Sharing       *service.Sharing
+	PublicOrigins []string
+	Actors        ActorAccess
+	Logger        logger.Logger
 }
 
 func (h *Handler) Owner(ctx context.Context) (string, error) {
@@ -49,6 +51,8 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 		status, code = 413, "files_too_large"
 	case errors.Is(err, model.ErrBusy):
 		status, code = 429, "files_busy"
+	case errors.Is(err, model.ErrShareLocked):
+		status, code = 403, "files_share_locked"
 	case errors.Is(err, context.Canceled):
 		status, code = 499, "files_canceled"
 	case errors.Is(err, context.DeadlineExceeded):

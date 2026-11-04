@@ -1,6 +1,6 @@
 # files 模块
 
-本模块拥有私有文件的目录、名称、归属、回收状态、配额与上传幂等用例。用户能力、预算、预览和维护限制以[文件管理](../../../docs/operations/file-management.md)为唯一当前使用说明。
+本模块拥有私有文件的目录、名称、归属、回收状态、配额、上传幂等、内容版本、复制/ZIP 与只读分享用例。用户能力、预算、预览和维护限制以[文件管理](../../../docs/operations/file-management.md)为唯一当前使用说明。
 
 - model 只维护实体和不变量；GORM record、表名、锁与持久化位于 repo。
 - service 依赖仓储、内容存储、名称规范化、Clock 和 IDGenerator 窄契约。
