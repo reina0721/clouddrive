@@ -136,6 +136,16 @@ func (s *Transfers) Ingest(ctx context.Context, connection model.Connection, par
 		if original != nil && original.Kind != model.File {
 			return model.Transfer{}, nil, model.ErrConflict
 		}
+		if original != nil {
+			if original.ContentRevision >= model.MaxContentRevision {
+				return model.Transfer{}, nil, model.ErrConflict
+			}
+			if s.files.policy.HistoryEnabled {
+				if _, err := s.files.retainCurrent(snapshot.Entries, *original); err != nil {
+					return model.Transfer{}, nil, err
+				}
+			}
+		}
 		if err := checkContentCondition(original, condition); err != nil {
 			return model.Transfer{}, nil, err
 		}
@@ -148,6 +158,9 @@ func (s *Transfers) Ingest(ctx context.Context, connection model.Connection, par
 			oldSize = original.SizeBytes
 			if oldSize < 0 || oldSize > used {
 				return model.Transfer{}, nil, fmt.Errorf("replacement size invariant")
+			}
+			if s.files.policy.HistoryEnabled {
+				oldSize = 0
 			}
 		}
 		capacity := declaredBytes

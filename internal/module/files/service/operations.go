@@ -106,8 +106,19 @@ func (s *Service) ReplaceText(ctx context.Context, owner, id string, revision in
 		if current.ContentRevision != revision || current.ObjectKey != detail.Entry.ObjectKey {
 			return model.Entry{}, model.ErrConflict
 		}
-		if model.Used(entries)-current.SizeBytes+int64(len(text)) > s.policy.QuotaBytes {
+		used := s.replacementUsed(entries, current)
+		if used > s.policy.QuotaBytes || int64(len(text)) > s.policy.QuotaBytes-used {
 			return model.Entry{}, model.ErrQuota
+		}
+		if current.ContentRevision >= model.MaxContentRevision {
+			return model.Entry{}, model.ErrConflict
+		}
+		if s.policy.HistoryEnabled {
+			retained, err := s.retainCurrent(entries, current)
+			if err != nil {
+				return model.Entry{}, err
+			}
+			current = retained
 		}
 		current.ObjectKey, current.ContentSHA, current.SizeBytes = key, hex.EncodeToString(digest[:]), int64(len(text))
 		current.MediaType = mediaType
@@ -275,11 +286,18 @@ func (s *Service) copyTree(entries []model.Entry, id, parent, name, normalized s
 		return nil, model.ErrTooLarge
 	}
 	remaining := s.policy.QuotaBytes - model.Used(entries)
+	if model.HistoryCount(entries)+model.HistoryCount(originals) > s.policy.HistoryPerOwner {
+		return nil, model.ErrHistoryFull
+	}
 	for _, entry := range originals {
-		if entry.SizeBytes < 0 || entry.SizeBytes > remaining {
+		if len(entry.History) > s.policy.HistoryPerFile {
+			return nil, model.ErrHistoryFull
+		}
+		size := entry.SizeBytes + model.HistoryBytes(entry)
+		if size < 0 || size > remaining {
 			return nil, model.ErrQuota
 		}
-		remaining -= entry.SizeBytes
+		remaining -= size
 	}
 	ids := make(map[string]string, len(originals))
 	allocated := make(map[string]bool, len(originals))
@@ -300,7 +318,11 @@ func (s *Service) copyTree(entries []model.Entry, id, parent, name, normalized s
 		originalID := entry.ID
 		entry.ID, entry.CreatedAt, entry.UpdatedAt = ids[originalID], now, now
 		entry.UploadKey, entry.TrashedAt = "", nil
-		entry.ContentRevision = 1
+		entry.History = model.CloneHistory(entry.History)
+		if len(entry.History) == 0 {
+			entry.ContentRevision = 1
+		}
+		entry.HistoryRevision = 0
 		entry.Annotations = model.CloneAnnotations(entry.Annotations)
 		entry.AnnotationRevision = 0
 		if index == 0 {

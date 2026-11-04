@@ -4,15 +4,26 @@ import type { TranslationResources } from '@clouddrive/i18n';
 export async function loadFileAnnotationMessages(): Promise<TranslationResources> {
   const messages = await import('../../plugins/files/annotations-i18n');
   const explorer = await import('../../plugins/files/explorer-i18n');
+  const versions = await import('../../plugins/files/versions-i18n');
   return {
     'zh-CN': {
       translation: {
-        files: { annotations: messages.zhAnnotations, explorer: explorer.zhExplorer },
+        files: {
+          annotations: messages.zhAnnotations,
+          explorer: explorer.zhExplorer,
+          versions: versions.zhVersions,
+          errors: { 'history-full': versions.zhVersions.full },
+        },
       },
     },
     en: {
       translation: {
-        files: { annotations: messages.enAnnotations, explorer: explorer.enExplorer },
+        files: {
+          annotations: messages.enAnnotations,
+          explorer: explorer.enExplorer,
+          versions: versions.enVersions,
+          errors: { 'history-full': versions.enVersions.full },
+        },
       },
     },
   };

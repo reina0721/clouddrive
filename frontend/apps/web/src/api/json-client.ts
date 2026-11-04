@@ -3,8 +3,9 @@ export class ApiError extends Error {
     public readonly code: 'http' | 'network' | 'timeout' | 'protocol',
     public readonly status = 0,
     public readonly payload: unknown = undefined,
+    options?: ErrorOptions,
   ) {
-    super(`API: ${code}`);
+    super(`API: ${code}`, options);
     this.name = 'ApiError';
   }
 }
@@ -23,12 +24,12 @@ export function csrfTokenOf(value: unknown): string {
   return value.token;
 }
 
-/** Cookie/CSRF transport shared by auth and product adapters; never caches credentials or responses. */
+/** createJsonClient 统一 Cookie/CSRF 传输；GET/HEAD 不获取写入令牌，也不缓存凭据或响应。 */
 export function createJsonClient(apiBaseUrl: string, request: typeof fetch = fetch) {
   return async (
     path: string,
     options: Readonly<{
-      method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+      method?: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
       body?: unknown;
       rawBody?: Blob;
       responseType?: 'json' | 'blob';
@@ -44,9 +45,10 @@ export function createJsonClient(apiBaseUrl: string, request: typeof fetch = fet
       ? AbortSignal.any([controller.signal, options.signal])
       : controller.signal;
     const method = options.method ?? 'GET';
+    const readOnly = method === 'GET' || method === 'HEAD';
     try {
       let csrfToken: string | undefined;
-      if (method !== 'GET') {
+      if (!readOnly) {
         const csrf = await request(`${apiBaseUrl}/auth/csrf`, {
           credentials: 'include',
           cache: 'no-store',
@@ -63,7 +65,7 @@ export function createJsonClient(apiBaseUrl: string, request: typeof fetch = fet
         credentials: 'include',
         cache: 'no-store',
         signal,
-        ...(method !== 'GET'
+        ...(!readOnly
           ? {
               headers: {
                 'Content-Type': 'application/json',
@@ -88,7 +90,9 @@ export function createJsonClient(apiBaseUrl: string, request: typeof fetch = fet
       }
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      throw new ApiError(controller.signal.aborted ? 'timeout' : 'network');
+      throw new ApiError(controller.signal.aborted ? 'timeout' : 'network', 0, undefined, {
+        cause: error,
+      });
     } finally {
       clearTimeout(timeout);
     }

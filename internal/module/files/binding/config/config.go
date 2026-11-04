@@ -25,6 +25,7 @@ type Config struct {
 	Navigation        NavigationConfig `mapstructure:"navigation"`
 	Search            SearchConfig     `mapstructure:"search"`
 	Annotations       AnnotationConfig `mapstructure:"annotations"`
+	History           HistoryConfig    `mapstructure:"history"`
 }
 
 type ShareConfig struct {
@@ -43,7 +44,7 @@ func (c Config) SharePolicy() service.SharePolicy {
 }
 
 func (c Config) Policy() service.Policy {
-	return service.Policy{MaxFileBytes: c.MaxFileBytes, QuotaBytes: c.QuotaBytes, ConcurrentUploads: c.ConcurrentUploads, MaxTextBytes: c.MaxTextBytes, MaxArchiveBytes: c.MaxArchiveBytes, MaxBatchEntries: c.MaxBatchEntries, MaxThumbnailBytes: c.MaxThumbnailBytes, MaxMediaBytes: c.MaxMediaBytes, MaxGalleryEntries: c.MaxGalleryEntries, ShortcutLimit: c.Navigation.ShortcutLimit, SearchTreeEntries: c.Search.TreeEntries, AnnotationMaxBytes: c.Annotations.MaxBytes, AnnotationBatchEntries: c.Annotations.BatchEntries}
+	return service.Policy{MaxFileBytes: c.MaxFileBytes, QuotaBytes: c.QuotaBytes, ConcurrentUploads: c.ConcurrentUploads, MaxTextBytes: c.MaxTextBytes, MaxArchiveBytes: c.MaxArchiveBytes, MaxBatchEntries: c.MaxBatchEntries, MaxThumbnailBytes: c.MaxThumbnailBytes, MaxMediaBytes: c.MaxMediaBytes, MaxGalleryEntries: c.MaxGalleryEntries, ShortcutLimit: c.Navigation.ShortcutLimit, SearchTreeEntries: c.Search.TreeEntries, AnnotationMaxBytes: c.Annotations.MaxBytes, AnnotationBatchEntries: c.Annotations.BatchEntries, HistoryEnabled: c.History.Enabled, HistoryPerFile: c.History.PerFile, HistoryPerOwner: c.History.PerOwner}
 }
 func Decode(snapshot config.Snapshot) (Config, error) {
 	p := service.DefaultPolicy()
@@ -55,6 +56,7 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 	c.Navigation = defaultNavigation()
 	c.Search = SearchConfig{TreeEntries: service.DefaultSearchTreeEntries}
 	c.Annotations = AnnotationConfig{MaxBytes: p.AnnotationMaxBytes, BatchEntries: p.AnnotationBatchEntries}
+	c.History = HistoryConfig{Enabled: p.HistoryEnabled, PerFile: p.HistoryPerFile, PerOwner: p.HistoryPerOwner}
 	if err := snapshot.DecodeSection("files", &c); err != nil {
 		return Config{}, err
 	}
@@ -148,5 +150,10 @@ func (defaults) Defaults(ctx context.Context) (config.Object, config.Control, er
 		return nil, config.Continue, err
 	}
 	fields = append(fields, config.FieldOf("annotations", config.ObjectValue(annotations)))
+	history, err := historyDefaults(ctx)
+	if err != nil {
+		return nil, config.Continue, err
+	}
+	fields = append(fields, config.FieldOf("history", config.ObjectValue(history)))
 	return fields, config.Continue, nil
 }

@@ -12,6 +12,7 @@ import {
   type TransfersPort,
   type TransferFilter,
   type UploadCandidate,
+  type FileEntry,
 } from '@clouddrive/surface/files';
 import type { createJsonClient } from '../api/json-client';
 import { hashFile } from './file-hash';
@@ -30,6 +31,12 @@ const pendingSchema = z
       parentId: z.string(),
       targetParentId: z.string().optional(),
       relativePath: z.string().optional(),
+      replacement: z
+        .object({
+          entryId: z.string().min(1).max(36),
+          contentRevision: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+        })
+        .optional(),
     }),
   )
   .max(maxTransferQueueEntries);
@@ -40,6 +47,7 @@ type Managed = {
   candidate: UploadCandidate;
   key: string;
   rootParentId: string;
+  replacement: { entryId: string; contentRevision: number } | undefined;
   targetParentId: string | undefined;
   source: File | undefined;
   sha: string | undefined;
@@ -123,6 +131,7 @@ export function createTransferRuntime(deps: Dependencies) {
             name: item.view.name,
             sizeBytes: item.view.sizeBytes,
             parentId: item.rootParentId,
+            ...(item.replacement ? { replacement: item.replacement } : {}),
             ...(item.targetParentId ? { targetParentId: item.targetParentId } : {}),
             ...(item.candidate.relativePath ? { relativePath: item.candidate.relativePath } : {}),
           });
@@ -158,6 +167,7 @@ export function createTransferRuntime(deps: Dependencies) {
         sizeBytes: candidate.sizeBytes,
         sizeKnown: true,
         source: 'tus',
+        replacementId: '',
         confirmedBytes: 0,
         hashBytes: 0,
         phase: 'needs-source',
@@ -171,6 +181,7 @@ export function createTransferRuntime(deps: Dependencies) {
       candidate,
       key,
       rootParentId: parentId,
+      replacement: undefined,
       targetParentId: undefined,
       source: undefined,
       sha: undefined,
@@ -195,6 +206,9 @@ export function createTransferRuntime(deps: Dependencies) {
   function merge(item: Managed, server: ServerTransfer) {
     const completedBefore = item.view.phase === 'completed';
     item.server = server;
+    item.replacement = server.expectedEntryId
+      ? { entryId: server.expectedEntryId, contentRevision: server.expectedContentRevision }
+      : undefined;
     item.targetParentId = server.parentId;
     item.view = {
       ...item.view,
@@ -206,6 +220,7 @@ export function createTransferRuntime(deps: Dependencies) {
       sizeBytes: server.sizeBytes,
       sizeKnown: server.sizeKnown,
       source: server.source,
+      replacementId: server.expectedEntryId,
       confirmedBytes: Math.max(item.view.confirmedBytes, server.offsetBytes),
       expiresAt: server.expiresAt,
       entryId: server.entryId,
@@ -392,6 +407,12 @@ export function createTransferRuntime(deps: Dependencies) {
               sizeBytes: item.source.size,
               sha256: item.sha,
               key: item.key,
+              ...(item.replacement
+                ? {
+                    expectedEntryId: item.replacement.entryId,
+                    expectedContentRevision: item.replacement.contentRevision,
+                  }
+                : {}),
             },
             signal,
           }),
@@ -545,6 +566,56 @@ export function createTransferRuntime(deps: Dependencies) {
     );
     pump();
   }
+  async function enqueue(
+    candidates: readonly UploadCandidate[],
+    parentId: string,
+    replacement?: FileEntry,
+  ) {
+    try {
+      assertOwner();
+      if (
+        replacement &&
+        (candidates.length !== 1 ||
+          replacement.kind !== 'file' ||
+          !replacement.id ||
+          replacement.contentRevision < 1)
+      )
+        throw new FilesError('invalid');
+      if (!limits) await refresh('active');
+      if (!limits) throw new FilesError('unavailable');
+      if (
+        [...items.values()].filter((item) => !terminal(item.view.phase)).length +
+          candidates.length >
+        limits.maxQueueEntries
+      )
+        throw new FilesError('large');
+      const sources = candidates.map((candidate) => deps.takeSource(candidate));
+      if (sources.some((source, index) => !source || source.size !== candidates[index]?.sizeBytes))
+        throw new FilesError('invalid');
+      if (sources.some((source) => source && source.size > limits!.maxFileBytes))
+        throw new FilesError('large');
+      for (let index = 0; index < candidates.length; index++) {
+        const candidate = candidates[index];
+        if (!candidate) continue;
+        const item = newManaged(candidate, parentId);
+        item.source = sources[index];
+        if (replacement) {
+          item.replacement = {
+            entryId: replacement.id,
+            contentRevision: replacement.contentRevision,
+          };
+          item.targetParentId = parentId;
+          item.view = { ...item.view, name: replacement.name, replacementId: replacement.id };
+        }
+        item.view = { ...item.view, phase: 'waiting', hasSource: true };
+        items.set(candidate.id, item);
+      }
+      emit(true);
+      pump();
+    } finally {
+      for (const candidate of candidates) deps.releaseSource(candidate.id);
+    }
+  }
   const port: TransfersPort = {
     getSnapshot: () => snapshot,
     subscribe: (listener) => {
@@ -556,38 +627,8 @@ export function createTransferRuntime(deps: Dependencies) {
     refresh,
     pause,
     resume,
-    enqueue: async (candidates, parentId) => {
-      try {
-        assertOwner();
-        if (!limits) await refresh('active');
-        if (!limits) throw new FilesError('unavailable');
-        if (
-          [...items.values()].filter((item) => !terminal(item.view.phase)).length +
-            candidates.length >
-          limits.maxQueueEntries
-        )
-          throw new FilesError('large');
-        const sources = candidates.map((candidate) => deps.takeSource(candidate));
-        if (
-          sources.some((source, index) => !source || source.size !== candidates[index]?.sizeBytes)
-        )
-          throw new FilesError('invalid');
-        if (sources.some((source) => source && source.size > limits!.maxFileBytes))
-          throw new FilesError('large');
-        for (let index = 0; index < candidates.length; index++) {
-          const candidate = candidates[index];
-          if (!candidate) continue;
-          const item = newManaged(candidate, parentId);
-          item.source = sources[index];
-          item.view = { ...item.view, phase: 'waiting', hasSource: true };
-          items.set(candidate.id, item);
-        }
-        emit(true);
-        pump();
-      } finally {
-        for (const candidate of candidates) deps.releaseSource(candidate.id);
-      }
-    },
+    enqueue: (candidates, parentId) => enqueue(candidates, parentId),
+    replace: (candidate, target) => enqueue([candidate], target.parentId, target),
     cancel: async (id) => {
       assertOwner();
       const item = find(id);
@@ -626,7 +667,7 @@ export function createTransferRuntime(deps: Dependencies) {
       assertOwner();
       const item = find(id);
       if (item.server?.source === 'webdav') throw new FilesError('unsupported');
-      if (!item.server || item.task) throw new FilesError('conflict');
+      if (!item.server || item.task || item.replacement) throw new FilesError('conflict');
       const server = transferSchema.parse(
         await deps.call(`/transfers/${encodeURIComponent(item.server.id)}/target`, {
           method: 'PUT',
@@ -681,6 +722,9 @@ export function createTransferRuntime(deps: Dependencies) {
                 descriptor.key,
               );
               item.targetParentId = descriptor.targetParentId;
+              item.replacement = descriptor.replacement;
+              if (descriptor.replacement)
+                item.view = { ...item.view, replacementId: descriptor.replacement.entryId };
               items.set(item.view.id, item);
             }
         } catch {

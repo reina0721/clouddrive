@@ -8,3 +8,5 @@ export * from './selection';
 export * from './annotation-values';
 export * from './annotations';
 export * from './clipboard';
+
+export * from './versions';

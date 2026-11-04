@@ -291,7 +291,7 @@ func (r *Transfers) ChangeTransfer(ctx context.Context, owner, id, key string, c
 					return err
 				}
 				if _, exists := model.Find(entries, entry.ID); exists {
-					if changed.Source != model.TransferSourceWebDAV || changed.ExpectedEntryID != entry.ID {
+					if (changed.Source != model.TransferSourceWebDAV && changed.Source != model.TransferSourceTus) || changed.ExpectedEntryID != entry.ID || changed.ExpectedContentRevision < 1 {
 						return model.ErrConflict
 					}
 					update := db.Model(&entryRecord{}).Where("owner_id = ? AND id = ? AND content_revision = ?", owner, entry.ID, changed.ExpectedContentRevision).Select("*").Updates(&record)

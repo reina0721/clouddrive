@@ -2,6 +2,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
+  createElement,
   useContext,
   useSyncExternalStore,
   type ReactNode,
@@ -17,6 +18,7 @@ export type FileMediaProps = Readonly<{
   entry: FileEntry;
   mode: 'preview' | 'thumbnail';
   maxBytes: number;
+  version?: number;
 }>;
 const MediaContext = createContext<ComponentType<FileMediaProps> | null>(null);
 
@@ -73,10 +75,11 @@ export function useTransferSnapshot() {
   const port = useTransfers();
   return useSyncExternalStore(port.subscribe, port.getSnapshot, port.getSnapshot);
 }
-export function useFileMedia() {
+/** FileMedia 通过稳定组件入口使用Host注入的renderer，避免调用方在render期间创建组件。 */
+export function FileMedia(props: FileMediaProps) {
   const renderer = useContext(MediaContext);
   if (!renderer) throw new Error('File media renderer is required');
-  return renderer;
+  return createElement(renderer, props);
 }
 export function useFiles(): FilesPort {
   const port = useContext(Context);

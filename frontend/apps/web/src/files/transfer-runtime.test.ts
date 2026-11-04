@@ -108,4 +108,42 @@ describe('持久传输的资源和身份边界', () => {
     expect(another.runtime.port.getSnapshot().items).toHaveLength(0);
     await another.runtime.dispose();
   });
+  it('上传新版本固定目标名称和 CAS，暂停后描述符保留目标，拒绝改投目录', async () => {
+    const f = fixture();
+    f.runtime.activate();
+    const candidate = { id: crypto.randomUUID(), name: 'different.txt', sizeBytes: f.source.size };
+    const target = {
+      id: 'target',
+      parentId: 'parent',
+      kind: 'file' as const,
+      name: 'existing.txt',
+      sizeBytes: 3,
+      mediaType: 'text/plain',
+      createdAt: 'x',
+      updatedAt: 'x',
+      trashedAt: null,
+      contentRevision: 7,
+    };
+    await f.runtime.port.replace(candidate, target);
+    await vi.waitFor(() => expect(f.runtime.port.getSnapshot().items[0]?.phase).toBe('hashing'));
+    expect(f.runtime.port.getSnapshot().items[0]).toMatchObject({
+      name: 'existing.txt',
+      replacementId: 'target',
+      parentId: 'parent',
+    });
+    await f.runtime.port.pauseAll();
+    const descriptor = localStorage.getItem(localStorage.key(0)!);
+    expect(descriptor).toContain('"entryId":"target"');
+    expect(descriptor).toContain('"contentRevision":7');
+    await expect(
+      f.runtime.port.retarget(candidate.id, 'elsewhere', 'other.txt'),
+    ).rejects.toMatchObject({
+      code: 'conflict',
+    });
+    await f.runtime.dispose();
+    const restored = fixture();
+    restored.runtime.activate();
+    expect(restored.runtime.port.getSnapshot().items[0]).toMatchObject({ replacementId: 'target' });
+    await restored.runtime.dispose();
+  });
 });

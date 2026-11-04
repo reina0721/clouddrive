@@ -1,0 +1,42 @@
+schema_version: 1
+id: R128-001
+title: 文件版本历史与不可变对象引用
+question: 如何完整接入文本、WebDAV、分块覆盖与复制的历史记录，同时正确核算配额并保护当前内容？
+research_type: current-project
+status: active
+topics: [file-versions, immutable-content, quota, overwrite, bounded-history]
+keywords: [版本历史, 恢复, 配额, 分块覆盖, 引用复制]
+applicable_scenarios: [当前私有文件, 本地或S3存储, 新的内容变更, 同账号历史管理]
+non_applicable_scenarios: [推测升级前缺失版本, 外部修改存储对象, 自动物理垃圾回收, 全文差异算法]
+summary: 保留现有Storage租约与GORM owner事务，用有界类型化版本快照落入具体record JSON，新增v10；复制深拷贝关联，历史计入逻辑空间，不自动删除。
+evidence:
+  types: [source-code, browser-observation, official-documentation]
+  primary_sources:
+    - locator: internal/module/files/service/operations.go
+      snapshot: 03724fe；ReplaceText仅新对象和contentRevision，copyTree重置版本，未保存历史
+    - locator: internal/module/files/service/transfers.go
+      snapshot: 03724fe；发布重建Entry，仅WebDAV允许预期目标覆盖
+    - locator: internal/module/files/service/stream_ingest.go
+      snapshot: 03724fe；WebDAV预留与提交按新减旧计费，必须随保留策略更新
+    - locator: internal/module/files/service/dav_mutations.go
+      snapshot: 03724fe；COPY覆盖单独改ObjectKey，必须纳入同一保留规则
+    - locator: internal/module/files/repo/entry_record.go
+      snapshot: 03724fe；已有具体私有JSON映射、严格解码及事务保存
+    - locator: https://docs.cloudreve.org/zh/usage/concept
+      snapshot: 2026-11-04；版本关联不可变Blob、占用含关联内容、复制关联共享对象
+    - locator: https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html
+      snapshot: 2026-11-04；桶版本针对同一对象键，不能代替应用目录项历史和local实现
+    - locator: https://gorm.io/docs/transactions.html
+      snapshot: 2026-11-04；事务错误回滚，复用项目既有WithinTx/租约，不新增连接
+    - locator: https://dev.mysql.com/doc/refman/8.0/en/create-table-check-constraints.html
+      snapshot: 2026-11-04；8.0.16以前CHECK忽略，v10 down明确ENFORCED拒绝旧语法
+researched_at: '2026-11-04'
+verified_at: '2026-11-04'
+validity:
+  mode: snapshot
+  refresh_triggers: [历史超过单文件20或owner1000, 需要独立历史索引或GC, Storage键可变, 新内容写入路径, 跨账号版本协作]
+relations:
+  extends: [R121-001, R122-001, R123-001, R126-001]
+  supersedes: []
+  superseded_by: []
+report: report.md

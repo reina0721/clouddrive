@@ -216,6 +216,9 @@ export function TransferPanel({ compact = false }: Readonly<{ compact?: boolean 
             <li key={item.id} className="min-w-0 space-y-3 py-4" data-transfer-id={item.id}>
               <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
                 <span className="min-w-0 flex-1 break-words font-medium">{item.name}</span>
+                {item.replacementId ? (
+                  <span className="text-xs text-warning">{t('files.versions.upload')}</span>
+                ) : null}
                 <span role="status" className="text-sm text-ink-muted">
                   {t(`files.transferPhase.${item.phase}`)}
                 </span>
@@ -317,6 +320,7 @@ export function TransferPanel({ compact = false }: Readonly<{ compact?: boolean 
                   </Action>
                 ) : null}
                 {item.source === 'tus' &&
+                !item.replacementId &&
                 item.phase === 'attention' &&
                 item.confirmedBytes === item.sizeBytes ? (
                   <Action

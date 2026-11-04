@@ -21,6 +21,7 @@ import { fileShareAddress } from './share-address';
 import { fileListParameters } from './query';
 import { createAnnotationsPort } from './annotations';
 import { createFileClipboard } from './clipboard';
+import { createVersionsPort } from './versions';
 import { fileDestinationHrefs } from './destinations';
 export { fileDestinationHrefs } from './destinations';
 
@@ -110,7 +111,11 @@ export function createFilesRuntime(
         else if (error.status === 422 && payload?.includes('files_unsupported'))
           code = 'unsupported';
         else if (error.status === 409)
-          code = payload?.includes('files_quota') ? 'quota' : 'conflict';
+          code = payload?.includes('files_history_full')
+            ? 'history-full'
+            : payload?.includes('files_quota')
+              ? 'quota'
+              : 'conflict';
         else if (error.status === 413) code = 'large';
         else if (error.status === 429) code = 'busy';
         else if (error.status === 400 || error.status === 422) code = 'invalid';
@@ -252,6 +257,7 @@ export function createFilesRuntime(
       return file;
     },
   });
+  const versions = createVersionsPort(call, base + native, assertCurrent);
   const clipboard = createFileClipboard(assertCurrent, {
     detail: (id) => port.detail(id),
     copy: (id, parentId, name) => port.copy(id, parentId, name),
@@ -259,6 +265,7 @@ export function createFilesRuntime(
   });
   const port: FilesPort = {
     clipboard: clipboard.port,
+    versions: versions.port,
     annotations: createAnnotationsPort(call, assertCurrent),
     navigate,
     openFolder,
@@ -468,7 +475,12 @@ export function createFilesRuntime(
       if (disposed || !account || owner() !== account) throw new FilesError('canceled');
     }),
     transfers: transfers.port,
-    readMedia: async (id: string, expectedSizeBytes: number, signal: AbortSignal) => {
+    readMedia: async (
+      id: string,
+      expectedSizeBytes: number,
+      signal: AbortSignal,
+      version?: number,
+    ) => {
       const previous = mediaTail;
       let release = () => {};
       mediaTail = new Promise<void>((resolve) => {
@@ -477,7 +489,10 @@ export function createFilesRuntime(
       await previous;
       try {
         if (signal.aborted || disposed) throw new FilesError('canceled');
-        const blob = await content(id, signal);
+        const blob =
+          version === undefined
+            ? await content(id, signal)
+            : await versions.readContent(id, version, signal);
         if (blob.size !== expectedSizeBytes) throw new FilesError('conflict');
         return blob;
       } finally {

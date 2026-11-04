@@ -2,11 +2,13 @@ import { z } from 'zod';
 import { annotationSummarySchema, annotationLimitsSchema } from './annotation-values';
 import type { AnnotationsPort } from './annotations';
 import type { FileClipboardPort } from './clipboard';
+import type { VersionsPort } from './versions';
 import type { FileFilters } from './search';
 import type { FileViewPreferences } from './view-options';
 export type { FileViewPreferences } from './view-options';
 
 export type FilesErrorCode =
+  | 'history-full'
   | 'unavailable'
   | 'unauthenticated'
   | 'forbidden'
@@ -117,6 +119,7 @@ export type FilesDestination =
   'files' | 'shares' | 'shared' | 'transfers' | 'connections' | 'workspace' | 'account';
 export type FilesPort = Readonly<{
   clipboard: FileClipboardPort;
+  versions: VersionsPort;
   annotations: AnnotationsPort;
   navigate(destination: FilesDestination): void;
   destinationHref(destination: FilesDestination): string;

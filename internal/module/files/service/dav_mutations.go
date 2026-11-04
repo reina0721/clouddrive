@@ -236,13 +236,22 @@ func (s *DAVFiles) Copy(ctx context.Context, scope DAVScope, relative, destinati
 		now := s.files.clock.Now().UTC()
 		created = target == nil
 		if target != nil && target.Kind == model.File && source.Kind == model.File {
-			used := model.Used(snapshot.Entries)
-			if target.SizeBytes < 0 || target.SizeBytes > used {
+			used := s.files.replacementUsed(snapshot.Entries, *target)
+			if target.SizeBytes < 0 || target.SizeBytes > model.Used(snapshot.Entries) {
 				return nil, model.ErrQuota
 			}
-			used -= target.SizeBytes
 			if used > s.files.policy.QuotaBytes || source.SizeBytes > s.files.policy.QuotaBytes-used {
 				return nil, model.ErrQuota
+			}
+			if target.ContentRevision >= model.MaxContentRevision {
+				return nil, model.ErrConflict
+			}
+			if s.files.policy.HistoryEnabled {
+				retained, err := s.files.retainCurrent(snapshot.Entries, *target)
+				if err != nil {
+					return nil, err
+				}
+				target = &retained
 			}
 			target.ObjectKey = source.ObjectKey
 			target.SizeBytes = source.SizeBytes

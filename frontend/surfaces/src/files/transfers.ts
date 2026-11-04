@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { UploadCandidate } from './model';
+import type { UploadCandidate, FileEntry } from './model';
 
 export const maxTransferQueueEntries = 500;
 
@@ -31,6 +31,8 @@ export const transferSchema = z.object({
   expiresAt: z.string(),
   revision: z.number().int().positive(),
   cleanupPending: z.boolean(),
+  expectedEntryId: z.string(),
+  expectedContentRevision: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
 });
 export type ServerTransfer = z.infer<typeof transferSchema>;
 export const transferListingSchema = z.object({
@@ -74,6 +76,7 @@ export type TransferItem = Readonly<{
   sizeBytes: number;
   sizeKnown: boolean;
   source: 'tus' | 'webdav';
+  replacementId: string;
   confirmedBytes: number;
   hashBytes: number;
   phase: TransferPhase;
@@ -98,6 +101,7 @@ export type TransfersPort = Readonly<{
   getSnapshot(): TransferSnapshot;
   subscribe(listener: () => void): () => void;
   enqueue(candidates: readonly UploadCandidate[], parentId: string): Promise<void>;
+  replace(candidate: UploadCandidate, target: FileEntry): Promise<void>;
   refresh(filter?: TransferFilter, cursor?: string): Promise<void>;
   pause(id: string): Promise<void>;
   resume(id: string): Promise<void>;

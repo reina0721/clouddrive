@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	DefaultMaxFileBytes      int64 = 512 << 20
+	DefaultMaxFileBytes      int64 = model.MaxFileContentBytes
 	DefaultQuotaBytes        int64 = 1 << 30
 	DefaultConcurrentUploads       = 2
 	DefaultMaxTextBytes      int64 = 1 << 20
@@ -45,12 +45,18 @@ type Policy struct {
 	ShortcutLimit          int
 	AnnotationMaxBytes     int
 	AnnotationBatchEntries int
+	HistoryEnabled         bool
+	HistoryPerFile         int
+	HistoryPerOwner        int
 }
 
 func DefaultPolicy() Policy {
-	return Policy{MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries, ShortcutLimit: DefaultShortcutLimit, SearchTreeEntries: DefaultSearchTreeEntries, AnnotationMaxBytes: model.MaxAnnotationBytes, AnnotationBatchEntries: DefaultAnnotationBatchEntries}
+	return Policy{MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries, ShortcutLimit: DefaultShortcutLimit, SearchTreeEntries: DefaultSearchTreeEntries, AnnotationMaxBytes: model.MaxAnnotationBytes, AnnotationBatchEntries: DefaultAnnotationBatchEntries, HistoryEnabled: true, HistoryPerFile: model.MaxFileHistory, HistoryPerOwner: model.MaxOwnerHistory}
 }
 func (p Policy) Validate() error {
+	if p.HistoryPerFile < 1 || p.HistoryPerFile > model.MaxFileHistory || p.HistoryPerOwner < 1 || p.HistoryPerOwner > model.MaxOwnerHistory {
+		return fmt.Errorf("invalid file history budgets")
+	}
 	if p.AnnotationMaxBytes < 1 || p.AnnotationMaxBytes > model.MaxAnnotationBytes || p.AnnotationBatchEntries < 1 || p.AnnotationBatchEntries > DefaultAnnotationBatchEntries {
 		return fmt.Errorf("invalid file annotation budgets")
 	}

@@ -66,31 +66,35 @@ func NewTransfers(files *Service, repository TransferRepository, stage Staging, 
 }
 
 type TransferRequest struct {
-	ParentID  string `json:"parentId"`
-	Name      string `json:"name"`
-	SizeBytes int64  `json:"sizeBytes"`
-	SHA256    string `json:"sha256"`
-	Key       string `json:"key"`
+	ParentID                string `json:"parentId"`
+	Name                    string `json:"name"`
+	SizeBytes               int64  `json:"sizeBytes"`
+	SHA256                  string `json:"sha256"`
+	Key                     string `json:"key"`
+	ExpectedEntryID         string `json:"expectedEntryId,omitempty" maxLength:"36"`
+	ExpectedContentRevision int64  `json:"expectedContentRevision,omitempty" minimum:"0" maximum:"9007199254740991"`
 }
 type TransferSummary struct {
-	ID                   string               `json:"id"`
-	ClientKey            string               `json:"clientKey"`
-	ParentID             string               `json:"parentId"`
-	DestinationPath      string               `json:"destinationPath"`
-	DestinationAvailable bool                 `json:"destinationAvailable"`
-	Name                 string               `json:"name"`
-	SizeBytes            int64                `json:"sizeBytes"`
-	SizeKnown            bool                 `json:"sizeKnown"`
-	Source               model.TransferSource `json:"source"`
-	OffsetBytes          int64                `json:"offsetBytes"`
-	State                model.TransferState  `json:"state"`
-	FailureCode          string               `json:"failureCode"`
-	EntryID              string               `json:"entryId"`
-	CreatedAt            time.Time            `json:"createdAt"`
-	UpdatedAt            time.Time            `json:"updatedAt"`
-	ExpiresAt            time.Time            `json:"expiresAt"`
-	Revision             int64                `json:"revision"`
-	CleanupPending       bool                 `json:"cleanupPending"`
+	ID                      string               `json:"id"`
+	ClientKey               string               `json:"clientKey"`
+	ParentID                string               `json:"parentId"`
+	DestinationPath         string               `json:"destinationPath"`
+	DestinationAvailable    bool                 `json:"destinationAvailable"`
+	Name                    string               `json:"name"`
+	SizeBytes               int64                `json:"sizeBytes"`
+	SizeKnown               bool                 `json:"sizeKnown"`
+	Source                  model.TransferSource `json:"source"`
+	OffsetBytes             int64                `json:"offsetBytes"`
+	State                   model.TransferState  `json:"state"`
+	FailureCode             string               `json:"failureCode"`
+	EntryID                 string               `json:"entryId"`
+	CreatedAt               time.Time            `json:"createdAt"`
+	UpdatedAt               time.Time            `json:"updatedAt"`
+	ExpiresAt               time.Time            `json:"expiresAt"`
+	Revision                int64                `json:"revision"`
+	CleanupPending          bool                 `json:"cleanupPending"`
+	ExpectedEntryID         string               `json:"expectedEntryId"`
+	ExpectedContentRevision int64                `json:"expectedContentRevision"`
 }
 type TransferListing struct {
 	Items             []TransferSummary `json:"items"`
@@ -135,10 +139,13 @@ func (s *Transfers) summary(ctx context.Context, transfer model.Transfer) (Trans
 			offset = info.OffsetBytes
 		}
 	}
-	return TransferSummary{ID: transfer.ID, ClientKey: transfer.IdempotencyKey, ParentID: transfer.ParentID, DestinationPath: destination, DestinationAvailable: available, Name: transfer.Name, SizeBytes: transfer.SizeBytes, SizeKnown: transfer.SizeKnown, Source: transfer.Source, OffsetBytes: offset, State: transfer.State, FailureCode: transfer.FailureCode, EntryID: transfer.EntryID, CreatedAt: transfer.CreatedAt, UpdatedAt: transfer.UpdatedAt, ExpiresAt: transfer.ExpiresAt, Revision: transfer.Revision, CleanupPending: transfer.CleanupPending}, nil
+	return TransferSummary{ID: transfer.ID, ClientKey: transfer.IdempotencyKey, ParentID: transfer.ParentID, DestinationPath: destination, DestinationAvailable: available, Name: transfer.Name, SizeBytes: transfer.SizeBytes, SizeKnown: transfer.SizeKnown, Source: transfer.Source, OffsetBytes: offset, State: transfer.State, FailureCode: transfer.FailureCode, EntryID: transfer.EntryID, CreatedAt: transfer.CreatedAt, UpdatedAt: transfer.UpdatedAt, ExpiresAt: transfer.ExpiresAt, Revision: transfer.Revision, CleanupPending: transfer.CleanupPending, ExpectedEntryID: transfer.ExpectedEntryID, ExpectedContentRevision: transfer.ExpectedContentRevision}, nil
 }
 
 func (s *Transfers) Create(ctx context.Context, owner string, input TransferRequest) (TransferSummary, error) {
+	if (input.ExpectedEntryID == "" && input.ExpectedContentRevision != 0) || (input.ExpectedEntryID != "" && (input.ExpectedContentRevision < 1 || input.ExpectedContentRevision >= model.MaxContentRevision)) {
+		return TransferSummary{}, model.ErrInvalid
+	}
 	if owner == "" {
 		return TransferSummary{}, model.ErrMissing
 	}
@@ -166,7 +173,7 @@ func (s *Transfers) Create(ctx context.Context, owner string, input TransferRequ
 	now := s.files.clock.Now().UTC()
 	transfer, err := s.repo.ChangeTransfer(ctx, owner, "", input.Key, func(snapshot TransferSnapshot) (model.Transfer, *model.Entry, error) {
 		if previous := snapshot.Transfer; previous != nil {
-			if previous.Source != model.TransferSourceTus || previous.ParentID != input.ParentID || previous.NormalizedName != normalized || previous.ContentSHA256 != input.SHA256 || previous.SizeBytes != input.SizeBytes {
+			if previous.Source != model.TransferSourceTus || previous.ParentID != input.ParentID || previous.NormalizedName != normalized || previous.ContentSHA256 != input.SHA256 || previous.SizeBytes != input.SizeBytes || previous.ExpectedEntryID != input.ExpectedEntryID || previous.ExpectedContentRevision != input.ExpectedContentRevision {
 				return model.Transfer{}, nil, model.ErrConflict
 			}
 			return *previous, nil, nil
@@ -174,17 +181,30 @@ func (s *Transfers) Create(ctx context.Context, owner string, input TransferRequ
 		if err := model.Parent(snapshot.Entries, input.ParentID); err != nil {
 			return model.Transfer{}, nil, err
 		}
-		if err := model.Available(snapshot.Entries, "", input.ParentID, normalized); err != nil {
+		if err := model.Available(snapshot.Entries, input.ExpectedEntryID, input.ParentID, normalized); err != nil {
 			return model.Transfer{}, nil, err
 		}
 		used := model.Used(snapshot.Entries)
-		if used > s.files.policy.QuotaBytes || snapshot.OwnerReservedBytes > s.files.policy.QuotaBytes-used || input.SizeBytes > s.files.policy.QuotaBytes-used-snapshot.OwnerReservedBytes {
+		reserved := input.SizeBytes
+		if input.ExpectedEntryID != "" {
+			original, exists := model.Find(snapshot.Entries, input.ExpectedEntryID)
+			if !exists || !model.Visible(snapshot.Entries, original) || original.Kind != model.File || original.ContentRevision != input.ExpectedContentRevision || original.ParentID != input.ParentID || original.NormalizedName != normalized {
+				return model.Transfer{}, nil, model.ErrConflict
+			}
+			if s.files.policy.HistoryEnabled {
+				if _, err := s.files.retainCurrent(snapshot.Entries, original); err != nil {
+					return model.Transfer{}, nil, err
+				}
+			}
+			reserved = s.files.replacementGrowth(original, input.SizeBytes)
+		}
+		if used > s.files.policy.QuotaBytes || snapshot.OwnerReservedBytes > s.files.policy.QuotaBytes-used || reserved > s.files.policy.QuotaBytes-used-snapshot.OwnerReservedBytes {
 			return model.Transfer{}, nil, model.ErrQuota
 		}
 		if snapshot.OwnerReservedCount >= int64(s.policy.OwnerCount) || snapshot.GlobalReservedCount >= int64(s.policy.GlobalCount) || snapshot.GlobalReservedBytes > s.policy.StagingBytes || input.SizeBytes > s.policy.StagingBytes-snapshot.GlobalReservedBytes {
 			return model.Transfer{}, nil, model.ErrBusy
 		}
-		return model.Transfer{ID: id, OwnerID: owner, ParentID: input.ParentID, Name: input.Name, NormalizedName: normalized, SizeBytes: input.SizeBytes, SizeKnown: true, QuotaReservedBytes: input.SizeBytes, Source: model.TransferSourceTus, ContentSHA256: input.SHA256, IdempotencyKey: input.Key, State: model.TransferPreparing, CreatedAt: now, UpdatedAt: now, ExpiresAt: now.Add(s.policy.Lifetime), ObjectKey: "files/" + id}, nil, nil
+		return model.Transfer{ID: id, OwnerID: owner, ParentID: input.ParentID, Name: input.Name, NormalizedName: normalized, SizeBytes: input.SizeBytes, SizeKnown: true, QuotaReservedBytes: reserved, Source: model.TransferSourceTus, ContentSHA256: input.SHA256, IdempotencyKey: input.Key, State: model.TransferPreparing, CreatedAt: now, UpdatedAt: now, ExpiresAt: now.Add(s.policy.Lifetime), ObjectKey: "files/" + id, ExpectedEntryID: input.ExpectedEntryID, ExpectedContentRevision: input.ExpectedContentRevision}, nil, nil
 	})
 	if err != nil {
 		return TransferSummary{}, err
@@ -476,7 +496,7 @@ func (s *Transfers) Retarget(ctx context.Context, owner, id, parent, name string
 	}
 	if current, err := s.repo.ReadTransfer(ctx, owner, id); err != nil {
 		return TransferSummary{}, err
-	} else if current.Source != model.TransferSourceTus {
+	} else if current.Source != model.TransferSourceTus || current.ExpectedEntryID != "" {
 		return TransferSummary{}, model.ErrConflict
 	}
 	var result TransferSummary
@@ -579,6 +599,13 @@ func (s *Transfers) commit(ctx context.Context, owner, id string, sourceKind mod
 				return err
 			}
 			mediaType = mime.TypeByExtension(strings.ToLower(path.Ext(transfer.Name)))
+			// 替换保留目标名称，但新内容可能改变类型；不能用旧扩展名覆盖可识别的字节类型。
+			if transfer.ExpectedEntryID != "" {
+				detected := http.DetectContentType(prefix[:countPrefix])
+				if detected != "application/octet-stream" || mediaType == "" {
+					mediaType = detected
+				}
+			}
 			if mediaType == "" {
 				mediaType = http.DetectContentType(prefix[:countPrefix])
 			}
@@ -653,7 +680,9 @@ func (s *Transfers) commit(ctx context.Context, owner, id string, sourceKind mod
 				if entry.SizeBytes < 0 || entry.SizeBytes > used {
 					return model.Transfer{}, nil, fmt.Errorf("file replacement quota invariant")
 				}
-				used -= entry.SizeBytes
+				if !s.files.policy.HistoryEnabled {
+					used -= entry.SizeBytes
+				}
 				original = &entry
 			}
 			if used > s.files.policy.QuotaBytes || current.SizeBytes > s.files.policy.QuotaBytes-used {
@@ -662,11 +691,23 @@ func (s *Transfers) commit(ctx context.Context, owner, id string, sourceKind mod
 			now := s.files.clock.Now().UTC()
 			entry := model.Entry{ID: entryID, OwnerID: owner, ParentID: current.ParentID, Kind: model.File, Name: current.Name, NormalizedName: current.NormalizedName, ObjectKey: current.ObjectKey, SizeBytes: current.SizeBytes, MediaType: mediaType, CreatedAt: now, UpdatedAt: now, ContentSHA: current.ContentSHA256, ContentRevision: 1}
 			if original != nil {
+				if original.ContentRevision >= model.MaxContentRevision {
+					return model.Transfer{}, nil, model.ErrConflict
+				}
+				if s.files.policy.HistoryEnabled {
+					retained, err := s.files.retainCurrent(snapshot.Entries, *original)
+					if err != nil {
+						return model.Transfer{}, nil, err
+					}
+					original = &retained
+				}
 				entry.CreatedAt = original.CreatedAt
 				entry.ContentRevision = original.ContentRevision + 1
 				entry.UploadKey = original.UploadKey
 				entry.Annotations = model.CloneAnnotations(original.Annotations)
 				entry.AnnotationRevision = original.AnnotationRevision
+				entry.History = model.CloneHistory(original.History)
+				entry.HistoryRevision = original.HistoryRevision
 			}
 			current.State = model.TransferCompleted
 			current.EntryID = entryID

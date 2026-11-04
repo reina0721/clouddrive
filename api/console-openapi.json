@@ -3079,6 +3079,387 @@
         ]
       }
     },
+    "/api/console/v1/native/files/{id}/versions": {
+      "delete": {
+        "operationId": "files.versions.delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionDelete"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionMutationResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "get": {
+        "operationId": "files.versions.list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "format": "int64",
+              "maximum": 21,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "order",
+            "schema": {
+              "default": "newest",
+              "enum": [
+                "newest",
+                "oldest"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionPage"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/{id}/versions/{revision}/content": {
+      "get": {
+        "operationId": "files.versions.content",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                  "x-contentMediaType": "application/octet-stream"
+                }
+              }
+            },
+            "description": "指定版本的原始内容和字节范围"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "head": {
+        "operationId": "files.versions.content.head",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                  "x-contentMediaType": "application/octet-stream"
+                }
+              }
+            },
+            "description": "指定版本的原始内容和字节范围"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/{id}/versions/{revision}/copy": {
+      "post": {
+        "operationId": "files.versions.copy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionCopy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/{id}/versions/{revision}/restore": {
+      "post": {
+        "operationId": "files.versions.restore",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionMutation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
     "/api/console/v1/native/iam/accounts": {
       "get": {
         "operationId": "iam.accounts.list",
@@ -26875,6 +27256,41 @@
         ],
         "type": "object"
       },
+      "FileVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "current": {
+            "type": "boolean"
+          },
+          "mediaType": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "current",
+          "name",
+          "sizeBytes",
+          "mediaType",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "FolderInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -28672,6 +29088,16 @@
       "TransferRequest": {
         "additionalProperties": false,
         "properties": {
+          "expectedContentRevision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "expectedEntryId": {
+            "maxLength": 36,
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -28740,6 +29166,13 @@
           "entryId": {
             "type": "string"
           },
+          "expectedContentRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "expectedEntryId": {
+            "type": "string"
+          },
           "expiresAt": {
             "format": "date-time",
             "type": "string"
@@ -28800,7 +29233,9 @@
           "updatedAt",
           "expiresAt",
           "revision",
-          "cleanupPending"
+          "cleanupPending",
+          "expectedEntryId",
+          "expectedContentRevision"
         ],
         "type": "object"
       },
@@ -29055,6 +29490,194 @@
           "nickname",
           "bio",
           "birthDate"
+        ],
+        "type": "object"
+      },
+      "VersionCopy": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          }
+        },
+        "required": [
+          "parentId",
+          "name"
+        ],
+        "type": "object"
+      },
+      "VersionDelete": {
+        "additionalProperties": false,
+        "properties": {
+          "expectedContentRevision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "expectedHistoryRevision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "mode": {
+            "enum": [
+              "selected",
+              "all-history"
+            ],
+            "type": "string"
+          },
+          "revisions": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "maxItems": 20,
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "mode",
+          "revisions",
+          "expectedContentRevision",
+          "expectedHistoryRevision"
+        ],
+        "type": "object"
+      },
+      "VersionMutation": {
+        "additionalProperties": false,
+        "properties": {
+          "expectedContentRevision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "expectedHistoryRevision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expectedContentRevision",
+          "expectedHistoryRevision"
+        ],
+        "type": "object"
+      },
+      "VersionMutationResult": {
+        "additionalProperties": false,
+        "properties": {
+          "contentRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "historyRevision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "contentRevision",
+          "historyRevision"
+        ],
+        "type": "object"
+      },
+      "VersionPage": {
+        "additionalProperties": false,
+        "properties": {
+          "contentRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "entry": {
+            "$ref": "#/components/schemas/Entry"
+          },
+          "fileHistoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "historyEnabled": {
+            "type": "boolean"
+          },
+          "historyRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FileVersion"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "maxMediaBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxTextBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ownerHistoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ownerUsedBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "page": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "perFile": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "perOwner": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "quotaBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "entry",
+          "items",
+          "page",
+          "pageSize",
+          "total",
+          "contentRevision",
+          "historyRevision",
+          "historyEnabled",
+          "perFile",
+          "perOwner",
+          "fileHistoryBytes",
+          "ownerHistoryBytes",
+          "ownerUsedBytes",
+          "quotaBytes",
+          "maxTextBytes",
+          "maxMediaBytes"
         ],
         "type": "object"
       },

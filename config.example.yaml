@@ -327,6 +327,10 @@ observability:
 
 # 私有文件的有界传输预算；变更后重启服务。
 files:
+  history:
+    enabled: true
+    perFile: 20
+    perOwner: 1000
   annotations:
     maxBytes: 2048
     batchEntries: 100

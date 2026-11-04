@@ -66,6 +66,12 @@ const (
 	OperationFilesTransfersTarget           OperationID = "files.transfers.target"
 	OperationFilesTrash                     OperationID = "files.trash"
 	OperationFilesUpdate                    OperationID = "files.update"
+	OperationFilesVersionsContent           OperationID = "files.versions.content"
+	OperationFilesVersionsContentHead       OperationID = "files.versions.content.head"
+	OperationFilesVersionsCopy              OperationID = "files.versions.copy"
+	OperationFilesVersionsDelete            OperationID = "files.versions.delete"
+	OperationFilesVersionsList              OperationID = "files.versions.list"
+	OperationFilesVersionsRestore           OperationID = "files.versions.restore"
 	OperationGetTodo                        OperationID = "getTodo"
 	OperationIamAccountsArchive             OperationID = "iam.accounts.archive"
 	OperationIamAccountsArchiveBatch        OperationID = "iam.accounts.archive.batch"
@@ -184,6 +190,12 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesTransfersTarget, Method: "PUT", Path: "/api/v1/files/transfers/{id}/target", Policy: "protected", Scope: "files:write", Action: "files.transfers.target"},
 	{ID: OperationFilesTrash, Method: "POST", Path: "/api/v1/files/{id}/trash", Policy: "protected", Scope: "files:write", Action: "files.trash"},
 	{ID: OperationFilesUpdate, Method: "PATCH", Path: "/api/v1/files/{id}", Policy: "protected", Scope: "files:write", Action: "files.update"},
+	{ID: OperationFilesVersionsContent, Method: "GET", Path: "/api/v1/files/{id}/versions/{revision}/content", Policy: "protected", Scope: "files:read", Action: "files.versions.content"},
+	{ID: OperationFilesVersionsContentHead, Method: "HEAD", Path: "/api/v1/files/{id}/versions/{revision}/content", Policy: "protected", Scope: "files:read", Action: "files.versions.content.head"},
+	{ID: OperationFilesVersionsCopy, Method: "POST", Path: "/api/v1/files/{id}/versions/{revision}/copy", Policy: "protected", Scope: "files:write", Action: "files.versions.copy"},
+	{ID: OperationFilesVersionsDelete, Method: "DELETE", Path: "/api/v1/files/{id}/versions", Policy: "protected", Scope: "files:write", Action: "files.versions.delete"},
+	{ID: OperationFilesVersionsList, Method: "GET", Path: "/api/v1/files/{id}/versions", Policy: "protected", Scope: "files:read", Action: "files.versions.list"},
+	{ID: OperationFilesVersionsRestore, Method: "POST", Path: "/api/v1/files/{id}/versions/{revision}/restore", Policy: "protected", Scope: "files:write", Action: "files.versions.restore"},
 	{ID: OperationGetTodo, Method: "GET", Path: "/api/v1/todos/{id}", Policy: "protected", Scope: "todos:read", Action: "todo.read"},
 	{ID: OperationIamAccountsArchive, Method: "POST", Path: "/api/v1/iam/accounts/{id}/archive", Policy: "protected", Scope: "iam:account:write", Action: "iam.accounts.archive"},
 	{ID: OperationIamAccountsArchiveBatch, Method: "POST", Path: "/api/v1/iam/accounts/batch-archive", Policy: "protected", Scope: "iam:account:write", Action: "iam.accounts.archive.batch"},

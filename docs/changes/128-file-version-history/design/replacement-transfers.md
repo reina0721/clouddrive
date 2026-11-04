@@ -1,0 +1,7 @@
+# 指定目标的分块覆盖
+
+扩展既有TransferRequest为可选expectedEntryId/expectedContentRevision，二者必须同时有效。首次创建在owner事务内核验目标file、可见性、父级/名称和内容版本；普通创建不变。源仍tus，复用既有传输状态、暂存、幂等、校验与资源所有者，不创建第二套上传。Transfer已有持久目标字段，repo发布准入从只允许WebDAV扩展为有明确预期目标的tus/WebDAV；不允许任意update绕过CAS。
+
+会话重试必须匹配同一预期目标和版本，不能同key替换目标；服务端摘要返回预期目标供刷新恢复。完成时再次核验目标和预算，正确保留当前注解及版本历史；旧目标已编辑/移走/回收时进入attention，不覆盖或自动改为新建。覆盖会话禁止retarget到不同名称/父级去更换语义，用户可取消后重新选择。暂停/重选源沿SHA和长度验证，不因本地文件名不同于目标名而拒绝同内容。
+
+Host TransfersPort新增replace(candidate,target)，复用同一队列和run，不复制哈希/tus实现。Managed/Pending及ServerTransfer以显式字段保存预期目标/版本；本地source名称与目标展示名称不同，源真实性以既有全量SHA为准。创建成功后服务器是authority，刷新重选同内容继续；未创建前pending保留目标，重新登录按owner隔离。文件菜单“上传新版本”只接受单个文件，取消选择不排队，失败释放本次候选。公开分享、普通拖拽新建和目录上传不自动变成覆盖。

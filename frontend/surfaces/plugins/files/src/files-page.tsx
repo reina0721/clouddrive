@@ -21,6 +21,7 @@ import { ViewOptionsDialog } from './view-options-dialog';
 import { ExplorerNavigation } from './explorer-navigation';
 import { fileClipboardMaxEntries, type FileClipboardMode } from '../../../src/files/clipboard';
 import { AnnotationPanel } from './annotation-panel';
+import { VersionsPanel } from './versions-panel';
 import { TagsBatchDialog } from './tags-batch-dialog';
 import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
 import { FileItem, FileListHeader, type FileSelectionGesture } from './file-item';
@@ -49,7 +50,7 @@ import {
 import {
   useFiles,
   useFileNavigation,
-  useFileMedia,
+  FileMedia,
   useTransfers,
   useTransferSnapshot,
 } from '../../../src/files/runtime';
@@ -91,7 +92,6 @@ export function FilesPage({
   const navigation = useFileNavigation();
   const transfers = useTransfers();
   const transferState = useTransferSnapshot();
-  const Media = useFileMedia();
   const { t } = useFrontendTranslation();
   const [listing, setListing] = useState<FileListing>();
   const [loading, setLoading] = useState(true);
@@ -140,6 +140,7 @@ export function FilesPage({
   const [folders, setFolders] = useState<FileListing>();
   const [dialogFailure, setDialogFailure] = useState('');
   const [detail, setDetail] = useState<FileEntry>();
+  const [versionEntry, setVersionEntry] = useState<FileEntry>();
   const [tagsBatch, setTagsBatch] = useState<{
     mode: 'add' | 'remove';
     targets: FileAnnotationSummary[];
@@ -395,6 +396,21 @@ export function FilesPage({
     } catch (error) {
       setDialogFailure((current) => current || errorText(error));
       throw error;
+    }
+  }
+  async function uploadVersion(entry: FileEntry) {
+    try {
+      const candidates = await port.chooseFiles();
+      if (!candidates.length) return;
+      if (candidates.length !== 1) {
+        for (const candidate of candidates) port.releaseCandidate(candidate.id);
+        setNotice(t('files.versions.singleFile'));
+        return;
+      }
+      const candidate = candidates[0];
+      if (candidate) await transfers.replace(candidate, entry);
+    } catch (error) {
+      setNotice(errorText(error));
     }
   }
   function showDetails(entry: FileEntry) {
@@ -1387,7 +1403,7 @@ export function FilesPage({
                         thumbnailIds.has(entry.id) &&
                         listing &&
                         entry.sizeBytes <= listing.maxThumbnailBytes ? (
-                          <Media
+                          <FileMedia
                             key={entry.id + ':' + entry.contentRevision}
                             entry={entry}
                             mode="thumbnail"
@@ -1434,6 +1450,8 @@ export function FilesPage({
                                   ...(entry.kind === 'file'
                                     ? [
                                         { id: 'download', label: t('files.download') },
+                                        { id: 'versions', label: t('files.versions.title') },
+                                        { id: 'upload-version', label: t('files.versions.upload') },
                                         ...(entry.mediaType.startsWith('text/') ||
                                         /\.(md|txt)$/i.test(entry.name)
                                           ? [{ id: 'edit', label: t('files.edit') }]
@@ -1451,7 +1469,9 @@ export function FilesPage({
                           }
                           onAction={(action) => {
                             setContextEntry(undefined);
-                            if (action === 'queue-copy' || action === 'queue-cut')
+                            if (action === 'versions') setVersionEntry(entry);
+                            else if (action === 'upload-version') void uploadVersion(entry);
+                            else if (action === 'queue-copy' || action === 'queue-cut')
                               queueClipboard(
                                 action === 'queue-copy' ? 'copy' : 'cut',
                                 selected.includes(entry.id) ? targets : [entry],
@@ -1765,7 +1785,7 @@ export function FilesPage({
           }}
         >
           <div className="space-y-4">
-            <Media
+            <FileMedia
               key={mediaEntry.id + ':' + mediaEntry.contentRevision}
               entry={mediaEntry}
               mode="preview"
@@ -1782,8 +1802,19 @@ export function FilesPage({
           </div>
         </DialogSurface>
       ) : null}
+      {versionEntry ? (
+        <VersionsPanel
+          entry={versionEntry}
+          onClose={() => setVersionEntry(undefined)}
+          onSaved={reload}
+        />
+      ) : null}
       {detail ? (
         <AnnotationPanel
+          onVersions={() => {
+            setVersionEntry(detail);
+            setDetail(undefined);
+          }}
           key={detail.id}
           entry={detail}
           onClose={() => setDetail(undefined)}

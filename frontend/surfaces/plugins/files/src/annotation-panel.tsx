@@ -28,6 +28,7 @@ type AnnotationPanelProps = {
   entry: FileEntry;
   onClose: () => void;
   onSaved: () => void;
+  onVersions: () => void;
 };
 
 export function AnnotationPanel(props: AnnotationPanelProps) {
@@ -46,6 +47,7 @@ function AnnotationPanelContent({
   onClose,
   onSaved,
   onReload,
+  onVersions,
 }: AnnotationPanelProps & { onReload: () => void }) {
   const port = useFiles().annotations,
     { t, locale } = useFrontendTranslation();
@@ -198,6 +200,19 @@ function AnnotationPanelContent({
               <Action size="sm" variant="secondary" onPress={() => void copy(path)}>
                 {t('files.annotations.copyPath')}
               </Action>
+              {detail.entry.kind === 'file' ? (
+                <Action
+                  size="sm"
+                  variant="secondary"
+                  disabled={
+                    pending ||
+                    JSON.stringify(draft) !== JSON.stringify(draftFrom(detail.annotation))
+                  }
+                  onPress={onVersions}
+                >
+                  {t('files.versions.title')}
+                </Action>
+              ) : null}
             </div>
             {detail.entry.kind === 'folder' ? (
               <section

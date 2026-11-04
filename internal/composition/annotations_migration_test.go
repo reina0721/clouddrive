@@ -32,7 +32,7 @@ func TestAnnotationsV9PreservesAppliedRowsAndGuardsRollback(t *testing.T) {
 			return err
 		}
 		for _, path := range paths {
-			if strings.Contains(path, "000009_") {
+			if filepath.Base(path) >= "000009_" {
 				continue
 			}
 			payload, err := fs.ReadFile(set.FS, path)

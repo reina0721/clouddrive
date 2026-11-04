@@ -19,12 +19,13 @@ async function rasterType(blob: Blob): Promise<string | undefined> {
     return 'image/avif';
   return undefined;
 }
+const waveMediaType = 'audio/wav';
 const audioTypes = new Set([
   'audio/mpeg',
   'audio/mp4',
   'audio/ogg',
   'audio/webm',
-  'audio/wav',
+  waveMediaType,
   'audio/x-wav',
   'audio/flac',
   'audio/aac',
@@ -37,9 +38,15 @@ export function FileMediaView({
   mode,
   maxBytes,
   readContent,
+  version,
 }: FileMediaProps &
   Readonly<{
-    readContent: (id: string, expectedSizeBytes: number, signal: AbortSignal) => Promise<Blob>;
+    readContent: (
+      id: string,
+      expectedSizeBytes: number,
+      signal: AbortSignal,
+      version?: number,
+    ) => Promise<Blob>;
   }>) {
   const { t } = useFrontendTranslation();
   const [url, setURL] = useState('');
@@ -56,7 +63,9 @@ export function FileMediaView({
     void (async () => {
       try {
         if (entry.sizeBytes > maxBytes) throw new FilesError('large');
-        const type = entry.mediaType.split(';')[0]?.toLowerCase() ?? '';
+        const rawType = entry.mediaType.split(';')[0]?.toLowerCase() ?? '';
+        // Go 的字节识别返回 audio/wave；浏览器播放探针使用通行的 WAV 别名。
+        const type = rawType === 'audio/wave' ? waveMediaType : rawType;
         const image = type.startsWith('image/');
         if (!image && (mode === 'thumbnail' || (!audioTypes.has(type) && !videoTypes.has(type))))
           throw new FilesError('unsupported');
@@ -64,7 +73,7 @@ export function FileMediaView({
           const probe = document.createElement(videoTypes.has(type) ? 'video' : 'audio');
           if (!probe.canPlayType(type)) throw new FilesError('unsupported');
         }
-        const blob = await readContent(entry.id, entry.sizeBytes, controller.signal);
+        const blob = await readContent(entry.id, entry.sizeBytes, controller.signal, version);
         if (blob.size > maxBytes) throw new FilesError('large');
         const safeType = image ? await rasterType(blob) : type;
         if (!safeType) throw new FilesError('unsupported');
@@ -96,6 +105,7 @@ export function FileMediaView({
   }, [
     entry.id,
     entry.contentRevision,
+    version,
     entry.sizeBytes,
     entry.mediaType,
     maxBytes,

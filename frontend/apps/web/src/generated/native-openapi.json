@@ -82,10 +82,7 @@
             "type": "integer"
           },
           "status": {
-            "enum": [
-              "active",
-              "disabled"
-            ],
+            "enum": ["active", "disabled"],
             "type": "string"
           },
           "username": {
@@ -136,12 +133,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "accountId",
-          "accountVersion",
-          "authorizationRevision",
-          "roleIds"
-        ],
+        "required": ["accountId", "accountVersion", "authorizationRevision", "roleIds"],
         "type": "object"
       },
       "AnnotationBatchResult": {
@@ -155,9 +147,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "items"
-        ],
+        "required": ["items"],
         "type": "object"
       },
       "AnnotationDetail": {
@@ -183,13 +173,7 @@
             "$ref": "#/components/schemas/EntryStatistics"
           }
         },
-        "required": [
-          "entry",
-          "breadcrumbs",
-          "annotation",
-          "limits",
-          "statistics"
-        ],
+        "required": ["entry", "breadcrumbs", "annotation", "limits", "statistics"],
         "type": "object"
       },
       "AnnotationDocument": {
@@ -224,14 +208,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "revision",
-          "updatedAt",
-          "tags",
-          "properties",
-          "emoji",
-          "folderColor"
-        ],
+        "required": ["revision", "updatedAt", "tags", "properties", "emoji", "folderColor"],
         "type": "object"
       },
       "AnnotationLimits": {
@@ -315,13 +292,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "entryId",
-          "revision",
-          "tags",
-          "emoji",
-          "folderColor"
-        ],
+        "required": ["entryId", "revision", "tags", "emoji", "folderColor"],
         "type": "object"
       },
       "AnnotationTarget": {
@@ -339,10 +310,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "id",
-          "revision"
-        ],
+        "required": ["id", "revision"],
         "type": "object"
       },
       "AnnotationUpdate": {
@@ -379,13 +347,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "expectedRevision",
-          "tags",
-          "properties",
-          "emoji",
-          "folderColor"
-        ],
+        "required": ["expectedRevision", "tags", "properties", "emoji", "folderColor"],
         "type": "object"
       },
       "ApiTokenBatchRevokeInputBody": {
@@ -401,9 +363,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "tokenIds"
-        ],
+        "required": ["tokenIds"],
         "type": "object"
       },
       "ApiTokenCreateInputBody": {
@@ -430,11 +390,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "name",
-          "description",
-          "scopes"
-        ],
+        "required": ["name", "description", "scopes"],
         "type": "object"
       },
       "ApiTokenIssuedResponse": {
@@ -488,15 +444,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "version",
-          "id",
-          "name",
-          "scopes",
-          "createdAt",
-          "status",
-          "secret"
-        ],
+        "required": ["version", "id", "name", "scopes", "createdAt", "status", "secret"],
         "type": "object"
       },
       "ApiTokenResponse": {
@@ -547,14 +495,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "version",
-          "id",
-          "name",
-          "scopes",
-          "createdAt",
-          "status"
-        ],
+        "required": ["version", "id", "name", "scopes", "createdAt", "status"],
         "type": "object"
       },
       "ApiTokenUpdateInputBody": {
@@ -577,10 +518,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "name",
-          "description"
-        ],
+        "required": ["name", "description"],
         "type": "object"
       },
       "ArchiveInputBody": {
@@ -596,9 +534,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "ids"
-        ],
+        "required": ["ids"],
         "type": "object"
       },
       "Assignment": {
@@ -623,11 +559,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "accountId",
-          "positionIds",
-          "version"
-        ],
+        "required": ["accountId", "positionIds", "version"],
         "type": "object"
       },
       "AssignmentResponse": {
@@ -655,13 +587,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "entityId",
-          "entityVersion",
-          "authorizationRevision",
-          "added",
-          "removed"
-        ],
+        "required": ["entityId", "entityVersion", "authorizationRevision", "added", "removed"],
         "type": "object"
       },
       "AuditEventListResponse": {
@@ -689,12 +615,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "limit",
-          "total",
-          "hasMore"
-        ],
+        "required": ["items", "limit", "total", "hasMore"],
         "type": "object"
       },
       "AuditEventViewResponse": {
@@ -737,12 +658,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "eventId",
-          "decision",
-          "outcome",
-          "occurredAt"
-        ],
+        "required": ["eventId", "decision", "outcome", "occurredAt"],
         "type": "object"
       },
       "BatchAccountInputBody": {
@@ -758,17 +674,11 @@
             "type": "array"
           },
           "status": {
-            "enum": [
-              "active",
-              "disabled"
-            ],
+            "enum": ["active", "disabled"],
             "type": "string"
           }
         },
-        "required": [
-          "accountIds",
-          "status"
-        ],
+        "required": ["accountIds", "status"],
         "type": "object"
       },
       "BatchItemFailure": {
@@ -787,12 +697,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "resourceId",
-          "code",
-          "message",
-          "retryable"
-        ],
+        "required": ["resourceId", "code", "message", "retryable"],
         "type": "object"
       },
       "BatchItemSuccess": {
@@ -802,9 +707,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "resourceId"
-        ],
+        "required": ["resourceId"],
         "type": "object"
       },
       "BatchResultOutput": {
@@ -836,12 +739,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "requestedCount",
-          "processedCount",
-          "succeeded",
-          "failed"
-        ],
+        "required": ["requestedCount", "processedCount", "succeeded", "failed"],
         "type": "object"
       },
       "Change": {
@@ -875,10 +773,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "currentPassword",
-          "newPassword"
-        ],
+        "required": ["currentPassword", "newPassword"],
         "type": "object"
       },
       "ConnectionChange": {
@@ -899,9 +794,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "revision"
-        ],
+        "required": ["revision"],
         "type": "object"
       },
       "ConnectionIssuedView": {
@@ -1026,12 +919,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name",
-          "rootId",
-          "readOnly",
-          "blockSystemFiles"
-        ],
+        "required": ["name", "rootId", "readOnly", "blockSystemFiles"],
         "type": "object"
       },
       "ConnectionRotateInputBody": {
@@ -1043,9 +931,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "revision"
-        ],
+        "required": ["revision"],
         "type": "object"
       },
       "ConnectionStateInputBody": {
@@ -1057,18 +943,11 @@
             "type": "integer"
           },
           "state": {
-            "enum": [
-              "active",
-              "disabled",
-              "revoked"
-            ],
+            "enum": ["active", "disabled", "revoked"],
             "type": "string"
           }
         },
-        "required": [
-          "revision",
-          "state"
-        ],
+        "required": ["revision", "state"],
         "type": "object"
       },
       "ConnectionSummaryView": {
@@ -1143,10 +1022,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "parentId",
-          "name"
-        ],
+        "required": ["parentId", "name"],
         "type": "object"
       },
       "CreateAccountInputBody": {
@@ -1168,11 +1044,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "username",
-          "displayName",
-          "password"
-        ],
+        "required": ["username", "displayName", "password"],
         "type": "object"
       },
       "CreateDepartmentRequest": {
@@ -1194,12 +1066,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "leader",
-          "remark",
-          "code",
-          "name"
-        ],
+        "required": ["leader", "remark", "code", "name"],
         "type": "object"
       },
       "CreatePositionRequest": {
@@ -1212,10 +1079,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "name"
-        ],
+        "required": ["code", "name"],
         "type": "object"
       },
       "CreateRoleInputBody": {
@@ -1236,11 +1100,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code",
-          "name",
-          "description"
-        ],
+        "required": ["code", "name", "description"],
         "type": "object"
       },
       "CreateTodoRequest": {
@@ -1250,9 +1110,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "title"
-        ],
+        "required": ["title"],
         "type": "object"
       },
       "Department": {
@@ -1338,12 +1196,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "offset",
-          "limit",
-          "total"
-        ],
+        "required": ["items", "offset", "limit", "total"],
         "type": "object"
       },
       "DepartmentNode": {
@@ -1428,10 +1281,7 @@
             "$ref": "#/components/schemas/Entry"
           }
         },
-        "required": [
-          "entry",
-          "breadcrumbs"
-        ],
+        "required": ["entry", "breadcrumbs"],
         "type": "object"
       },
       "DownloadGrant": {
@@ -1445,10 +1295,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "ticket",
-          "expiresAt"
-        ],
+        "required": ["ticket", "expiresAt"],
         "type": "object"
       },
       "Entry": {
@@ -1525,12 +1372,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "files",
-          "folders",
-          "shortcuts",
-          "logicalBytes"
-        ],
+        "required": ["files", "folders", "shortcuts", "logicalBytes"],
         "type": "object"
       },
       "ErrorModel": {
@@ -1563,12 +1405,35 @@
             "type": "array"
           }
         },
-        "required": [
-          "type",
-          "title",
-          "status",
-          "code"
-        ],
+        "required": ["type", "title", "status", "code"],
+        "type": "object"
+      },
+      "FileVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "current": {
+            "type": "boolean"
+          },
+          "mediaType": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["revision", "current", "name", "sizeBytes", "mediaType", "updatedAt"],
         "type": "object"
       },
       "FolderInputBody": {
@@ -1583,10 +1448,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name",
-          "parentId"
-        ],
+        "required": ["name", "parentId"],
         "type": "object"
       },
       "IdentityResponse": {
@@ -1662,12 +1524,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "offset",
-          "limit",
-          "total"
-        ],
+        "required": ["items", "offset", "limit", "total"],
         "type": "object"
       },
       "ListResponseApiTokenResponse": {
@@ -1693,12 +1550,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "offset",
-          "limit",
-          "total"
-        ],
+        "required": ["items", "offset", "limit", "total"],
         "type": "object"
       },
       "ListResponseRoleResponse": {
@@ -1724,12 +1576,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "offset",
-          "limit",
-          "total"
-        ],
+        "required": ["items", "offset", "limit", "total"],
         "type": "object"
       },
       "ListResponseSessionInfoResponse": {
@@ -1755,12 +1602,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "offset",
-          "limit",
-          "total"
-        ],
+        "required": ["items", "offset", "limit", "total"],
         "type": "object"
       },
       "Listing": {
@@ -1903,10 +1745,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "username",
-          "password"
-        ],
+        "required": ["username", "password"],
         "type": "object"
       },
       "LoginResultBody": {
@@ -2032,11 +1871,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "items",
-          "catalogRevision",
-          "navigationRevision"
-        ],
+        "required": ["items", "catalogRevision", "navigationRevision"],
         "type": "object"
       },
       "MfaCodeInputBody": {
@@ -2048,9 +1883,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "code"
-        ],
+        "required": ["code"],
         "type": "object"
       },
       "MfaConfirmResponse": {
@@ -2064,9 +1897,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "recoveryCodes"
-        ],
+        "required": ["recoveryCodes"],
         "type": "object"
       },
       "MfaEnrollResponse": {
@@ -2079,10 +1910,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "secret",
-          "uri"
-        ],
+        "required": ["secret", "uri"],
         "type": "object"
       },
       "MfaStatusResponse": {
@@ -2092,9 +1920,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "registered"
-        ],
+        "required": ["registered"],
         "type": "object"
       },
       "MfaVerifyInputBody": {
@@ -2111,10 +1937,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "challengeId",
-          "code"
-        ],
+        "required": ["challengeId", "code"],
         "type": "object"
       },
       "NavigationRevisionOutputBody": {
@@ -2125,9 +1948,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "revision"
-        ],
+        "required": ["revision"],
         "type": "object"
       },
       "NotificationsStruct": {
@@ -2157,9 +1978,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "password"
-        ],
+        "required": ["password"],
         "type": "object"
       },
       "PermissionKeysInputBody": {
@@ -2178,10 +1997,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "expectedRoleVersion",
-          "permissionKeys"
-        ],
+        "required": ["expectedRoleVersion", "permissionKeys"],
         "type": "object"
       },
       "PermissionResponse": {
@@ -2197,20 +2013,11 @@
             "type": "string"
           },
           "risk": {
-            "enum": [
-              "standard",
-              "elevated",
-              "critical"
-            ],
+            "enum": ["standard", "elevated", "critical"],
             "type": "string"
           }
         },
-        "required": [
-          "key",
-          "ownerModuleId",
-          "descriptionMessageId",
-          "risk"
-        ],
+        "required": ["key", "ownerModuleId", "descriptionMessageId", "risk"],
         "type": "object"
       },
       "PinListing": {
@@ -2235,12 +2042,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "revision",
-          "limit",
-          "metadataLimited"
-        ],
+        "required": ["items", "revision", "limit", "metadataLimited"],
         "type": "object"
       },
       "PinOrderInputBody": {
@@ -2260,10 +2062,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "revision",
-          "ids"
-        ],
+        "required": ["revision", "ids"],
         "type": "object"
       },
       "PinRemoveInputBody": {
@@ -2275,9 +2074,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "revision"
-        ],
+        "required": ["revision"],
         "type": "object"
       },
       "PinRequest": {
@@ -2292,19 +2089,11 @@
             "type": "string"
           },
           "targetKind": {
-            "enum": [
-              "folder",
-              "shared",
-              "shortcut"
-            ],
+            "enum": ["folder", "shared", "shortcut"],
             "type": "string"
           }
         },
-        "required": [
-          "revision",
-          "targetKind",
-          "targetId"
-        ],
+        "required": ["revision", "targetKind", "targetId"],
         "type": "object"
       },
       "PinView": {
@@ -2333,15 +2122,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "targetKind",
-          "targetId",
-          "name",
-          "position",
-          "available",
-          "locked"
-        ],
+        "required": ["id", "targetKind", "targetId", "name", "position", "available", "locked"],
         "type": "object"
       },
       "Position": {
@@ -2411,12 +2192,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "offset",
-          "limit",
-          "total"
-        ],
+        "required": ["items", "offset", "limit", "total"],
         "type": "object"
       },
       "PreferencesNotificationsResponse": {
@@ -2435,22 +2211,14 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "emailDigest",
-          "inApp",
-          "showSummaries",
-          "dailySummary"
-        ],
+        "required": ["emailDigest", "inApp", "showSummaries", "dailySummary"],
         "type": "object"
       },
       "PreferencesResponse": {
         "additionalProperties": false,
         "properties": {
           "density": {
-            "enum": [
-              "comfortable",
-              "compact"
-            ],
+            "enum": ["comfortable", "compact"],
             "type": "string"
           },
           "language": {
@@ -2463,21 +2231,11 @@
             "type": "boolean"
           },
           "themeMode": {
-            "enum": [
-              "system",
-              "light",
-              "dark"
-            ],
+            "enum": ["system", "light", "dark"],
             "type": "string"
           },
           "themePreset": {
-            "enum": [
-              "blue",
-              "cyan",
-              "green",
-              "violet",
-              "orange"
-            ],
+            "enum": ["blue", "cyan", "green", "violet", "orange"],
             "type": "string"
           },
           "timeZone": {
@@ -2521,13 +2279,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "username",
-          "nickname",
-          "bio",
-          "birthDate",
-          "version"
-        ],
+        "required": ["username", "nickname", "bio", "birthDate", "version"],
         "type": "object"
       },
       "Property": {
@@ -2540,10 +2292,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "key",
-          "value"
-        ],
+        "required": ["key", "value"],
         "type": "object"
       },
       "PublicEntry": {
@@ -2570,14 +2319,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "kind",
-          "sizeBytes",
-          "mediaType",
-          "updatedAt"
-        ],
+        "required": ["id", "name", "kind", "sizeBytes", "mediaType", "updatedAt"],
         "type": "object"
       },
       "PublicListing": {
@@ -2598,10 +2340,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "items",
-          "breadcrumbs"
-        ],
+        "required": ["items", "breadcrumbs"],
         "type": "object"
       },
       "PublicShare": {
@@ -2618,10 +2357,7 @@
             "$ref": "#/components/schemas/PublicEntry"
           }
         },
-        "required": [
-          "locked",
-          "expiresAt"
-        ],
+        "required": ["locked", "expiresAt"],
         "type": "object"
       },
       "PublicUnlockInputBody": {
@@ -2632,9 +2368,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "password"
-        ],
+        "required": ["password"],
         "type": "object"
       },
       "ReplaceAssignmentRequest": {
@@ -2656,10 +2390,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "expectedVersion",
-          "positionIds"
-        ],
+        "required": ["expectedVersion", "positionIds"],
         "type": "object"
       },
       "RestoreInputBody": {
@@ -2681,10 +2412,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "catalogRevision",
-          "navigationRevision"
-        ],
+        "required": ["catalogRevision", "navigationRevision"],
         "type": "object"
       },
       "RoleDetailResponse": {
@@ -2759,10 +2487,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "expectedAccountVersion",
-          "roleIds"
-        ],
+        "required": ["expectedAccountVersion", "roleIds"],
         "type": "object"
       },
       "RolePermissionsResponse": {
@@ -2789,12 +2514,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "roleId",
-          "roleVersion",
-          "authorizationRevision",
-          "permissionKeys"
-        ],
+        "required": ["roleId", "roleVersion", "authorizationRevision", "permissionKeys"],
         "type": "object"
       },
       "RoleResponse": {
@@ -2846,9 +2566,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "confirmationId"
-        ],
+        "required": ["confirmationId"],
         "type": "object"
       },
       "SelfArchiveInputBody": {
@@ -2858,9 +2576,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "confirmationId"
-        ],
+        "required": ["confirmationId"],
         "type": "object"
       },
       "SessionInfoResponse": {
@@ -2925,9 +2641,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "identity"
-        ],
+        "required": ["identity"],
         "type": "object"
       },
       "SessionRevokeInputBody": {
@@ -2941,9 +2655,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "idHashes"
-        ],
+        "required": ["idHashes"],
         "type": "object"
       },
       "SetupInputBody": {
@@ -2970,12 +2682,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "setupToken",
-          "username",
-          "displayName",
-          "password"
-        ],
+        "required": ["setupToken", "username", "displayName", "password"],
         "type": "object"
       },
       "ShareCreateInputBody": {
@@ -2995,9 +2702,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "rootId"
-        ],
+        "required": ["rootId"],
         "type": "object"
       },
       "ShareSummary": {
@@ -3064,12 +2769,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "nextCursor",
-          "pageSize",
-          "shortcutLimit"
-        ],
+        "required": ["items", "nextCursor", "pageSize", "shortcutLimit"],
         "type": "object"
       },
       "ShortcutPurgeInputBody": {
@@ -3081,9 +2781,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "revision"
-        ],
+        "required": ["revision"],
         "type": "object"
       },
       "ShortcutRequest": {
@@ -3105,11 +2803,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "token",
-          "parentId",
-          "name"
-        ],
+        "required": ["token", "parentId", "name"],
         "type": "object"
       },
       "ShortcutSummary": {
@@ -3122,10 +2816,7 @@
             "$ref": "#/components/schemas/ShortcutTargetState"
           }
         },
-        "required": [
-          "entry",
-          "target"
-        ],
+        "required": ["entry", "target"],
         "type": "object"
       },
       "ShortcutTargetState": {
@@ -3138,26 +2829,18 @@
             "type": "string"
           }
         },
-        "required": [
-          "status",
-          "locked"
-        ],
+        "required": ["status", "locked"],
         "type": "object"
       },
       "StatusInputBody": {
         "additionalProperties": false,
         "properties": {
           "status": {
-            "enum": [
-              "active",
-              "disabled"
-            ],
+            "enum": ["active", "disabled"],
             "type": "string"
           }
         },
-        "required": [
-          "status"
-        ],
+        "required": ["status"],
         "type": "object"
       },
       "Tag": {
@@ -3170,10 +2853,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name",
-          "color"
-        ],
+        "required": ["name", "color"],
         "type": "object"
       },
       "TagsBatch": {
@@ -3205,11 +2885,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "targets",
-          "add",
-          "remove"
-        ],
+        "required": ["targets", "add", "remove"],
         "type": "object"
       },
       "TextCreateInputBody": {
@@ -3233,12 +2909,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name",
-          "parentId",
-          "key",
-          "text"
-        ],
+        "required": ["name", "parentId", "key", "text"],
         "type": "object"
       },
       "TextInputBody": {
@@ -3254,10 +2925,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "expectedRevision",
-          "text"
-        ],
+        "required": ["expectedRevision", "text"],
         "type": "object"
       },
       "Todo": {
@@ -3285,13 +2953,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "title",
-          "status",
-          "createdAt",
-          "updatedAt"
-        ],
+        "required": ["id", "title", "status", "createdAt", "updatedAt"],
         "type": "object"
       },
       "TodoList": {
@@ -3317,12 +2979,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "offset",
-          "limit",
-          "total"
-        ],
+        "required": ["items", "offset", "limit", "total"],
         "type": "object"
       },
       "TransferListing": {
@@ -3368,6 +3025,16 @@
       "TransferRequest": {
         "additionalProperties": false,
         "properties": {
+          "expectedContentRevision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "expectedEntryId": {
+            "maxLength": 36,
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -3385,13 +3052,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "parentId",
-          "name",
-          "sizeBytes",
-          "sha256",
-          "key"
-        ],
+        "required": ["parentId", "name", "sizeBytes", "sha256", "key"],
         "type": "object"
       },
       "TransferSourceInputBody": {
@@ -3408,10 +3069,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "sha256",
-          "sizeBytes"
-        ],
+        "required": ["sha256", "sizeBytes"],
         "type": "object"
       },
       "TransferSummary": {
@@ -3434,6 +3092,13 @@
             "type": "string"
           },
           "entryId": {
+            "type": "string"
+          },
+          "expectedContentRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "expectedEntryId": {
             "type": "string"
           },
           "expiresAt": {
@@ -3496,7 +3161,9 @@
           "updatedAt",
           "expiresAt",
           "revision",
-          "cleanupPending"
+          "cleanupPending",
+          "expectedEntryId",
+          "expectedContentRevision"
         ],
         "type": "object"
       },
@@ -3513,10 +3180,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "parentId",
-          "name"
-        ],
+        "required": ["parentId", "name"],
         "type": "object"
       },
       "UnlockResult": {
@@ -3530,10 +3194,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "ticket",
-          "expiresAt"
-        ],
+        "required": ["ticket", "expiresAt"],
         "type": "object"
       },
       "UpdateAccountInputBody": {
@@ -3550,10 +3211,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "expectedAccountVersion",
-          "displayName"
-        ],
+        "required": ["expectedAccountVersion", "displayName"],
         "type": "object"
       },
       "UpdateDepartmentRequest": {
@@ -3586,9 +3244,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "version"
-        ],
+        "required": ["version"],
         "type": "object"
       },
       "UpdateMenuRequest": {
@@ -3616,12 +3272,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "label",
-          "permission",
-          "enabled",
-          "version"
-        ],
+        "required": ["label", "permission", "enabled", "version"],
         "type": "object"
       },
       "UpdatePositionRequest": {
@@ -3642,26 +3293,18 @@
             "type": "integer"
           }
         },
-        "required": [
-          "version"
-        ],
+        "required": ["version"],
         "type": "object"
       },
       "UpdatePreferencesInputBody": {
         "additionalProperties": false,
         "properties": {
           "density": {
-            "enum": [
-              "comfortable",
-              "compact"
-            ],
+            "enum": ["comfortable", "compact"],
             "type": "string"
           },
           "language": {
-            "enum": [
-              "zh-CN",
-              "en-US"
-            ],
+            "enum": ["zh-CN", "en-US"],
             "type": "string"
           },
           "notifications": {
@@ -3671,21 +3314,11 @@
             "type": "boolean"
           },
           "themeMode": {
-            "enum": [
-              "system",
-              "light",
-              "dark"
-            ],
+            "enum": ["system", "light", "dark"],
             "type": "string"
           },
           "themePreset": {
-            "enum": [
-              "blue",
-              "cyan",
-              "green",
-              "violet",
-              "orange"
-            ],
+            "enum": ["blue", "cyan", "green", "violet", "orange"],
             "type": "string"
           },
           "timeZone": {
@@ -3718,11 +3351,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "expectedRoleVersion",
-          "name",
-          "description"
-        ],
+        "required": ["expectedRoleVersion", "name", "description"],
         "type": "object"
       },
       "UpdateSelfProfileInputBody": {
@@ -3746,11 +3375,177 @@
             "type": "string"
           }
         },
+        "required": ["expectedVersion", "nickname", "bio", "birthDate"],
+        "type": "object"
+      },
+      "VersionCopy": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          }
+        },
+        "required": ["parentId", "name"],
+        "type": "object"
+      },
+      "VersionDelete": {
+        "additionalProperties": false,
+        "properties": {
+          "expectedContentRevision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "expectedHistoryRevision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "mode": {
+            "enum": ["selected", "all-history"],
+            "type": "string"
+          },
+          "revisions": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "maxItems": 20,
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": ["mode", "revisions", "expectedContentRevision", "expectedHistoryRevision"],
+        "type": "object"
+      },
+      "VersionMutation": {
+        "additionalProperties": false,
+        "properties": {
+          "expectedContentRevision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "expectedHistoryRevision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": ["expectedContentRevision", "expectedHistoryRevision"],
+        "type": "object"
+      },
+      "VersionMutationResult": {
+        "additionalProperties": false,
+        "properties": {
+          "contentRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "historyRevision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": ["contentRevision", "historyRevision"],
+        "type": "object"
+      },
+      "VersionPage": {
+        "additionalProperties": false,
+        "properties": {
+          "contentRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "entry": {
+            "$ref": "#/components/schemas/Entry"
+          },
+          "fileHistoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "historyEnabled": {
+            "type": "boolean"
+          },
+          "historyRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FileVersion"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "maxMediaBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxTextBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ownerHistoryBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ownerUsedBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "page": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "perFile": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "perOwner": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "quotaBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
         "required": [
-          "expectedVersion",
-          "nickname",
-          "bio",
-          "birthDate"
+          "entry",
+          "items",
+          "page",
+          "pageSize",
+          "total",
+          "contentRevision",
+          "historyRevision",
+          "historyEnabled",
+          "perFile",
+          "perOwner",
+          "fileHistoryBytes",
+          "ownerHistoryBytes",
+          "ownerUsedBytes",
+          "quotaBytes",
+          "maxTextBytes",
+          "maxMediaBytes"
         ],
         "type": "object"
       },
@@ -3764,10 +3559,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "field",
-          "reason"
-        ],
+        "required": ["field", "reason"],
         "type": "object"
       }
     },
@@ -3922,9 +3714,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/auth/audit/{eventId}": {
@@ -3976,9 +3766,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/file-downloads/{ticket}": {
@@ -4021,9 +3809,7 @@
           }
         },
         "security": [],
-        "tags": [
-          "File Shares"
-        ]
+        "tags": ["File Shares"]
       },
       "head": {
         "operationId": "files.public.download.head",
@@ -4064,9 +3850,7 @@
           }
         },
         "security": [],
-        "tags": [
-          "File Shares"
-        ]
+        "tags": ["File Shares"]
       }
     },
     "/api/v1/file-shares/{token}": {
@@ -4115,9 +3899,7 @@
           }
         },
         "security": [],
-        "tags": [
-          "File Shares"
-        ]
+        "tags": ["File Shares"]
       }
     },
     "/api/v1/file-shares/{token}/content/{id}": {
@@ -4178,9 +3960,7 @@
           }
         },
         "security": [],
-        "tags": [
-          "File Shares"
-        ]
+        "tags": ["File Shares"]
       },
       "head": {
         "operationId": "files.public.content.head",
@@ -4239,9 +4019,7 @@
           }
         },
         "security": [],
-        "tags": [
-          "File Shares"
-        ]
+        "tags": ["File Shares"]
       }
     },
     "/api/v1/file-shares/{token}/content/{id}/download": {
@@ -4300,9 +4078,7 @@
           }
         },
         "security": [],
-        "tags": [
-          "File Shares"
-        ]
+        "tags": ["File Shares"]
       }
     },
     "/api/v1/file-shares/{token}/entries": {
@@ -4360,9 +4136,7 @@
           }
         },
         "security": [],
-        "tags": [
-          "File Shares"
-        ]
+        "tags": ["File Shares"]
       }
     },
     "/api/v1/file-shares/{token}/unlock": {
@@ -4413,9 +4187,7 @@
           }
         },
         "security": [],
-        "tags": [
-          "File Shares"
-        ]
+        "tags": ["File Shares"]
       }
     },
     "/api/v1/files": {
@@ -4461,12 +4233,7 @@
             "in": "query",
             "name": "sort",
             "schema": {
-              "enum": [
-                "name",
-                "size",
-                "updated",
-                "created"
-              ],
+              "enum": ["name", "size", "updated", "created"],
               "type": "string"
             }
           },
@@ -4483,12 +4250,7 @@
             "in": "query",
             "name": "scope",
             "schema": {
-              "enum": [
-                "auto",
-                "folder",
-                "tree",
-                "all"
-              ],
+              "enum": ["auto", "folder", "tree", "all"],
               "type": "string"
             }
           },
@@ -4518,10 +4280,7 @@
             "in": "query",
             "name": "match",
             "schema": {
-              "enum": [
-                "all",
-                "any"
-              ],
+              "enum": ["all", "any"],
               "type": "string"
             }
           },
@@ -4656,10 +4415,7 @@
             "in": "query",
             "name": "tagMatch",
             "schema": {
-              "enum": [
-                "all",
-                "any"
-              ],
+              "enum": ["all", "any"],
               "type": "string"
             }
           },
@@ -4677,11 +4433,7 @@
             "in": "query",
             "name": "propertyMatch",
             "schema": {
-              "enum": [
-                "exists",
-                "equals",
-                "contains"
-              ],
+              "enum": ["exists", "equals", "contains"],
               "type": "string"
             }
           },
@@ -4722,9 +4474,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/annotations/summaries": {
@@ -4751,10 +4501,7 @@
             "name": "visibility",
             "schema": {
               "default": "active",
-              "enum": [
-                "active",
-                "trash"
-              ],
+              "enum": ["active", "trash"],
               "type": "string"
             }
           }
@@ -4786,9 +4533,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/annotations/tags-batch": {
@@ -4831,9 +4576,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/archive": {
@@ -4878,9 +4621,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/connections": {
@@ -4936,9 +4677,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       },
       "post": {
         "operationId": "files.connections.create",
@@ -4979,9 +4718,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/connections/{connectionId}": {
@@ -5026,9 +4763,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       },
       "patch": {
         "operationId": "files.connections.update",
@@ -5081,9 +4816,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/connections/{connectionId}/rotate": {
@@ -5138,9 +4871,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/connections/{connectionId}/state": {
@@ -5195,9 +4926,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/folders": {
@@ -5240,9 +4969,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/pins": {
@@ -5275,9 +5002,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       },
       "post": {
         "operationId": "files.pins.create",
@@ -5318,9 +5043,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/pins/order": {
@@ -5363,9 +5086,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/pins/{pinId}": {
@@ -5420,9 +5141,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/shares": {
@@ -5459,9 +5178,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       },
       "post": {
         "operationId": "files.shares.create",
@@ -5502,9 +5219,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/shares/{shareId}/revoke": {
@@ -5549,9 +5264,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/shortcuts": {
@@ -5581,12 +5294,7 @@
             "in": "query",
             "name": "state",
             "schema": {
-              "enum": [
-                "",
-                "active",
-                "protected",
-                "unavailable"
-              ],
+              "enum": ["", "active", "protected", "unavailable"],
               "type": "string"
             }
           }
@@ -5618,9 +5326,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       },
       "post": {
         "operationId": "files.shortcuts.create",
@@ -5661,9 +5367,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/shortcuts/{shortcutId}": {
@@ -5711,9 +5415,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/shortcuts/{shortcutId}/open": {
@@ -5758,9 +5460,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/text": {
@@ -5803,9 +5503,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/transfers": {
@@ -5817,12 +5515,7 @@
             "in": "query",
             "name": "state",
             "schema": {
-              "enum": [
-                "",
-                "active",
-                "attention",
-                "completed"
-              ],
+              "enum": ["", "active", "attention", "completed"],
               "type": "string"
             }
           },
@@ -5875,9 +5568,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       },
       "post": {
         "operationId": "files.transfers.create",
@@ -5918,9 +5609,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/transfers/{id}": {
@@ -5965,9 +5654,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/transfers/{id}/cancel": {
@@ -6012,9 +5699,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/transfers/{id}/commit": {
@@ -6059,9 +5744,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/transfers/{id}/data": {
@@ -6099,9 +5782,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       },
       "patch": {
         "operationId": "files.transfers.chunk",
@@ -6137,9 +5818,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/transfers/{id}/pause": {
@@ -6184,9 +5863,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/transfers/{id}/resume": {
@@ -6231,9 +5908,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/transfers/{id}/source": {
@@ -6288,9 +5963,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/transfers/{id}/target": {
@@ -6345,9 +6018,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/{id}": {
@@ -6392,9 +6063,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       },
       "patch": {
         "operationId": "files.update",
@@ -6445,9 +6114,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/{id}/annotations": {
@@ -6492,9 +6159,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       },
       "put": {
         "operationId": "files.annotations.replace",
@@ -6547,9 +6212,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/{id}/content": {
@@ -6596,9 +6259,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       },
       "head": {
         "operationId": "files.content.head",
@@ -6643,9 +6304,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/{id}/copy": {
@@ -6700,9 +6359,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/{id}/restore": {
@@ -6755,9 +6412,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/{id}/text": {
@@ -6812,9 +6467,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
       }
     },
     "/api/v1/files/{id}/trash": {
@@ -6859,9 +6512,373 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Files"
-        ]
+        "tags": ["Files"]
+      }
+    },
+    "/api/v1/files/{id}/versions": {
+      "delete": {
+        "operationId": "files.versions.delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionDelete"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionMutationResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": ["Files"]
+      },
+      "get": {
+        "operationId": "files.versions.list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "format": "int64",
+              "maximum": 21,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "order",
+            "schema": {
+              "default": "newest",
+              "enum": ["newest", "oldest"],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionPage"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": ["Files"]
+      }
+    },
+    "/api/v1/files/{id}/versions/{revision}/content": {
+      "get": {
+        "operationId": "files.versions.content",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                  "x-contentMediaType": "application/octet-stream"
+                }
+              }
+            },
+            "description": "指定版本的原始内容和字节范围"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": ["Files"]
+      },
+      "head": {
+        "operationId": "files.versions.content.head",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                  "x-contentMediaType": "application/octet-stream"
+                }
+              }
+            },
+            "description": "指定版本的原始内容和字节范围"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": ["Files"]
+      }
+    },
+    "/api/v1/files/{id}/versions/{revision}/copy": {
+      "post": {
+        "operationId": "files.versions.copy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionCopy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": ["Files"]
+      }
+    },
+    "/api/v1/files/{id}/versions/{revision}/restore": {
+      "post": {
+        "operationId": "files.versions.restore",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionMutation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Entry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": ["Files"]
       }
     },
     "/api/v1/iam/accounts": {
@@ -6905,10 +6922,7 @@
             "in": "query",
             "name": "status",
             "schema": {
-              "enum": [
-                "active",
-                "disabled"
-              ],
+              "enum": ["active", "disabled"],
               "type": "string"
             }
           },
@@ -6973,9 +6987,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       },
       "post": {
         "operationId": "iam.accounts.create",
@@ -7041,9 +7053,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/accounts/batch-archive": {
@@ -7121,9 +7131,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/accounts/batch-status": {
@@ -7201,9 +7209,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/accounts/{id}": {
@@ -7253,9 +7259,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       },
       "patch": {
         "operationId": "iam.accounts.update",
@@ -7315,9 +7319,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/accounts/{id}/archive": {
@@ -7376,9 +7378,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/accounts/{id}/password-reset": {
@@ -7447,9 +7447,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/accounts/{id}/roles": {
@@ -7499,9 +7497,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       },
       "put": {
         "operationId": "iam.accounts.roles.replace",
@@ -7575,9 +7571,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/accounts/{id}/status": {
@@ -7639,9 +7633,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/api-tokens": {
@@ -7676,13 +7668,7 @@
             "in": "query",
             "name": "status",
             "schema": {
-              "enum": [
-                "active",
-                "disabled",
-                "expired",
-                "revoked",
-                "all"
-              ],
+              "enum": ["active", "disabled", "expired", "revoked", "all"],
               "type": "string"
             }
           },
@@ -7730,9 +7716,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       },
       "post": {
         "operationId": "iam.api-tokens.create",
@@ -7798,9 +7782,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/api-tokens/batch-revoke": {
@@ -7878,9 +7860,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/api-tokens/{id}": {
@@ -7949,9 +7929,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/api-tokens/{id}/disable": {
@@ -8010,9 +7988,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/api-tokens/{id}/enable": {
@@ -8071,9 +8047,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/api-tokens/{id}/revoke": {
@@ -8132,9 +8106,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/api-tokens/{id}/rotate": {
@@ -8207,9 +8179,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/login": {
@@ -8270,9 +8240,7 @@
           }
         },
         "security": [],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/login/mfa-verify": {
@@ -8333,9 +8301,7 @@
           }
         },
         "security": [],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/logout": {
@@ -8378,9 +8344,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/permissions": {
@@ -8424,9 +8388,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/permissions/roles": {
@@ -8501,9 +8463,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/roles": {
@@ -8586,9 +8546,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       },
       "post": {
         "operationId": "iam.roles.create",
@@ -8654,9 +8612,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/roles/{id}": {
@@ -8706,9 +8662,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       },
       "patch": {
         "operationId": "iam.roles.update",
@@ -8782,9 +8736,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/roles/{id}/accounts": {
@@ -8857,9 +8809,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/roles/{id}/archive": {
@@ -8918,9 +8868,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/roles/{id}/permissions": {
@@ -8970,9 +8918,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       },
       "put": {
         "operationId": "iam.roles.permissions.replace",
@@ -9046,9 +8992,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/self/archive": {
@@ -9091,9 +9035,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/self/archive/confirm": {
@@ -9147,9 +9089,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/self/mfa": {
@@ -9189,9 +9129,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       },
       "post": {
         "operationId": "iam.self.mfa.begin",
@@ -9229,9 +9167,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/self/mfa/confirm": {
@@ -9299,9 +9235,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/self/mfa/disable": {
@@ -9355,9 +9289,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/self/password": {
@@ -9411,9 +9343,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/self/preferences": {
@@ -9453,9 +9383,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       },
       "patch": {
         "operationId": "iam.self.preferences.write",
@@ -9521,9 +9449,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/self/profile": {
@@ -9591,9 +9517,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/session": {
@@ -9638,9 +9562,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/sessions": {
@@ -9683,11 +9605,7 @@
             "in": "query",
             "name": "status",
             "schema": {
-              "enum": [
-                "all",
-                "active",
-                "revoked"
-              ],
+              "enum": ["all", "active", "revoked"],
               "type": "string"
             }
           },
@@ -9735,9 +9653,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/sessions/revoke": {
@@ -9799,9 +9715,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/iam/setup": {
@@ -9862,9 +9776,7 @@
           }
         },
         "security": [],
-        "tags": [
-          "IAM"
-        ]
+        "tags": ["IAM"]
       }
     },
     "/api/v1/navigation/menus": {
@@ -9897,9 +9809,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Navigation"
-        ]
+        "tags": ["Navigation"]
       }
     },
     "/api/v1/navigation/menus/{id}": {
@@ -9969,9 +9879,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Navigation"
-        ]
+        "tags": ["Navigation"]
       }
     },
     "/api/v1/organization/accounts/{id}/assignment": {
@@ -10016,9 +9924,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Organization"
-        ]
+        "tags": ["Organization"]
       },
       "put": {
         "operationId": "organization.assignments.replace",
@@ -10087,9 +9993,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Organization"
-        ]
+        "tags": ["Organization"]
       }
     },
     "/api/v1/organization/departments": {
@@ -10162,9 +10066,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Organization"
-        ]
+        "tags": ["Organization"]
       },
       "post": {
         "operationId": "organization.departments.create",
@@ -10223,9 +10125,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Organization"
-        ]
+        "tags": ["Organization"]
       }
     },
     "/api/v1/organization/departments/tree": {
@@ -10272,9 +10172,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Organization"
-        ]
+        "tags": ["Organization"]
       }
     },
     "/api/v1/organization/departments/{id}": {
@@ -10345,9 +10243,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Organization"
-        ]
+        "tags": ["Organization"]
       }
     },
     "/api/v1/organization/positions": {
@@ -10420,9 +10316,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Organization"
-        ]
+        "tags": ["Organization"]
       },
       "post": {
         "operationId": "organization.positions.create",
@@ -10481,9 +10375,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Organization"
-        ]
+        "tags": ["Organization"]
       }
     },
     "/api/v1/organization/positions/{id}": {
@@ -10554,9 +10446,7 @@
             "webuiSession": []
           }
         ],
-        "tags": [
-          "Organization"
-        ]
+        "tags": ["Organization"]
       }
     },
     "/api/v1/todos": {
@@ -10568,10 +10458,7 @@
             "in": "query",
             "name": "status",
             "schema": {
-              "enum": [
-                "pending",
-                "completed"
-              ],
+              "enum": ["pending", "completed"],
               "type": "string"
             }
           },
@@ -10623,9 +10510,7 @@
             "bearerAuth": []
           }
         ],
-        "tags": [
-          "Todo"
-        ]
+        "tags": ["Todo"]
       },
       "post": {
         "operationId": "createTodo",
@@ -10666,9 +10551,7 @@
             "bearerAuth": []
           }
         ],
-        "tags": [
-          "Todo"
-        ]
+        "tags": ["Todo"]
       }
     },
     "/api/v1/todos/{id}": {
@@ -10713,9 +10596,7 @@
             "bearerAuth": []
           }
         ],
-        "tags": [
-          "Todo"
-        ]
+        "tags": ["Todo"]
       }
     },
     "/api/v1/todos/{id}/complete": {
@@ -10760,9 +10641,7 @@
             "bearerAuth": []
           }
         ],
-        "tags": [
-          "Todo"
-        ]
+        "tags": ["Todo"]
       }
     }
   }
