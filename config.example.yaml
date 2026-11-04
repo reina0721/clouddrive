@@ -347,6 +347,18 @@ files:
     lockRetryInterval: 100ms
     networkTimeout: 30s
     completionTimeout: 5s
+  connections:
+    # 留空使用管理请求直达API的scheme/Host；HTTPS反向代理应显式配置公网origin。
+    publicOrigin: ''
+    limit: 20
+    defaultAge: 720h
+    maxAge: 8760h
+    treeEntries: 10000
+    directoryEntries: 500
+    xmlBytes: 65536
+    responseBytes: 1048576
+    pathBytes: 4096
+    pathDepth: 64
   sharing:
     maxAge: 720h
     grantTTL: 15m

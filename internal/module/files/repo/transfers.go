@@ -212,28 +212,37 @@ func (r *Transfers) ChangeTransfer(ctx context.Context, owner, id, key string, c
 				if err == nil {
 					owned := model.Transfer(previous)
 					snapshot.Transfer = &owned
+					if owned.ConnectionID != "" {
+						var connection connectionRecord
+						if err := db.First(&connection, "id = ? AND owner_id = ?", owned.ConnectionID, owner).Error; err != nil {
+							return err
+						}
+						current := model.Connection(connection)
+						snapshot.Connection = &current
+					}
 				} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 					return err
 				}
 			}
 			type reservation struct {
-				OwnerID string
-				Bytes   int64
-				Count   int64
+				OwnerID    string
+				Bytes      int64
+				QuotaBytes int64
+				Count      int64
 			}
 			reservations := []reservation{}
 			// 仅聚合仍占预算的项；不把无界历史记录全量载入 service。
-			if err := db.Model(&transferRecord{}).Select("owner_id, SUM(size_bytes) AS bytes, COUNT(*) AS count").Where("state NOT IN ? OR cleanup_pending = ?", []model.TransferState{model.TransferCompleted, model.TransferCanceled, model.TransferExpired}, true).Group("owner_id").Scan(&reservations).Error; err != nil {
+			if err := db.Model(&transferRecord{}).Select("owner_id, SUM(size_bytes) AS bytes, SUM(quota_reserved_bytes) AS quota_bytes, COUNT(*) AS count").Where("state NOT IN ? OR cleanup_pending = ?", []model.TransferState{model.TransferCompleted, model.TransferCanceled, model.TransferExpired}, true).Group("owner_id").Scan(&reservations).Error; err != nil {
 				return err
 			}
 			for _, reservation := range reservations {
-				if reservation.Bytes < 0 || reservation.Count < 0 {
+				if reservation.Bytes < 0 || reservation.QuotaBytes < 0 || reservation.Count < 0 {
 					return fmt.Errorf("transfer reservation invariant")
 				}
 				snapshot.GlobalReservedBytes += reservation.Bytes
 				snapshot.GlobalReservedCount += reservation.Count
 				if reservation.OwnerID == owner {
-					snapshot.OwnerReservedBytes = reservation.Bytes
+					snapshot.OwnerReservedBytes = reservation.QuotaBytes
 					snapshot.OwnerReservedCount = reservation.Count
 				}
 			}
@@ -241,11 +250,12 @@ func (r *Transfers) ChangeTransfer(ctx context.Context, owner, id, key string, c
 			if err != nil {
 				return err
 			}
-			if changed.OwnerID != owner || model.ValidateTransferID(changed.ID) != nil || changed.SizeBytes < 0 || !changed.State.Valid() {
+			if changed.OwnerID != owner || model.ValidateTransferID(changed.ID) != nil || changed.SizeBytes < 0 || changed.QuotaReservedBytes < 0 || changed.QuotaReservedBytes > changed.SizeBytes || !changed.Source.Valid() || !changed.State.Valid() {
 				return fmt.Errorf("transfer identity invariant")
 			}
 			if previous := snapshot.Transfer; previous != nil {
-				if changed.ID != previous.ID || changed.SizeBytes != previous.SizeBytes || changed.ContentSHA256 != previous.ContentSHA256 || changed.IdempotencyKey != previous.IdempotencyKey || changed.ObjectKey != previous.ObjectKey || !changed.CreatedAt.Equal(previous.CreatedAt) || !changed.ExpiresAt.Equal(previous.ExpiresAt) {
+				sealed := previous.Source == model.TransferSourceWebDAV && previous.ContentSHA256 == "" && changed.ContentSHA256 != "" && previous.State == model.TransferReceiving && changed.State == model.TransferReceiving && changed.SizeKnown && changed.SizeBytes <= previous.SizeBytes && changed.QuotaReservedBytes <= previous.QuotaReservedBytes
+				if changed.ID != previous.ID || changed.Source != previous.Source || changed.ConnectionID != previous.ConnectionID || changed.ConnectionRevision != previous.ConnectionRevision || changed.ExpectedEntryID != previous.ExpectedEntryID || changed.ExpectedContentRevision != previous.ExpectedContentRevision || (!sealed && (changed.SizeBytes != previous.SizeBytes || changed.SizeKnown != previous.SizeKnown || changed.QuotaReservedBytes != previous.QuotaReservedBytes || changed.ContentSHA256 != previous.ContentSHA256)) || changed.IdempotencyKey != previous.IdempotencyKey || changed.ObjectKey != previous.ObjectKey || !changed.CreatedAt.Equal(previous.CreatedAt) || !changed.ExpiresAt.Equal(previous.ExpiresAt) {
 					return fmt.Errorf("transfer immutable identity invariant")
 				}
 				changed.Revision = previous.Revision + 1
@@ -258,6 +268,15 @@ func (r *Transfers) ChangeTransfer(ctx context.Context, owner, id, key string, c
 					return model.ErrMissing
 				}
 				changed.Revision = 1
+				if changed.Source == model.TransferSourceWebDAV {
+					var connection connectionRecord
+					if err := db.First(&connection, "id = ? AND owner_id = ? AND revision = ?", changed.ConnectionID, owner, changed.ConnectionRevision).Error; err != nil {
+						return err
+					}
+					if connection.State != model.ConnectionActive || connection.ReadOnly {
+						return service.ErrConnectionUnavailable
+					}
+				}
 				record := transferRecord(changed)
 				if err := db.Create(&record).Error; err != nil {
 					return err
@@ -267,11 +286,19 @@ func (r *Transfers) ChangeTransfer(ctx context.Context, owner, id, key string, c
 				if entry.OwnerID != owner || entry.ID == "" || changed.EntryID != entry.ID || changed.State != model.TransferCompleted {
 					return fmt.Errorf("transfer publication invariant")
 				}
-				if _, exists := model.Find(entries, entry.ID); exists {
-					return model.ErrConflict
-				}
 				record := entryRecord(*entry)
-				if err := db.Create(&record).Error; err != nil {
+				if _, exists := model.Find(entries, entry.ID); exists {
+					if changed.Source != model.TransferSourceWebDAV || changed.ExpectedEntryID != entry.ID {
+						return model.ErrConflict
+					}
+					update := db.Model(&entryRecord{}).Where("owner_id = ? AND id = ? AND content_revision = ?", owner, entry.ID, changed.ExpectedContentRevision).Select("*").Updates(&record)
+					if update.Error != nil {
+						return update.Error
+					}
+					if update.RowsAffected != 1 {
+						return model.ErrConflict
+					}
+				} else if err := db.Create(&record).Error; err != nil {
 					return err
 				}
 			}

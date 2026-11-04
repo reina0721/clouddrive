@@ -20,7 +20,7 @@ if (Test-Path -LiteralPath $statePath) {
 foreach ($port in @($WebPort, $ApiPort, $ManagementPort)) {
     if (Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue) { throw "Preview port $port is already occupied." }
 }
-if (-not $GoExecutable) { $GoExecutable = Join-Path $env:LOCALAPPDATA 'clouddrive-tools/go/bin/go.exe' }
+if (-not $GoExecutable) { $GoExecutable = Join-Path $env:LOCALAPPDATA 'clouddrive-tools/go1.26.10/go/bin/go.exe' }
 $binaryPath = Join-Path $repo '.tools/clouddrive-file-preview.exe'
 Push-Location $repo
 try {

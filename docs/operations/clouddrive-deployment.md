@@ -2,7 +2,7 @@
 
 ## 构建与进程
 
-使用 Go 1.26.6 和 pnpm 10.22.0。Windows 执行 scripts/Build.ps1；Linux 执行 go build -trimpath -buildvcs=false -o dist/clouddrive ./cmd/app，再在 frontend 执行 npx --yes pnpm@10.22.0 build。
+使用 Go 1.26.10 和 pnpm 10.22.0。Windows 执行 scripts/Build.ps1；Linux 执行 go build -trimpath -buildvcs=false -o dist/clouddrive ./cmd/app，再在 frontend 执行 npx --yes pnpm@10.22.0 build。
 
 Next.js 需要 Node 服务进程和整个 frontend 工作区依赖，构建产物位于 frontend/apps/web/dist；使用 npx --yes pnpm@10.22.0 --filter @clouddrive/web exec next start --hostname 127.0.0.1 --port 4173。Go 二进制独立运行，数据库迁移应在启动或升级前执行。
 

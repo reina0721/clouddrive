@@ -2,10 +2,6 @@ package service
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/sha256"
-	"encoding/base64"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"sort"
@@ -23,7 +19,6 @@ const (
 	DefaultShareKDFConcurrency = 2
 	DefaultShareDownloadTTL    = time.Minute
 	DefaultShareDownloadLimit  = 100
-	shareSecretBytes           = 32
 	minSharePasswordBytes      = 8
 	maxSharePasswordBytes      = 128
 )
@@ -87,21 +82,6 @@ func NewSharing(files *Service, store ShareRepository, passwords PasscodeHasher,
 	return &Sharing{files: files, store: store, passwords: passwords, policy: policy, slots: make(chan struct{}, policy.KDFConcurrency)}, nil
 }
 
-func shareSecret() (string, error) {
-	secret := make([]byte, shareSecretBytes)
-	if _, err := rand.Read(secret); err != nil {
-		return "", err
-	}
-	return base64.RawURLEncoding.EncodeToString(secret), nil
-}
-func credentialDigest(domain, secret string) string {
-	digest := sha256.Sum256([]byte(domain + ":" + secret))
-	return hex.EncodeToString(digest[:])
-}
-func validSecret(secret string) bool {
-	decoded, err := base64.RawURLEncoding.DecodeString(secret)
-	return err == nil && len(decoded) == shareSecretBytes && base64.RawURLEncoding.EncodeToString(decoded) == secret
-}
 func (s *Sharing) acquireKDF(ctx context.Context) (func(), error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -176,7 +156,7 @@ func (s *Sharing) Create(ctx context.Context, owner, rootID, password string, ex
 	if err != nil {
 		return ShareSummary{}, err
 	}
-	token, err := shareSecret()
+	token, err := newCapabilitySecret()
 	if err != nil {
 		return ShareSummary{}, err
 	}
@@ -333,7 +313,7 @@ func (s *Sharing) Unlock(ctx context.Context, token, password string) (UnlockRes
 	if err != nil {
 		return UnlockResult{}, err
 	}
-	ticket, err := shareSecret()
+	ticket, err := newCapabilitySecret()
 	if err != nil {
 		return UnlockResult{}, err
 	}

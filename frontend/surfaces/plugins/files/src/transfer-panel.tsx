@@ -220,15 +220,22 @@ export function TransferPanel({ compact = false }: Readonly<{ compact?: boolean 
                   {t(`files.transferPhase.${item.phase}`)}
                 </span>
               </div>
-              <ProgressMeter
-                value={percent}
-                label={t(hashing ? 'files.hashingProgress' : 'files.uploadProgress', {
-                  name: item.name,
-                })}
-              />
+              {item.sizeKnown ? (
+                <ProgressMeter
+                  value={percent}
+                  label={t(hashing ? 'files.hashingProgress' : 'files.uploadProgress', {
+                    name: item.name,
+                  })}
+                />
+              ) : (
+                <p role="status" className="text-sm text-ink-muted">
+                  {t('files.unknownTransferSize')}
+                </p>
+              )}
               <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-ink-muted">
                 <span>
-                  {bytes(item.confirmedBytes)} / {bytes(item.sizeBytes)}
+                  {bytes(item.confirmedBytes)} /{' '}
+                  {item.sizeKnown ? bytes(item.sizeBytes) : t('files.unknownTransferSize')}
                 </span>
                 {item.phase === 'uploading' && item.bytesPerSecond > 0 ? (
                   <span>
@@ -280,7 +287,8 @@ export function TransferPanel({ compact = false }: Readonly<{ compact?: boolean 
                     {t('files.pause')}
                   </Action>
                 ) : null}
-                {['paused', 'failed', 'attention'].includes(item.phase) &&
+                {item.source === 'tus' &&
+                ['paused', 'failed', 'attention'].includes(item.phase) &&
                 (item.hasSource || item.confirmedBytes === item.sizeBytes) ? (
                   <Action
                     size="sm"
@@ -296,7 +304,7 @@ export function TransferPanel({ compact = false }: Readonly<{ compact?: boolean 
                     )}
                   </Action>
                 ) : null}
-                {!finished && !active ? (
+                {item.source === 'tus' && !finished && !active ? (
                   <Action
                     size="sm"
                     variant="secondary"
@@ -308,7 +316,9 @@ export function TransferPanel({ compact = false }: Readonly<{ compact?: boolean 
                     {t('files.reselectSource')}
                   </Action>
                 ) : null}
-                {item.phase === 'attention' && item.confirmedBytes === item.sizeBytes ? (
+                {item.source === 'tus' &&
+                item.phase === 'attention' &&
+                item.confirmedBytes === item.sizeBytes ? (
                   <Action
                     size="sm"
                     variant="secondary"

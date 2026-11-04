@@ -60,7 +60,13 @@ export function FilesRuntime({
       children
     );
   return (
-    <FilesProvider port={runtime.port} media={Media} transfers={runtime.transfers}>
+    <FilesProvider
+      key={account}
+      port={runtime.port}
+      media={Media}
+      transfers={runtime.transfers}
+      connections={runtime.connections}
+    >
       <div
         onDragOver={(event) => {
           if (event.dataTransfer.types.includes('Files')) event.preventDefault();

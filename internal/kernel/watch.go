@@ -66,7 +66,8 @@ func (c *Coordinator) watch(ctx context.Context, onReloadError func(error), read
 			}
 			return nil
 		case err := <-watchDone:
-			if err == nil {
+			// 取消与底层退出可以同时就绪；只把未取消的无因退出视为故障，清理错误仍向上返回。
+			if err == nil && ctx.Err() == nil {
 				return fmt.Errorf("kernel config watcher stopped unexpectedly")
 			}
 			return err

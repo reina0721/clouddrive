@@ -14,6 +14,7 @@ import {
 import { createJsonClient, csrfTokenOf, ApiError } from '../api/json-client';
 import { createTransferRuntime } from './transfer-runtime';
 import { nativeDownload } from './native-download';
+import { createConnectionsPort } from './connections';
 
 const transferTimeoutMs = 120_000;
 const preferencesKey = 'clouddrive.files.view.v1';
@@ -22,6 +23,7 @@ export const fileDestinationHrefs = {
   files: '/home',
   shares: '/home/shares',
   transfers: '/home/transfers',
+  connections: '/home/connections',
   workspace: '/workspace',
   account: '/account',
 } as const;
@@ -33,6 +35,7 @@ export function createFilesRuntime(
   navigate: FilesPort['navigate'],
   openFolder: FilesPort['openFolder'],
 ) {
+  const account = owner();
   const transport = createJsonClient(base);
   const sources = new Map<string, File>();
   const openPickers = new Set<() => void>();
@@ -81,6 +84,7 @@ export function createFilesRuntime(
     if (disposed) throw new FilesError('canceled');
     const original = owner();
     if (!original) throw new ApiError('http', 401);
+    if (original !== account) throw new FilesError('canceled');
     try {
       const value = await transport(native + path, {
         ...options,
@@ -439,6 +443,9 @@ export function createFilesRuntime(
   };
   return {
     port,
+    connections: createConnectionsPort(call, () => {
+      if (disposed || !account || owner() !== account) throw new FilesError('canceled');
+    }),
     transfers: transfers.port,
     readMedia: async (id: string, expectedSizeBytes: number, signal: AbortSignal) => {
       const previous = mediaTail;

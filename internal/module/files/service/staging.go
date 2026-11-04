@@ -9,6 +9,7 @@ import (
 type StageInfo struct {
 	SizeBytes   int64
 	OffsetBytes int64
+	Deferred    bool
 }
 
 // Staging 仅服务 files 暂存；调用方先持有 WithLock，再操作同一会话。
@@ -16,6 +17,9 @@ type StageInfo struct {
 type Staging interface {
 	WithLock(context.Context, string, func(context.Context) error) error
 	Create(context.Context, string, int64) error
+	CreateDeferred(context.Context, string) error
+	WriteStream(context.Context, string, io.Reader, int64) (int64, string, error)
+	Seal(context.Context, string, int64) error
 	Inspect(context.Context, string) (StageInfo, error)
 	WithReader(context.Context, string, func(io.ReadSeeker) error) error
 	Remove(context.Context, string) error

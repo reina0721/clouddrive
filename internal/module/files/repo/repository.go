@@ -173,24 +173,32 @@ func (r *Repository) ChangeMany(ctx context.Context, owner string, change func([
 			if err != nil {
 				return err
 			}
-			seen := make(map[string]bool, len(changed))
-			for _, entry := range changed {
-				if entry.OwnerID != owner || entry.ID == "" || seen[entry.ID] {
-					return fmt.Errorf("files mutation identity invariant")
-				}
-				seen[entry.ID] = true
-				record := entryRecord(entry)
-				if _, exists := model.Find(entries, entry.ID); exists {
-					if err := db.Model(&entryRecord{}).Where("id = ? AND owner_id = ?", entry.ID, owner).Select("*").Updates(&record).Error; err != nil {
-						return err
-					}
-				} else if err := db.Create(&record).Error; err != nil {
-					return err
-				}
+			if err := saveEntryChanges(db, owner, entries, changed); err != nil {
+				return err
 			}
 			result = changed
 			return nil
 		})
 	})
 	return result, err
+}
+
+// saveEntryChanges 只在持有同一storage/owner事务时保存受控变化集合。
+func saveEntryChanges(db *gorm.DB, owner string, entries, changed []model.Entry) error {
+	seen := make(map[string]bool, len(changed))
+	for _, entry := range changed {
+		if entry.OwnerID != owner || entry.ID == "" || seen[entry.ID] {
+			return fmt.Errorf("files mutation identity invariant")
+		}
+		seen[entry.ID] = true
+		record := entryRecord(entry)
+		if _, exists := model.Find(entries, entry.ID); exists {
+			if err := db.Model(&entryRecord{}).Where("id = ? AND owner_id = ?", entry.ID, owner).Select("*").Updates(&record).Error; err != nil {
+				return err
+			}
+		} else if err := db.Create(&record).Error; err != nil {
+			return err
+		}
+	}
+	return nil
 }

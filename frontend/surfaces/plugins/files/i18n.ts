@@ -1,4 +1,8 @@
+import { zhConnections, enConnections } from './connections-i18n';
 const zh = {
+  create: '创建',
+  connections: zhConnections,
+  unknownTransferSize: '大小尚未确定，正在接收客户端数据',
   transferCenter: '传输中心',
   pauseAll: '全部暂停',
   resumeAll: '继续可用任务',
@@ -13,6 +17,7 @@ const zh = {
   transferResumeHint:
     '切换应用页面不会中断上传。刷新或重新登录后，请重新选择同内容文件以继续；浏览器关闭后不会在后台读取你的本地文件。',
   transferPhase: {
+    external: '外部客户端传输中',
     waiting: '等待上传',
     hashing: '正在核对源文件',
     uploading: '上传中',
@@ -192,6 +197,9 @@ const zh = {
   },
 };
 const en: typeof zh = {
+  create: 'Create',
+  connections: enConnections,
+  unknownTransferSize: 'Size pending; receiving client data',
   transferCenter: 'Transfer center',
   pauseAll: 'Pause all',
   resumeAll: 'Resume available tasks',
@@ -206,6 +214,7 @@ const en: typeof zh = {
   transferResumeHint:
     'Uploads continue across app pages. After refreshing or signing in again, select the same content to resume. Closing the browser does not grant background access to local files.',
   transferPhase: {
+    external: 'External client transfer',
     waiting: 'Queued',
     hashing: 'Checking source',
     uploading: 'Uploading',

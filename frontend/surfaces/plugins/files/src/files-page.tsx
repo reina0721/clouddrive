@@ -401,6 +401,9 @@ export function FilesPage({ parent, category, trash, search, navigate: routeNavi
             <FileLink target="transfers" className="hover:text-brand">
               {t('files.transferCenter')}
             </FileLink>
+            <FileLink target="connections" className="hover:text-brand">
+              {t('files.connections.title')}
+            </FileLink>
             <FileLink target="workspace" className="flex items-center gap-3 hover:text-brand">
               <Settings className="size-5" />
               {t('files.management')}

@@ -26,7 +26,7 @@ func (s *Sharing) CreateDownload(ctx context.Context, token, ticket, id string) 
 	if !ok || entry.Kind != model.File || !model.Visible(snapshot.Entries, entry) || !Within(snapshot.Entries, snapshot.Share.RootID, id) {
 		return DownloadGrant{}, model.ErrMissing
 	}
-	secret, err := shareSecret()
+	secret, err := newCapabilitySecret()
 	if err != nil {
 		return DownloadGrant{}, err
 	}

@@ -1,0 +1,39 @@
+schema_version: 1
+change: 123-webdav-connections
+areas:
+  - id: repository
+    decision: updated
+    documents: [README.md, docs/repository-scope.md]
+    reason: 第四批20项WebDAV实际能力与剩余Cloudreve缺口。
+  - id: startup
+    decision: updated
+    documents: [README.md, docs/getting-started/local-development.md]
+    reason: 当前IAM权限注入及Go安全维护版本的统一启动入口。
+  - id: webui
+    decision: updated
+    documents: [frontend/README.md]
+    reason: 连接管理路由、一次性凭据与真实协议地址。
+  - id: frontend
+    decision: updated
+    documents: [frontend/README.md, docs/repository-scope.md]
+    reason: ConnectionsPort、账号边界和WebDAV外部传输来源。
+  - id: module
+    decision: updated
+    documents: [internal/module/README.md]
+    reason: 成熟协议Adapter、独立凭据与IAM公开授权facet。
+  - id: capability
+    decision: updated
+    documents: [docs/operations/runtime-capabilities.md]
+    reason: 复用流式租约与工作簿依赖安全维护，不新建Kernel资源。
+  - id: api
+    decision: updated
+    documents: [api/README.md]
+    reason: 103个原生operation及单独声明的WebDAV协议，不伪造OpenAPI方法。
+  - id: configuration
+    decision: updated
+    documents: [docs/configuration/README.md, docs/operations/file-management.md]
+    reason: 连接策略、元数据/协议预算及显式公网origin。
+  - id: delivery
+    decision: updated
+    documents: [docs/operations/build-and-container.md, docs/operations/runtime-capabilities.md]
+    reason: Go1.26.10、官方镜像digest和扫描工具维护版本一致。

@@ -464,6 +464,189 @@ components:
         - currentPassword
         - newPassword
       type: object
+    ConnectionChange:
+      additionalProperties: false
+      properties:
+        blockSystemFiles:
+          type: boolean
+        name:
+          type: string
+        readOnly:
+          type: boolean
+        revision:
+          format: int64
+          minimum: 1
+          type: integer
+      required:
+        - revision
+      type: object
+    ConnectionIssuedView:
+      additionalProperties: false
+      properties:
+        blockSystemFiles:
+          type: boolean
+        createdAt:
+          format: date-time
+          type: string
+        endpointOrigin:
+          type: string
+        endpointPath:
+          type: string
+        expiresAt:
+          format: date-time
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        password:
+          type: string
+        readOnly:
+          type: boolean
+        revision:
+          format: int64
+          type: integer
+        rootId:
+          type: string
+        rootPath:
+          type: string
+        status:
+          type: string
+      required:
+        - endpointPath
+        - endpointOrigin
+        - password
+        - id
+        - name
+        - rootId
+        - rootPath
+        - readOnly
+        - blockSystemFiles
+        - status
+        - expiresAt
+        - createdAt
+        - revision
+      type: object
+    ConnectionListView:
+      additionalProperties: false
+      properties:
+        defaultAgeSeconds:
+          format: int64
+          type: integer
+        items:
+          items:
+            $ref: "#/components/schemas/ConnectionSummaryView"
+          nullable: true
+          type: array
+        limit:
+          format: int64
+          type: integer
+        maxAgeSeconds:
+          format: int64
+          type: integer
+        metadataLimited:
+          type: boolean
+        nextCursor:
+          type: string
+      required:
+        - items
+        - nextCursor
+        - limit
+        - defaultAgeSeconds
+        - maxAgeSeconds
+        - metadataLimited
+      type: object
+    ConnectionRequest:
+      additionalProperties: false
+      properties:
+        blockSystemFiles:
+          type: boolean
+        expiresAt:
+          format: date-time
+          type: string
+        name:
+          type: string
+        readOnly:
+          type: boolean
+        rootId:
+          type: string
+      required:
+        - name
+        - rootId
+        - readOnly
+        - blockSystemFiles
+      type: object
+    ConnectionRotateInputBody:
+      additionalProperties: false
+      properties:
+        revision:
+          format: int64
+          minimum: 1
+          type: integer
+      required:
+        - revision
+      type: object
+    ConnectionStateInputBody:
+      additionalProperties: false
+      properties:
+        revision:
+          format: int64
+          minimum: 1
+          type: integer
+        state:
+          enum:
+            - active
+            - disabled
+            - revoked
+          type: string
+      required:
+        - revision
+        - state
+      type: object
+    ConnectionSummaryView:
+      additionalProperties: false
+      properties:
+        blockSystemFiles:
+          type: boolean
+        createdAt:
+          format: date-time
+          type: string
+        endpointOrigin:
+          type: string
+        endpointPath:
+          type: string
+        expiresAt:
+          format: date-time
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        readOnly:
+          type: boolean
+        revision:
+          format: int64
+          type: integer
+        rootId:
+          type: string
+        rootPath:
+          type: string
+        status:
+          type: string
+      required:
+        - endpointPath
+        - endpointOrigin
+        - id
+        - name
+        - rootId
+        - rootPath
+        - readOnly
+        - blockSystemFiles
+        - status
+        - expiresAt
+        - createdAt
+        - revision
+      type: object
     CopyInputBody:
       additionalProperties: false
       properties:
@@ -1888,6 +2071,10 @@ components:
         sizeBytes:
           format: int64
           type: integer
+        sizeKnown:
+          type: boolean
+        source:
+          type: string
         state:
           type: string
         updatedAt:
@@ -1901,6 +2088,8 @@ components:
         - destinationAvailable
         - name
         - sizeBytes
+        - sizeKnown
+        - source
         - offsetBytes
         - state
         - failureCode
@@ -2588,6 +2777,196 @@ paths:
                 type: string
                 x-contentMediaType: application/octet-stream
           description: 有界文件 ZIP
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/connections:
+    get:
+      operationId: files.connections.list
+      parameters:
+        - explode: false
+          in: query
+          name: cursor
+          schema:
+            maxLength: 36
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 20
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionListView"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+    post:
+      operationId: files.connections.create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionIssuedView"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/connections/{connectionId}:
+    get:
+      operationId: files.connections.read
+      parameters:
+        - in: path
+          name: connectionId
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionSummaryView"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+    patch:
+      operationId: files.connections.update
+      parameters:
+        - in: path
+          name: connectionId
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionChange"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionSummaryView"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/connections/{connectionId}/rotate:
+    post:
+      operationId: files.connections.rotate
+      parameters:
+        - in: path
+          name: connectionId
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionRotateInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionIssuedView"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/connections/{connectionId}/state:
+    post:
+      operationId: files.connections.state
+      parameters:
+        - in: path
+          name: connectionId
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionStateInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionSummaryView"
+          description: OK
         default:
           content:
             application/problem+json:

@@ -53,67 +53,7 @@ func (s *Service) Copy(ctx context.Context, owner, id, parent, name string) (mod
 		return model.Entry{}, err
 	}
 	changed, err := s.repo.ChangeMany(ctx, owner, func(entries []model.Entry) ([]model.Entry, error) {
-		source, ok := model.Find(entries, id)
-		if !ok || !model.Visible(entries, source) {
-			return nil, model.ErrMissing
-		}
-		if err := model.Parent(entries, parent); err != nil {
-			return nil, err
-		}
-		if source.Kind == model.Folder && Within(entries, id, parent) {
-			return nil, model.ErrConflict
-		}
-		if err := model.Available(entries, "", parent, normalized); err != nil {
-			return nil, err
-		}
-		originals := []model.Entry{source}
-		for _, entry := range entries {
-			if entry.ID != id && model.Visible(entries, entry) && Within(entries, id, entry.ID) {
-				originals = append(originals, entry)
-			}
-		}
-		if len(originals) > s.policy.MaxBatchEntries {
-			return nil, model.ErrTooLarge
-		}
-		remaining := s.policy.QuotaBytes - model.Used(entries)
-		for _, entry := range originals {
-			if entry.SizeBytes < 0 || entry.SizeBytes > remaining {
-				return nil, model.ErrQuota
-			}
-			remaining -= entry.SizeBytes
-		}
-		ids := make(map[string]string, len(originals))
-		allocated := make(map[string]bool, len(originals))
-		for _, entry := range originals {
-			generated, err := s.ids.New()
-			if err != nil {
-				return nil, err
-			}
-			if _, exists := model.Find(entries, generated); exists || generated == "" || allocated[generated] {
-				return nil, model.ErrConflict
-			}
-			allocated[generated] = true
-			ids[entry.ID] = generated
-		}
-		result := make([]model.Entry, 0, len(originals))
-		now := s.clock.Now().UTC()
-		for index, entry := range originals {
-			originalID := entry.ID
-			entry.ID, entry.CreatedAt, entry.UpdatedAt = ids[originalID], now, now
-			entry.UploadKey, entry.TrashedAt = "", nil
-			entry.ContentRevision = 1
-			if index == 0 {
-				entry.ParentID, entry.Name, entry.NormalizedName = parent, name, normalized
-			} else {
-				mapped, ok := ids[entry.ParentID]
-				if !ok {
-					return nil, model.ErrConflict
-				}
-				entry.ParentID = mapped
-			}
-			result = append(result, entry)
-		}
-		return result, nil
+		return s.copyTree(entries, id, parent, name, normalized, CopyRecursive)
 	})
 	if err != nil {
 		return model.Entry{}, err
@@ -287,4 +227,81 @@ func (s *Service) Archive(ctx context.Context, owner string, ids []string) ([]by
 		return nil, err
 	}
 	return output.Bytes(), nil
+}
+
+// CopyDepth 限定WebDAV浅复制或现有完整子树复制。
+type CopyDepth string
+
+const (
+	CopyRecursive CopyDepth = "recursive"
+	CopyShallow   CopyDepth = "shallow"
+)
+
+// copyTree 生成单次事务的副本集合，不提前写入或删除目的条目。
+func (s *Service) copyTree(entries []model.Entry, id, parent, name, normalized string, depth CopyDepth) ([]model.Entry, error) {
+	if depth != CopyRecursive && depth != CopyShallow {
+		return nil, model.ErrInvalid
+	}
+
+	source, ok := model.Find(entries, id)
+	if !ok || !model.Visible(entries, source) {
+		return nil, model.ErrMissing
+	}
+	if err := model.Parent(entries, parent); err != nil {
+		return nil, err
+	}
+	if source.Kind == model.Folder && Within(entries, id, parent) {
+		return nil, model.ErrConflict
+	}
+	if err := model.Available(entries, "", parent, normalized); err != nil {
+		return nil, err
+	}
+	originals := []model.Entry{source}
+	for _, entry := range entries {
+		if depth == CopyRecursive && entry.ID != id && model.Visible(entries, entry) && Within(entries, id, entry.ID) {
+			originals = append(originals, entry)
+		}
+	}
+	if len(originals) > s.policy.MaxBatchEntries {
+		return nil, model.ErrTooLarge
+	}
+	remaining := s.policy.QuotaBytes - model.Used(entries)
+	for _, entry := range originals {
+		if entry.SizeBytes < 0 || entry.SizeBytes > remaining {
+			return nil, model.ErrQuota
+		}
+		remaining -= entry.SizeBytes
+	}
+	ids := make(map[string]string, len(originals))
+	allocated := make(map[string]bool, len(originals))
+	for _, entry := range originals {
+		generated, err := s.ids.New()
+		if err != nil {
+			return nil, err
+		}
+		if _, exists := model.Find(entries, generated); exists || generated == "" || allocated[generated] {
+			return nil, model.ErrConflict
+		}
+		allocated[generated] = true
+		ids[entry.ID] = generated
+	}
+	result := make([]model.Entry, 0, len(originals))
+	now := s.clock.Now().UTC()
+	for index, entry := range originals {
+		originalID := entry.ID
+		entry.ID, entry.CreatedAt, entry.UpdatedAt = ids[originalID], now, now
+		entry.UploadKey, entry.TrashedAt = "", nil
+		entry.ContentRevision = 1
+		if index == 0 {
+			entry.ParentID, entry.Name, entry.NormalizedName = parent, name, normalized
+		} else {
+			mapped, ok := ids[entry.ParentID]
+			if !ok {
+				return nil, model.ErrConflict
+			}
+			entry.ParentID = mapped
+		}
+		result = append(result, entry)
+	}
+	return result, nil
 }

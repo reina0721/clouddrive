@@ -3,6 +3,8 @@ package tus
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -151,10 +153,100 @@ func (s *Store) Inspect(ctx context.Context, id string) (service.StageInfo, erro
 	if err != nil {
 		return service.StageInfo{}, fmt.Errorf("read transfer staging metadata: %w", err)
 	}
-	if info.ID != id || info.Size < 0 || info.Size > s.config.MaxFileBytes || info.Offset < 0 || info.Offset > info.Size || info.Storage[filestore.StorageKeyPath] != filepath.Join(s.root, id) {
+	if info.ID != id || info.Size < 0 || info.Size > s.config.MaxFileBytes || info.Offset < 0 || info.Offset > s.config.MaxFileBytes || (!info.SizeIsDeferred && info.Offset > info.Size) || info.Storage[filestore.StorageKeyPath] != filepath.Join(s.root, id) {
 		return service.StageInfo{}, fmt.Errorf("transfer staging invariant violated")
 	}
-	return service.StageInfo{SizeBytes: info.Size, OffsetBytes: info.Offset}, nil
+	return service.StageInfo{SizeBytes: info.Size, OffsetBytes: info.Offset, Deferred: info.SizeIsDeferred}, nil
+}
+
+// CreateDeferred 仅供持有同会话锁的同步服务端摘要源，不能从原生tus数据面创建。
+func (s *Store) CreateDeferred(ctx context.Context, id string) error {
+	if err := model.ValidateTransferID(id); err != nil {
+		return err
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if info, err := s.Inspect(ctx, id); err == nil {
+		if !info.Deferred {
+			return model.ErrConflict
+		}
+		return nil
+	} else if !errors.Is(err, model.ErrMissing) {
+		return err
+	}
+	if err := s.Remove(ctx, id); err != nil {
+		return err
+	}
+	_, err := s.store.NewUpload(ctx, tusd.FileInfo{ID: id, SizeIsDeferred: true})
+	if err != nil {
+		return fmt.Errorf("initialize deferred transfer: %w", err)
+	}
+	return nil
+}
+
+type streamInput struct {
+	ctx    context.Context
+	source io.Reader
+}
+
+func (r streamInput) Read(target []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	return r.source.Read(target)
+}
+
+// WriteStream 有界读取且在写入时增量计算摘要；filestore负责关闭真实文件并导出关闭错误。
+func (s *Store) WriteStream(ctx context.Context, id string, source io.Reader, limit int64) (int64, string, error) {
+	if source == nil || limit < 0 || limit > s.config.MaxFileBytes {
+		return 0, "", model.ErrInvalid
+	}
+	info, err := s.Inspect(ctx, id)
+	if err != nil {
+		return 0, "", err
+	}
+	if !info.Deferred || info.OffsetBytes != 0 {
+		return 0, "", model.ErrConflict
+	}
+	upload, err := s.store.GetUpload(ctx, id)
+	if err != nil {
+		return 0, "", err
+	}
+	hash := sha256.New()
+	written, writeErr := upload.WriteChunk(ctx, 0, io.TeeReader(io.LimitReader(streamInput{ctx: ctx, source: source}, limit+1), hash))
+	if written > limit {
+		writeErr = errors.Join(writeErr, model.ErrTooLarge)
+	}
+	if err := errors.Join(writeErr, ctx.Err()); err != nil {
+		return written, "", err
+	}
+	return written, hex.EncodeToString(hash.Sum(nil)), nil
+}
+
+// Seal 在源读取成功后固定实际长度，后续发布仍通过统一checksum和事务校验。
+func (s *Store) Seal(ctx context.Context, id string, size int64) error {
+	info, err := s.Inspect(ctx, id)
+	if err != nil {
+		return err
+	}
+	if size < 0 || size > s.config.MaxFileBytes || info.OffsetBytes != size {
+		return model.ErrConflict
+	}
+	if !info.Deferred {
+		if info.SizeBytes != size {
+			return model.ErrConflict
+		}
+		return nil
+	}
+	upload, err := s.store.GetUpload(ctx, id)
+	if err != nil {
+		return err
+	}
+	if err := s.store.AsLengthDeclarableUpload(upload).DeclareLength(ctx, size); err != nil {
+		return fmt.Errorf("seal transfer length: %w", err)
+	}
+	return nil
 }
 
 func (s *Store) WithReader(ctx context.Context, id string, use func(io.ReadSeeker) error) (resultErr error) {

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.19
 
-FROM --platform=$BUILDPLATFORM golang:1.26.6-bookworm@sha256:18aedc16aa19b3fd7ded7245fc14b109e054d65d22ed53c355c899582bbb2113 AS build
+FROM --platform=$BUILDPLATFORM golang:1.26.10-bookworm@sha256:23ce71337b726608afb1bc00986e630a05034a87a87ea1fc2cd1ae5cf33387eb AS build
 
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64

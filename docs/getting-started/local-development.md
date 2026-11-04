@@ -1,10 +1,10 @@
 # clouddrive 本地开发
 
-当前启动权威为根 README 及本页。后端沿用 Go 1.26.6，前端采用 Node >=22.18 与 pnpm 10.22.0。无需修改全局工具版本。
+当前启动权威为根 README 及本页。后端沿用 Go 1.26.10，前端采用 Node >=22.18 与 pnpm 10.22.0。无需修改全局工具版本。
 
 ## Windows
 
-从仓库根目录执行 scripts/Start-Dev.ps1。若 Go 不在 PATH，传入 -GoExecutable 指定 go.exe；脚本也识别本机 LOCALAPPDATA/clouddrive-tools/go/bin/go.exe。
+从仓库根目录执行 scripts/Start-Dev.ps1。若 Go 不在 PATH，传入 -GoExecutable 指定 go.exe；脚本也识别本机 LOCALAPPDATA/clouddrive-tools/go1.26.10/go/bin/go.exe。
 
 首次启动会复制配置、安装前端依赖、迁移数据库，并启动 Go 与 Next.js。浏览器打开 http://127.0.0.1:4173/setup，用 .data/dev-setup-token 中的令牌创建管理员。也可以在启动前设置 APP_IAM__LOCAL__SETUPTOKEN。已有管理员时不能再次首次设置。
 

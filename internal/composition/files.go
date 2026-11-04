@@ -5,13 +5,34 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	storageapp "github.com/reina0721/clouddrive/internal/kernel/app/storage"
 	"github.com/reina0721/clouddrive/internal/kernel/config"
 	authmodel "github.com/reina0721/clouddrive/internal/module/auth/model"
+	filespermission "github.com/reina0721/clouddrive/internal/module/files/binding/permission"
+	filesservice "github.com/reina0721/clouddrive/internal/module/files/service"
+	"github.com/reina0721/clouddrive/internal/module/iam"
 	"github.com/reina0721/clouddrive/pkg/storage"
 	"io"
 	"path/filepath"
 )
+
+// filesConnectionAuthority 将files的操作语义转换为IAM公开的当前账号授权。
+type filesConnectionAuthority struct{ access iam.AccountAuthorizer }
+
+func (a filesConnectionAuthority) AuthorizeConnection(ctx context.Context, owner string, mode filesservice.ConnectionAccess) (bool, error) {
+	if a.access == nil {
+		return false, fmt.Errorf("file connection authorization unavailable")
+	}
+	switch mode {
+	case filesservice.ConnectionRead:
+		return a.access.AuthorizeAccount(ctx, owner, filespermission.Read)
+	case filesservice.ConnectionWrite:
+		return a.access.AuthorizeAccount(ctx, owner, filespermission.Write)
+	default:
+		return false, filesservice.ErrConnectionUnavailable
+	}
+}
 
 // filesStorageIdentity 只对内容位置求摘要，不包含凭据或公开 URL。
 func filesStorageIdentity(snapshot config.Snapshot) (string, error) {

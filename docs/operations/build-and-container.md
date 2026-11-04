@@ -1,6 +1,6 @@
 # 构建与容器
 
-生产构建执行 `scripts/Build.ps1`，产出 `dist/clouddrive.exe` 与 Next 构建。使用 Go 1.26.6、pnpm 10.22.0，不修改全局版本。完整命令和反向代理配置见 [部署说明](clouddrive-deployment.md)。
+生产构建执行 `scripts/Build.ps1`，产出 `dist/clouddrive.exe` 与 Next 构建。使用 Go 1.26.10、pnpm 10.22.0，不修改全局版本。完整命令和反向代理配置见 [部署说明](clouddrive-deployment.md)。
 
 Go 质量入口为 `scripts/Verify-Quality.ps1`，包括格式、生成物、测试、race、vet 和无 CGO 构建；前端入口 `scripts/Verify-WebUI.ps1` 执行工作区完整 `check`；文档入口 `scripts/Verify-Docs.ps1`。各项以实际退出结果为准，单项通过不能替代浏览器和部署验收。
 

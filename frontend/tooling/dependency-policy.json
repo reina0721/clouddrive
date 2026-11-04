@@ -1,5 +1,13 @@
 {
   "dependencies": {
+    "@noble/hashes": {
+      "owner": "Host 文件源增量 SHA-256 校验",
+      "allowed": ["apps/web"]
+    },
+    "tus-js-client": {
+      "owner": "Host 有界 tus 续传与确认偏移生命周期",
+      "allowed": ["apps/web"]
+    },
     "@clouddrive/config": {
       "owner": "global configuration",
       "allowed": ["apps/web"]

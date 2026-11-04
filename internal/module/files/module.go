@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/reina0721/clouddrive/internal/module/files/adapter/tus"
 	"github.com/reina0721/clouddrive/internal/module/files/adapter/unicodename"
+	webdavbinding "github.com/reina0721/clouddrive/internal/module/files/binding/webdav"
 	"github.com/reina0721/clouddrive/internal/module/files/handler"
 	"github.com/reina0721/clouddrive/internal/module/files/repo"
 	"github.com/reina0721/clouddrive/internal/module/files/service"
@@ -27,20 +28,23 @@ func ValidateStorage(ctx context.Context, access repo.Access, identity string) e
 }
 
 type Dependencies struct {
-	Database        repo.Access
-	Content         service.Content
-	TransferContent service.TransferContent
-	TransferPolicy  service.TransferPolicy
-	StagingPath     string
-	Clock           clock.Clock
-	IDs             idgen.Generator
-	Actors          handler.ActorAccess
-	Logger          logger.Logger
-	Policy          service.Policy
-	StorageIdentity string
-	Passwords       service.PasscodeHasher
-	SharePolicy     service.SharePolicy
-	PublicOrigins   []string
+	Database            repo.Access
+	Content             service.Content
+	TransferContent     service.TransferContent
+	TransferPolicy      service.TransferPolicy
+	StagingPath         string
+	Clock               clock.Clock
+	IDs                 idgen.Generator
+	Actors              handler.ActorAccess
+	Logger              logger.Logger
+	Policy              service.Policy
+	StorageIdentity     string
+	Passwords           service.PasscodeHasher
+	SharePolicy         service.SharePolicy
+	ConnectionPolicy    service.ConnectionPolicy
+	ConnectionOrigin    string
+	ConnectionAuthority service.ConnectionAuthorizer
+	PublicOrigins       []string
 }
 
 func New(deps Dependencies) (*handler.Handler, error) {
@@ -59,6 +63,14 @@ func New(deps Dependencies) (*handler.Handler, error) {
 	if err != nil {
 		return nil, err
 	}
+	connectionRepository, err := repo.NewConnections(deps.Database, deps.StorageIdentity, deps.ConnectionPolicy.TreeEntries)
+	if err != nil {
+		return nil, err
+	}
+	connections, err := service.NewConnections(useCases, connectionRepository, deps.ConnectionAuthority, deps.ConnectionPolicy)
+	if err != nil {
+		return nil, err
+	}
 	identity, err := stagingIdentity(deps.StagingPath)
 	if err != nil {
 		return nil, err
@@ -72,11 +84,20 @@ func New(deps Dependencies) (*handler.Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	transfers, err := service.NewTransfers(useCases, transfersRepository, staging, deps.TransferContent, p)
+	transfers, err := service.NewTransfers(useCases, transfersRepository, staging, deps.TransferContent, connections, p)
 	if err != nil {
 		return nil, err
 	}
-	return &handler.Handler{Service: useCases, Sharing: sharing, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}, nil
+	davFiles, err := service.NewDAVFiles(useCases, connections, transfers)
+	if err != nil {
+		return nil, err
+	}
+	boundary := &handler.Handler{Service: useCases, Sharing: sharing, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
+	boundary.WebDAV, err = webdavbinding.New(boundary, davFiles, deps.ConnectionPolicy, deps.Policy.MaxFileBytes)
+	if err != nil {
+		return nil, err
+	}
+	return boundary, nil
 }
 
 func stagingIdentity(root string) (string, error) {

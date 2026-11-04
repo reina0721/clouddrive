@@ -22,6 +22,9 @@ type TransferProtocol interface {
 type Handler struct {
 	Service          *service.Service
 	Sharing          *service.Sharing
+	Connections      *service.Connections
+	ConnectionOrigin string
+	WebDAV           http.Handler
 	Transfers        *service.Transfers
 	TransferProtocol TransferProtocol
 	PublicOrigins    []string
@@ -42,6 +45,16 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 	status, code := http.StatusInternalServerError, "files_unavailable"
 	var protocolError *httpx.StatusError
 	switch {
+	case errors.Is(err, service.ErrContentPrecondition):
+		status, code = 412, "files_content_precondition"
+	case errors.Is(err, service.ErrConnectionSystemFile):
+		status, code = 403, "files_connection_system_file"
+	case errors.Is(err, service.ErrConnectionCredentials):
+		status, code = 401, "files_connection_credentials"
+	case errors.Is(err, service.ErrConnectionReadOnly):
+		status, code = 403, "files_connection_read_only"
+	case errors.Is(err, service.ErrConnectionUnavailable):
+		status, code = 403, "files_connection_unavailable"
 	case errors.Is(err, service.ErrCleanup):
 		status, code = 500, "files_cleanup_incomplete"
 	case errors.As(err, &protocolError):

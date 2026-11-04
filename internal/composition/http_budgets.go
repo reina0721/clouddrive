@@ -11,7 +11,7 @@ import (
 
 // transferBudgetMatcher 由同一 operation catalog 派生原生与 console 投影的精确匹配。
 // 这里只选择预算，不执行 handler，也不改变后续认证、CSRF 或授权门禁。
-func transferBudgetMatcher(definitions []humabinding.Definition) (matcher func(*http.Request) bool, resultErr error) {
+func transferBudgetMatcher(definitions []humabinding.Definition, protocolTransfer func(*http.Request) bool) (matcher func(*http.Request) bool, resultErr error) {
 	defer func() {
 		if cause := recover(); cause != nil {
 			matcher = nil
@@ -40,5 +40,11 @@ func transferBudgetMatcher(definitions []humabinding.Definition) (matcher func(*
 			mux.Handle(pattern, http.NotFoundHandler())
 		}
 	}
-	return func(request *http.Request) bool { _, pattern := mux.Handler(request); return pattern != "" }, nil
+	return func(request *http.Request) bool {
+		if protocolTransfer != nil && protocolTransfer(request) {
+			return true
+		}
+		_, pattern := mux.Handler(request)
+		return pattern != ""
+	}, nil
 }

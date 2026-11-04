@@ -33,7 +33,7 @@ func TestApplicationRouterRateLimitModesAndGenerationLocalState(t *testing.T) {
 
 	newRouter := func(t *testing.T, cfg httpx.ServerConfig) httpx.Router {
 		t.Helper()
-		router, err := applicationRouter(capabilities, cfg, apiHandler, nil, nil)
+		router, err := applicationRouter(capabilities, cfg, apiHandler, nil, nil, nil)
 		if err != nil {
 			t.Fatalf("applicationRouter() error = %v", err)
 		}
@@ -76,6 +76,7 @@ func TestApplicationRouterCORSPreflightDoesNotConsumeRateToken(t *testing.T) {
 		kernelcomposition.Capabilities{Logger: logger.NewTestLogger(), IDGenerator: idgen.UUID()},
 		config,
 		http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) { writer.WriteHeader(http.StatusNoContent) }),
+		nil,
 		nil,
 		nil,
 	)

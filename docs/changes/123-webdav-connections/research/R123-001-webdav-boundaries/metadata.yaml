@@ -1,0 +1,41 @@
+schema_version: 1
+id: R123-001
+title: WebDAV业务文件系统、凭据和协议承载
+question: 如何用成熟WebDAV实现对现有云端文件提供限定根目录的独立读写连接，同时保留租约、原子发布、权限和容量边界？
+research_type: current-project
+topics: [webdav, application-credentials, streaming-ingest, protocol-routing]
+keywords: [连接与挂载, PROPFIND, Basic, atomic-replace, go-webdav]
+applicable_scenarios: [单机持久暂存, 现有files目录与IAM账号, 受限WebDAV文件操作]
+non_applicable_scenarios: [无共享暂存多机, DAV锁协同与任意dead properties, CalDAV, CardDAV, 实际操作系统驱动认证]
+status: active
+summary: 采用emersion/go-webdav v0.7.0的同步业务后端；保留流式Storage和授权；扩展现有传输核心支持服务端摘要与CAS覆盖；独立协议路由不伪装成Huma标准method。
+evidence:
+  types: [source-code, browser-observation, official-source, official-release, security-advisory]
+  primary_sources:
+    - title: 当前源码与参考站只读观察
+      locator: report.md
+      snapshot: 24eab80087139126050a74fd035055cd448431ce
+    - title: go-webdav已发行后端契约
+      locator: https://raw.githubusercontent.com/emersion/go-webdav/v0.7.0/server.go
+      snapshot: v0.7.0，Go模块代理确认2025-10-18发行
+    - title: 维护活跃度
+      locator: https://github.com/emersion/go-webdav/commits/master/
+      snapshot: 2026-11-03 API返回最近commit c16f8a9a132cc666c5fe387a3d7946d54f8e15aa，2026-06-28
+    - title: Go标准扩展候选
+      locator: https://pkg.go.dev/golang.org/x/net/webdav
+      snapshot: 当前候选v0.62.0，官方代理确认2026-10-27发行，Go1.26
+    - title: Go漏洞索引
+      locator: https://vuln.go.dev/index/modules.json
+      snapshot: 2026-11-03实际读取，x/net存在0.60/0.62修复；未见emersion和drakkan条目，不代表完整扫描
+researched_at: '2026-11-03'
+verified_at: '2026-11-03'
+validity:
+  mode: snapshot
+  review_after: '2026-12-03'
+  refresh_triggers: [所选库出现安全公告或tag不可解析, Storage回调租约改变, 新增多机部署或外部对象直传, 需求要求DAV锁或操作系统驱动全兼容, IAM动态权限或HTTP路由模型改变]
+relations:
+  extends: [R122-001]
+  related: [R121-001, R120-001]
+  supersedes: []
+  superseded_by: []
+report: report.md

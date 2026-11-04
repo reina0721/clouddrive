@@ -77,7 +77,8 @@ export type FileViewPreferences = Readonly<{
 }>;
 export type FileShortcut =
   'search' | 'refresh' | 'selectAll' | 'clearSelection' | 'rename' | 'trash' | 'newFolder' | 'open';
-export type FilesDestination = 'files' | 'shares' | 'transfers' | 'workspace' | 'account';
+export type FilesDestination =
+  'files' | 'shares' | 'transfers' | 'connections' | 'workspace' | 'account';
 export type FilesPort = Readonly<{
   navigate(destination: FilesDestination): void;
   destinationHref(destination: FilesDestination): string;

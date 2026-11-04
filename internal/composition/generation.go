@@ -31,6 +31,7 @@ import (
 	"github.com/reina0721/clouddrive/internal/module/files"
 	filesconfig "github.com/reina0721/clouddrive/internal/module/files/binding/config"
 	fileshttp "github.com/reina0721/clouddrive/internal/module/files/binding/http"
+	fileswebdav "github.com/reina0721/clouddrive/internal/module/files/binding/webdav"
 	"github.com/reina0721/clouddrive/internal/module/iam"
 	iamconfig "github.com/reina0721/clouddrive/internal/module/iam/binding/config"
 	iamhttp "github.com/reina0721/clouddrive/internal/module/iam/binding/http"
@@ -496,7 +497,7 @@ func (f *applicationGenerationFactory) Prepare(
 	if err := files.PrepareTransfers(ctx, databaseAccess, storageIdentity, filesPolicy.Transfers.StagingPath); err != nil {
 		return abort(err)
 	}
-	filesHandler, err := files.New(files.Dependencies{TransferContent: filesContentAdapter{access: generation.storage.value()}, TransferPolicy: filesPolicy.TransferPolicy(), StagingPath: filesPolicy.Transfers.StagingPath, Passwords: iam.NewCredentialDigests(), SharePolicy: filesPolicy.SharePolicy(), PublicOrigins: httpConfig.CORS.AllowedOrigins, StorageIdentity: storageIdentity, Database: databaseAccess, Content: filesContentAdapter{access: generation.storage.value()}, Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: filesPolicy.Policy()})
+	filesHandler, err := files.New(files.Dependencies{ConnectionOrigin: filesPolicy.Connections.PublicOrigin, ConnectionPolicy: filesPolicy.ConnectionPolicy(), ConnectionAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization}, TransferContent: filesContentAdapter{access: generation.storage.value()}, TransferPolicy: filesPolicy.TransferPolicy(), StagingPath: filesPolicy.Transfers.StagingPath, Passwords: iam.NewCredentialDigests(), SharePolicy: filesPolicy.SharePolicy(), PublicOrigins: httpConfig.CORS.AllowedOrigins, StorageIdentity: storageIdentity, Database: databaseAccess, Content: filesContentAdapter{access: generation.storage.value()}, Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: filesPolicy.Policy()})
 	if err != nil {
 		return abort(err)
 	}
@@ -564,7 +565,7 @@ func (f *applicationGenerationFactory) Prepare(
 		generation.participants = append(generation.participants, participant)
 	}
 
-	transferRoutes, err := transferBudgetMatcher(f.blueprint.httpDefinitions)
+	transferRoutes, err := transferBudgetMatcher(f.blueprint.httpDefinitions, fileswebdav.Metadata().TransferRequest)
 	if err != nil {
 		return abort(err)
 	}
@@ -572,7 +573,7 @@ func (f *applicationGenerationFactory) Prepare(
 		Logger: generation.logger.value(), Clock: clock.System(), IDGenerator: idgen.UUID(), Validator: validation.New(),
 		Database: generation.database.value(), Cache: generation.cache.value(),
 		I18n: generation.i18n.value(), Storage: generation.storage.value(),
-	}, httpConfig, apiRoutes, generation.opsModule.ManagementHTTP, transferRoutes)
+	}, httpConfig, apiRoutes, generation.opsModule.ManagementHTTP, transferRoutes, filesHandler.WebDAV)
 	if err != nil {
 		return abort(err)
 	}

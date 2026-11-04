@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/reina0721/clouddrive/internal/kernel"
 	kernelcomposition "github.com/reina0721/clouddrive/internal/kernel/composition"
 	"github.com/reina0721/clouddrive/internal/kernel/config"
 	authmodel "github.com/reina0721/clouddrive/internal/module/auth/model"
+	fileswebdav "github.com/reina0721/clouddrive/internal/module/files/binding/webdav"
 	httpbinding "github.com/reina0721/clouddrive/internal/module/ops/binding/http"
 	opsmodel "github.com/reina0721/clouddrive/internal/module/ops/model"
 	"github.com/reina0721/clouddrive/internal/transport/http/humabinding"
@@ -101,6 +103,7 @@ func applicationRouter(
 	apiRoutes http.Handler,
 	managementFacade http.Handler,
 	transferRoutes func(*http.Request) bool,
+	fileProtocol http.Handler,
 ) (httpx.Router, error) {
 	if apiRoutes == nil {
 		return nil, fmt.Errorf("application API routes are nil")
@@ -134,8 +137,8 @@ func applicationRouter(
 		func(next httpx.Handler) httpx.Handler {
 			ordinary := httpx.BodyLimit(httpConfig.MaxRequestBodyBytes)(next)
 			return func(ctx *httpx.Context) error {
-				// 分块路由在认证及准入后按文件模块的 chunkBytes 限流；其余请求保留普通上限。
-				if ctx.Request.Method == http.MethodPatch && transferRoutes != nil && transferRoutes(ctx.Request) {
+				// 核心PATCH及WebDAV PUT在认证准入后应用模块的分块或流式上限，其余请求保留普通预算。
+				if (ctx.Request.Method == http.MethodPatch || ctx.Request.Method == http.MethodPut) && transferRoutes != nil && transferRoutes(ctx.Request) {
 					return next(ctx)
 				}
 				return ordinary(ctx)
@@ -160,6 +163,18 @@ func applicationRouter(
 	}
 	middlewares = append(middlewares, overload.Middleware())
 	router.Use(middlewares...)
+	if fileProtocol != nil {
+		// 协议扩展method在共同中间件内、Chi标准method分派前处理，不修改全局方法表。
+		router.UseHTTP(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+				if strings.HasPrefix(request.URL.Path, fileswebdav.Prefix) {
+					fileProtocol.ServeHTTP(writer, request)
+					return
+				}
+				next.ServeHTTP(writer, request)
+			})
+		})
+	}
 	// 模式 B：按 management 路由单一清单把已知子路径挂到业务 listener（/management/*），
 	// 供托管 WebUI 同源读取真实管理数据；未知子路径由 chi NotFound 兜底为 JSON 404，
 	// 非 GET 由路由 MethodNotAllowed 兜底为 JSON 405，绝不回退 SPA。

@@ -72,3 +72,5 @@ pnpm check
 - `typecheck`、`test`、`build`、`performance:check`、Playwright/Axe/Visual 与 `format:check`：共同构成交付证据。
 
 任务研究、需求、设计和实施证据从 [变更记录索引](docs/changes/README.md) 进入；当前说明以 [Frontend 文档手册](docs/README.md) 与主题 authority 为准，历史变更不再作为当前架构 authority。
+
+Files 提供 `/home/connections` 连接管理。Surface消费ConnectionsPort，Host复用JSON/CSRF客户端并拥有剪贴板；一次性密码只保留在当前弹窗内存，账号变化重置Provider。WebDAV客户端使用管理响应给出的实际服务地址；Next开发代理仅处理管理JSON，不承载整文件PUT。能力与部署限制统一见[文件管理](../docs/operations/file-management.md)。

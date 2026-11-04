@@ -10,17 +10,18 @@ import (
 )
 
 type Config struct {
-	MaxFileBytes      int64          `mapstructure:"maxFileBytes"`
-	QuotaBytes        int64          `mapstructure:"quotaBytes"`
-	ConcurrentUploads int            `mapstructure:"concurrentUploads"`
-	MaxTextBytes      int64          `mapstructure:"maxTextBytes"`
-	MaxArchiveBytes   int64          `mapstructure:"maxArchiveBytes"`
-	MaxBatchEntries   int            `mapstructure:"maxBatchEntries"`
-	MaxMediaBytes     int64          `mapstructure:"maxMediaBytes"`
-	MaxThumbnailBytes int64          `mapstructure:"maxThumbnailBytes"`
-	MaxGalleryEntries int            `mapstructure:"maxGalleryEntries"`
-	Sharing           ShareConfig    `mapstructure:"sharing"`
-	Transfers         TransferConfig `mapstructure:"transfers"`
+	MaxFileBytes      int64            `mapstructure:"maxFileBytes"`
+	QuotaBytes        int64            `mapstructure:"quotaBytes"`
+	ConcurrentUploads int              `mapstructure:"concurrentUploads"`
+	MaxTextBytes      int64            `mapstructure:"maxTextBytes"`
+	MaxArchiveBytes   int64            `mapstructure:"maxArchiveBytes"`
+	MaxBatchEntries   int              `mapstructure:"maxBatchEntries"`
+	MaxMediaBytes     int64            `mapstructure:"maxMediaBytes"`
+	MaxThumbnailBytes int64            `mapstructure:"maxThumbnailBytes"`
+	MaxGalleryEntries int              `mapstructure:"maxGalleryEntries"`
+	Sharing           ShareConfig      `mapstructure:"sharing"`
+	Transfers         TransferConfig   `mapstructure:"transfers"`
+	Connections       ConnectionConfig `mapstructure:"connections"`
 }
 
 type ShareConfig struct {
@@ -47,6 +48,7 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 	share := service.DefaultSharePolicy()
 	c.Sharing = ShareConfig{MaxAge: share.MaxAge, GrantTTL: share.GrantTTL, AttemptWindow: share.AttemptWindow, AttemptLimit: share.AttemptLimit, KDFConcurrency: share.KDFConcurrency, DownloadTTL: share.DownloadTTL, DownloadLimit: share.DownloadLimit}
 	c.Transfers = defaultTransfers()
+	c.Connections = defaultConnections()
 	if err := snapshot.DecodeSection("files", &c); err != nil {
 		return Config{}, err
 	}
@@ -54,6 +56,12 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 		return Config{}, err
 	}
 	if err := c.SharePolicy().Validate(); err != nil {
+		return Config{}, err
+	}
+	if err := c.ConnectionPolicy().Validate(); err != nil {
+		return Config{}, err
+	}
+	if err := c.validateConnectionOrigin(); err != nil {
 		return Config{}, err
 	}
 	return c, c.validateTransfers()
@@ -111,5 +119,10 @@ func (defaults) Defaults(ctx context.Context) (config.Object, config.Control, er
 		return nil, config.Continue, err
 	}
 	fields = append(fields, config.FieldOf("transfers", config.ObjectValue(transfers)))
+	connections, err := connectionDefaults(ctx)
+	if err != nil {
+		return nil, config.Continue, err
+	}
+	fields = append(fields, config.FieldOf("connections", config.ObjectValue(connections)))
 	return fields, config.Continue, nil
 }

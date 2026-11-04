@@ -149,7 +149,7 @@ jobs:
         run: |
           tool_dir="$(node scripts/project-layout.mjs --field toolsRoot)"
           mkdir -p "${tool_dir}"
-          GOBIN="${tool_dir}" go install golang.org/x/vuln/cmd/govulncheck@v1.3.0
+          GOBIN="${tool_dir}" go install golang.org/x/vuln/cmd/govulncheck@v1.9.0
           GOBIN="${tool_dir}" go install github.com/securego/gosec/v2/cmd/gosec@v2.28.0
           GOBIN="${tool_dir}" go install github.com/zricethezav/gitleaks/v8@v8.28.0
           echo "${tool_dir}" >> "${GITHUB_PATH}"

@@ -11,6 +11,8 @@ export const transferSchema = z.object({
   destinationAvailable: z.boolean(),
   name: z.string(),
   sizeBytes: z.number().int().nonnegative(),
+  sizeKnown: z.boolean(),
+  source: z.enum(['tus', 'webdav']),
   offsetBytes: z.number().int().nonnegative(),
   state: z.enum([
     'preparing',
@@ -55,6 +57,7 @@ export type TransferPhase =
   | 'paused'
   | 'needs-source'
   | 'publishing'
+  | 'external'
   | 'attention'
   | 'completed'
   | 'canceled'
@@ -69,6 +72,8 @@ export type TransferItem = Readonly<{
   destinationAvailable: boolean;
   name: string;
   sizeBytes: number;
+  sizeKnown: boolean;
+  source: 'tus' | 'webdav';
   confirmedBytes: number;
   hashBytes: number;
   phase: TransferPhase;
@@ -108,7 +113,13 @@ export function transferMatches(item: TransferItem, filter: TransferFilter): boo
   if (filter === 'completed') return item.phase === 'completed';
   if (filter === 'attention')
     return ['attention', 'needs-source', 'failed', 'expired', 'canceled'].includes(item.phase);
-  return ['waiting', 'hashing', 'uploading', 'paused', 'needs-source', 'publishing'].includes(
-    item.phase,
-  );
+  return [
+    'waiting',
+    'hashing',
+    'uploading',
+    'paused',
+    'needs-source',
+    'publishing',
+    'external',
+  ].includes(item.phase);
 }

@@ -8,6 +8,7 @@ import {
   type ComponentType,
 } from 'react';
 import type { TransfersPort } from './transfers';
+import type { ConnectionsPort } from './connections';
 import type { FilesPort, PublicFilesPort, FileEntry } from './model';
 
 export type FileMediaProps = Readonly<{
@@ -19,24 +20,35 @@ const MediaContext = createContext<ComponentType<FileMediaProps> | null>(null);
 
 const Context = createContext<FilesPort | null>(null);
 const TransfersContext = createContext<TransfersPort | null>(null);
+const ConnectionsContext = createContext<ConnectionsPort | null>(null);
 export function FilesProvider({
   port,
   children,
   media: Media,
   transfers,
+  connections,
 }: Readonly<{
   port: FilesPort;
   transfers: TransfersPort;
+  connections: ConnectionsPort;
   children: ReactNode;
   media: ComponentType<FileMediaProps>;
 }>) {
   return (
     <Context value={port}>
       <TransfersContext value={transfers}>
-        <MediaContext value={Media}>{children}</MediaContext>
+        <ConnectionsContext value={connections}>
+          <MediaContext value={Media}>{children}</MediaContext>
+        </ConnectionsContext>
       </TransfersContext>
     </Context>
   );
+}
+
+export function useConnections() {
+  const port = useContext(ConnectionsContext);
+  if (!port) throw new Error('File connections runtime is required');
+  return port;
 }
 
 export function useTransfers() {

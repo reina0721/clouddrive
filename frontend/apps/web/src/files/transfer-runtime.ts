@@ -156,6 +156,8 @@ export function createTransferRuntime(deps: Dependencies) {
         destinationAvailable: false,
         name: candidate.name,
         sizeBytes: candidate.sizeBytes,
+        sizeKnown: true,
+        source: 'tus',
         confirmedBytes: 0,
         hashBytes: 0,
         phase: 'needs-source',
@@ -186,6 +188,7 @@ export function createTransferRuntime(deps: Dependencies) {
       server.state === 'attention'
     )
       return server.state;
+    if (server.source === 'webdav') return 'external';
     if (server.offsetBytes === server.sizeBytes) return 'paused';
     return hasSource ? 'paused' : 'needs-source';
   }
@@ -200,6 +203,9 @@ export function createTransferRuntime(deps: Dependencies) {
       destinationPath: server.destinationPath,
       destinationAvailable: server.destinationAvailable,
       name: server.name,
+      sizeBytes: server.sizeBytes,
+      sizeKnown: server.sizeKnown,
+      source: server.source,
       confirmedBytes: Math.max(item.view.confirmedBytes, server.offsetBytes),
       expiresAt: server.expiresAt,
       entryId: server.entryId,
@@ -238,6 +244,7 @@ export function createTransferRuntime(deps: Dependencies) {
     return [...items.values()].filter((item) => Boolean(item.task)).length;
   }
   function canRun(item: Managed) {
+    if (item.server?.source === 'webdav') return false;
     return !!item.source || (!!item.server && item.server.offsetBytes === item.server.sizeBytes);
   }
   function pump() {
@@ -494,6 +501,7 @@ export function createTransferRuntime(deps: Dependencies) {
   async function pause(id: string) {
     assertOwner();
     const item = find(id);
+    if (item.server?.source === 'webdav') throw new FilesError('unsupported');
     item.controller?.abort();
     await item.task;
     assertOwner();
@@ -522,6 +530,7 @@ export function createTransferRuntime(deps: Dependencies) {
   async function resume(id: string) {
     assertOwner();
     const item = find(id);
+    if (item.server?.source === 'webdav') throw new FilesError('unsupported');
     if (item.task) return;
     if (!limits) await refresh();
     if (!canRun(item)) {
@@ -602,6 +611,7 @@ export function createTransferRuntime(deps: Dependencies) {
     reselect: async (id) => {
       assertOwner();
       const item = find(id);
+      if (item.server?.source === 'webdav') throw new FilesError('unsupported');
       if (item.task || terminal(item.view.phase)) throw new FilesError('conflict');
       const source = await deps.chooseSource();
       assertOwner();
@@ -615,6 +625,7 @@ export function createTransferRuntime(deps: Dependencies) {
     retarget: async (id, parentId, name) => {
       assertOwner();
       const item = find(id);
+      if (item.server?.source === 'webdav') throw new FilesError('unsupported');
       if (!item.server || item.task) throw new FilesError('conflict');
       const server = transferSchema.parse(
         await deps.call(`/transfers/${encodeURIComponent(item.server.id)}/target`, {

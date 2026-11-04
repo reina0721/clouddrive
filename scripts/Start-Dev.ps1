@@ -10,10 +10,10 @@ try {
         if (Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue) { throw "Port $port is already in use. Stop its service before starting clouddrive." }
     }
     if (-not (Get-Command $GoExecutable -ErrorAction SilentlyContinue)) {
-        $portable = Join-Path $env:LOCALAPPDATA 'clouddrive-tools/go/bin/go.exe'
-        if (Test-Path -LiteralPath $portable) { $GoExecutable = $portable } else { throw 'Go 1.26.6 is required. Pass -GoExecutable with its path.' }
+        $portable = Join-Path $env:LOCALAPPDATA 'clouddrive-tools/go1.26.10/go/bin/go.exe'
+        if (Test-Path -LiteralPath $portable) { $GoExecutable = $portable } else { throw 'Go 1.26.10 is required. Pass -GoExecutable with its path.' }
     }
-    if ((& $GoExecutable version) -notmatch 'go1\.26\.6\b') { throw 'Go 1.26.6 is required.' }
+    if ((& $GoExecutable version) -notmatch 'go1\.26\.10\b') { throw 'Go 1.26.10 is required.' }
     New-Item -ItemType Directory -Force -Path '.data', '.tools' | Out-Null
     if (-not (Test-Path -LiteralPath 'config.yaml')) { Copy-Item -LiteralPath 'config.example.yaml' -Destination 'config.yaml' }
     if (-not $previousSetupToken) {

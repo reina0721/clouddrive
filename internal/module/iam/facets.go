@@ -34,6 +34,11 @@ type AccountDirectory interface {
 	RequireAssignableAccount(context.Context, string) error
 }
 
+// AccountAuthorizer 为独立应用凭据检查账号当前状态与精确权限，不签发Session。
+type AccountAuthorizer interface {
+	AuthorizeAccount(context.Context, string, permissioncatalog.Key) (bool, error)
+}
+
 // MutationGuard 是 HTTP mutation 的 Origin/Session/CSRF 校验能力。
 type MutationGuard interface {
 	ValidateCSRF(context.Context, string, string) error

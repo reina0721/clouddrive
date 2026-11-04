@@ -9,10 +9,10 @@ $previousPassword=$env:CLOUDDRIVE_TEST_PASSWORD
 Push-Location $repo
 try {
     if (-not (Get-Command $GoExecutable -ErrorAction SilentlyContinue)) {
-        $portable=Join-Path $env:LOCALAPPDATA 'clouddrive-tools/go/bin/go.exe'
-        if(Test-Path -LiteralPath $portable){$GoExecutable=$portable}else{throw 'Go 1.26.6 is required.'}
+        $portable=Join-Path $env:LOCALAPPDATA 'clouddrive-tools/go1.26.10/go/bin/go.exe'
+        if(Test-Path -LiteralPath $portable){$GoExecutable=$portable}else{throw 'Go 1.26.10 is required.'}
     }
-    if ((& $GoExecutable version) -notmatch 'go1\.26\.6\b') { throw 'Go 1.26.6 is required.' }
+    if ((& $GoExecutable version) -notmatch 'go1\.26\.10\b') { throw 'Go 1.26.10 is required.' }
     & $GoExecutable build -o .tools/clouddrive-acceptance.exe ./cmd/app
     if($LASTEXITCODE -ne 0){throw 'Backend build failed'}
     $env:CLOUDDRIVE_TEST_SETUP_TOKEN=[guid]::NewGuid().ToString('N')

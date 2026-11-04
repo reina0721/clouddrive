@@ -52,6 +52,7 @@ func (p TransferPolicy) Validate() error {
 type TransferSnapshot struct {
 	Entries             []model.Entry
 	Transfer            *model.Transfer
+	Connection          *model.Connection
 	GlobalReservedBytes int64
 	OwnerReservedBytes  int64
 	GlobalReservedCount int64

@@ -15,6 +15,12 @@ const (
 	OperationCompleteTodo                   OperationID = "completeTodo"
 	OperationCreateTodo                     OperationID = "createTodo"
 	OperationFilesArchive                   OperationID = "files.archive"
+	OperationFilesConnectionsCreate         OperationID = "files.connections.create"
+	OperationFilesConnectionsList           OperationID = "files.connections.list"
+	OperationFilesConnectionsRead           OperationID = "files.connections.read"
+	OperationFilesConnectionsRotate         OperationID = "files.connections.rotate"
+	OperationFilesConnectionsState          OperationID = "files.connections.state"
+	OperationFilesConnectionsUpdate         OperationID = "files.connections.update"
 	OperationFilesContent                   OperationID = "files.content"
 	OperationFilesContentHead               OperationID = "files.content.head"
 	OperationFilesCopy                      OperationID = "files.copy"
@@ -115,6 +121,12 @@ var operationInventory = [...]Operation{
 	{ID: OperationCompleteTodo, Method: "PATCH", Path: "/api/v1/todos/{id}/complete", Policy: "protected", Scope: "todos:write", Action: "todo.complete"},
 	{ID: OperationCreateTodo, Method: "POST", Path: "/api/v1/todos", Policy: "protected", Scope: "todos:write", Action: "todo.create"},
 	{ID: OperationFilesArchive, Method: "POST", Path: "/api/v1/files/archive", Policy: "protected", Scope: "files:read", Action: "files.archive"},
+	{ID: OperationFilesConnectionsCreate, Method: "POST", Path: "/api/v1/files/connections", Policy: "protected", Scope: "files:write", Action: "files.connections.create"},
+	{ID: OperationFilesConnectionsList, Method: "GET", Path: "/api/v1/files/connections", Policy: "protected", Scope: "files:read", Action: "files.connections.list"},
+	{ID: OperationFilesConnectionsRead, Method: "GET", Path: "/api/v1/files/connections/{connectionId}", Policy: "protected", Scope: "files:read", Action: "files.connections.read"},
+	{ID: OperationFilesConnectionsRotate, Method: "POST", Path: "/api/v1/files/connections/{connectionId}/rotate", Policy: "protected", Scope: "files:write", Action: "files.connections.rotate"},
+	{ID: OperationFilesConnectionsState, Method: "POST", Path: "/api/v1/files/connections/{connectionId}/state", Policy: "protected", Scope: "files:write", Action: "files.connections.state"},
+	{ID: OperationFilesConnectionsUpdate, Method: "PATCH", Path: "/api/v1/files/connections/{connectionId}", Policy: "protected", Scope: "files:write", Action: "files.connections.update"},
 	{ID: OperationFilesContent, Method: "GET", Path: "/api/v1/files/{id}/content", Policy: "protected", Scope: "files:read", Action: "files.content"},
 	{ID: OperationFilesContentHead, Method: "HEAD", Path: "/api/v1/files/{id}/content", Policy: "protected", Scope: "files:read", Action: "files.content.head"},
 	{ID: OperationFilesCopy, Method: "POST", Path: "/api/v1/files/{id}/copy", Policy: "protected", Scope: "files:write", Action: "files.copy"},
