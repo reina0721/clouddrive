@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 import { ProtectedGate } from '../../auth/route-gates';
-import { AppShell } from '../../shell/app-shell';
+import { ApplicationChrome } from '../../shell/application-chrome';
 
 export default function ApplicationLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <ProtectedGate>
-      <AppShell>{children}</AppShell>
+      <ApplicationChrome>{children}</ApplicationChrome>
     </ProtectedGate>
   );
 }

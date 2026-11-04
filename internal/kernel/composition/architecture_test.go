@@ -130,6 +130,8 @@ func TestAdminFoundationRulesRejectImplicitAggregation(t *testing.T) {
 
 func TestPackageGraphRulesAcceptLegalFixtureAndRejectViolations(t *testing.T) {
 	legal := []packageNode{
+		{ImportPath: modulePath + "/internal/composition/httpcatalog", Imports: []string{modulePath + "/internal/module/todo/binding/http", modulePath + "/internal/transport/http/humabinding"}},
+		{ImportPath: modulePath + "/internal/tools/contract-gen", Imports: []string{modulePath + "/internal/composition/httpcatalog"}},
 		{ImportPath: modulePath + "/cmd/app", Imports: []string{modulePath + "/internal/composition"}},
 		{ImportPath: modulePath + "/internal/composition", Imports: []string{
 			modulePath + "/internal/kernel/composition", modulePath + "/internal/module/todo",
@@ -153,6 +155,10 @@ func TestPackageGraphRulesAcceptLegalFixtureAndRejectViolations(t *testing.T) {
 	for _, fixture := range [][]packageNode{
 		{{ImportPath: modulePath + "/pkg/database", Imports: []string{modulePath + "/internal/kernel"}}},
 		{{ImportPath: modulePath + "/internal/kernel/app/database", Imports: []string{modulePath + "/internal/kernel/composition"}}},
+		{{ImportPath: modulePath + "/internal/composition/httpcatalog", Imports: []string{modulePath + "/internal/kernel"}}},
+		{{ImportPath: modulePath + "/internal/composition/httpcatalog", Imports: []string{modulePath + "/internal/module/todo/service"}}},
+		{{ImportPath: modulePath + "/internal/module/todo", Imports: []string{modulePath + "/internal/composition/httpcatalog"}}},
+		{{ImportPath: modulePath + "/internal/tools/contract-gen", Imports: []string{modulePath + "/internal/module/todo/binding/http"}}},
 		{{ImportPath: modulePath + "/internal/module/example", Imports: []string{modulePath + "/internal/kernel/composition"}}},
 		{{ImportPath: modulePath + "/internal/module/example", Imports: []string{modulePath + "/internal/composition"}}},
 		{{ImportPath: modulePath + "/internal/module/todo/service", Imports: []string{modulePath + "/internal/kernel"}}},
@@ -315,6 +321,12 @@ func validatePackageGraph(graph []packageNode) error {
 			if imported == modulePath+"/internal/kernel/composition" && node.ImportPath != modulePath+"/internal/composition" {
 				return fmt.Errorf("package %s bypasses the production composition root", node.ImportPath)
 			}
+			if node.ImportPath == modulePath+"/internal/composition/httpcatalog" && imported != modulePath+"/internal/transport/http/humabinding" && !httpCatalogImportsModuleContract(node.ImportPath, imported) {
+				return fmt.Errorf("HTTP catalog imports resource or implementation %s", imported)
+			}
+			if imported == modulePath+"/internal/composition/httpcatalog" && node.ImportPath != modulePath+"/internal/composition" && node.ImportPath != modulePath+"/internal/tools/contract-gen" {
+				return fmt.Errorf("package %s imports application HTTP catalog outside its owners", node.ImportPath)
+			}
 			if imported == modulePath+"/internal/composition" && node.ImportPath != modulePath+"/cmd/app" {
 				return fmt.Errorf("package %s bypasses the application composition root", node.ImportPath)
 			}
@@ -325,7 +337,7 @@ func validatePackageGraph(graph []packageNode) error {
 			}
 			if importedIsModule && node.ImportPath != modulePath+"/internal/composition" &&
 				(!sourceIsModule || sourceOwner != importedOwner) &&
-				!contractGeneratorImportsModuleContract(node.ImportPath, imported) {
+				!httpCatalogImportsModuleContract(node.ImportPath, imported) {
 				return fmt.Errorf("package %s imports application module %s outside the composition root", node.ImportPath, imported)
 			}
 			if sourceIsModule && (imported == modulePath+"/internal/composition" ||
@@ -835,15 +847,9 @@ func pathWithin(root, path string, parts ...string) bool {
 	return err == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator))
 }
 
-// contractGeneratorImportsModuleContract 允许 030 生成器 internal/tools/contract-gen 在构建期
-// import 模块的 binding/http 契约包（只生产生成物，不进入 production 运行图）。
-func contractGeneratorImportsModuleContract(importer, imported string) bool {
-	const generator = "/internal/tools/contract-gen"
-	if !strings.HasSuffix(importer, generator) {
-		return false
-	}
-	return strings.HasPrefix(imported, modulePath+"/internal/module/") &&
-		strings.Contains(imported, "/binding/http")
+// httpCatalogImportsModuleContract 只允许无资源目录聚合 binding/http，生成器不再维护第二份模块清单。
+func httpCatalogImportsModuleContract(importer, imported string) bool {
+	return importer == modulePath+"/internal/composition/httpcatalog" && strings.HasPrefix(imported, modulePath+"/internal/module/") && strings.HasSuffix(imported, "/binding/http")
 }
 
 func applicationModuleOwner(importPath string) (string, bool) {

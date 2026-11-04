@@ -14,6 +14,14 @@ const (
 	OperationAuthAuditRead                  OperationID = "auth.audit.read"
 	OperationCompleteTodo                   OperationID = "completeTodo"
 	OperationCreateTodo                     OperationID = "createTodo"
+	OperationFilesContent                   OperationID = "files.content"
+	OperationFilesDetail                    OperationID = "files.detail"
+	OperationFilesFolder                    OperationID = "files.folder"
+	OperationFilesList                      OperationID = "files.list"
+	OperationFilesRestore                   OperationID = "files.restore"
+	OperationFilesTrash                     OperationID = "files.trash"
+	OperationFilesUpdate                    OperationID = "files.update"
+	OperationFilesUpload                    OperationID = "files.upload"
 	OperationGetTodo                        OperationID = "getTodo"
 	OperationIamAccountsArchive             OperationID = "iam.accounts.archive"
 	OperationIamAccountsArchiveBatch        OperationID = "iam.accounts.archive.batch"
@@ -80,6 +88,14 @@ var operationInventory = [...]Operation{
 	{ID: OperationAuthAuditRead, Method: "GET", Path: "/api/v1/auth/audit/{eventId}", Policy: "protected", Scope: "auth:audit:read", Action: "read"},
 	{ID: OperationCompleteTodo, Method: "PATCH", Path: "/api/v1/todos/{id}/complete", Policy: "protected", Scope: "todos:write", Action: "todo.complete"},
 	{ID: OperationCreateTodo, Method: "POST", Path: "/api/v1/todos", Policy: "protected", Scope: "todos:write", Action: "todo.create"},
+	{ID: OperationFilesContent, Method: "GET", Path: "/api/v1/files/{id}/content", Policy: "protected", Scope: "files:read", Action: "files.content"},
+	{ID: OperationFilesDetail, Method: "GET", Path: "/api/v1/files/{id}", Policy: "protected", Scope: "files:read", Action: "files.detail"},
+	{ID: OperationFilesFolder, Method: "POST", Path: "/api/v1/files/folders", Policy: "protected", Scope: "files:write", Action: "files.folder"},
+	{ID: OperationFilesList, Method: "GET", Path: "/api/v1/files", Policy: "protected", Scope: "files:read", Action: "files.list"},
+	{ID: OperationFilesRestore, Method: "POST", Path: "/api/v1/files/{id}/restore", Policy: "protected", Scope: "files:write", Action: "files.restore"},
+	{ID: OperationFilesTrash, Method: "POST", Path: "/api/v1/files/{id}/trash", Policy: "protected", Scope: "files:write", Action: "files.trash"},
+	{ID: OperationFilesUpdate, Method: "PATCH", Path: "/api/v1/files/{id}", Policy: "protected", Scope: "files:write", Action: "files.update"},
+	{ID: OperationFilesUpload, Method: "POST", Path: "/api/v1/files/upload", Policy: "protected", Scope: "files:write", Action: "files.upload"},
 	{ID: OperationGetTodo, Method: "GET", Path: "/api/v1/todos/{id}", Policy: "protected", Scope: "todos:read", Action: "todo.read"},
 	{ID: OperationIamAccountsArchive, Method: "POST", Path: "/api/v1/iam/accounts/{id}/archive", Policy: "protected", Scope: "iam:account:write", Action: "iam.accounts.archive"},
 	{ID: OperationIamAccountsArchiveBatch, Method: "POST", Path: "/api/v1/iam/accounts/batch-archive", Policy: "protected", Scope: "iam:account:write", Action: "iam.accounts.archive.batch"},

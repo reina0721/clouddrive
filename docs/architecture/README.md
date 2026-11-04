@@ -27,7 +27,7 @@
 | --- | --- |
 | 进程入口 | `cmd/app` 不装配业务对象；所有模式进入 `internal/composition.Application`。 |
 | 配置 owner | `internal/composition/configuration.go` 集中应用配置节，Kernel composition 补齐底层配置节；未知配置在资源副作用前失败。 |
-| HTTP 契约 | `applicationHTTPModules()` 是公开业务 HTTP 模块聚合点；`internal/transport/http` 是唯一 route binding owner。 |
+| HTTP 契约 | `internal/composition/httpcatalog.Registrations()` 是运行时 Blueprint 与生成器共用的无资源模块清单；仅可导入模块 HTTP 声明，不可接触 Kernel、配置或 Service。`internal/transport/http` 是唯一 route binding owner。 |
 | 模块贡献 | `module.Contribution` 只输出 Participant、Schedule Binding 和 Message Contribution；composition 校验后集中安装。 |
 | 技术与承载架构 | 先按[技术选型与架构复核基线](technology-selection.md)比较成熟候选和实际收益；现有 Kernel/Generation 形态不是不可调整前提。 |
 | 底层能力 | 只有跨业务复用且由进程统一选择、并且确有进程级生命周期治理收益的资源进入 `pkg -> internal/kernel/app -> internal/kernel/composition`。 |

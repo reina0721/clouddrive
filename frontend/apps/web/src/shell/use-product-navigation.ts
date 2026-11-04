@@ -18,6 +18,7 @@ import { combinedShellNavigationGroups } from './navigation';
  */
 function requiredPermission(id: string, backend: boolean): string | null {
   const native: Record<string, string> = {
+    'files.root': 'files:read',
     'departments.root': 'organization:department:read',
     'departments.assignments': 'organization:department:read',
     'departments.positions': 'organization:position:read',
@@ -53,6 +54,7 @@ export function useProductNavigation() {
       if (
         !backend &&
         [
+          'files.root',
           'account.tokens',
           'account.security',
           'departments.assignments',

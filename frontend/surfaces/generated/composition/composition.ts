@@ -16,6 +16,7 @@ import { pluginI18nResources as pluginI18nResources_api_workbench } from '../../
 import { pluginI18nResources as pluginI18nResources_audit } from '../../plugins/audit/i18n';
 import { pluginI18nResources as pluginI18nResources_departments } from '../../plugins/departments/i18n';
 import { pluginI18nResources as pluginI18nResources_dictionaries } from '../../plugins/dictionaries/i18n';
+import { pluginI18nResources as pluginI18nResources_files } from '../../plugins/files/i18n';
 import { pluginI18nResources as pluginI18nResources_foundations } from '../../plugins/foundations/i18n';
 import { pluginI18nResources as pluginI18nResources_menus } from '../../plugins/menus/i18n';
 import { pluginI18nResources as pluginI18nResources_motion } from '../../plugins/motion/i18n';
@@ -45,6 +46,7 @@ export const generatedSurfaceI18nResources: TranslationResources = mergeTranslat
   pluginI18nResources_audit,
   pluginI18nResources_departments,
   pluginI18nResources_dictionaries,
+  pluginI18nResources_files,
   pluginI18nResources_foundations,
   pluginI18nResources_menus,
   pluginI18nResources_motion,

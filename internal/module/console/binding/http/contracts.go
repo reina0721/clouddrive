@@ -14,7 +14,6 @@ type IdentityAccess interface {
 	Login(context.Context, string, string) (Session, error)
 	VerifyMFAChallenge(context.Context, string, string) (Session, error)
 	Logout(context.Context, string) error
-	RotateCSRF(context.Context, string) (string, error)
 	ChangePassword(context.Context, string, string, string) error
 	Registration(context.Context) (RegistrationSettings, error)
 	UpdateRegistration(context.Context, RegistrationSettings) error

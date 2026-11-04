@@ -22,6 +22,7 @@ import (
 
 const Prefix = "/api/console/v1"
 const csrfCookie = "__Host-clouddrive_console_csrf"
+const nativeCSRFCookie = "__Host-clouddrive_native_csrf"
 
 type Handler struct {
 	runtime             func() RuntimeMetadata
@@ -325,6 +326,7 @@ func (h *Handler) authenticate(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		http.SetCookie(w, &http.Cookie{Name: h.cookieName, Path: "/", Secure: true, HttpOnly: true, SameSite: http.SameSiteLaxMode, MaxAge: -1})
+		http.SetCookie(w, &http.Cookie{Name: nativeCSRFCookie, Path: "/", Secure: true, HttpOnly: true, SameSite: http.SameSiteStrictMode, MaxAge: -1})
 		w.WriteHeader(204)
 		return
 	}
@@ -394,6 +396,7 @@ func (h *Handler) authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, &http.Cookie{Name: h.cookieName, Value: session.ID, Path: "/", HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode})
+	http.SetCookie(w, &http.Cookie{Name: nativeCSRFCookie, Value: session.CSRFToken, Path: "/", HttpOnly: true, Secure: true, SameSite: http.SameSiteStrictMode})
 	h.session(w, session)
 }
 
@@ -449,13 +452,13 @@ func (h *Handler) forwardNative(w http.ResponseWriter, r *http.Request) {
 	copy.URL = &u
 	copy.URL.Path = "/api/v1/" + strings.TrimPrefix(r.URL.Path, Prefix+"/native/")
 	if r.Method != "GET" && r.Method != "HEAD" {
-		id, _, _ := SessionFromContext(r.Context())
-		csrf, err := h.iam.RotateCSRF(r.Context(), id)
-		if err != nil {
-			problem(w, err)
+		// 登录时镜像 IAM 会话的 CSRF token；每次转发轮换会让并发上传互相失效。
+		csrf, err := r.Cookie(nativeCSRFCookie)
+		if err != nil || csrf.Value == "" {
+			failure(w, http.StatusUnauthorized, "unauthenticated", "")
 			return
 		}
-		copy.Header.Set("X-CSRF-Token", csrf)
+		copy.Header.Set("X-CSRF-Token", csrf.Value)
 	}
 	h.native.ServeHTTP(w, copy)
 }

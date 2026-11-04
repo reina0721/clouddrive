@@ -150,6 +150,16 @@
     "Manageable": true
   },
   {
+    "ID": "files.root",
+    "ModuleID": "files",
+    "RouteID": "files",
+    "TitleMessageID": "files.nav",
+    "IconID": "resource",
+    "DefaultParentID": "group:overview",
+    "DefaultOrder": -10,
+    "Manageable": true
+  },
+  {
     "ID": "foundations.root",
     "ModuleID": "foundations",
     "RouteID": "foundations",

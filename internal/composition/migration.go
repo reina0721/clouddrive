@@ -10,6 +10,7 @@ import (
 	"github.com/reina0721/clouddrive/internal/kernel/config"
 	authmigration "github.com/reina0721/clouddrive/internal/module/auth/binding/migration"
 	consolemigration "github.com/reina0721/clouddrive/internal/module/console/binding/migration"
+	filesmigration "github.com/reina0721/clouddrive/internal/module/files/binding/migration"
 	iammigration "github.com/reina0721/clouddrive/internal/module/iam/binding/migration"
 	"github.com/reina0721/clouddrive/internal/module/migration"
 	migrationconfig "github.com/reina0721/clouddrive/internal/module/migration/binding/config"
@@ -37,6 +38,7 @@ func (e migrationExecutor) MigrationUp(ctx context.Context) (migration.Status, e
 // applicationMigrationCatalog 是当前应用中“哪些模块贡献 migration set”的唯一显式汇总点。
 func applicationMigrationCatalog() (migration.Catalog, error) {
 	return migration.BuildCatalog(
+		migration.Registration{ModuleID: "files", Source: "internal/module/files/binding/migration", Set: filesmigration.Set()},
 		migration.Registration{ModuleID: "console", Source: "internal/module/console/binding/migration", Set: consolemigration.Set()},
 		migration.Registration{ModuleID: "auth", Source: "internal/module/auth/binding/migration", Set: authmigration.Set()},
 		migration.Registration{ModuleID: "iam", Source: "internal/module/iam/binding/migration", Set: iammigration.Set()},

@@ -5,6 +5,11 @@
 # 消息 ID 命名约定：<domain>.<type>.<key>，例如 todo.error.todo_not_found。
 # Handler 通过注入的 pkg/i18n.Translator 呈现，不直接读取 pkg/i18n 默认配置。
 
+permission.files.read:
+  other: "查看和下载自己的文件"
+permission.files.write:
+  other: "上传和整理自己的文件"
+
 todo.error.todo_invalid_argument:
   other: "Todo 输入无效"
 todo.error.todo_not_found:

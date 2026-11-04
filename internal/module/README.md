@@ -2,6 +2,8 @@
 
 浏览器统一使用 frontend/ 的 console-web 插件体系；Go binding/webui 仅保留后端所需的模块、菜单、权限元数据。
 
+[Files](files/README.md) 拥有新增的私有文件目录、传输、回收状态、配额与幂等；复用现有 IAM 与 Kernel Storage，不引入第二套认证或存储客户端。
+
 `internal/module` 保存由应用组合根显式选择的纵向模块。这里的 Module 是进程内业务单元，不是 Go module、Kernel Component 或动态插件。每个模块按业务名称收口 Model、Service、Repository、协议 Adapter、binding 与 contribution；底层资源仍由 Kernel 统一创建，模块对象不进入 Kernel Plan。
 
 新增模块必须先按 [应用模块开发指南](../../docs/development/application-module-development.md) 完成真实用例、现有能力、新 Capability、资源 owner、生命周期和当前契约适配性评估，再进入目录与接口设计。

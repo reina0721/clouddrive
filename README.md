@@ -1,6 +1,6 @@
 # clouddrive
 
-基于 community-go 后端和 console-web 前端整合的管理工作区。当前提供账户、权限、组织、导航、字典、通知、待办、运行状态和 API 工作台；本次没有新增文件上传、分享等网盘业务。
+基于 community-go 后端和 console-web 前端整合的文件与管理工作区。当前提供私有文件目录、上传、下载、搜索分类、移动、回收站恢复和文本预览，同时保留账户、权限、组织、导航、字典、通知、待办、运行状态和 API 工作台。文件入口为 `/home`，管理入口为 `/workspace`。
 
 Go 服务位于根目录，完整 Next.js/pnpm 工作区位于 frontend/。浏览器默认访问 http://127.0.0.1:4173，通过同源代理访问 Go API（8080）及受保护的 management 接口（9090）。Go 不再构建或托管旧前端。
 
@@ -18,6 +18,8 @@ Go 服务位于根目录，完整 Next.js/pnpm 工作区位于 frontend/。浏�
 脚本复制 config.example.yaml 为本地 config.yaml，迁移 SQLite 数据库，再启动两个进程。日志和进程记录保存在 .data/，不会提交数据库、令牌或凭据。默认使用真实后端；接口失败会显示错误，不回退模拟数据。
 
 ## 构建与验证
+
+文件管理的独立预览使用 `./scripts/Start-FilePreview.ps1`：默认网页端口 4180、API 8120、management 9120。脚本保留原有开发数据库，使用 `.data/file-preview/`，每次重启后验证登录；预览地址、独立账号、密码与设置令牌保存在被 Git 忽略的 `.data/preview-access.json`。完整行为、限制与集中验收见[文件管理](docs/operations/file-management.md)。
 
 ~~~powershell
 ./scripts/Build.ps1
@@ -43,4 +45,4 @@ Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Veri
 
 ## 当前项目目标语境
 
-当前处于本地整合阶段，无已有 clouddrive 业务数据或对外兼容承诺；仅导入源码快照，不导入源数据库或凭据。此次不包含文件上传和分享。
+当前处于本地整合阶段，没有对外发布兼容承诺；仅导入源码快照，不导入源数据库或凭据。本地数据库与文件必须保留，不能因项目尚未发布而重置。现已新增有界私有文件管理；公开分享、挂载、离线下载和大文件续传仍未实现，后续按批次补齐。

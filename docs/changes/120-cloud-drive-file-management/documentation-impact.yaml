@@ -1,0 +1,39 @@
+schema_version: 1
+change: 120-cloud-drive-file-management
+areas:
+  - id: repository
+    decision: updated
+    documents: [README.md, docs/repository-scope.md]
+    reason: 增加真实私有文件业务，明确尚未实现的 Cloudreve 能力。
+  - id: startup
+    decision: updated
+    documents: [README.md]
+    reason: 增加保留原环境的独立文件预览启动方式。
+  - id: webui
+    decision: updated
+    documents: [README.md, frontend/README.md]
+    reason: 文件默认入口、管理入口、真实 Host Port 与预览资料位置变化。
+  - id: frontend
+    decision: updated
+    documents: [frontend/README.md, docs/repository-scope.md]
+    reason: 增加 files 插件及其公开语义契约，保留 Host 浏览器能力边界。
+  - id: module
+    decision: updated
+    documents: [internal/module/README.md]
+    reason: 新增 files 纵向业务模块，模块局部 README 链接唯一运行 authority。
+  - id: capability
+    decision: updated
+    documents: [docs/architecture/README.md, docs/operations/runtime-capabilities.md]
+    reason: Storage 取消及候选写入保护、无资源 HTTP 清单边界和真实验收范围。
+  - id: api
+    decision: updated
+    documents: [api/README.md]
+    reason: 增加八个文件 operation 与原生转发的稳定 CSRF 会话语义。
+  - id: configuration
+    decision: updated
+    documents: [docs/configuration/README.md]
+    reason: files 配置 owner、默认预算与重启策略指向文件运行 authority。
+  - id: delivery
+    decision: updated
+    documents: [docs/operations/runtime-capabilities.md]
+    reason: 专用预览构建、迁移、进程重启和登录验证；凭据与运行数据保持忽略。

@@ -261,7 +261,7 @@ http:
   maxHeaderBytes: 1048576
   # 单个业务请求的 application deadline，不替代 socket timeout。
   requestTimeout: 10s
-  maxRequestBodyBytes: 1048576
+  maxRequestBodyBytes: 33554432
   # 单进程并发上限；超出返回 503 和受控 Retry-After。
   maxInFlight: 128
   # 默认不信任 X-Forwarded-For；只有直连 peer 命中 CIDR 时才采用转发地址。
@@ -322,3 +322,9 @@ observability:
     exportTimeout: 3s
     shutdownTimeout: 5s
 
+
+# 私有文件的有界传输预算；变更后重启服务。
+files:
+  maxFileBytes: 33554432
+  quotaBytes: 1073741824
+  concurrentUploads: 2

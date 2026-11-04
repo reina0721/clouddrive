@@ -1,11 +1,13 @@
 package local
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -38,7 +40,10 @@ func New(cfg Config) (*Client, error) {
 	return &Client{basePath: abs}, nil
 }
 
-func (c *Client) Put(_ context.Context, key string, data []byte, _ storageclient.PutOptions) error {
+func (c *Client) Put(ctx context.Context, key string, data []byte, _ storageclient.PutOptions) (resultErr error) {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	path, err := c.pathForKey(key)
 	if err != nil {
 		return err
@@ -46,27 +51,67 @@ func (c *Client) Put(_ context.Context, key string, data []byte, _ storageclient
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return fmt.Errorf("create local object dir: %w", err)
 	}
-	return os.WriteFile(path, data, 0o600)
+	file, err := os.CreateTemp(filepath.Dir(path), ".object-*")
+	if err != nil {
+		return fmt.Errorf("create object candidate: %w", err)
+	}
+	published := false
+	closed := false
+	defer func() {
+		if !closed {
+			resultErr = errors.Join(resultErr, file.Close())
+		}
+		if !published {
+			resultErr = errors.Join(resultErr, os.Remove(file.Name()))
+		}
+	}()
+	if _, err := io.Copy(file, &contextReader{ctx: ctx, reader: bytes.NewReader(data)}); err != nil {
+		return fmt.Errorf("write object candidate: %w", err)
+	}
+	if err := file.Close(); err != nil {
+		closed = true
+		return fmt.Errorf("close object candidate: %w", err)
+	}
+	closed = true
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if err := os.Rename(file.Name(), path); err != nil {
+		return fmt.Errorf("publish object candidate: %w", err)
+	}
+	published = true
+	return nil
 }
 
-func (c *Client) Get(_ context.Context, key string) ([]byte, storageclient.ObjectInfo, error) {
+func (c *Client) Get(ctx context.Context, key string) (content []byte, metadata storageclient.ObjectInfo, resultErr error) {
+	if err := ctx.Err(); err != nil {
+		return nil, storageclient.ObjectInfo{}, err
+	}
 	path, err := c.pathForKey(key)
 	if err != nil {
 		return nil, storageclient.ObjectInfo{}, err
 	}
 	// #nosec G304 -- pathForKey 已做绝对根边界和穿越校验，读取被限制在 basePath 内。
-	data, err := os.ReadFile(path)
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, storageclient.ObjectInfo{}, err
 	}
-	info, err := os.Stat(path)
+	defer func() { resultErr = errors.Join(resultErr, file.Close()) }()
+	data, err := io.ReadAll(&contextReader{ctx: ctx, reader: file})
+	if err != nil {
+		return nil, storageclient.ObjectInfo{}, err
+	}
+	info, err := file.Stat()
 	if err != nil {
 		return nil, storageclient.ObjectInfo{}, err
 	}
 	return data, storageclient.ObjectInfo{Key: key, Size: info.Size()}, nil
 }
 
-func (c *Client) Delete(_ context.Context, key string) error {
+func (c *Client) Delete(ctx context.Context, key string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	path, err := c.pathForKey(key)
 	if err != nil {
 		return err
@@ -77,7 +122,10 @@ func (c *Client) Delete(_ context.Context, key string) error {
 	return nil
 }
 
-func (c *Client) Exists(_ context.Context, key string) (bool, error) {
+func (c *Client) Exists(ctx context.Context, key string) (bool, error) {
+	if err := ctx.Err(); err != nil {
+		return false, err
+	}
 	path, err := c.pathForKey(key)
 	if err != nil {
 		return false, err
@@ -90,6 +138,19 @@ func (c *Client) Exists(_ context.Context, key string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+// contextReader 在每个文件块之间响应取消，不派生无所有者的 goroutine。
+type contextReader struct {
+	ctx    context.Context
+	reader io.Reader
+}
+
+func (r *contextReader) Read(buffer []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	return r.reader.Read(buffer)
 }
 
 func (c *Client) HealthCheck(ctx context.Context) error {

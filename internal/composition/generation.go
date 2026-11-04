@@ -11,6 +11,7 @@ import (
 	"sync/atomic"
 
 	"github.com/reina0721/clouddrive/internal/kernel"
+	"github.com/reina0721/clouddrive/internal/kernel/app"
 	kernelalerting "github.com/reina0721/clouddrive/internal/kernel/app/alerting"
 	cacheapp "github.com/reina0721/clouddrive/internal/kernel/app/cache"
 	databaseapp "github.com/reina0721/clouddrive/internal/kernel/app/database"
@@ -27,6 +28,9 @@ import (
 	authconfig "github.com/reina0721/clouddrive/internal/module/auth/binding/config"
 	authhttp "github.com/reina0721/clouddrive/internal/module/auth/binding/http"
 	"github.com/reina0721/clouddrive/internal/module/console"
+	"github.com/reina0721/clouddrive/internal/module/files"
+	filesconfig "github.com/reina0721/clouddrive/internal/module/files/binding/config"
+	fileshttp "github.com/reina0721/clouddrive/internal/module/files/binding/http"
 	"github.com/reina0721/clouddrive/internal/module/iam"
 	iamconfig "github.com/reina0721/clouddrive/internal/module/iam/binding/config"
 	iamhttp "github.com/reina0721/clouddrive/internal/module/iam/binding/http"
@@ -179,6 +183,19 @@ func (f *applicationGenerationFactory) Prepare(
 ) (kernel.PreparedGeneration, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("application generation prepare context is nil")
+	}
+	if prior, ok := previous.(*applicationGeneration); ok && prior != nil {
+		before, err := prior.snapshot.SectionDigest("files")
+		if err != nil {
+			return nil, err
+		}
+		after, err := snapshot.SectionDigest("files")
+		if err != nil {
+			return nil, err
+		}
+		if before != after {
+			return nil, &app.RestartRequiredError{Components: []app.ID{"module.files"}}
+		}
 	}
 	generation := &applicationGeneration{
 		factory: f, blueprint: f.blueprint, id: f.nextID.Add(1), snapshot: snapshot, runDone: make(chan struct{}), managementRunDone: make(chan struct{}),
@@ -465,7 +482,23 @@ func (f *applicationGenerationFactory) Prepare(
 	if err != nil {
 		return abort(err)
 	}
+	filesPolicy, err := filesconfig.Decode(snapshot)
+	if err != nil {
+		return abort(err)
+	}
+	storageIdentity, err := filesStorageIdentity(snapshot)
+	if err != nil {
+		return abort(err)
+	}
+	if err := files.ValidateStorage(ctx, databaseAccess, storageIdentity); err != nil {
+		return abort(err)
+	}
+	filesHandler, err := files.New(files.Dependencies{StorageIdentity: storageIdentity, Database: databaseAccess, Content: filesContentAdapter{access: generation.storage.value()}, Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: filesPolicy.Policy()})
+	if err != nil {
+		return abort(err)
+	}
 	apiRoutes, err := httptransport.NewRouteBinding(operationGate,
+		fileshttp.HumaRegistration(filesHandler, mutationGuard),
 		authhttp.HumaRegistration(generation.authModule.AuditHandler),
 		iamhttp.HumaRegistration(generation.iamModule.Handler),
 		todohttp.HumaRegistration(generation.module.Operations),

@@ -16,6 +16,8 @@ export function createJsonClient(apiBaseUrl: string, request: typeof fetch = fet
     options: Readonly<{
       method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
       body?: unknown;
+      rawBody?: Blob;
+      responseType?: 'json' | 'blob';
       timeoutMs?: number;
       headers?: Readonly<Record<string, string>>;
       signal?: AbortSignal;
@@ -63,7 +65,7 @@ export function createJsonClient(apiBaseUrl: string, request: typeof fetch = fet
                 'X-CSRF-Token': csrfToken ?? '',
                 ...options.headers,
               },
-              body: JSON.stringify(options.body),
+              body: options.rawBody ?? JSON.stringify(options.body),
             }
           : {}),
       });
@@ -73,6 +75,7 @@ export function createJsonClient(apiBaseUrl: string, request: typeof fetch = fet
         throw new ApiError('http', response.status, payload);
       }
       if (response.status === 204) return null;
+      if (options.responseType === 'blob') return await response.blob();
       try {
         return await response.json();
       } catch {

@@ -239,7 +239,9 @@
         "./plugin-routes/*",
         "./identity/runtime",
         "./administration",
-        "./administration/runtime"
+        "./administration/runtime",
+        "./files",
+        "./files/runtime"
       ],
       "authorityRoutes": [
         "/reference-resources",
@@ -249,7 +251,8 @@
         "/roles",
         "/roles/permissions",
         "/notifications",
-        "/audit-logs"
+        "/audit-logs",
+        "/home"
       ],
       "evidence": [
         "surfaces/src/shell.test.ts",
@@ -263,7 +266,10 @@
         "docs/changes/110-management-completion/README.md",
         "surfaces/plugins/api-workbench/src/model/workbench-ux.test.ts",
         "apps/web/e2e/api-workbench.spec.ts",
-        "surfaces/src/api-workbench/README.md"
+        "surfaces/src/api-workbench/README.md",
+        "file-tests/files.spec.ts",
+        "surfaces/src/files/model.ts",
+        "apps/web/src/files/backend.ts"
       ]
     }
   }

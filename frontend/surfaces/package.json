@@ -16,7 +16,9 @@
     "./plugin-routes/*": "./generated/plugin-routes/*.ts",
     "./identity/runtime": "./src/identity/runtime.ts",
     "./administration": "./src/administration/index.ts",
-    "./administration/runtime": "./src/administration/context.tsx"
+    "./administration/runtime": "./src/administration/context.tsx",
+    "./files": "./src/files/index.ts",
+    "./files/runtime": "./src/files/runtime.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

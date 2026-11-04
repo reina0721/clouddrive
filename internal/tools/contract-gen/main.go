@@ -13,11 +13,7 @@ import (
 	"strings"
 	"unicode"
 
-	authhttp "github.com/reina0721/clouddrive/internal/module/auth/binding/http"
-	iamhttp "github.com/reina0721/clouddrive/internal/module/iam/binding/http"
-	navigationhttp "github.com/reina0721/clouddrive/internal/module/navigation/binding/http"
-	organizationhttp "github.com/reina0721/clouddrive/internal/module/organization/binding/http"
-	todohttp "github.com/reina0721/clouddrive/internal/module/todo/binding/http"
+	"github.com/reina0721/clouddrive/internal/composition/httpcatalog"
 	"github.com/reina0721/clouddrive/internal/projectlayout"
 	httptransport "github.com/reina0721/clouddrive/internal/transport/http"
 	"github.com/reina0721/clouddrive/internal/transport/http/humabinding"
@@ -71,7 +67,7 @@ func main() {
 func fail(err error) { _, _ = fmt.Fprintln(os.Stderr, err); os.Exit(1) }
 
 func run(outputOpenAPI, outputInventory, packageName string) error {
-	registrations := registeredOperations()
+	registrations := httpcatalog.Registrations()
 	openAPI, err := httptransport.BuildHumaOpenAPI30(registrations...)
 	if err != nil {
 		return fmt.Errorf("build Huma OpenAPI: %w", err)
@@ -88,16 +84,6 @@ func run(outputOpenAPI, outputInventory, packageName string) error {
 		return err
 	}
 	return writeFile(outputInventory, inventory)
-}
-
-func registeredOperations() []humabinding.Registration {
-	return []humabinding.Registration{
-		authhttp.HumaRegistration(nil),
-		iamhttp.HumaRegistration(nil),
-		organizationhttp.HumaRegistration(nil, nil),
-		navigationhttp.HumaRegistration(nil, nil),
-		todohttp.HumaRegistration(nil),
-	}
 }
 
 func generateInventory(packageName string, definitions []humabinding.Definition) ([]byte, error) {

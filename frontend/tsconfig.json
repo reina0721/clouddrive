@@ -3,5 +3,11 @@
   "compilerOptions": {
     "types": ["node", "@playwright/test"]
   },
-  "include": ["playwright.config.ts", "playwright.integration.config.ts", "integration/**/*.ts"]
+  "include": [
+    "playwright.config.ts",
+    "playwright.integration.config.ts",
+    "playwright.files.config.ts",
+    "integration/**/*.ts",
+    "file-tests/**/*.ts"
+  ]
 }

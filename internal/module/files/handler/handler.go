@@ -1,0 +1,61 @@
+// Package handler 适配 files 用例与请求主体，保持业务层不依赖认证实现。
+package handler
+
+import (
+	"context"
+	"errors"
+	"github.com/reina0721/clouddrive/internal/module/files/model"
+	"github.com/reina0721/clouddrive/internal/module/files/service"
+	"github.com/reina0721/clouddrive/pkg/httpx"
+	"github.com/reina0721/clouddrive/pkg/logger"
+	"net/http"
+)
+
+type ActorAccess interface {
+	Owner(context.Context) (string, bool)
+}
+type Handler struct {
+	Service *service.Service
+	Actors  ActorAccess
+	Logger  logger.Logger
+}
+
+func (h *Handler) Owner(ctx context.Context) (string, error) {
+	owner, ok := h.Actors.Owner(ctx)
+	if !ok || owner == "" {
+		return "", &httpx.StatusError{StatusCode: http.StatusUnauthorized, Code: "unauthenticated", Err: model.ErrMissing}
+	}
+	return owner, nil
+}
+
+// Present 是决定协议结果的唯一文件错误日志边界，不记录文件名称或底层错误文本。
+func (h *Handler) Present(ctx context.Context, err error) error {
+	status, code := http.StatusInternalServerError, "files_unavailable"
+	var protocolError *httpx.StatusError
+	switch {
+	case errors.Is(err, service.ErrCleanup):
+		status, code = 500, "files_cleanup_incomplete"
+	case errors.As(err, &protocolError):
+		status, code = protocolError.StatusCode, protocolError.Code
+	case errors.Is(err, model.ErrMissing):
+		status, code = 404, "files_not_found"
+	case errors.Is(err, model.ErrInvalid):
+		status, code = 422, "files_invalid"
+	case errors.Is(err, model.ErrConflict):
+		status, code = 409, "files_conflict"
+	case errors.Is(err, model.ErrQuota):
+		status, code = 409, "files_quota"
+	case errors.Is(err, model.ErrTooLarge):
+		status, code = 413, "files_too_large"
+	case errors.Is(err, model.ErrBusy):
+		status, code = 429, "files_busy"
+	case errors.Is(err, context.Canceled):
+		status, code = 499, "files_canceled"
+	case errors.Is(err, context.DeadlineExceeded):
+		status, code = 504, "files_timeout"
+	}
+	if status >= 500 && !errors.Is(err, context.DeadlineExceeded) {
+		h.Logger.Error("files.request.failed", logger.String("code", code))
+	}
+	return httpx.NewProtocolProblemError(ctx, &httpx.StatusError{StatusCode: status, Code: code, Message: code, Err: err})
+}

@@ -108,3 +108,5 @@ memory backend 只在单进程内可见，记录同步写入，不提供外部�
 ## clouddrive 控制台
 
 前端由 Next 独立启动，不读取 Go 静态托管配置。环境变量、同源代理与请求目标白名单见 [部署说明](../operations/clouddrive-deployment.md)。console 配置控制请求预算；数据库迁移显式执行。
+
+files 模块拥有 `files.maxFileBytes`、`files.quotaBytes` 与 `files.concurrentUploads`，统一默认、正数预算校验及 RestartRequired 策略；默认值、传输约束和存储位置保护只在[文件管理](../operations/file-management.md)维护。HTTP 总 body 上限和代理上限必须覆盖文件预算，不能仅修改页面提示。

@@ -6,12 +6,13 @@ dependency ownership、module resolution、typecheck 与 test 服务。
 
 - 具体 Plugin 不是 Package，也不是 Surface 公共 API。对 Host 只开放
   `./shell`、`./preferences-model`、`./identity`、`./identity/runtime`、`./administration`、`./administration/runtime`、`./api-workbench`、`./icon-presentation`、`./icon-components`、`./generated/composition`、
-  `./generated/catalog`、`./plugin-routes/*`；
+  `./generated/catalog`、`./plugin-routes/*`、`./files`、`./files/runtime`；
   禁止把 `plugins/*` 加入 exports，禁止通过相对路径绕开 generated shim 导入 Plugin internals。
   `./identity` 只开放当前产品的身份、用户、角色授权、注册策略、账户安全、通知及只读审计模型、Schema 与具体语义 Port/Provider/hook；
   Web 注入实现，Plugin 与 Shell 消费同一契约。不公开 Plugin 私有组件或 Store，
   不在 Surface 契约实现 HTTP、Storage、Session 或后端授权。
   `./administration` 开放当前产品的组织、菜单、字典、待办、运维、Token 和账户偏好模型及 Port；`./administration/runtime` 仅开放 Provider 与 hook，避免将响应校验载入初始 Shell。
+  `./files` 开放私有文件模型、Schema 与语义 Port；`./files/runtime` 仅开放 Provider/hook。文件句柄、拖拽与下载生命周期留在 Web Host，插件通过候选 ID 上传，不接触 File/DOM/Session。
 - Route Catalog、业务 Route IDs 与 module shims 全部位于 `generated/`；
   产物带 `// @generated` 头，**禁止手改**——修改后运行 `pnpm codegen:plugins` 重新生成，
   并用 `pnpm codegen:plugins:check` 复核 freshness。

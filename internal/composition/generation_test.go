@@ -24,6 +24,7 @@ import (
 	authmigration "github.com/reina0721/clouddrive/internal/module/auth/binding/migration"
 	authmodel "github.com/reina0721/clouddrive/internal/module/auth/model"
 	consolemigration "github.com/reina0721/clouddrive/internal/module/console/binding/migration"
+	filesmigration "github.com/reina0721/clouddrive/internal/module/files/binding/migration"
 	iammigration "github.com/reina0721/clouddrive/internal/module/iam/binding/migration"
 	navigationmigration "github.com/reina0721/clouddrive/internal/module/navigation/binding/migration"
 	organizationmigration "github.com/reina0721/clouddrive/internal/module/organization/binding/migration"
@@ -759,7 +760,7 @@ func prepareTodoSchema(t *testing.T, path string) {
 	cfg := pkgdatabase.DefaultConfig()
 	cfg.Driver = pkgdatabase.DriverSQLite
 	cfg.DSN = filepath.ToSlash(path)
-	for _, set := range []dbmigrate.Set{consolemigration.Set(), authmigration.Set(), iammigration.Set(), navigationmigration.Set(), organizationmigration.Set(), migrationbinding.Set()} {
+	for _, set := range []dbmigrate.Set{filesmigration.Set(), consolemigration.Set(), authmigration.Set(), iammigration.Set(), navigationmigration.Set(), organizationmigration.Set(), migrationbinding.Set()} {
 		runner, err := dbmigrate.New(t.Context(), dbmigrate.Config{Database: cfg, LockTimeout: 5 * time.Second}, set)
 		if err != nil {
 			t.Fatalf("New migration runner(%s/%s) error = %v", path, set.Name, err)

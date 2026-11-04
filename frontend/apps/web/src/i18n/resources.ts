@@ -4,6 +4,8 @@ export const resources = {
       brand: { name: 'clouddrive', edition: '管理工作空间' },
       auth: { loading: '正在加载…', logout: '退出登录' },
       common: {
+        filesUnavailableTitle: '文件服务尚未连接',
+        filesUnavailableDescription: '当前演示环境不提供文件存储，请使用项目预览地址。',
         close: '关闭',
         cancel: '取消',
         leave: '离开',
@@ -231,6 +233,9 @@ export const resources = {
       brand: { name: 'clouddrive', edition: 'Management workspace' },
       auth: { loading: 'Loading…', logout: 'Sign out' },
       common: {
+        filesUnavailableTitle: 'File storage is not connected',
+        filesUnavailableDescription:
+          'File storage is not provided in this demo environment. Open the project preview instead.',
         close: 'Close',
         cancel: 'Cancel',
         leave: 'Leave',

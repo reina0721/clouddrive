@@ -84,7 +84,7 @@ func TestProcessGeneratedConfigurationSupportsMigrationAndServiceStartup(t *test
 	for _, set := range beforeMigration.Sets {
 		allEmpty = allEmpty && set.Empty
 	}
-	if decodeErr != nil || len(beforeMigration.Sets) != 6 || !allEmpty || beforeMigration.Compatible {
+	if decodeErr != nil || len(beforeMigration.Sets) != 7 || !allEmpty || beforeMigration.Compatible {
 		t.Fatalf("status before migration = %q, parsed=%#v, err=%v", stdout.String(), beforeMigration, decodeErr)
 	}
 
@@ -105,7 +105,7 @@ func TestProcessGeneratedConfigurationSupportsMigrationAndServiceStartup(t *test
 	for _, set := range afterMigration.Sets {
 		allCompatible = allCompatible && !set.Empty && set.Compatible
 	}
-	if decodeErr != nil || len(afterMigration.Sets) != 6 || !allCompatible || !afterMigration.Compatible {
+	if decodeErr != nil || len(afterMigration.Sets) != 7 || !allCompatible || !afterMigration.Compatible {
 		t.Fatalf("status after migration = %q, parsed=%#v, err=%v", stdout.String(), afterMigration, decodeErr)
 	}
 

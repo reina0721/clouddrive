@@ -13,14 +13,14 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 		t.Fatal(err)
 	}
 	definitions := blueprint.httpDefinitions
-	if len(definitions) != 63 {
+	if len(definitions) != 71 {
 		t.Fatalf("operation count = %d", len(definitions))
 	}
 	seen := make(map[string]struct{}, len(definitions))
 	for _, definition := range definitions {
 		seen[definition.ID] = struct{}{}
 	}
-	for _, id := range []string{"iam.setup", "navigation.menus.update", "organization.departments.update", "completeTodo", "auth.audit.list", "auth.audit.read", "iam.sessions.list", "iam.sessions.revoke", "iam.accounts.read", "iam.accounts.update", "iam.accounts.archive", "iam.roles.read", "iam.roles.update", "iam.roles.archive", "iam.self.profile.update", "iam.self.archive", "iam.self.archive.confirm", "iam.roles.accounts.list", "iam.permissions.roles.list", "iam.api-tokens.list", "iam.api-tokens.create", "iam.api-tokens.update", "iam.api-tokens.rotate", "iam.api-tokens.disable", "iam.api-tokens.enable", "iam.api-tokens.revoke", "iam.self.mfa.begin", "iam.self.mfa.status", "iam.self.mfa.confirm", "iam.self.mfa.disable", "iam.login.mfa-verify", "iam.accounts.status.batch", "iam.accounts.archive.batch"} {
+	for _, id := range []string{"files.list", "files.folder", "files.upload", "files.detail", "files.update", "files.trash", "files.restore", "files.content", "iam.setup", "navigation.menus.update", "organization.departments.update", "completeTodo", "auth.audit.list", "auth.audit.read", "iam.sessions.list", "iam.sessions.revoke", "iam.accounts.read", "iam.accounts.update", "iam.accounts.archive", "iam.roles.read", "iam.roles.update", "iam.roles.archive", "iam.self.profile.update", "iam.self.archive", "iam.self.archive.confirm", "iam.roles.accounts.list", "iam.permissions.roles.list", "iam.api-tokens.list", "iam.api-tokens.create", "iam.api-tokens.update", "iam.api-tokens.rotate", "iam.api-tokens.disable", "iam.api-tokens.enable", "iam.api-tokens.revoke", "iam.self.mfa.begin", "iam.self.mfa.status", "iam.self.mfa.confirm", "iam.self.mfa.disable", "iam.login.mfa-verify", "iam.accounts.status.batch", "iam.accounts.archive.batch"} {
 		if _, ok := seen[id]; !ok {
 			t.Fatalf("missing operation %q", id)
 		}
@@ -28,7 +28,7 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 	// 076：Organization 全部 operation 必须使用 webuiSession 认证 profile（与
 	// IAM/Navigation/Auth 一致），保证托管模式下 org 页面经 Session 闭环可达。
 	for _, definition := range definitions {
-		if strings.HasPrefix(definition.ID, "organization.") && definition.Security != humabinding.SecurityWebUISession {
+		if (strings.HasPrefix(definition.ID, "organization.") || strings.HasPrefix(definition.ID, "files.")) && definition.Security != humabinding.SecurityWebUISession {
 			t.Fatalf("organization operation %q security = %q, want webuiSession", definition.ID, definition.Security)
 		}
 	}

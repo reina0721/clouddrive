@@ -15,7 +15,7 @@ test('empty SQLite setup, real business writes, protected native pages and logou
   await page.getByLabel('密码', { exact: true }).fill(password);
   await page.getByLabel('设置令牌', { exact: true }).fill(token);
   await page.getByRole('button', { name: '创建管理员', exact: true }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/home$/);
   await page.goto('/users');
   await expect(
     page.getByRole('gridcell', { name: 'acceptance@clouddrive.test', exact: true }),

@@ -10,6 +10,7 @@ export const generatedRouteCatalog: RouteCatalog = {
     { pluginId: 'audit', mount: '/audit-logs' },
     { pluginId: 'departments', mount: '/system/departments' },
     { pluginId: 'dictionaries', mount: '/system/dictionaries' },
+    { pluginId: 'files', mount: '/home' },
     { pluginId: 'foundations', mount: '/foundations' },
     { pluginId: 'menus', mount: '/system/menus' },
     { pluginId: 'motion', mount: '/motion' },
@@ -113,6 +114,14 @@ export const generatedRouteCatalog: RouteCatalog = {
       path: '',
       segments: [],
       pattern: '/system/dictionaries',
+      paramNames: [],
+    },
+    {
+      routeId: 'files',
+      pluginId: 'files',
+      path: '',
+      segments: [],
+      pattern: '/home',
       paramNames: [],
     },
     {
@@ -690,6 +699,21 @@ export const generatedRouteCatalog: RouteCatalog = {
             order: 42,
             iconId: 'dictionary',
             routeId: 'dictionaries',
+          },
+        ],
+      },
+    },
+    {
+      pluginId: 'files',
+      contribution: {
+        parents: [
+          {
+            navigationId: 'files.root',
+            labelKey: 'files.nav',
+            groupId: 'overview',
+            order: -10,
+            iconId: 'resource',
+            routeId: 'files',
           },
         ],
       },

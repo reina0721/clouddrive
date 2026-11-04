@@ -62,10 +62,6 @@ func (port consoleIAMPort) VerifyMFAChallenge(ctx context.Context, id, code stri
 func (port consoleIAMPort) Logout(ctx context.Context, id string) error {
 	return consoleError(port.service.Logout(ctx, id))
 }
-func (port consoleIAMPort) RotateCSRF(ctx context.Context, id string) (string, error) {
-	value, err := port.service.RotateCSRF(ctx, id)
-	return value, consoleError(err)
-}
 func (port consoleIAMPort) ChangePassword(ctx context.Context, id, current, next string) error {
 	return consoleError(port.service.ChangePassword(ctx, id, current, next))
 }

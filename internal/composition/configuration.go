@@ -5,6 +5,7 @@ import (
 	"github.com/reina0721/clouddrive/internal/kernel/config"
 	authconfig "github.com/reina0721/clouddrive/internal/module/auth/binding/config"
 	"github.com/reina0721/clouddrive/internal/module/console"
+	filesconfig "github.com/reina0721/clouddrive/internal/module/files/binding/config"
 	iamconfig "github.com/reina0721/clouddrive/internal/module/iam/binding/config"
 	migrationconfig "github.com/reina0721/clouddrive/internal/module/migration/binding/config"
 	opsconfig "github.com/reina0721/clouddrive/internal/module/ops/binding/config"
@@ -17,6 +18,7 @@ func applicationOwnedConfigurationBindings() []config.Binding {
 	return []config.Binding{
 		authconfig.Binding(),
 		console.Binding(),
+		filesconfig.Binding(),
 		iamconfig.Binding(),
 		migrationconfig.Binding(),
 		todoconfig.Binding(),
