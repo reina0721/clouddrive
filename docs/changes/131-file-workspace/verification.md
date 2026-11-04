@@ -46,4 +46,6 @@ F221–F240 全部接线后集中测试。本批文件专项共48个唯一场景
 
 最后审阅删除一处无效空回调，最终构建`.next/131-release-final`通过。直接针对该目录复用原性能检查器，initial347176、最大入口444606、CSS49067、最大chunk84704字节，预算均通过（`.data/131-release-final-build.log`、`.data/131-release-final-performance.log`）。最终工作区回归首次因测试环境凭据路径错误而未进入功能操作；修正为绝对路径后8例全部通过（43.5秒，`.data/131-workspace-release-final-r2.log`），不能把该轮配置失败算作通过。最后的`pnpm lint`、`pnpm format:check`、`pnpm docs:check`及`scripts/Verify-Docs.ps1`均通过；最初文档检查指出缺少影响清单，补齐`documentation-impact.yaml`后复测通过。
 
+功能提交`056c630e6d591d1f6f19f3d05d04e5449a81de82`（`feat(files): unify file workspace navigation and global actions`）已推送main，远端引用核验一致。提交后再次运行11项就绪/已认证接口检查与文件记录摘要检查通过。交付资料只存本机ignored目录，未提交测试截图、凭据、构建或运行数据库。
+
 完整Cloudreve差异仍包括账号/群组直接ACL、BT/magnet、多节点、WebDAV锁、Office及其他视觉细节，留待后续批次研究。
