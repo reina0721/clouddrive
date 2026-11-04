@@ -1,0 +1,7 @@
+# Host启动体积修正
+
+R125-002为V01中实际超限的定向证据。ApplicationChrome通过既有Next dynamic加载FilesRuntime和AppShell，加载中使用原AppLoadingSurface。Root AppProviders与i18n、水合顺序不变，没有新业务接口、第三方依赖、后台资源、持久化字段或迁移。
+
+异步边界与现有AuthProvider采用同一Next能力，ssr=false避免服务端创建浏览器运行域；导入异常由根错误边界呈现。FilesRuntime保持在同一组件树位置，路由切换只变更fileWorkspace布尔语义，不改变组件key或创建第二套队列。原所有者负责关闭、取消及账号切换，加载中不提前显示缺少Port的文件页。
+
+文件影响仅Host shell/application-chrome.tsx及当前前端说明；不更改生产权限、会话、资源关闭或错误策略。验收为既有首页/路由/CSS/单chunk预算通过、完整前端单元、类型/lint、全部15条浏览器回归及两套服务最新启动。实际测量、失败与修复写入verification.md，不宣称减少功能全部加载字节。

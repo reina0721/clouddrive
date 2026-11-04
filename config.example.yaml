@@ -327,6 +327,8 @@ observability:
 
 # 私有文件的有界传输预算；变更后重启服务。
 files:
+  search:
+    treeEntries: 10000
   maxFileBytes: 536870912
   quotaBytes: 1073741824
   concurrentUploads: 2

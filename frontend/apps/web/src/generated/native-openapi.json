@@ -1505,6 +1505,10 @@
             "format": "int64",
             "type": "integer"
           },
+          "defaultPageSize": {
+            "format": "int64",
+            "type": "integer"
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/Entry"
@@ -1520,6 +1524,10 @@
             "format": "int64",
             "type": "integer"
           },
+          "maxExtensions": {
+            "format": "int64",
+            "type": "integer"
+          },
           "maxFileBytes": {
             "format": "int64",
             "type": "integer"
@@ -1528,7 +1536,15 @@
             "format": "int64",
             "type": "integer"
           },
+          "maxKeywords": {
+            "format": "int64",
+            "type": "integer"
+          },
           "maxMediaBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxPageSize": {
             "format": "int64",
             "type": "integer"
           },
@@ -1540,7 +1556,23 @@
             "format": "int64",
             "type": "integer"
           },
+          "page": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int64",
+            "type": "integer"
+          },
           "quotaBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "searchTreeEntries": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
             "format": "int64",
             "type": "integer"
           },
@@ -1561,7 +1593,15 @@
           "maxBatchEntries",
           "maxThumbnailBytes",
           "maxMediaBytes",
-          "maxGalleryEntries"
+          "maxGalleryEntries",
+          "total",
+          "page",
+          "pageSize",
+          "defaultPageSize",
+          "maxPageSize",
+          "searchTreeEntries",
+          "maxKeywords",
+          "maxExtensions"
         ],
         "type": "object"
       },
@@ -4035,6 +4075,7 @@
             "in": "query",
             "name": "parent",
             "schema": {
+              "maxLength": 36,
               "type": "string"
             }
           },
@@ -4068,6 +4109,12 @@
             "in": "query",
             "name": "sort",
             "schema": {
+              "enum": [
+                "name",
+                "size",
+                "updated",
+                "created"
+              ],
               "type": "string"
             }
           },
@@ -4077,6 +4124,166 @@
             "name": "desc",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "scope",
+            "schema": {
+              "enum": [
+                "auto",
+                "folder",
+                "tree",
+                "all"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": true,
+            "in": "query",
+            "name": "keywords",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 8,
+              "nullable": true,
+              "type": "array"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "caseSensitive",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "match",
+            "schema": {
+              "enum": [
+                "all",
+                "any"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": true,
+            "in": "query",
+            "name": "kinds",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 3,
+              "nullable": true,
+              "type": "array"
+            }
+          },
+          {
+            "explode": true,
+            "in": "query",
+            "name": "extensions",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 16,
+              "nullable": true,
+              "type": "array"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "minBytes",
+            "schema": {
+              "format": "int64",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "maxBytes",
+            "schema": {
+              "format": "int64",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "createdFrom",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "createdTo",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "modifiedFrom",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "modifiedTo",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "foldersFirst",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "format": "int64",
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "format": "int64",
+              "maximum": 200,
+              "minimum": 0,
+              "type": "integer"
             }
           }
         ],

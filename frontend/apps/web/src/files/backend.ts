@@ -4,10 +4,11 @@ import {
   fileDetailSchema,
   fileShareSchema,
   FilesError,
+  fileViewPreferencesSchema,
+  defaultFileViewPreferences,
   type FilesErrorCode,
   type FilesPort,
   type UploadCandidate,
-  type FileViewPreferences,
   type FileListing,
   type FileShortcut,
 } from '@clouddrive/surface/files';
@@ -17,12 +18,12 @@ import { nativeDownload } from './native-download';
 import { createConnectionsPort } from './connections';
 import { createFileNavigationPort } from './navigation';
 import { fileShareAddress } from './share-address';
+import { fileListParameters } from './query';
 import { fileDestinationHrefs } from './destinations';
 export { fileDestinationHrefs } from './destinations';
 
 const transferTimeoutMs = 120_000;
 const preferencesKey = 'clouddrive.files.view.v1';
-const defaultPreferences: FileViewPreferences = { view: 'grid', sort: 'name', desc: false };
 
 /** createFilesRuntime 将文件句柄、网络、下载及拖拽生命周期留在浏览器 Host。 */
 export function createFilesRuntime(
@@ -43,6 +44,9 @@ export function createFilesRuntime(
   const shortcutCleanups = new Set<() => void>();
   const dropListeners = new Set<(candidates: readonly UploadCandidate[]) => void>();
   const native = '/native/files';
+  function assertCurrent() {
+    if (disposed || !account || owner() !== account) throw new FilesError('canceled');
+  }
   function register(files: readonly File[]): UploadCandidate[] {
     if (disposed) return [];
     for (const file of files)
@@ -251,14 +255,7 @@ export function createFilesRuntime(
     openFolder,
     destinationHref: (destination) => fileDestinationHrefs[destination],
     list: async (query, signal) => {
-      const params = new URLSearchParams({
-        parent: query.parent,
-        search: query.search,
-        category: query.category,
-        trash: String(query.trash),
-        sort: query.sort,
-        desc: String(query.desc),
-      });
+      const params = fileListParameters(query);
       const listing = fileListingSchema.parse(await call(`?${params}`, signal ? { signal } : {}));
       limits = listing;
       return listing;
@@ -336,6 +333,7 @@ export function createFilesRuntime(
     focusSearch: () =>
       document.querySelector<HTMLInputElement>('#main-content input[type="search"]')?.focus(),
     focusFiles: () => document.getElementById('main-content')?.focus(),
+    focusEntry: (id) => document.getElementById('file-entry-' + id)?.focus(),
     subscribeShortcuts: (listener) => {
       const handle = (event: KeyboardEvent) => {
         if (
@@ -362,7 +360,19 @@ export function createFilesRuntime(
           else if (event.key === 'F2') shortcut = 'rename';
           else if (event.key === 'Delete') shortcut = 'trash';
           else if (event.key === 'Escape') shortcut = 'clearSelection';
-          else if (event.key === 'Enter') shortcut = 'open';
+          else if (event.key === 'Enter')
+            shortcut =
+              target instanceof Element && target.closest('[data-file-entry]')
+                ? 'openFocused'
+                : 'open';
+          else if (target instanceof Element && target.closest('[data-file-entry]')) {
+            if (event.key === 'ArrowDown' || event.key === 'ArrowRight')
+              shortcut = event.shiftKey ? 'extendNext' : 'next';
+            else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft')
+              shortcut = event.shiftKey ? 'extendPrevious' : 'previous';
+            else if (event.key === 'Home') shortcut = event.shiftKey ? 'extendFirst' : 'first';
+            else if (event.key === 'End') shortcut = event.shiftKey ? 'extendLast' : 'last';
+          }
         }
         if (shortcut) {
           event.preventDefault();
@@ -411,31 +421,21 @@ export function createFilesRuntime(
       }
     },
     loadPreferences: () => {
-      const saved = localStorage.getItem(`${preferencesKey}.${owner()}`);
-      if (!saved) return defaultPreferences;
+      assertCurrent();
+      const saved = localStorage.getItem(preferencesKey + '.' + account);
+      if (saved === null) return fileViewPreferencesSchema.parse(defaultFileViewPreferences);
       try {
-        const value: unknown = JSON.parse(saved);
-        if (
-          typeof value !== 'object' ||
-          !value ||
-          !('view' in value) ||
-          !('sort' in value) ||
-          !('desc' in value)
-        )
-          return defaultPreferences;
-        if (
-          (value.view !== 'grid' && value.view !== 'list' && value.view !== 'gallery') ||
-          !['name', 'size', 'updated', 'created'].includes(String(value.sort)) ||
-          typeof value.desc !== 'boolean'
-        )
-          return defaultPreferences;
-        return { view: value.view, sort: String(value.sort), desc: value.desc };
-      } catch {
-        return defaultPreferences;
+        return fileViewPreferencesSchema.parse(JSON.parse(saved));
+      } catch (error) {
+        throw new FilesError('invalid', { cause: error });
       }
     },
     savePreferences: (value) => {
-      localStorage.setItem(`${preferencesKey}.${owner()}`, JSON.stringify(value));
+      assertCurrent();
+      localStorage.setItem(
+        preferencesKey + '.' + account,
+        JSON.stringify(fileViewPreferencesSchema.parse(value)),
+      );
     },
   };
   return {

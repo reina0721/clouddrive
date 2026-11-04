@@ -1,6 +1,8 @@
 import { zhConnections, enConnections } from './connections-i18n';
 import { zhNavigation, enNavigation } from './navigation-i18n';
+import { zhDiscovery, enDiscovery } from './discovery-i18n';
 const zh = {
+  discovery: zhDiscovery,
   navigation: zhNavigation,
   create: '创建',
   connections: zhConnections,
@@ -199,6 +201,7 @@ const zh = {
   },
 };
 const en: typeof zh = {
+  discovery: enDiscovery,
   navigation: enNavigation,
   create: 'Create',
   connections: enConnections,

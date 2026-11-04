@@ -76,3 +76,7 @@ pnpm check
 Files 提供 `/home/connections` 连接管理。Surface消费ConnectionsPort，Host复用JSON/CSRF客户端并拥有剪贴板；一次性密码只保留在当前弹窗内存，账号变化重置Provider。WebDAV客户端使用管理响应给出的实际服务地址；Next开发代理仅处理管理JSON，不承载整文件PUT。能力与部署限制统一见[文件管理](../docs/operations/file-management.md)。
 
 Files 提供 `/home/shared` 和 NavigationPort，统一保存引用、固定项与集合版本。Host 负责同实例分享地址校验、保存意图片段与受保护的新标签打开；Surface 不操作 location、网络或 Session。Auth 登录/注册返回路径只放在 returnTo query，返回片段单独保留在登录页 fragment，实际导航时重组。浏览器真实验收与当前限制见[文件管理](../docs/operations/file-management.md)。
+
+Files 高级搜索使用 Surface 自有类型与规范化条件编码，Host 负责查询参数、按账号隔离的视图偏好和 DOM 焦点。普通网格/列表由服务端分页，选择与范围锚点只覆盖当前页；列、缩略图和目录优先沿用同一偏好契约。无效 URL 明确报错，不偷偷降级为无条件查询；日期采用 UTC 整日，条件编码有独立长度上限。具体预算与键盘操作统一见[文件管理](../docs/operations/file-management.md)。
+
+ApplicationChrome 使用既有 Next dynamic 与共享加载界面延后 FilesRuntime、AppShell 脚本。FilesRuntime 在组件树中保持同一位置，不随文件/管理路由切换重建，传输队列仍只有一个所有者；异步边界不改变认证、账号隔离和资源关闭策略。

@@ -51,3 +51,5 @@ HTTP 模块遵循固定的代码优先源头与分层：模块顶层 `handler/` 
 Files 的 WebDAV Adapter 与协议 binding 复用同一业务文件树、配额和流式发布。IAM 根公开 AccountAuthorizer 窄facet供当前账号状态与权限判断；独立连接凭据不替代网页Session，协议资源保持同步租约所有权。
 
 Files 的分享快捷方式与固定集合属于同一业务目录边界，借用当前分享事实而不复制访问授权；Surface 与 Auth 仅通过各自 Host 契约保存客户端返回片段，不跨模块调用私有实现。
+
+Files 查询由 Service 拥有条件、可见性、排序与分页语义，Repository 在既有数据库租约内执行 LIMIT+1 的账号树读取并复核内容位置。请求局部索引缓存祖先可见性，迭代处理深树与环，取消沿 context 返回；不引入通用查询 DSL、全文索引、全局缓存或新后台资源。

@@ -14,7 +14,6 @@ import (
 	"mime"
 	"net/http"
 	"path"
-	"sort"
 	"strings"
 	"time"
 )
@@ -42,13 +41,17 @@ type Policy struct {
 	MaxThumbnailBytes int64
 	MaxMediaBytes     int64
 	MaxGalleryEntries int
+	SearchTreeEntries int
 	ShortcutLimit     int
 }
 
 func DefaultPolicy() Policy {
-	return Policy{MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries, ShortcutLimit: DefaultShortcutLimit}
+	return Policy{MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries, ShortcutLimit: DefaultShortcutLimit, SearchTreeEntries: DefaultSearchTreeEntries}
 }
 func (p Policy) Validate() error {
+	if p.SearchTreeEntries < 1 || p.SearchTreeEntries > DefaultSearchTreeEntries {
+		return fmt.Errorf("invalid file search tree limit")
+	}
 	if p.ShortcutLimit < 1 || p.ShortcutLimit > DefaultShortcutLimit {
 		return fmt.Errorf("invalid file shortcut limit")
 	}
@@ -66,6 +69,7 @@ func (p Policy) Validate() error {
 
 type Repository interface {
 	Read(context.Context, string) ([]model.Entry, error)
+	ReadBounded(context.Context, string, int) ([]model.Entry, error)
 	Change(context.Context, string, func([]model.Entry) (model.Entry, error)) (model.Entry, error)
 	ChangeMany(context.Context, string, func([]model.Entry) ([]model.Entry, error)) ([]model.Entry, error)
 	RecordCleanup(context.Context, string, string) error
@@ -103,113 +107,11 @@ func (s *Service) normalizedName(name string) (string, error) {
 	return strings.ToLower(s.names.Normalize(name)), nil
 }
 
-type Query struct {
-	ParentID string
-	Search   string
-	Category string
-	Trash    bool
-	Sort     string
-	Desc     bool
-}
-type Listing struct {
-	Items             []model.Entry `json:"items"`
-	Breadcrumbs       []model.Entry `json:"breadcrumbs"`
-	UsedBytes         int64         `json:"usedBytes"`
-	QuotaBytes        int64         `json:"quotaBytes"`
-	MaxFileBytes      int64         `json:"maxFileBytes"`
-	ConcurrentUploads int           `json:"concurrentUploads"`
-	MaxTextBytes      int64         `json:"maxTextBytes"`
-	MaxArchiveBytes   int64         `json:"maxArchiveBytes"`
-	MaxBatchEntries   int           `json:"maxBatchEntries"`
-	MaxThumbnailBytes int64         `json:"maxThumbnailBytes"`
-	MaxMediaBytes     int64         `json:"maxMediaBytes"`
-	MaxGalleryEntries int           `json:"maxGalleryEntries"`
-}
-
 func (s *Service) read(ctx context.Context, owner string) ([]model.Entry, error) {
 	if owner == "" {
 		return nil, model.ErrMissing
 	}
 	return s.repo.Read(ctx, owner)
-}
-func (s *Service) List(ctx context.Context, owner string, q Query) (Listing, error) {
-	entries, err := s.read(ctx, owner)
-	if err != nil {
-		return Listing{}, err
-	}
-	if q.Category != "" && q.Category != "image" && q.Category != "video" && q.Category != "audio" && q.Category != "document" {
-		return Listing{}, model.ErrInvalid
-	}
-	if q.Sort != "" && q.Sort != "name" && q.Sort != "size" && q.Sort != "updated" && q.Sort != "created" {
-		return Listing{}, model.ErrInvalid
-	}
-	result := Listing{Items: []model.Entry{}, Breadcrumbs: []model.Entry{}, UsedBytes: model.Used(entries), QuotaBytes: s.policy.QuotaBytes, MaxFileBytes: s.policy.MaxFileBytes, ConcurrentUploads: s.policy.ConcurrentUploads}
-	result.MaxTextBytes, result.MaxArchiveBytes, result.MaxBatchEntries = s.policy.MaxTextBytes, s.policy.MaxArchiveBytes, s.policy.MaxBatchEntries
-	result.MaxMediaBytes = s.policy.MaxMediaBytes
-	result.MaxThumbnailBytes, result.MaxGalleryEntries = s.policy.MaxThumbnailBytes, s.policy.MaxGalleryEntries
-	if !q.Trash {
-		if err := model.Parent(entries, q.ParentID); err != nil {
-			return Listing{}, err
-		}
-	}
-	for parent := q.ParentID; parent != ""; {
-		entry, ok := model.Find(entries, parent)
-		if !ok {
-			return Listing{}, model.ErrMissing
-		}
-		result.Breadcrumbs = append([]model.Entry{entry}, result.Breadcrumbs...)
-		parent = entry.ParentID
-		if len(result.Breadcrumbs) > len(entries) {
-			return Listing{}, model.ErrConflict
-		}
-	}
-	for _, entry := range entries {
-		if q.Trash {
-			if entry.TrashedAt == nil {
-				continue
-			}
-		} else {
-			if !model.Visible(entries, entry) {
-				continue
-			}
-			if q.Search == "" && q.Category == "" && entry.ParentID != q.ParentID {
-				continue
-			}
-		}
-		if q.Search != "" && !strings.Contains(strings.ToLower(entry.Name), strings.ToLower(q.Search)) {
-			continue
-		}
-		if q.Category != "" && (entry.Kind != model.File || model.Category(entry) != q.Category) {
-			continue
-		}
-		result.Items = append(result.Items, entry)
-	}
-	sort.SliceStable(result.Items, func(i, j int) bool {
-		a, b := result.Items[i], result.Items[j]
-		var cmp int
-		switch q.Sort {
-		case "size":
-			if a.SizeBytes < b.SizeBytes {
-				cmp = -1
-			} else if a.SizeBytes > b.SizeBytes {
-				cmp = 1
-			}
-		case "updated":
-			cmp = a.UpdatedAt.Compare(b.UpdatedAt)
-		case "created":
-			cmp = a.CreatedAt.Compare(b.CreatedAt)
-		default:
-			cmp = strings.Compare(a.NormalizedName, b.NormalizedName)
-		}
-		if cmp == 0 {
-			cmp = strings.Compare(a.ID, b.ID)
-		}
-		if q.Desc {
-			return cmp > 0
-		}
-		return cmp < 0
-	})
-	return result, nil
 }
 func (s *Service) Folder(ctx context.Context, owner, parent, name string) (model.Entry, error) {
 	normalized, err := s.normalizedName(name)

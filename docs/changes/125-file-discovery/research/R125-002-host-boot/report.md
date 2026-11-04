@@ -1,0 +1,9 @@
+# R125-002 Host首屏加载定向复核
+
+集中验证触发器为现有性能门禁失败。125构建首页gzip为530700字节、最大路由557909；对本批开始前冻结且未改写的124产物执行同一检查，分别为527299和554508。事实为历史基线已经超预算，本批增加约3401字节，不能把全部超限归因于新日期控件。原始测量在忽略目录125-performance.log及125-performance-baseline.log。
+
+源码事实：ApplicationChrome静态引用FilesRuntime和AppShell，前者进一步包含上传、摘要、连接、媒体及Host客户端。Root AppProviders静态装配偏好与反馈；已有AuthProvider采用Next dynamic与AppLoadingSurface。先验证Root Provider拆分，仅降至522816/551685，未通过原预算，已完整撤回该源码及测试调整，不保留两套实现。新的定向修正只在ApplicationChrome用现有Next dynamic延后FilesRuntime与AppShell脚本；后续所需脚本仍必须下载，不等于减少完整功能总成本。
+
+选择保留原Provider顺序、资源所有权与所有Port，不升级框架、不增依赖、不提高预算。沿用认证入口既有Next dynamic加载/错误语义和共享加载界面；FilesRuntime组件在ApplicationChrome始终处于同一位置，工作区切换不换key、不条件卸载，队列所有权保持。该改动属于V01门禁修正，范围扩至同一文件Host装配入口，当前goal授权直接修正；需同步设计、清单与authority，重新执行完整前端单元及浏览器回归。
+
+局限：动态边界只改变加载时机，不改变网络总字节承诺。是否具有可验证收益以新生产构建与原预算的实际结果为准；若无法达到收益则撤回该局部拆分，不能把预期写成结果。验证同时检查偏好水合、错误边界、未登录隔离、真实文件流程、运行服务与窄屏截图。仅适用于当前快照，Root装配、预算或资源生命周期变化时定向刷新。

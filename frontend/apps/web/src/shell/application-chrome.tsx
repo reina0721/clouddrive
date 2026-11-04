@@ -1,9 +1,20 @@
 'use client';
 import { usePathname } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
-import { FilesRuntime } from '../files/runtime';
-import { AppShell } from './app-shell';
+import { AppLoadingSurface } from '../host/app-loading-surface';
 import { RouteTransition } from '../host/route-transition';
+
+const loading = () => <AppLoadingSurface label="正在加载应用 / Loading application" />;
+// 文件运行域仍跨路由保持唯一所有者，只延后其脚本加载；不在切换工作区时重建上传队列。
+const FilesRuntime = dynamic(
+  () => import('../files/runtime').then((module) => module.FilesRuntime),
+  { ssr: false, loading },
+);
+const AppShell = dynamic(() => import('./app-shell').then((module) => module.AppShell), {
+  ssr: false,
+  loading,
+});
 
 export function ApplicationChrome({ children }: Readonly<{ children: ReactNode }>) {
   const pathname = usePathname();

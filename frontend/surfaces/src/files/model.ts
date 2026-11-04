@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import type { FileFilters } from './search';
+import type { FileViewPreferences } from './view-options';
+export type { FileViewPreferences } from './view-options';
 
 export type FilesErrorCode =
   | 'unavailable'
@@ -24,10 +27,11 @@ export class FilesError extends Error {
   }
 }
 
+export const fileKindSchema = z.enum(['file', 'folder', 'shortcut']);
 export const fileEntrySchema = z.object({
   id: z.string(),
   parentId: z.string(),
-  kind: z.enum(['file', 'folder', 'shortcut']),
+  kind: fileKindSchema,
   name: z.string(),
   sizeBytes: z.number().int().nonnegative(),
   mediaType: z.string(),
@@ -50,6 +54,14 @@ export const fileListingSchema = z.object({
   maxMediaBytes: z.number().int().positive(),
   maxThumbnailBytes: z.number().int().positive(),
   maxGalleryEntries: z.number().int().positive(),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().nonnegative(),
+  pageSize: z.number().int().nonnegative(),
+  defaultPageSize: z.number().int().positive(),
+  maxPageSize: z.number().int().positive(),
+  searchTreeEntries: z.number().int().positive(),
+  maxKeywords: z.number().int().positive(),
+  maxExtensions: z.number().int().positive(),
 });
 export type FileListing = z.infer<typeof fileListingSchema>;
 export const fileDetailSchema = z.object({
@@ -63,6 +75,10 @@ export type FileQuery = Readonly<{
   trash: boolean;
   sort: string;
   desc: boolean;
+  filters?: FileFilters;
+  foldersFirst?: boolean;
+  page?: number;
+  pageSize?: number;
 }>;
 export type UploadCandidate = Readonly<{
   id: string;
@@ -70,13 +86,24 @@ export type UploadCandidate = Readonly<{
   sizeBytes: number;
   relativePath?: string;
 }>;
-export type FileViewPreferences = Readonly<{
-  view: 'grid' | 'list' | 'gallery';
-  sort: string;
-  desc: boolean;
-}>;
 export type FileShortcut =
-  'search' | 'refresh' | 'selectAll' | 'clearSelection' | 'rename' | 'trash' | 'newFolder' | 'open';
+  | 'search'
+  | 'refresh'
+  | 'selectAll'
+  | 'clearSelection'
+  | 'rename'
+  | 'trash'
+  | 'newFolder'
+  | 'open'
+  | 'openFocused'
+  | 'next'
+  | 'previous'
+  | 'first'
+  | 'last'
+  | 'extendNext'
+  | 'extendPrevious'
+  | 'extendFirst'
+  | 'extendLast';
 export type FilesDestination =
   'files' | 'shares' | 'shared' | 'transfers' | 'connections' | 'workspace' | 'account';
 export type FilesPort = Readonly<{
@@ -107,6 +134,7 @@ export type FilesPort = Readonly<{
   subscribeShortcuts(listener: (shortcut: FileShortcut) => void): () => void;
   focusSearch(): void;
   focusFiles(): void;
+  focusEntry(id: string): void;
   subscribeDrop(listener: (candidates: readonly UploadCandidate[]) => void): () => void;
   releaseCandidate(id: string): void;
   download(entry: FileEntry): Promise<void>;

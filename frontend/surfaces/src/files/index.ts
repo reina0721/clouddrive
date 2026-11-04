@@ -2,3 +2,6 @@ export * from './model';
 export * from './transfers';
 export * from './connections';
 export * from './navigation';
+export * from './search';
+export * from './view-options';
+export * from './selection';

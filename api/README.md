@@ -27,4 +27,6 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 WebDAV 管理使用 `/api/v1/files/connections`（列表/创建）和 `/{connectionId}`（读取/CAS修改）、`/state`、`/rotate`。一次性密码不进入列表。独立协议入口为 `/dav/{connectionId}/...`，支持 OPTIONS、PROPFIND、受保护属性的 PROPPATCH、GET/HEAD、PUT、MKCOL、COPY、MOVE 和 DELETE，使用独立 Basic 凭据及当前 IAM 权限。该协议不属于 OpenAPI 标准方法清单，不计入上述111个JSON/原生operation；LOCK/UNLOCK不可用。实际客户端地址由管理响应的 endpointOrigin/endpointPath 提供，限制见[文件管理](../docs/operations/file-management.md)。
 
+`GET /api/v1/files` 在同一 operation 承载高级搜索：重复的 `keywords`、`extensions`、`kinds` 参数，`scope`、`match`、`caseSensitive`、字节/时间上下界、`foldersFirst`、`page` 和 `pageSize`。数组不按逗号拆分，字节零值区别于缺失；时间为包含起点、不含终点。返回 `total` 与生效分页及预算。未指定 `pageSize` 或显式 0 保留有界非分页读取，普通网页显式请求 50/100/200；范围、排序和日期语义见[文件管理](../docs/operations/file-management.md)。
+
 分享引用管理为 `/api/v1/files/shortcuts`（GET 列表 / POST 保存）、`/{shortcutId}`（DELETE 已回收引用，body 带 revision）和 `/{shortcutId}/open`（受保护 GET 返回 303，Location 为 `/share#token=...`）。固定集合为 `/files/pins`（GET / POST）、`/{pinId}`（DELETE）与 `/order`（PUT 完整有序 ID 集合），所有写入携带集合 revision，冲突 409。快捷方式改名/移动复用条目 PATCH 并要求 expectedRevision。控制 JSON 限 4096 字节，当前 IAM / CSRF 与 owner 检查不变；响应 private/no-store、no-referrer。

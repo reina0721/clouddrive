@@ -8,7 +8,7 @@
 | Database/Migration | `db migrate status/up`、database/migration 文档 | 多 Set Migration Catalog、one-shot runner 与数据库组件 | IAM/Organization/Navigation/Todo SQLite baseline、Catalog/错误门禁；Postgres/MySQL SQL/checksum 静态校验 | 生产数据库协议需配置外部 DSN 独立验证 |
 | Cache/Coordination | 配置中的 cache/Redis 节 | Kernel App 连接与 lease/close owner | 单元测试、模拟依赖 | 真实 Redis、多实例故障恢复 |
 | Storage | storage 配置节、Storage Capability | Kernel App Manager 与对象存储资源 owner | Go 测试、契约边界 | 真实 S3 兼容服务和生产凭据 |
-| 文件、持久续传与只读分享 | `/home`、`/home/shared`、`/home/transfers`、`/share`、`/api/v1/files`、`/api/v1/file-shares`；[运行说明](file-management.md) | files 拥有目录/配额/回收/分享/传输状态；Kernel 拥有数据库和流式 Storage；认证框架中的 Host 拥有队列与 File 生命周期 | 真实 SQLite、HTTP 并发/隔离/重启/过期/清理失败/Range；12 项浏览器流程含 33 MiB 续传、媒体、桌面与窄屏 | 外部 MySQL/PostgreSQL/S3、无共享暂存多主机、账号共享协作、WebDAV 锁、离线下载、版本历史和全对象垃圾回收 |
+| 文件、持久续传与只读分享 | `/home`、`/home/shared`、`/home/transfers`、`/share`、`/api/v1/files`、`/api/v1/file-shares`；[运行说明](file-management.md) | files 拥有目录/配额/回收/分享/传输状态；Kernel 拥有数据库和流式 Storage；认证框架中的 Host 拥有队列与 File 生命周期 | 真实 SQLite、HTTP 并发/隔离/重启/过期/清理失败/Range；15 项浏览器流程含 33 MiB 续传、媒体、桌面与窄屏 | 外部 MySQL/PostgreSQL/S3、无共享暂存多主机、账号共享协作、WebDAV 锁、离线下载、版本历史和全对象垃圾回收 |
 | Observability | logger、diagnostics、metrics、OTLP 配置 | Kernel App observability 与注入 Logger | Go 测试、低敏日志检查 | 外部 collector/后端接收验证 |
 | 运行状态与监控（055/081） | management `/management/{startupz,livez,readyz,build,diagnostics,metrics,metrics-summary}`；`/metrics`（含 prometheus Go/Process collector：`go_goroutines`、`process_resident_memory_bytes`、`process_start_time_seconds` 等）；`/metrics-summary` 为 090 typed 指标投影（key/value/unit/asOf，产品 UI 消费）；Ops WebUI Dashboard（含「监控」分区：进程/组件状态卡 + 滚动窗口时序报表图）与 Capabilities 页；自研 SVG 图表原语（`webui/src/ui` 的 Sparkline/LineChart） | Ops module（探针/诊断解释）+ composition（runtime 采样、supervisor/scheduler/messaging 状态聚合）；管理面鉴权随 AccessMode（disabled/public/protected） | Go 探针/诊断测试、metrics Gauge 断言、图表/vitest（窗口上限、差分速率、渲染）、Playwright dev/mock | OS 级（CPU/磁盘/网络）由宿主机 Prometheus node-exporter 补齐（文档指引）；多实例聚合、持久时序采样、Alertmanager 全链路（候选） |
 | Execution | `pkg/execution` 与模块接入文档 | Application 命名 policy；memory Store 同步拥有幂等与记录 | attempts/budget/cancel/错误分类、HTTP one-shot、消息单次 attempt 的 Go/race 测试 | 外部持久化 backend、degraded write、breaker、多实例部署 |
@@ -44,3 +44,5 @@ WebDAV 连接当前提供 `/home/connections` 与独立 `/dav/{connectionId}/...
 配置监听在正常取消与底层退出同时就绪时按正常关停处理；真实监听或关闭错误仍向上返回，不将正常取消伪记为失败。
 
 分享快捷方式与固定集合复用 files 的数据库 owner 事务和现有会话，未新增 Kernel 资源。SQLite/HTTP 验证两个 owner、版本 CAS、引用数量/元数据预算、原分享密码/撤销/到期/根目录可见性及真正停止重建；引用不产生文件字节、不扩展嵌套分享授权。
+
+高级文件查询复用现有 GORM 租约和 Go 字符串/时间处理，无独立连接、索引或 worker。账号元数据扫描明确受 `files.search.treeEntries` 限制，超预算返回失败，不截断为成功；查询只读，不变更既有迁移或内容。

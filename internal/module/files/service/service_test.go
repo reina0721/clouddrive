@@ -22,6 +22,17 @@ type memoryRepository struct {
 
 func (r *memoryRepository) RecordCleanup(context.Context, string, string) error { return nil }
 
+func (r *memoryRepository) ReadBounded(ctx context.Context, owner string, limit int) ([]model.Entry, error) {
+	entries, err := r.Read(ctx, owner)
+	if err != nil {
+		return nil, err
+	}
+	if len(entries) > limit {
+		return nil, model.ErrTooLarge
+	}
+	return entries, nil
+}
+
 func (r *memoryRepository) Read(ctx context.Context, owner string) ([]model.Entry, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
