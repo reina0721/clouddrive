@@ -43,3 +43,9 @@
 ## 未验证与剩余范围
 
 没有验收外部 MySQL/PostgreSQL/S3/MinIO 实例、生产部署或 race detector。当前 bytes 契约仍限小文件，目录上传不保留空目录或跨刷新续传；媒体依赖浏览器编解码，未提供字幕/转码。逻辑配额不等于物理磁盘占用，旧不可变对象不自动 GC。挂载、离线下载、账号共享协作、版本历史界面、Office 和分片续传仍未完成。Git 远端写权限问题尚未解除，提交/推送以最终实际结果为准。
+
+## 本地提交与推送回执
+
+功能提交：`bf66da5ac1874461d5af63d20c8368e6cb725680 feat(files): add sharing and rich file operations`，94 文件。提交后工作树干净；4173 与 4180 的 `/home` 实际 HTTP 均为 200，开发进程保持运行。
+
+`git -c credential.interactive=never push -u origin codex/cloud-drive` 退出 128，GitHub 返回 `Permission to reina0721/clouddrive.git denied to rin721` 和 HTTP 403，日志 `.data/121-push.log`。未更换 origin、重写历史或以其他写入 API 冒充推送。解除仓库写权限或切换有权 Git 身份后仍需重新推送并核验，C01 不勾选。
