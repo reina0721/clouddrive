@@ -394,6 +394,8 @@ files:
     pathBytes: 4096
     pathDepth: 64
   sharing:
+    activeLimit: 200
+    batchEntries: 20
     maxAge: 720h
     grantTTL: 15m
     attemptWindow: 1m

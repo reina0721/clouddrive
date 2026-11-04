@@ -149,7 +149,7 @@ func (r *Transfers) ListTransfers(ctx context.Context, owner, state, cursor stri
 			if err := r.checkStorage(db); err != nil {
 				return err
 			}
-			query := db.Model(&transferRecord{}).Where("owner_id = ? AND source <> ?", owner, model.TransferSourceOffline)
+			query := db.Model(&transferRecord{}).Where("owner_id = ? AND source NOT IN ?", owner, []model.TransferSource{model.TransferSourceOffline, model.TransferSourceShare})
 			if err := r.checkStaging(db); err != nil {
 				return err
 			}
@@ -186,11 +186,11 @@ func (r *Transfers) ListTransfers(ctx context.Context, owner, state, cursor stri
 }
 
 func (r *Transfers) ChangeTransfer(ctx context.Context, owner, id, key string, change func(service.TransferSnapshot) (model.Transfer, *model.Entry, error)) (model.Transfer, error) {
-	return r.changeTransfer(ctx, owner, id, key, nil, change)
+	return r.changeTransfer(ctx, owner, id, key, nil, nil, change)
 }
 
 // changeTransfer 让任务创建与传输预算共享同一个存储/owner事务，避免先建空任务再补传输。
-func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, task *model.DownloadTask, change func(service.TransferSnapshot) (model.Transfer, *model.Entry, error)) (model.Transfer, error) {
+func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, task *model.DownloadTask, shareAccess *service.ShareAccess, change func(service.TransferSnapshot) (model.Transfer, *model.Entry, error)) (model.Transfer, error) {
 	if owner == "" || change == nil || (id != "" && key != "") {
 		return model.Transfer{}, model.ErrInvalid
 	}
@@ -223,6 +223,11 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 						}
 						snapshot.DownloadTask = &current
 					}
+					if owned.Source == model.TransferSourceShare {
+						if err := loadTransferShare(db, &snapshot, owner, owned.ShareID, owned.ShareGrantDigest); err != nil {
+							return err
+						}
+					}
 					if owned.ConnectionID != "" {
 						var connection connectionRecord
 						if err := db.First(&connection, "id = ? AND owner_id = ?", owned.ConnectionID, owner).Error; err != nil {
@@ -235,9 +240,14 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 					return err
 				}
 			}
+			if snapshot.Transfer == nil && shareAccess != nil {
+				if err := loadTransferShare(db, &snapshot, owner, shareAccess.ShareID, shareAccess.GrantDigest); err != nil {
+					return err
+				}
+			}
 			var entries []model.Entry
 			var err error
-			if task != nil || snapshot.DownloadTask != nil {
+			if task != nil || snapshot.DownloadTask != nil || shareAccess != nil || snapshot.Share != nil {
 				entries, snapshot.MetadataLimited, err = downloadEntrySnapshot(db, owner, r.metadataEntries)
 			} else {
 				entries, err = loadEntries(db, owner)
@@ -291,6 +301,9 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 			if (changed.Source == model.TransferSourceOffline) != (changed.DownloadID != "") || (changed.DownloadID != "" && model.ValidateTransferID(changed.DownloadID) != nil) {
 				return fmt.Errorf("transfer download ownership invariant")
 			}
+			if (changed.Source == model.TransferSourceShare) != (changed.ShareID != "") || changed.Source != model.TransferSourceShare && (changed.ShareRevision != 0 || changed.ShareGrantDigest != "") || changed.Source == model.TransferSourceShare && (model.ValidateTransferID(changed.ShareID) != nil || changed.ShareRevision < 1 || changed.ShareRevision > model.MaxContentRevision || (changed.ShareGrantDigest != "" && len(changed.ShareGrantDigest) != 64)) {
+				return fmt.Errorf("transfer share binding invariant")
+			}
 			if previous := snapshot.Transfer; previous != nil {
 				sealed := previous.Source == model.TransferSourceWebDAV && previous.ContentSHA256 == "" && changed.ContentSHA256 != "" && previous.State == model.TransferReceiving && changed.State == model.TransferReceiving && changed.SizeKnown && changed.SizeBytes <= previous.SizeBytes && changed.QuotaReservedBytes <= previous.QuotaReservedBytes
 				offlineMutable := false
@@ -299,7 +312,7 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 					resetting := current.Intent == model.DownloadPause && (current.State == model.DownloadPaused || current.State == model.DownloadFailed) && changed.State == model.TransferPreparing && changed.SizeBytes == 0 && changed.QuotaReservedBytes == 0 && !changed.SizeKnown && changed.ContentSHA256 == ""
 					offlineMutable = allocating || resetting
 				}
-				if changed.ID != previous.ID || changed.Source != previous.Source || changed.DownloadID != previous.DownloadID || changed.ConnectionID != previous.ConnectionID || changed.ConnectionRevision != previous.ConnectionRevision || changed.ExpectedEntryID != previous.ExpectedEntryID || changed.ExpectedContentRevision != previous.ExpectedContentRevision || (!sealed && !offlineMutable && (changed.SizeBytes != previous.SizeBytes || changed.SizeKnown != previous.SizeKnown || changed.QuotaReservedBytes != previous.QuotaReservedBytes || changed.ContentSHA256 != previous.ContentSHA256)) || changed.IdempotencyKey != previous.IdempotencyKey || changed.ObjectKey != previous.ObjectKey || !changed.CreatedAt.Equal(previous.CreatedAt) || !changed.ExpiresAt.Equal(previous.ExpiresAt) {
+				if changed.ID != previous.ID || changed.Source != previous.Source || changed.ShareID != previous.ShareID || changed.ShareRevision != previous.ShareRevision || changed.ShareGrantDigest != previous.ShareGrantDigest || changed.DownloadID != previous.DownloadID || changed.ConnectionID != previous.ConnectionID || changed.ConnectionRevision != previous.ConnectionRevision || changed.ExpectedEntryID != previous.ExpectedEntryID || changed.ExpectedContentRevision != previous.ExpectedContentRevision || (!sealed && !offlineMutable && (changed.SizeBytes != previous.SizeBytes || changed.SizeKnown != previous.SizeKnown || changed.QuotaReservedBytes != previous.QuotaReservedBytes || changed.ContentSHA256 != previous.ContentSHA256)) || changed.IdempotencyKey != previous.IdempotencyKey || changed.ObjectKey != previous.ObjectKey || !changed.CreatedAt.Equal(previous.CreatedAt) || !changed.ExpiresAt.Equal(previous.ExpiresAt) {
 					return fmt.Errorf("transfer immutable identity invariant")
 				}
 				changed.Revision = previous.Revision + 1
@@ -322,6 +335,11 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 					}
 				} else if task != nil {
 					return model.ErrInvalid
+				}
+				if changed.Source == model.TransferSourceShare {
+					if shareAccess == nil || snapshot.Share == nil || changed.ShareID != shareAccess.ShareID || changed.ShareRevision != shareAccess.ShareRevision || changed.ShareGrantDigest != shareAccess.GrantDigest {
+						return model.ErrShareForbidden
+					}
 				}
 				if changed.Source == model.TransferSourceWebDAV {
 					var connection connectionRecord

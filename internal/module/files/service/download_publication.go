@@ -15,7 +15,7 @@ type downloadPublication struct {
 	accounts   DownloadAccountAuthority
 }
 
-func (p *downloadPublication) validate(task *model.DownloadTask, now time.Time) error {
+func (p *downloadPublication) validateTask(task *model.DownloadTask, now time.Time) error {
 	if task == nil || task.ID != p.claim.TaskID || task.OwnerID != p.claim.OwnerID || task.LeaseToken != p.claim.Token || !task.LeaseValid(now) || task.Intent != model.DownloadRun || task.State != model.DownloadPublishing || !now.Before(task.ExpiresAt) {
 		return model.ErrDownloadLeaseLost
 	}
@@ -37,5 +37,5 @@ func (p *downloadPublication) authorize(ctx context.Context, now time.Time) erro
 	if snapshot.MetadataLimited {
 		return model.ErrDownloadMetadataLimited
 	}
-	return p.validate(&snapshot.Task, now)
+	return p.validateTask(&snapshot.Task, now)
 }

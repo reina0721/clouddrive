@@ -1,0 +1,12 @@
+CREATE TEMPORARY TABLE files_share_policy_rollback_guard (remaining BIGINT NOT NULL CHECK (remaining = 0));
+INSERT INTO files_share_policy_rollback_guard SELECT (SELECT COUNT(*) FROM files_shares WHERE title <> '' OR state <> 'active' OR permissions <> 7 OR revision <> 1) + (SELECT COUNT(*) FROM files_share_grants WHERE share_revision <> 1) + (SELECT COUNT(*) FROM files_transfers WHERE source = 'share' OR share_id <> '' OR share_revision <> 0 OR share_grant_digest <> '');
+DROP INDEX files_transfers_share;
+ALTER TABLE files_transfers DROP COLUMN share_grant_digest;
+ALTER TABLE files_transfers DROP COLUMN share_revision;
+ALTER TABLE files_transfers DROP COLUMN share_id;
+ALTER TABLE files_share_grants DROP COLUMN share_revision;
+ALTER TABLE files_shares DROP COLUMN revision;
+ALTER TABLE files_shares DROP COLUMN permissions;
+ALTER TABLE files_shares DROP COLUMN state;
+ALTER TABLE files_shares DROP COLUMN title;
+DROP TABLE files_share_policy_rollback_guard;

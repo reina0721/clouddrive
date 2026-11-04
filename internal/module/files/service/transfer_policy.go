@@ -50,6 +50,8 @@ func (p TransferPolicy) Validate() error {
 
 // TransferSnapshot 是同一存储与 owner 锁内读取的 admission 和发布快照。
 type TransferSnapshot struct {
+	Share                 *model.Share
+	ShareGrant            *model.ShareGrant
 	MetadataLimited       bool
 	DownloadTask          *model.DownloadTask
 	OwnerDownloadRecords  int

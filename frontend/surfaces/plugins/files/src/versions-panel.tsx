@@ -11,7 +11,7 @@ import {
   type FileVersionPage,
   type VersionOrder,
 } from '../../../src/files/versions';
-import { formatFileBytes as bytes } from './file-presentation';
+import { formatFileBytes as bytes } from '../../../src/files/format';
 
 type Props = { entry: FileEntry; onClose: () => void; onSaved: () => void };
 type Confirmation =

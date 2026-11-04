@@ -39,6 +39,7 @@ export function FileMediaView({
   maxBytes,
   readContent,
   version,
+  labels,
 }: FileMediaProps &
   Readonly<{
     readContent: (
@@ -83,11 +84,9 @@ export function FileMediaView({
       } catch (error) {
         if (!controller.signal.aborted)
           setFailure(
-            t(
-              error instanceof FilesError && error.code === 'large'
-                ? 'files.mediaTooLarge'
-                : 'files.mediaUnsupported',
-            ),
+            error instanceof FilesError && error.code === 'large'
+              ? (labels?.tooLarge ?? t('files.mediaTooLarge'))
+              : (labels?.unsupported ?? t('files.mediaUnsupported')),
           );
       }
     })();
@@ -111,6 +110,8 @@ export function FileMediaView({
     maxBytes,
     mode,
     readContent,
+    labels?.tooLarge,
+    labels?.unsupported,
     attempt,
     t,
   ]);
@@ -128,7 +129,7 @@ export function FileMediaView({
               setAttempt((value) => value + 1);
             }}
           >
-            {t('files.retry')}
+            {labels?.retry ?? t('files.retry')}
           </Action>
         ) : null}
       </div>
@@ -136,7 +137,7 @@ export function FileMediaView({
   if (!url)
     return (
       <p role="status" className="text-xs text-ink-muted">
-        {t('files.mediaLoading')}
+        {labels?.loading ?? t('files.mediaLoading')}
       </p>
     );
   if (entry.mediaType.startsWith('image/'))
@@ -149,7 +150,7 @@ export function FileMediaView({
             ? 'h-40 w-full rounded-control object-contain'
             : 'max-h-screen w-full object-contain'
         }
-        onError={() => setFailure(t('files.mediaUnsupported'))}
+        onError={() => setFailure(labels?.unsupported ?? t('files.mediaUnsupported'))}
       />
     );
   if (entry.mediaType.startsWith('video/'))

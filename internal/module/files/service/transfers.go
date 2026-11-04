@@ -107,7 +107,7 @@ type TransferListing struct {
 
 func (s *Transfers) summary(ctx context.Context, transfer model.Transfer) (TransferSummary, error) {
 	destination, available := "/", true
-	if transfer.ParentID != "" {
+	if transfer.ParentID != "" && transfer.Source != model.TransferSourceShare {
 		detail, err := s.files.Detail(ctx, transfer.OwnerID, transfer.ParentID)
 		if err != nil {
 			if !errors.Is(err, model.ErrMissing) {
@@ -143,6 +143,26 @@ func (s *Transfers) summary(ctx context.Context, transfer model.Transfer) (Trans
 }
 
 func (s *Transfers) Create(ctx context.Context, owner string, input TransferRequest) (TransferSummary, error) {
+	return s.createAuthorized(ctx, owner, input, nil)
+}
+
+func (s *Transfers) createAuthorized(ctx context.Context, owner string, input TransferRequest, share *sharePublication) (TransferSummary, error) {
+	source := model.TransferSourceTus
+	changeTransfer := func(apply func(TransferSnapshot) (model.Transfer, *model.Entry, error)) (model.Transfer, error) {
+		return s.repo.ChangeTransfer(ctx, owner, "", input.Key, apply)
+	}
+	if share != nil {
+		if input.ExpectedEntryID != "" {
+			return TransferSummary{}, model.ErrInvalid
+		}
+		source = model.TransferSourceShare
+		if err := share.authorize(ctx, s.files.clock.Now()); err != nil {
+			return TransferSummary{}, err
+		}
+		changeTransfer = func(apply func(TransferSnapshot) (model.Transfer, *model.Entry, error)) (model.Transfer, error) {
+			return s.repo.ChangeShareTransfer(ctx, owner, input.Key, share.access, apply)
+		}
+	}
 	if (input.ExpectedEntryID == "" && input.ExpectedContentRevision != 0) || (input.ExpectedEntryID != "" && (input.ExpectedContentRevision < 1 || input.ExpectedContentRevision >= model.MaxContentRevision)) {
 		return TransferSummary{}, model.ErrInvalid
 	}
@@ -171,9 +191,14 @@ func (s *Transfers) Create(ctx context.Context, owner string, input TransferRequ
 		return TransferSummary{}, err
 	}
 	now := s.files.clock.Now().UTC()
-	transfer, err := s.repo.ChangeTransfer(ctx, owner, "", input.Key, func(snapshot TransferSnapshot) (model.Transfer, *model.Entry, error) {
+	transfer, err := changeTransfer(func(snapshot TransferSnapshot) (model.Transfer, *model.Entry, error) {
+		if share != nil {
+			if err := share.validateAdmission(snapshot); err != nil {
+				return model.Transfer{}, nil, err
+			}
+		}
 		if previous := snapshot.Transfer; previous != nil {
-			if previous.Source != model.TransferSourceTus || previous.ParentID != input.ParentID || previous.NormalizedName != normalized || previous.ContentSHA256 != input.SHA256 || previous.SizeBytes != input.SizeBytes || previous.ExpectedEntryID != input.ExpectedEntryID || previous.ExpectedContentRevision != input.ExpectedContentRevision {
+			if previous.Source != source || (share != nil && (previous.ShareID != share.access.ShareID || previous.ShareRevision != share.access.ShareRevision || previous.ShareGrantDigest != share.access.GrantDigest)) || previous.ParentID != input.ParentID || previous.NormalizedName != normalized || previous.ContentSHA256 != input.SHA256 || previous.SizeBytes != input.SizeBytes || previous.ExpectedEntryID != input.ExpectedEntryID || previous.ExpectedContentRevision != input.ExpectedContentRevision {
 				return model.Transfer{}, nil, model.ErrConflict
 			}
 			return *previous, nil, nil
@@ -204,7 +229,19 @@ func (s *Transfers) Create(ctx context.Context, owner string, input TransferRequ
 		if snapshot.OwnerReservedCount >= int64(s.policy.OwnerCount) || snapshot.GlobalReservedCount >= int64(s.policy.GlobalCount) || snapshot.GlobalReservedBytes > s.policy.StagingBytes || input.SizeBytes > s.policy.StagingBytes-snapshot.GlobalReservedBytes {
 			return model.Transfer{}, nil, model.ErrBusy
 		}
-		return model.Transfer{ID: id, OwnerID: owner, ParentID: input.ParentID, Name: input.Name, NormalizedName: normalized, SizeBytes: input.SizeBytes, SizeKnown: true, QuotaReservedBytes: reserved, Source: model.TransferSourceTus, ContentSHA256: input.SHA256, IdempotencyKey: input.Key, State: model.TransferPreparing, CreatedAt: now, UpdatedAt: now, ExpiresAt: now.Add(s.policy.Lifetime), ObjectKey: "files/" + id, ExpectedEntryID: input.ExpectedEntryID, ExpectedContentRevision: input.ExpectedContentRevision}, nil, nil
+		current := model.Transfer{ID: id, OwnerID: owner, ParentID: input.ParentID, Name: input.Name, NormalizedName: normalized, SizeBytes: input.SizeBytes, SizeKnown: true, QuotaReservedBytes: reserved, Source: source, ContentSHA256: input.SHA256, IdempotencyKey: input.Key, State: model.TransferPreparing, CreatedAt: now, UpdatedAt: now, ExpiresAt: now.Add(s.policy.Lifetime), ObjectKey: "files/" + id, ExpectedEntryID: input.ExpectedEntryID, ExpectedContentRevision: input.ExpectedContentRevision}
+		if share != nil {
+			current.ShareID = share.access.ShareID
+			current.ShareRevision = share.access.ShareRevision
+			current.ShareGrantDigest = share.access.GrantDigest
+			if snapshot.Share.ExpiresAt.Before(current.ExpiresAt) {
+				current.ExpiresAt = snapshot.Share.ExpiresAt
+			}
+			if snapshot.ShareGrant != nil && snapshot.ShareGrant.ExpiresAt.Before(current.ExpiresAt) {
+				current.ExpiresAt = snapshot.ShareGrant.ExpiresAt
+			}
+		}
+		return current, nil, nil
 	})
 	if err != nil {
 		return TransferSummary{}, err
@@ -241,6 +278,12 @@ func (s *Transfers) Create(ctx context.Context, owner string, input TransferRequ
 		result, err = s.summary(ctx, current)
 		return err
 	})
+	if err != nil && share != nil {
+		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), cleanupTimeout)
+		defer cancel()
+		_, cleanupErr := s.cancelSource(cleanup, owner, transfer.ID, model.TransferSourceShare)
+		return result, errors.Join(err, cleanupErr)
+	}
 	return result, err
 }
 
@@ -314,10 +357,14 @@ func (s *Transfers) expireLocked(ctx context.Context, transfer model.Transfer) (
 }
 
 func (s *Transfers) Read(ctx context.Context, owner, id string) (TransferSummary, error) {
+	return s.readSource(ctx, owner, id, "")
+}
+
+func (s *Transfers) readSource(ctx context.Context, owner, id string, source model.TransferSource) (TransferSummary, error) {
 	// 在获取磁盘锁前先做 owner 查询，未知/他人 ID 不产生锁文件。
 	if current, err := s.repo.ReadTransfer(ctx, owner, id); err != nil {
 		return TransferSummary{}, err
-	} else if current.Source == model.TransferSourceOffline {
+	} else if (source != "" && current.Source != source) || (source == "" && (current.Source == model.TransferSourceOffline || current.Source == model.TransferSourceShare)) {
 		return TransferSummary{}, model.ErrMissing
 	}
 	var result TransferSummary
@@ -396,6 +443,10 @@ func (s *Transfers) MatchSource(ctx context.Context, owner, id, digest string, s
 
 // RunReceiving 把状态校验与整个协议请求放在同一锁内，避免暂停/取消竞态。
 func (s *Transfers) RunReceiving(ctx context.Context, owner, id string, use func(context.Context) error) error {
+	return s.runReceivingSource(ctx, owner, id, model.TransferSourceTus, use)
+}
+
+func (s *Transfers) runReceivingSource(ctx context.Context, owner, id string, source model.TransferSource, use func(context.Context) error) error {
 	if use == nil {
 		return model.ErrInvalid
 	}
@@ -414,7 +465,7 @@ func (s *Transfers) RunReceiving(ctx context.Context, owner, id string, use func
 		if transfer.State == model.TransferExpired {
 			return ErrTransferExpired
 		}
-		if transfer.Source != model.TransferSourceTus || transfer.State != model.TransferReceiving {
+		if transfer.Source != source || transfer.State != model.TransferReceiving {
 			return model.ErrConflict
 		}
 		return use(ctx)
@@ -465,9 +516,13 @@ func (s *Transfers) setPaused(ctx context.Context, owner, id string, paused bool
 }
 
 func (s *Transfers) Cancel(ctx context.Context, owner, id string) (TransferSummary, error) {
+	return s.cancelSource(ctx, owner, id, "")
+}
+
+func (s *Transfers) cancelSource(ctx context.Context, owner, id string, source model.TransferSource) (TransferSummary, error) {
 	if current, err := s.repo.ReadTransfer(ctx, owner, id); err != nil {
 		return TransferSummary{}, err
-	} else if current.Source == model.TransferSourceOffline {
+	} else if (source != "" && current.Source != source) || (source == "" && (current.Source == model.TransferSourceOffline || current.Source == model.TransferSourceShare)) {
 		return TransferSummary{}, model.ErrMissing
 	}
 	var result TransferSummary
@@ -549,8 +604,8 @@ func (s *Transfers) commit(ctx context.Context, owner, id string, sourceKind mod
 	return s.commitAuthorized(ctx, owner, id, sourceKind, nil)
 }
 
-func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sourceKind model.TransferSource, offline *downloadPublication) (TransferSummary, error) {
-	if (sourceKind == model.TransferSourceOffline) != (offline != nil) {
+func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sourceKind model.TransferSource, publication transferPublication) (TransferSummary, error) {
+	if ((sourceKind == model.TransferSourceOffline || sourceKind == model.TransferSourceShare) != (publication != nil)) || publication != nil && publication.source() != sourceKind {
 		return TransferSummary{}, model.ErrInvalid
 	}
 	if _, err := s.repo.ReadTransfer(ctx, owner, id); err != nil {
@@ -584,8 +639,8 @@ func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sour
 				return err
 			}
 		}
-		if offline != nil {
-			if err := offline.authorize(ctx, s.files.clock.Now()); err != nil {
+		if publication != nil {
+			if err := publication.authorize(ctx, s.files.clock.Now()); err != nil {
 				return err
 			}
 		}
@@ -629,8 +684,8 @@ func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sour
 				if snapshot.Transfer == nil {
 					return model.Transfer{}, nil, model.ErrMissing
 				}
-				if offline != nil {
-					if err := offline.validate(snapshot.DownloadTask, s.files.clock.Now()); err != nil {
+				if publication != nil {
+					if err := publication.validate(snapshot, s.files.clock.Now()); err != nil {
 						return model.Transfer{}, nil, err
 					}
 				}
@@ -646,8 +701,8 @@ func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sour
 			if err != nil {
 				return err
 			}
-			if offline != nil {
-				if err := offline.authorize(ctx, s.files.clock.Now()); err != nil {
+			if publication != nil {
+				if err := publication.authorize(ctx, s.files.clock.Now()); err != nil {
 					return err
 				}
 			}
@@ -657,7 +712,7 @@ func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sour
 			return nil
 		})
 		if err != nil {
-			if offline != nil {
+			if publication != nil {
 				return err
 			}
 			code := transferFailureStorage
@@ -678,8 +733,8 @@ func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sour
 				return err
 			}
 		}
-		if offline != nil {
-			if err := offline.authorize(ctx, s.files.clock.Now()); err != nil {
+		if publication != nil {
+			if err := publication.authorize(ctx, s.files.clock.Now()); err != nil {
 				return err
 			}
 		}
@@ -688,8 +743,8 @@ func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sour
 				return model.Transfer{}, nil, model.ErrMissing
 			}
 			current := *snapshot.Transfer
-			if offline != nil {
-				if err := offline.validate(snapshot.DownloadTask, s.files.clock.Now()); err != nil {
+			if publication != nil {
+				if err := publication.validate(snapshot, s.files.clock.Now()); err != nil {
 					return model.Transfer{}, nil, err
 				}
 			}
@@ -761,7 +816,7 @@ func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sour
 			return current, &entry, nil
 		})
 		if err != nil {
-			if offline != nil {
+			if publication != nil {
 				return err
 			}
 			code := transferFailureDestination

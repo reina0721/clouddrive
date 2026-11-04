@@ -48,18 +48,34 @@ const (
 	OperationFilesPinsList                  OperationID = "files.pins.list"
 	OperationFilesPinsOrder                 OperationID = "files.pins.order"
 	OperationFilesPinsRemove                OperationID = "files.pins.remove"
+	OperationFilesPublicArchive             OperationID = "files.public.archive"
 	OperationFilesPublicContent             OperationID = "files.public.content"
 	OperationFilesPublicContentHead         OperationID = "files.public.content.head"
 	OperationFilesPublicDownloadContent     OperationID = "files.public.download.content"
 	OperationFilesPublicDownloadCreate      OperationID = "files.public.download.create"
 	OperationFilesPublicDownloadHead        OperationID = "files.public.download.head"
 	OperationFilesPublicEntries             OperationID = "files.public.entries"
+	OperationFilesPublicEntriesBatch        OperationID = "files.public.entries.batch"
+	OperationFilesPublicEntriesChange       OperationID = "files.public.entries.change"
+	OperationFilesPublicFoldersCreate       OperationID = "files.public.folders.create"
 	OperationFilesPublicMetadata            OperationID = "files.public.metadata"
+	OperationFilesPublicTextCreate          OperationID = "files.public.text.create"
+	OperationFilesPublicTextRead            OperationID = "files.public.text.read"
+	OperationFilesPublicTextReplace         OperationID = "files.public.text.replace"
+	OperationFilesPublicTransfersCancel     OperationID = "files.public.transfers.cancel"
+	OperationFilesPublicTransfersChunk      OperationID = "files.public.transfers.chunk"
+	OperationFilesPublicTransfersCommit     OperationID = "files.public.transfers.commit"
+	OperationFilesPublicTransfersCreate     OperationID = "files.public.transfers.create"
+	OperationFilesPublicTransfersOffset     OperationID = "files.public.transfers.offset"
+	OperationFilesPublicTransfersRead       OperationID = "files.public.transfers.read"
 	OperationFilesPublicUnlock              OperationID = "files.public.unlock"
 	OperationFilesRestore                   OperationID = "files.restore"
 	OperationFilesSharesCreate              OperationID = "files.shares.create"
 	OperationFilesSharesList                OperationID = "files.shares.list"
+	OperationFilesSharesRead                OperationID = "files.shares.read"
 	OperationFilesSharesRevoke              OperationID = "files.shares.revoke"
+	OperationFilesSharesState               OperationID = "files.shares.state"
+	OperationFilesSharesUpdate              OperationID = "files.shares.update"
 	OperationFilesShortcutsCreate           OperationID = "files.shortcuts.create"
 	OperationFilesShortcutsList             OperationID = "files.shortcuts.list"
 	OperationFilesShortcutsOpen             OperationID = "files.shortcuts.open"
@@ -185,18 +201,34 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesPinsList, Method: "GET", Path: "/api/v1/files/pins", Policy: "protected", Scope: "files:read", Action: "files.pins.list"},
 	{ID: OperationFilesPinsOrder, Method: "PUT", Path: "/api/v1/files/pins/order", Policy: "protected", Scope: "files:write", Action: "files.pins.order"},
 	{ID: OperationFilesPinsRemove, Method: "DELETE", Path: "/api/v1/files/pins/{pinId}", Policy: "protected", Scope: "files:write", Action: "files.pins.remove"},
+	{ID: OperationFilesPublicArchive, Method: "POST", Path: "/api/v1/file-shares/{token}/archive", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicContent, Method: "GET", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicContentHead, Method: "HEAD", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicDownloadContent, Method: "GET", Path: "/api/v1/file-downloads/{ticket}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicDownloadCreate, Method: "POST", Path: "/api/v1/file-shares/{token}/content/{id}/download", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicDownloadHead, Method: "HEAD", Path: "/api/v1/file-downloads/{ticket}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicEntries, Method: "GET", Path: "/api/v1/file-shares/{token}/entries", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicEntriesBatch, Method: "POST", Path: "/api/v1/file-shares/{token}/entries/batch", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicEntriesChange, Method: "POST", Path: "/api/v1/file-shares/{token}/entries/change", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicFoldersCreate, Method: "POST", Path: "/api/v1/file-shares/{token}/folders", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicMetadata, Method: "GET", Path: "/api/v1/file-shares/{token}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicTextCreate, Method: "POST", Path: "/api/v1/file-shares/{token}/text", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicTextRead, Method: "GET", Path: "/api/v1/file-shares/{token}/text/{id}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicTextReplace, Method: "PUT", Path: "/api/v1/file-shares/{token}/text/{id}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicTransfersCancel, Method: "POST", Path: "/api/v1/file-shares/{token}/transfers/{id}/cancel", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicTransfersChunk, Method: "PATCH", Path: "/api/v1/file-shares/{token}/transfers/{id}/data", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicTransfersCommit, Method: "POST", Path: "/api/v1/file-shares/{token}/transfers/{id}/commit", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicTransfersCreate, Method: "POST", Path: "/api/v1/file-shares/{token}/transfers", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicTransfersOffset, Method: "HEAD", Path: "/api/v1/file-shares/{token}/transfers/{id}/data", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicTransfersRead, Method: "GET", Path: "/api/v1/file-shares/{token}/transfers/{id}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicUnlock, Method: "POST", Path: "/api/v1/file-shares/{token}/unlock", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesRestore, Method: "POST", Path: "/api/v1/files/{id}/restore", Policy: "protected", Scope: "files:write", Action: "files.restore"},
 	{ID: OperationFilesSharesCreate, Method: "POST", Path: "/api/v1/files/shares", Policy: "protected", Scope: "files:write", Action: "files.shares.create"},
 	{ID: OperationFilesSharesList, Method: "GET", Path: "/api/v1/files/shares", Policy: "protected", Scope: "files:read", Action: "files.shares.list"},
+	{ID: OperationFilesSharesRead, Method: "GET", Path: "/api/v1/files/shares/{shareId}", Policy: "protected", Scope: "files:read", Action: "files.shares.read"},
 	{ID: OperationFilesSharesRevoke, Method: "POST", Path: "/api/v1/files/shares/{shareId}/revoke", Policy: "protected", Scope: "files:write", Action: "files.shares.revoke"},
+	{ID: OperationFilesSharesState, Method: "PUT", Path: "/api/v1/files/shares/{shareId}/state", Policy: "protected", Scope: "files:write", Action: "files.shares.state"},
+	{ID: OperationFilesSharesUpdate, Method: "PUT", Path: "/api/v1/files/shares/{shareId}", Policy: "protected", Scope: "files:write", Action: "files.shares.update"},
 	{ID: OperationFilesShortcutsCreate, Method: "POST", Path: "/api/v1/files/shortcuts", Policy: "protected", Scope: "files:write", Action: "files.shortcuts.create"},
 	{ID: OperationFilesShortcutsList, Method: "GET", Path: "/api/v1/files/shortcuts", Policy: "protected", Scope: "files:read", Action: "files.shortcuts.list"},
 	{ID: OperationFilesShortcutsOpen, Method: "GET", Path: "/api/v1/files/shortcuts/{shortcutId}/open", Policy: "protected", Scope: "files:read", Action: "files.shortcuts.open"},

@@ -13,13 +13,14 @@ import type { DownloadsPort } from './downloads';
 import type { ConnectionsPort } from './connections';
 import type { NavigationPort } from './navigation';
 import type { FilesPort, PublicFilesPort, FileEntry } from './model';
-export { loadFileAnnotationMessages } from './messages';
+export { loadFileAnnotationMessages, loadPublicFileMessages } from './messages';
 
 export type FileMediaProps = Readonly<{
-  entry: FileEntry;
+  entry: Pick<FileEntry, 'id' | 'name' | 'mediaType' | 'sizeBytes' | 'contentRevision'>;
   mode: 'preview' | 'thumbnail';
   maxBytes: number;
   version?: number;
+  labels?: Readonly<{ loading: string; unsupported: string; tooLarge: string; retry: string }>;
 }>;
 const MediaContext = createContext<ComponentType<FileMediaProps> | null>(null);
 
@@ -103,8 +104,13 @@ const PublicContext = createContext<PublicFilesPort | null>(null);
 export function PublicFilesProvider({
   port,
   children,
-}: Readonly<{ port: PublicFilesPort; children: ReactNode }>) {
-  return <PublicContext value={port}>{children}</PublicContext>;
+  media: Media,
+}: Readonly<{ port: PublicFilesPort; children: ReactNode; media: ComponentType<FileMediaProps> }>) {
+  return (
+    <PublicContext value={port}>
+      <MediaContext value={Media}>{children}</MediaContext>
+    </PublicContext>
+  );
 }
 export function usePublicFiles(): PublicFilesPort {
   const port = useContext(PublicContext);

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import type { FileShare, ShareCreate, ShareQuery, ShareUpdate, ShareListing } from './sharing';
+export * from './sharing';
 import { annotationSummarySchema, annotationLimitsSchema } from './annotation-values';
 import type { AnnotationsPort } from './annotations';
 import type { FileClipboardPort } from './clipboard';
@@ -145,8 +147,11 @@ export type FilesPort = Readonly<{
   textBytes(text: string): number;
   replaceText(id: string, expectedRevision: number, text: string): Promise<FileEntry>;
   archive(ids: readonly string[]): Promise<void>;
-  shares(signal?: AbortSignal): Promise<readonly FileShare[]>;
-  createShare(rootId: string, password: string, expiresAt?: string): Promise<FileShare>;
+  shares(query: ShareQuery, signal?: AbortSignal): Promise<ShareListing>;
+  readShare(id: string, signal?: AbortSignal): Promise<FileShare>;
+  updateShare(share: FileShare, input: ShareUpdate): Promise<FileShare>;
+  setShareEnabled(share: FileShare, enabled: boolean): Promise<FileShare>;
+  createShare(input: ShareCreate): Promise<FileShare>;
   revokeShare(id: string): Promise<FileShare>;
   shareLink(token: string): string;
   copyShareLink(token: string): Promise<void>;
@@ -163,48 +168,4 @@ export type FilesPort = Readonly<{
   preview(entry: FileEntry, signal?: AbortSignal): Promise<string>;
   loadPreferences(): FileViewPreferences;
   savePreferences(value: FileViewPreferences): void;
-}>;
-
-export const fileShareSchema = z.object({
-  id: z.string(),
-  token: z.string(),
-  rootId: z.string(),
-  name: z.string(),
-  hasPassword: z.boolean(),
-  createdAt: z.string(),
-  expiresAt: z.string(),
-  status: z.enum(['active', 'expired', 'revoked', 'unavailable']),
-});
-export type FileShare = z.infer<typeof fileShareSchema>;
-
-export const shareDownloadGrantSchema = z.object({
-  ticket: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
-  expiresAt: z.string(),
-});
-
-export const publicFileEntrySchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  kind: z.enum(['file', 'folder', 'shortcut']),
-  sizeBytes: z.number().int().nonnegative(),
-  mediaType: z.string(),
-  updatedAt: z.string(),
-});
-export type PublicFileEntry = z.infer<typeof publicFileEntrySchema>;
-export const publicShareSchema = z.object({
-  locked: z.boolean(),
-  root: publicFileEntrySchema.optional(),
-  expiresAt: z.string(),
-});
-export const publicFileListingSchema = z.object({
-  items: z.array(publicFileEntrySchema),
-  breadcrumbs: z.array(publicFileEntrySchema),
-});
-export const shareUnlockSchema = z.object({ ticket: z.string(), expiresAt: z.string() });
-export type PublicFilesPort = Readonly<{
-  saveShortcutHref(): string;
-  metadata(signal?: AbortSignal): Promise<z.infer<typeof publicShareSchema>>;
-  unlock(password: string, signal?: AbortSignal): Promise<void>;
-  entries(parent: string, signal?: AbortSignal): Promise<z.infer<typeof publicFileListingSchema>>;
-  download(entry: PublicFileEntry): Promise<void>;
 }>;

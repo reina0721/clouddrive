@@ -2,12 +2,18 @@
 import { useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
-import { PasswordField, SelectField } from '@clouddrive/ui-adapter/form-field';
+import { PasswordField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { useFiles } from '../../../src/files/runtime';
 import { FilesError, type FileEntry, type FileShare } from '../../../src/files/model';
 
-const validityHours = [1, 24, 168, 720] as const;
+import { SharePermissionFields, ShareExpiryFields } from './share-settings-fields';
+import { initialShareExpiry, shareExpiryValue } from './share-expiry';
+import {
+  readOnlySharePermissions,
+  sharePermissionsValid,
+  type SharePermissions,
+} from '../../../src/files/sharing';
 export function ShareDialog({
   entry,
   onClose,
@@ -15,7 +21,9 @@ export function ShareDialog({
   const port = useFiles();
   const { t } = useFrontendTranslation();
   const [password, setPassword] = useState('');
-  const [hours, setHours] = useState('default');
+  const [expiry, setExpiry] = useState(() => initialShareExpiry());
+  const [title, setTitle] = useState('');
+  const [permissions, setPermissions] = useState<SharePermissions>({ ...readOnlySharePermissions });
   const [created, setCreated] = useState<FileShare>();
   const [failure, setFailure] = useState('');
   const [busy, setBusy] = useState(false);
@@ -68,12 +76,20 @@ export function ShareDialog({
             event.preventDefault();
             setBusy(true);
             setFailure('');
-            const expiresAt =
-              hours === 'default'
-                ? undefined
-                : new Date(Date.now() + Number(hours) * 60 * 60 * 1000).toISOString();
+            const expiresAt = shareExpiryValue(expiry);
+            if (expiresAt === '') {
+              setFailure(t('files.errors.invalid'));
+              setBusy(false);
+              return;
+            }
             void port
-              .createShare(entry.id, password, expiresAt)
+              .createShare({
+                rootId: entry.id,
+                password,
+                title,
+                permissions,
+                ...(expiresAt ? { expiresAt } : {}),
+              })
               .then((value) => {
                 setCreated(value);
                 setPassword('');
@@ -82,18 +98,18 @@ export function ShareDialog({
               .finally(() => setBusy(false));
           }}
         >
-          <SelectField
-            label={t('files.shareValidity')}
-            value={hours}
-            onValueChange={setHours}
-            options={[
-              { value: 'default', label: t('files.defaultShareValidity') },
-              ...validityHours.map((value) => ({
-                value: String(value),
-                label: t('files.validityHours', { count: value }),
-              })),
-            ]}
+          <TextField
+            label={t('files.collaboration.title')}
+            hint={t('files.collaboration.titleHint')}
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
           />
+          <SharePermissionFields
+            value={permissions}
+            onChange={setPermissions}
+            rootKind={entry.kind}
+          />
+          <ShareExpiryFields value={expiry} onChange={setExpiry} />
           <PasswordField
             label={t('files.sharePassword')}
             hint={t('files.sharePasswordHint')}
@@ -104,7 +120,7 @@ export function ShareDialog({
             onChange={(event) => setPassword(event.target.value)}
           />
           <p className="text-sm text-ink-muted">{t('files.shareHint')}</p>
-          <Action type="submit" loading={busy}>
+          <Action type="submit" loading={busy} disabled={!sharePermissionsValid(permissions)}>
             {t('files.createShare')}
           </Action>
         </form>

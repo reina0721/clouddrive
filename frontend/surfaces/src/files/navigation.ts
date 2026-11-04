@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { fileEntrySchema, type FileEntry } from './model';
 
 export const shortcutStateSchema = z.object({
-  status: z.enum(['active', 'revoked', 'expired', 'unavailable']),
+  status: z.enum(['active', 'revoked', 'expired', 'unavailable', 'paused', 'limited']),
   locked: z.boolean(),
 });
 export const shortcutListingSchema = z.object({

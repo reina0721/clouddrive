@@ -9,17 +9,18 @@ import (
 // TransferState 表达持久上传状态，不把浏览器临时进度当作完成事实。
 type TransferState string
 
-// TransferSource 区分浏览器tus、同步WebDAV与服务器离线任务的源所有权。
+// TransferSource 区分私有浏览器、分享访客、同步WebDAV与服务器离线任务的源所有权。
 type TransferSource string
 
 const (
 	TransferSourceOffline TransferSource = "offline"
+	TransferSourceShare   TransferSource = "share"
 	TransferSourceTus     TransferSource = "tus"
 	TransferSourceWebDAV  TransferSource = "webdav"
 )
 
 func (s TransferSource) Valid() bool {
-	return s == TransferSourceTus || s == TransferSourceWebDAV || s == TransferSourceOffline
+	return s == TransferSourceTus || s == TransferSourceWebDAV || s == TransferSourceOffline || s == TransferSourceShare
 }
 
 const (
@@ -35,6 +36,9 @@ const (
 
 // Transfer 是归属于账号的上传及发布记录；暂存和永久对象位置不属于公开 DTO。
 type Transfer struct {
+	ShareID                 string `json:"-"`
+	ShareRevision           int64  `json:"-"`
+	ShareGrantDigest        string `json:"-"`
 	DownloadID              string
 	ID                      string
 	OwnerID                 string

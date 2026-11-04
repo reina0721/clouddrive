@@ -12,17 +12,18 @@ import (
 
 // entryRecord 将持久JSON和列映射留在数据库边界，不把ORM表示泄漏给Model。
 type entryRecord struct {
-	ID                 string `gorm:"primaryKey"`
-	OwnerID            string
-	ParentID           string
-	Kind               model.Kind
-	Name               string
-	NormalizedName     string
-	ObjectKey          string
-	SizeBytes          int64
-	MediaType          string
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
+	ID             string `gorm:"primaryKey"`
+	OwnerID        string
+	ParentID       string
+	Kind           model.Kind
+	Name           string
+	NormalizedName string
+	ObjectKey      string
+	SizeBytes      int64
+	MediaType      string
+	CreatedAt      time.Time
+	// 业务Clock拥有更新时间；ORM自动改写会使刚返回的CAS版本立刻失效。
+	UpdatedAt          time.Time `gorm:"autoUpdateTime:false"`
 	TrashedAt          *time.Time
 	UploadKey          string
 	ContentSHA         string

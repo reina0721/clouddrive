@@ -2969,6 +2969,10 @@
       "PublicEntry": {
         "additionalProperties": false,
         "properties": {
+          "contentRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
           "id": {
             "type": "string"
           },
@@ -2991,6 +2995,7 @@
           }
         },
         "required": [
+          "contentRevision",
           "id",
           "name",
           "kind",
@@ -3016,9 +3021,24 @@
             },
             "nullable": true,
             "type": "array"
+          },
+          "page": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "type": "integer"
           }
         },
         "required": [
+          "total",
+          "page",
+          "pageSize",
           "items",
           "breadcrumbs"
         ],
@@ -3031,16 +3051,73 @@
             "format": "date-time",
             "type": "string"
           },
+          "limits": {
+            "$ref": "#/components/schemas/PublicShareLimits"
+          },
           "locked": {
             "type": "boolean"
           },
+          "permissions": {
+            "$ref": "#/components/schemas/SharePermissions"
+          },
+          "revision": {
+            "format": "int64",
+            "type": "integer"
+          },
           "root": {
             "$ref": "#/components/schemas/PublicEntry"
+          },
+          "title": {
+            "type": "string"
           }
         },
         "required": [
           "locked",
           "expiresAt"
+        ],
+        "type": "object"
+      },
+      "PublicShareLimits": {
+        "additionalProperties": false,
+        "properties": {
+          "batchEntries": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxFileBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxPreviewBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxTextBytes": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "maxFileBytes",
+          "maxTextBytes",
+          "maxPreviewBytes",
+          "batchEntries"
+        ],
+        "type": "object"
+      },
+      "PublicText": {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "$ref": "#/components/schemas/PublicEntry"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry",
+          "text"
         ],
         "type": "object"
       },
@@ -3398,7 +3475,7 @@
         ],
         "type": "object"
       },
-      "ShareCreateInputBody": {
+      "ShareCreate": {
         "additionalProperties": false,
         "properties": {
           "expiresAt": {
@@ -3409,14 +3486,123 @@
             "maxLength": 128,
             "type": "string"
           },
+          "permissions": {
+            "$ref": "#/components/schemas/SharePermissions"
+          },
           "rootId": {
             "maxLength": 36,
-            "minLength": 1,
+            "minLength": 36,
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 255,
             "type": "string"
           }
         },
         "required": [
           "rootId"
+        ],
+        "type": "object"
+      },
+      "ShareListing": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ShareSummary"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "metadataLimited": {
+            "type": "boolean"
+          },
+          "page": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize",
+          "metadataLimited"
+        ],
+        "type": "object"
+      },
+      "SharePermissions": {
+        "additionalProperties": false,
+        "properties": {
+          "browse": {
+            "type": "boolean"
+          },
+          "copy": {
+            "type": "boolean"
+          },
+          "create": {
+            "type": "boolean"
+          },
+          "delete": {
+            "type": "boolean"
+          },
+          "download": {
+            "type": "boolean"
+          },
+          "modify": {
+            "type": "boolean"
+          },
+          "move": {
+            "type": "boolean"
+          },
+          "preview": {
+            "type": "boolean"
+          },
+          "rename": {
+            "type": "boolean"
+          },
+          "upload": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "browse",
+          "preview",
+          "download",
+          "create",
+          "upload",
+          "modify",
+          "rename",
+          "move",
+          "copy",
+          "delete"
+        ],
+        "type": "object"
+      },
+      "ShareStateInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "enabled"
         ],
         "type": "object"
       },
@@ -3426,6 +3612,9 @@
           "createdAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
           },
           "expiresAt": {
             "format": "date-time",
@@ -3437,8 +3626,22 @@
           "id": {
             "type": "string"
           },
+          "kind": {
+            "nullable": true,
+            "type": "string"
+          },
+          "metadataLimited": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
+          },
+          "permissions": {
+            "$ref": "#/components/schemas/SharePermissions"
+          },
+          "revision": {
+            "format": "int64",
+            "type": "integer"
           },
           "rootId": {
             "type": "string"
@@ -3446,11 +3649,20 @@
           "status": {
             "type": "string"
           },
+          "title": {
+            "type": "string"
+          },
           "token": {
             "type": "string"
           }
         },
         "required": [
+          "kind",
+          "title",
+          "permissions",
+          "revision",
+          "enabled",
+          "metadataLimited",
           "id",
           "token",
           "rootId",
@@ -3459,6 +3671,361 @@
           "createdAt",
           "expiresAt",
           "status"
+        ],
+        "type": "object"
+      },
+      "ShareUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 128,
+            "type": "string"
+          },
+          "passwordAction": {
+            "enum": [
+              "keep",
+              "set",
+              "remove"
+            ],
+            "type": "string"
+          },
+          "permissions": {
+            "$ref": "#/components/schemas/SharePermissions"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "title": {
+            "maxLength": 255,
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "title",
+          "expiresAt",
+          "permissions",
+          "passwordAction",
+          "password"
+        ],
+        "type": "object"
+      },
+      "SharedArchiveInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "type": "object"
+      },
+      "SharedBatch": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "move",
+              "copy",
+              "trash"
+            ],
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SharedItemVersion"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "nullable": true,
+            "type": "array"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "parentId",
+          "items"
+        ],
+        "type": "object"
+      },
+      "SharedBatchResult": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SharedItemResult"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "SharedFolderInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          }
+        },
+        "required": [
+          "parentId",
+          "name"
+        ],
+        "type": "object"
+      },
+      "SharedItemChange": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "rename",
+              "move",
+              "copy",
+              "trash"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "maxLength": 36,
+            "minLength": 36,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "name",
+          "parentId",
+          "id",
+          "revision",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "SharedItemResult": {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "$ref": "#/components/schemas/PublicEntry"
+          },
+          "errorCode": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "errorCode"
+        ],
+        "type": "object"
+      },
+      "SharedItemVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 36,
+            "minLength": 36,
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "SharedTextCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "clientKey": {
+            "maxLength": 64,
+            "minLength": 16,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 1048576,
+            "type": "string"
+          }
+        },
+        "required": [
+          "parentId",
+          "name",
+          "clientKey",
+          "text"
+        ],
+        "type": "object"
+      },
+      "SharedTextReplaceInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "text": {
+            "maxLength": 1048576,
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "text"
+        ],
+        "type": "object"
+      },
+      "SharedTransfer": {
+        "additionalProperties": false,
+        "properties": {
+          "chunkBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cleanupPending": {
+            "type": "boolean"
+          },
+          "entryId": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "offsetBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "state": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "sizeBytes",
+          "offsetBytes",
+          "state",
+          "entryId",
+          "chunkBytes",
+          "expiresAt",
+          "cleanupPending"
+        ],
+        "type": "object"
+      },
+      "SharedTransferCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "clientKey": {
+            "maxLength": 64,
+            "minLength": 16,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "sha256": {
+            "maxLength": 64,
+            "minLength": 64,
+            "type": "string"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "maximum": 536870912,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "parentId",
+          "name",
+          "sizeBytes",
+          "sha256",
+          "clientKey"
         ],
         "type": "object"
       },
@@ -4747,6 +5314,69 @@
         ]
       }
     },
+    "/api/v1/file-shares/{token}/archive": {
+      "post": {
+        "operationId": "files.public.archive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedArchiveInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                  "x-contentMediaType": "application/octet-stream"
+                }
+              }
+            },
+            "description": "分享范围内所选文件的有界ZIP"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
     "/api/v1/file-shares/{token}/content/{id}": {
       "get": {
         "operationId": "files.public.content",
@@ -4962,6 +5592,62 @@
               "maxLength": 36,
               "type": "string"
             }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "maxLength": 255,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "enum": [
+                "",
+                "name",
+                "size",
+                "updated",
+                "created"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "desc",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "scope",
+            "schema": {
+              "enum": [
+                "",
+                "folder",
+                "tree"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "format": "int64",
+              "minimum": 1,
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -4974,6 +5660,730 @@
               }
             },
             "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/entries/batch": {
+      "post": {
+        "operationId": "files.public.entries.batch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedBatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedBatchResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/entries/change": {
+      "post": {
+        "operationId": "files.public.entries.change",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedItemChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicEntry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/folders": {
+      "post": {
+        "operationId": "files.public.folders.create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedFolderInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicEntry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/text": {
+      "post": {
+        "operationId": "files.public.text.create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedTextCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicEntry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/text/{id}": {
+      "get": {
+        "operationId": "files.public.text.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicText"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      },
+      "put": {
+        "operationId": "files.public.text.replace",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedTextReplaceInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicEntry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/transfers": {
+      "post": {
+        "operationId": "files.public.transfers.create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedTransferCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedTransfer"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/transfers/{id}": {
+      "get": {
+        "operationId": "files.public.transfers.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedTransfer"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/transfers/{id}/cancel": {
+      "post": {
+        "operationId": "files.public.transfers.cancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedTransfer"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/transfers/{id}/commit": {
+      "post": {
+        "operationId": "files.public.transfers.commit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedTransfer"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      }
+    },
+    "/api/v1/file-shares/{token}/transfers/{id}/data": {
+      "head": {
+        "operationId": "files.public.transfers.offset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "File Shares"
+        ]
+      },
+      "patch": {
+        "operationId": "files.public.transfers.chunk",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "maxLength": 43,
+              "minLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Share-Grant",
+            "schema": {
+              "maxLength": 43,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
           },
           "default": {
             "content": {
@@ -6777,16 +8187,64 @@
     "/api/v1/files/shares": {
       "get": {
         "operationId": "files.shares.list",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "state",
+            "schema": {
+              "enum": [
+                "",
+                "active",
+                "paused",
+                "expired",
+                "revoked"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "default": "newest",
+              "enum": [
+                "newest",
+                "oldest",
+                "name"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "format": "int64",
+              "maximum": 100000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/ShareSummary"
-                  },
-                  "nullable": true,
-                  "type": "array"
+                  "$ref": "#/components/schemas/ShareListing"
                 }
               }
             },
@@ -6818,7 +8276,109 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ShareCreateInputBody"
+                "$ref": "#/components/schemas/ShareCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareSummary"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/shares/{shareId}": {
+      "get": {
+        "operationId": "files.shares.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shareId",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareSummary"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "put": {
+        "operationId": "files.shares.update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shareId",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShareUpdate"
               }
             }
           },
@@ -6871,6 +8431,63 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareSummary"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/shares/{shareId}/state": {
+      "put": {
+        "operationId": "files.shares.state",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shareId",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShareStateInputBody"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {

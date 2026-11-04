@@ -25,6 +25,21 @@ async function createText(
   await page.getByRole('dialog').getByRole('button', { name: '保存', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 }
+async function isolatedWorkspace(page: Page) {
+  const parent = await page.evaluate(async () => {
+    const csrf = (await (await fetch('/api/console/v1/auth/csrf')).json()) as { token: string };
+    const response = await fetch('/api/console/v1/native/files/folders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf.token },
+      body: JSON.stringify({ parentId: '', name: 'rich-fixture-' + crypto.randomUUID() }),
+    });
+    if (!response.ok) throw new Error('独立文件夹具创建失败');
+    return (await response.json()) as { id: string; name: string };
+  });
+  await page.goto('/home?parent=' + parent.id);
+  return parent;
+}
+
 test.beforeEach(async ({ page }) => {
   const access = JSON.parse(
     (
@@ -54,6 +69,7 @@ test('文本与 Markdown、双窗口编辑冲突、独立副本、右键菜单�
     name = `编辑-${suffix}.md`,
     copy = `副本-${suffix}.md`,
     plain = `文本-${suffix}.txt`;
+  const parent = await isolatedWorkspace(page);
   await newAction(page, '新建文本');
   await page.getByRole('dialog').getByLabel('名称', { exact: true }).fill('../invalid');
   await page.getByRole('dialog').getByLabel('文件内容', { exact: true }).fill('保留输入');
@@ -73,7 +89,7 @@ test('文本与 Markdown、双窗口编辑冲突、独立副本、右键菜单�
     '# 标题\n<script>不可执行</script>',
   );
   const second = await context.newPage();
-  await second.goto('/home');
+  await second.goto(page.url());
   await fileAction(page, name, '编辑文本');
   await expect(page.getByRole('dialog').getByLabel('文件内容', { exact: true })).toHaveValue(
     /# 标题/,
@@ -99,6 +115,7 @@ test('文本与 Markdown、双窗口编辑冲突、独立副本、右键菜单�
   await page.getByRole('menuitem', { name: '复制', exact: true }).click();
   await expect(page.getByRole('dialog', { name: name + ' 的操作', exact: true })).toHaveCount(0);
   await page.getByRole('dialog').getByLabel('名称', { exact: true }).fill(copy);
+  await page.getByRole('dialog').getByRole('button', { name: parent.name, exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await expect(page.getByRole('button', { name: copy, exact: true })).toBeVisible();
   await fileAction(page, copy, '编辑文本');
@@ -246,6 +263,7 @@ test('目录层级上传与复制、图片画廊、真实音视频播放和剪�
     folder = `媒体目录-${suffix}`,
     copy = `媒体副本-${suffix}`,
     pasted = `粘贴-${suffix}.txt`;
+  const workspace = await isolatedWorkspace(page);
   const media = await page.evaluate(async () => {
     const canvas = document.createElement('canvas');
     canvas.width = 320;
@@ -392,11 +410,12 @@ test('目录层级上传与复制、图片画廊、真实音视频播放和剪�
   await expect(page.getByRole('button', { name: pasted, exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('button', { name: pasted, exact: true })).toBeVisible();
-  await page.goto('/home');
+  await page.goto('/home?parent=' + workspace.id);
   await page.getByRole('button', { name: '视图', exact: true }).click();
   await page.getByRole('menuitem', { name: '列表', exact: true }).click();
   await fileAction(page, folder, '复制');
   await page.getByRole('dialog').getByLabel('名称', { exact: true }).fill(copy);
+  await page.getByRole('dialog').getByRole('button', { name: workspace.name, exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await page.getByRole('button', { name: copy, exact: true }).click();
   await expect(page.getByRole('button', { name: 'image.png', exact: true })).toBeVisible();

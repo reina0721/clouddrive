@@ -3,8 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"io"
-	"sort"
 	"time"
 	"unicode/utf8"
 
@@ -24,6 +22,8 @@ const (
 )
 
 type SharePolicy struct {
+	ActiveLimit    int
+	BatchEntries   int
 	MaxAge         time.Duration
 	GrantTTL       time.Duration
 	AttemptWindow  time.Duration
@@ -34,9 +34,12 @@ type SharePolicy struct {
 }
 
 func DefaultSharePolicy() SharePolicy {
-	return SharePolicy{MaxAge: DefaultShareMaxAge, GrantTTL: DefaultShareGrantTTL, AttemptWindow: DefaultShareAttemptWindow, AttemptLimit: DefaultShareAttemptLimit, KDFConcurrency: DefaultShareKDFConcurrency, DownloadTTL: DefaultShareDownloadTTL, DownloadLimit: DefaultShareDownloadLimit}
+	return SharePolicy{ActiveLimit: DefaultShareActiveLimit, BatchEntries: DefaultShareBatchEntries, MaxAge: DefaultShareMaxAge, GrantTTL: DefaultShareGrantTTL, AttemptWindow: DefaultShareAttemptWindow, AttemptLimit: DefaultShareAttemptLimit, KDFConcurrency: DefaultShareKDFConcurrency, DownloadTTL: DefaultShareDownloadTTL, DownloadLimit: DefaultShareDownloadLimit}
 }
 func (p SharePolicy) Validate() error {
+	if p.BatchEntries < 1 || p.BatchEntries > DefaultShareBatchEntries || p.ActiveLimit < 1 || p.ActiveLimit > DefaultShareActiveLimit {
+		return fmt.Errorf("invalid share active limit")
+	}
 	if p.DownloadTTL <= 0 || p.DownloadTTL > DefaultShareDownloadTTL || p.DownloadTTL > p.GrantTTL || p.DownloadTTL > p.MaxAge || p.DownloadLimit < 1 || p.DownloadLimit > DefaultShareDownloadLimit {
 		return fmt.Errorf("invalid share download budgets")
 	}
@@ -56,16 +59,17 @@ type ShareSnapshot struct {
 	Grant   *model.ShareGrant
 }
 type ShareRepository interface {
-	ReadShares(context.Context, string) ([]model.Share, error)
-	ChangeShare(context.Context, string, func([]model.Entry, []model.Share) (model.Share, error)) (model.Share, error)
-	ReadShare(context.Context, string, string) (ShareSnapshot, error)
+	ShareManagementRepository
+	ReadShare(context.Context, string, string, int) (ShareSnapshot, error)
 	ReadShareTarget(context.Context, string, int) (ShareSnapshot, error)
 	ReserveShareAttempt(context.Context, string, time.Time, time.Duration, int) error
 	PutShareGrant(context.Context, model.ShareGrant, time.Time) error
 	PutDownloadGrant(context.Context, model.ShareGrant, time.Time, int) error
-	ReadDownloadGrant(context.Context, string) (ShareSnapshot, error)
+	ReadDownloadGrant(context.Context, string, int) (ShareSnapshot, error)
 }
 type Sharing struct {
+	shared    SharedFileRepository
+	accounts  ShareAccountAuthority
 	files     *Service
 	store     ShareRepository
 	passwords PasscodeHasher
@@ -73,14 +77,14 @@ type Sharing struct {
 	slots     chan struct{}
 }
 
-func NewSharing(files *Service, store ShareRepository, passwords PasscodeHasher, policy SharePolicy) (*Sharing, error) {
-	if files == nil || store == nil || passwords == nil {
+func NewSharing(files *Service, store ShareRepository, shared SharedFileRepository, accounts ShareAccountAuthority, passwords PasscodeHasher, policy SharePolicy) (*Sharing, error) {
+	if files == nil || store == nil || shared == nil || accounts == nil || passwords == nil {
 		return nil, fmt.Errorf("file sharing dependencies incomplete")
 	}
 	if err := policy.Validate(); err != nil {
 		return nil, err
 	}
-	return &Sharing{files: files, store: store, passwords: passwords, policy: policy, slots: make(chan struct{}, policy.KDFConcurrency)}, nil
+	return &Sharing{files: files, store: store, shared: shared, accounts: accounts, passwords: passwords, policy: policy, slots: make(chan struct{}, policy.KDFConcurrency)}, nil
 }
 
 func (s *Sharing) acquireKDF(ctx context.Context) (func(), error) {
@@ -103,17 +107,25 @@ const (
 	ShareRevoked     ShareStatus = "revoked"
 	ShareExpired     ShareStatus = "expired"
 	ShareUnavailable ShareStatus = "unavailable"
+	SharePaused      ShareStatus = "paused"
+	ShareLimited     ShareStatus = "limited"
 )
 
 type ShareSummary struct {
-	ID          string      `json:"id"`
-	Token       string      `json:"token"`
-	RootID      string      `json:"rootId"`
-	Name        string      `json:"name"`
-	HasPassword bool        `json:"hasPassword"`
-	CreatedAt   time.Time   `json:"createdAt"`
-	ExpiresAt   time.Time   `json:"expiresAt"`
-	Status      ShareStatus `json:"status"`
+	Kind            *model.Kind      `json:"kind"`
+	Title           string           `json:"title"`
+	Permissions     SharePermissions `json:"permissions"`
+	Revision        int64            `json:"revision"`
+	Enabled         bool             `json:"enabled"`
+	MetadataLimited bool             `json:"metadataLimited"`
+	ID              string           `json:"id"`
+	Token           string           `json:"token"`
+	RootID          string           `json:"rootId"`
+	Name            string           `json:"name"`
+	HasPassword     bool             `json:"hasPassword"`
+	CreatedAt       time.Time        `json:"createdAt"`
+	ExpiresAt       time.Time        `json:"expiresAt"`
+	Status          ShareStatus      `json:"status"`
 }
 
 func shareStatus(share model.Share, entries []model.Entry, now time.Time) ShareStatus {
@@ -122,6 +134,9 @@ func shareStatus(share model.Share, entries []model.Entry, now time.Time) ShareS
 	}
 	if !now.Before(share.ExpiresAt) {
 		return ShareExpired
+	}
+	if share.State == model.SharePaused {
+		return SharePaused
 	}
 	root, ok := model.Find(entries, share.RootID)
 	if !ok || !model.Visible(entries, root) {
@@ -144,37 +159,42 @@ func (s *Sharing) InspectShortcutTarget(ctx context.Context, token string, treeL
 }
 func summary(share model.Share, entries []model.Entry, now time.Time) ShareSummary {
 	root, _ := model.Find(entries, share.RootID)
-	return ShareSummary{ID: share.ID, Token: share.Token, RootID: share.RootID, Name: root.Name, HasPassword: share.PasswordHash != "", CreatedAt: share.CreatedAt, ExpiresAt: share.ExpiresAt, Status: shareStatus(share, entries, now)}
+	var kind *model.Kind
+	if root.Kind == model.File || root.Kind == model.Folder {
+		value := root.Kind
+		kind = &value
+	}
+	return ShareSummary{Kind: kind, Title: share.Title, Permissions: sharePermissions(share.Permissions), Revision: share.Revision, Enabled: share.State == model.ShareEnabled, ID: share.ID, Token: share.Token, RootID: share.RootID, Name: root.Name, HasPassword: share.PasswordHash != "", CreatedAt: share.CreatedAt, ExpiresAt: share.ExpiresAt, Status: shareStatus(share, entries, now)}
 }
-func (s *Sharing) Create(ctx context.Context, owner, rootID, password string, expiresAt *time.Time) (ShareSummary, error) {
+func (s *Sharing) Create(ctx context.Context, owner string, input ShareCreate) (ShareSummary, error) {
 	if owner == "" {
 		return ShareSummary{}, model.ErrMissing
 	}
+	if !validShareTitle(input.Title) {
+		return ShareSummary{}, model.ErrInvalid
+	}
+	permissions := model.ShareReadOnly
+	if input.Permissions != nil {
+		permissions = input.Permissions.permissionSet()
+	}
+	if !permissions.Valid() {
+		return ShareSummary{}, model.ErrInvalid
+	}
 	now := s.files.clock.Now().UTC()
 	expiry := now.Add(s.policy.MaxAge)
-	if expiresAt != nil {
-		expiry = expiresAt.UTC()
+	if input.ExpiresAt != nil {
+		expiry = input.ExpiresAt.UTC()
 	}
 	if !expiry.After(now) || expiry.After(now.Add(s.policy.MaxAge)) {
 		return ShareSummary{}, model.ErrInvalid
 	}
 	var hash string
-	if password != "" {
-		if !utf8.ValidString(password) || len(password) < minSharePasswordBytes || len(password) > maxSharePasswordBytes {
-			return ShareSummary{}, model.ErrInvalid
-		}
-		release, err := s.acquireKDF(ctx)
+	if input.Password != "" {
+		var err error
+		hash, err = s.hashPassword(ctx, input.Password)
 		if err != nil {
 			return ShareSummary{}, err
 		}
-		hash, err = s.passwords.Hash(password)
-		release()
-		if err != nil {
-			return ShareSummary{}, fmt.Errorf("hash share password: %w", err)
-		}
-	}
-	if err := ctx.Err(); err != nil {
-		return ShareSummary{}, err
 	}
 	id, err := s.files.ids.New()
 	if err != nil {
@@ -184,66 +204,40 @@ func (s *Sharing) Create(ctx context.Context, owner, rootID, password string, ex
 	if err != nil {
 		return ShareSummary{}, err
 	}
-	var result ShareSummary
-	_, err = s.store.ChangeShare(ctx, owner, func(entries []model.Entry, shares []model.Share) (model.Share, error) {
+	share, err := s.store.CreateShare(ctx, owner, s.policy.ActiveLimit, s.files.policy.SearchTreeEntries, now, func(entries []model.Entry) (model.Share, error) {
 		if !expiry.After(s.files.clock.Now()) {
 			return model.Share{}, model.ErrInvalid
 		}
-		root, ok := model.Find(entries, rootID)
-		if !ok || !model.Visible(entries, root) {
+		root, found := model.Find(entries, input.RootID)
+		if !found || !model.Visible(entries, root) {
 			return model.Share{}, model.ErrMissing
 		}
 		if root.Kind == model.Shortcut {
 			return model.Share{}, model.ErrUnsupported
 		}
-		for _, old := range shares {
-			if old.ID == id {
-				return model.Share{}, model.ErrConflict
-			}
-		}
-		share := model.Share{ID: id, OwnerID: owner, RootID: rootID, Token: token, TokenDigest: credentialDigest("share", token), PasswordHash: hash, CreatedAt: now, ExpiresAt: expiry}
-		result = summary(share, entries, now)
-		return share, nil
+		return model.Share{ID: id, OwnerID: owner, RootID: input.RootID, Token: token, TokenDigest: credentialDigest("share", token), PasswordHash: hash, CreatedAt: now, ExpiresAt: expiry, Title: input.Title, State: model.ShareEnabled, Permissions: permissions, Revision: 1}, nil
 	})
-	return result, err
-}
-func (s *Sharing) List(ctx context.Context, owner string) ([]ShareSummary, error) {
-	entries, err := s.files.read(ctx, owner)
 	if err != nil {
-		return nil, err
+		return ShareSummary{}, err
 	}
-	shares, err := s.store.ReadShares(ctx, owner)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]ShareSummary, 0, len(shares))
-	for _, share := range shares {
-		result = append(result, summary(share, entries, s.files.clock.Now().UTC()))
-	}
-	sort.Slice(result, func(i, j int) bool {
-		if result[i].CreatedAt.Equal(result[j].CreatedAt) {
-			return result[i].ID < result[j].ID
-		}
-		return result[i].CreatedAt.After(result[j].CreatedAt)
-	})
-	return result, nil
+	return s.ReadManaged(ctx, owner, share.ID)
 }
 func (s *Sharing) Revoke(ctx context.Context, owner, id string) (ShareSummary, error) {
-	var result ShareSummary
-	_, err := s.store.ChangeShare(ctx, owner, func(entries []model.Entry, shares []model.Share) (model.Share, error) {
-		for _, share := range shares {
-			if share.ID == id {
-				now := s.files.clock.Now().UTC()
-				if share.RevokedAt == nil {
-					share.RevokedAt = &now
-				}
-				result = summary(share, entries, now)
-				return share, nil
+	_, err := s.store.ChangeSharePolicy(ctx, owner, id, s.policy.ActiveLimit, s.files.clock.Now().UTC(), func(share model.Share) (model.Share, error) {
+		if share.RevokedAt == nil {
+			if share.Revision >= model.MaxContentRevision {
+				return share, model.ErrConflict
 			}
+			now := s.files.clock.Now().UTC()
+			share.RevokedAt = &now
+			share.Revision++
 		}
-		return model.Share{}, model.ErrMissing
+		return share, nil
 	})
-	return result, err
+	if err != nil {
+		return ShareSummary{}, err
+	}
+	return s.ReadManaged(ctx, owner, id)
 }
 
 func (s *Sharing) inspect(ctx context.Context, token, ticket string) (ShareSnapshot, error) {
@@ -254,36 +248,50 @@ func (s *Sharing) inspect(ctx context.Context, token, ticket string) (ShareSnaps
 	if validSecret(ticket) {
 		grant = credentialDigest("grant", ticket)
 	}
-	snapshot, err := s.store.ReadShare(ctx, credentialDigest("share", token), grant)
+	snapshot, err := s.store.ReadShare(ctx, credentialDigest("share", token), grant, s.files.policy.SearchTreeEntries)
 	if err != nil {
 		return ShareSnapshot{}, err
 	}
-	if shareStatus(snapshot.Share, snapshot.Entries, s.files.clock.Now().UTC()) != "active" {
+	if err := s.authorizeAccount(ctx, snapshot.Share.OwnerID, ShareAccountRead); err != nil {
+		return ShareSnapshot{}, err
+	}
+	if shareStatus(snapshot.Share, snapshot.Entries, s.files.clock.Now().UTC()) != ShareActive {
 		return ShareSnapshot{}, model.ErrMissing
 	}
 	return snapshot, nil
 }
 func (s *Sharing) authorized(snapshot ShareSnapshot) bool {
-	return snapshot.Share.PasswordHash == "" || snapshot.Grant != nil && snapshot.Grant.EntryID == "" && snapshot.Grant.ShareID == snapshot.Share.ID && s.files.clock.Now().Before(snapshot.Grant.ExpiresAt)
+	return snapshot.Share.PasswordHash == "" || snapshot.Grant != nil && snapshot.Grant.EntryID == "" && snapshot.Grant.ShareID == snapshot.Share.ID && snapshot.Grant.ShareRevision == snapshot.Share.Revision && s.files.clock.Now().Before(snapshot.Grant.ExpiresAt)
 }
 
 type PublicEntry struct {
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
-	Kind      model.Kind `json:"kind"`
-	SizeBytes int64      `json:"sizeBytes"`
-	MediaType string     `json:"mediaType"`
-	UpdatedAt time.Time  `json:"updatedAt"`
+	ContentRevision int64      `json:"contentRevision"`
+	ID              string     `json:"id"`
+	Name            string     `json:"name"`
+	Kind            model.Kind `json:"kind"`
+	SizeBytes       int64      `json:"sizeBytes"`
+	MediaType       string     `json:"mediaType"`
+	UpdatedAt       time.Time  `json:"updatedAt"`
 }
 
 func publicEntry(entry model.Entry) PublicEntry {
-	return PublicEntry{entry.ID, entry.Name, entry.Kind, entry.SizeBytes, entry.MediaType, entry.UpdatedAt}
+	return PublicEntry{ID: entry.ID, Name: entry.Name, Kind: entry.Kind, SizeBytes: entry.SizeBytes, MediaType: entry.MediaType, UpdatedAt: entry.UpdatedAt, ContentRevision: entry.ContentRevision}
 }
 
 type PublicShare struct {
-	Locked    bool         `json:"locked"`
-	Root      *PublicEntry `json:"root,omitempty"`
-	ExpiresAt time.Time    `json:"expiresAt"`
+	Title       string             `json:"title,omitempty"`
+	Revision    *int64             `json:"revision,omitempty"`
+	Permissions *SharePermissions  `json:"permissions,omitempty"`
+	Limits      *PublicShareLimits `json:"limits,omitempty"`
+	Locked      bool               `json:"locked"`
+	Root        *PublicEntry       `json:"root,omitempty"`
+	ExpiresAt   time.Time          `json:"expiresAt"`
+}
+type PublicShareLimits struct {
+	MaxFileBytes    int64 `json:"maxFileBytes"`
+	MaxTextBytes    int64 `json:"maxTextBytes"`
+	MaxPreviewBytes int64 `json:"maxPreviewBytes"`
+	BatchEntries    int   `json:"batchEntries"`
 }
 
 func (s *Sharing) Metadata(ctx context.Context, token, ticket string) (PublicShare, error) {
@@ -293,6 +301,12 @@ func (s *Sharing) Metadata(ctx context.Context, token, ticket string) (PublicSha
 	}
 	result := PublicShare{Locked: !s.authorized(snapshot), ExpiresAt: snapshot.Share.ExpiresAt}
 	if !result.Locked {
+		permissions := sharePermissions(snapshot.Share.Permissions)
+		result.Title = snapshot.Share.Title
+		revision := snapshot.Share.Revision
+		result.Revision = &revision
+		result.Permissions = &permissions
+		result.Limits = &PublicShareLimits{MaxFileBytes: s.files.policy.MaxFileBytes, MaxTextBytes: s.files.policy.MaxTextBytes, MaxPreviewBytes: s.files.policy.MaxMediaBytes, BatchEntries: s.policy.BatchEntries}
 		root, _ := model.Find(snapshot.Entries, snapshot.Share.RootID)
 		entry := publicEntry(root)
 		result.Root = &entry
@@ -348,83 +362,16 @@ func (s *Sharing) Unlock(ctx context.Context, token, password string) (UnlockRes
 	if current.Share.ExpiresAt.Before(expires) {
 		expires = current.Share.ExpiresAt
 	}
-	if err := s.store.PutShareGrant(ctx, model.ShareGrant{Digest: credentialDigest("grant", ticket), ShareID: current.Share.ID, ExpiresAt: expires}, s.files.clock.Now().UTC()); err != nil {
+	if err := s.store.PutShareGrant(ctx, model.ShareGrant{Digest: credentialDigest("grant", ticket), ShareID: current.Share.ID, ShareRevision: current.Share.Revision, ExpiresAt: expires}, s.files.clock.Now().UTC()); err != nil {
 		return UnlockResult{}, err
 	}
 	return UnlockResult{Ticket: ticket, ExpiresAt: expires}, nil
 }
 
 type PublicListing struct {
+	Total       int           `json:"total"`
+	Page        int           `json:"page"`
+	PageSize    int           `json:"pageSize"`
 	Items       []PublicEntry `json:"items"`
 	Breadcrumbs []PublicEntry `json:"breadcrumbs"`
-}
-
-func (s *Sharing) Entries(ctx context.Context, token, ticket, parent string) (PublicListing, error) {
-	snapshot, err := s.inspect(ctx, token, ticket)
-	if err != nil {
-		return PublicListing{}, err
-	}
-	if !s.authorized(snapshot) {
-		return PublicListing{}, model.ErrShareLocked
-	}
-	if parent == "" {
-		parent = snapshot.Share.RootID
-	}
-	directory, ok := model.Find(snapshot.Entries, parent)
-	if !ok || directory.Kind != model.Folder || !model.Visible(snapshot.Entries, directory) || !Within(snapshot.Entries, snapshot.Share.RootID, parent) {
-		return PublicListing{}, model.ErrMissing
-	}
-	result := PublicListing{Items: []PublicEntry{}, Breadcrumbs: []PublicEntry{}}
-	for _, entry := range snapshot.Entries {
-		if entry.ParentID == parent && model.Visible(snapshot.Entries, entry) {
-			result.Items = append(result.Items, publicEntry(entry))
-		}
-	}
-	if len(result.Items) > s.files.policy.MaxBatchEntries {
-		return PublicListing{}, model.ErrTooLarge
-	}
-	for current := directory; ; {
-		result.Breadcrumbs = append([]PublicEntry{publicEntry(current)}, result.Breadcrumbs...)
-		if current.ID == snapshot.Share.RootID {
-			break
-		}
-		current, ok = model.Find(snapshot.Entries, current.ParentID)
-		if !ok || len(result.Breadcrumbs) > len(snapshot.Entries) {
-			return PublicListing{}, model.ErrMissing
-		}
-	}
-	sort.Slice(result.Items, func(i, j int) bool {
-		if result.Items[i].Name == result.Items[j].Name {
-			return result.Items[i].ID < result.Items[j].ID
-		}
-		return result.Items[i].Name < result.Items[j].Name
-	})
-	return result, nil
-}
-func (s *Sharing) DownloadTo(ctx context.Context, token, ticket, id string, use func(model.Entry, io.ReadSeeker) error) error {
-	snapshot, err := s.inspect(ctx, token, ticket)
-	if err != nil {
-		return err
-	}
-	if !s.authorized(snapshot) {
-		return model.ErrShareLocked
-	}
-	if !Within(snapshot.Entries, snapshot.Share.RootID, id) {
-		return model.ErrMissing
-	}
-	return s.files.DownloadTo(ctx, snapshot.Share.OwnerID, id, func(entry model.Entry, reader io.ReadSeeker) error {
-		// 读取对象期间可能移动到分享树外，重新授权且验证同一内容版本。
-		current, err := s.inspect(ctx, token, ticket)
-		if err != nil {
-			return err
-		}
-		if !s.authorized(current) {
-			return model.ErrShareLocked
-		}
-		latest, ok := model.Find(current.Entries, id)
-		if !ok || !model.Visible(current.Entries, latest) || !Within(current.Entries, current.Share.RootID, id) || latest.ObjectKey != entry.ObjectKey {
-			return model.ErrMissing
-		}
-		return use(entry, reader)
-	})
 }

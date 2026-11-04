@@ -16,7 +16,7 @@
 - [本地启动指南](getting-started/local-development.md)：`config init`、数据库迁移、Service 启动、readiness 和常见启动错误。
 - [WebUI 本地启动指南](getting-started/webui.md)：Next.js 与 Go 双进程、Setup Token、首次设置和排障。
 - [clouddrive 部署](operations/clouddrive-deployment.md)：Next.js 与 Go 双进程、同源代理、会话与调度边界。
-- [文件与只读分享](operations/file-management.md)：目录、传输、编辑、媒体、回收恢复、公开分享、预算与集中验收。
+- [文件与分享链接协作](operations/file-management.md)：目录、传输、编辑、媒体、回收恢复、公开分享、预算与集中验收。
 - [首次使用与最小验收](getting-started/first-use.md)：WebUI Setup/登录、Todo CLI/API 与 management readiness 的当前验收路径。
 - [配置说明](configuration/README.md)：配置来源、环境变量覆盖、owner、strict binding、reload 与密钥边界。
 - [数据库迁移与回滚](operations/migration-and-rollback.md)：迁移状态、前滚、回滚和 dirty 处理。

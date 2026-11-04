@@ -35,6 +35,7 @@ type Dependencies struct {
 	OfflinePolicy            service.DownloadPolicy
 	OfflineDispatcherEnabled bool
 	OfflineAuthority         service.DownloadAccountAuthority
+	ShareAuthority           service.ShareAccountAuthority
 	Database                 repo.Access
 	Content                  service.Content
 	TransferContent          service.TransferContent
@@ -73,7 +74,7 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	sharing, err := service.NewSharing(useCases, repository, deps.Passwords, deps.SharePolicy)
+	sharing, err := service.NewSharing(useCases, repository, repository, deps.ShareAuthority, deps.Passwords, deps.SharePolicy)
 	if err != nil {
 		return Module{}, err
 	}
@@ -110,11 +111,15 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
+	shareTransfers, err := service.NewShareTransfers(sharing, transfers)
+	if err != nil {
+		return Module{}, err
+	}
 	davFiles, err := service.NewDAVFiles(useCases, connections, transfers)
 	if err != nil {
 		return Module{}, err
 	}
-	boundary := &handler.Handler{Service: useCases, Sharing: sharing, Navigation: navigation, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
+	boundary := &handler.Handler{Service: useCases, Sharing: sharing, ShareTransfers: shareTransfers, Navigation: navigation, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
 	boundary.WebDAV, err = webdavbinding.New(boundary, davFiles, deps.ConnectionPolicy, deps.Policy.MaxFileBytes)
 	if err != nil {
 		return Module{}, err

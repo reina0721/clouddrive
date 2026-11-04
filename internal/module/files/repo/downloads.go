@@ -83,7 +83,7 @@ func (r *Downloads) CreateDownload(ctx context.Context, task model.DownloadTask,
 		return model.DownloadTask{}, model.ErrInvalid
 	}
 	var result model.DownloadTask
-	_, err := r.transfers.changeTransfer(ctx, task.OwnerID, "", transfer.IdempotencyKey, &task, func(snapshot service.TransferSnapshot) (model.Transfer, *model.Entry, error) {
+	_, err := r.transfers.changeTransfer(ctx, task.OwnerID, "", transfer.IdempotencyKey, &task, nil, func(snapshot service.TransferSnapshot) (model.Transfer, *model.Entry, error) {
 		if snapshot.Transfer != nil {
 			previous := snapshot.DownloadTask
 			if previous == nil || previous.ClientKey != task.ClientKey || previous.SourceURI != task.SourceURI || previous.TargetParentID != task.TargetParentID || previous.RequestedName != task.RequestedName {

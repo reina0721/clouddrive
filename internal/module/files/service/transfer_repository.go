@@ -20,4 +20,5 @@ type TransferRepository interface {
 	CleanupTransfers(context.Context, time.Time, int) ([]model.Transfer, error)
 	ListTransfers(context.Context, string, string, string, int) (TransferPage, error)
 	ChangeTransfer(context.Context, string, string, string, func(TransferSnapshot) (model.Transfer, *model.Entry, error)) (model.Transfer, error)
+	ChangeShareTransfer(context.Context, string, string, ShareAccess, func(TransferSnapshot) (model.Transfer, *model.Entry, error)) (model.Transfer, error)
 }

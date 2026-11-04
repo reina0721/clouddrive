@@ -37,7 +37,7 @@ import {
 } from '../../../src/files/icons';
 import { filesAccentStyle } from '../../../src/files/appearance';
 import { FileLink } from './file-link';
-import { formatFileBytes as bytes } from './file-presentation';
+import { formatFileBytes as bytes } from '../../../src/files/format';
 import { DownloadCreateDialog, DownloadTargetDialog } from './download-dialogs';
 
 type Confirmation = Readonly<{

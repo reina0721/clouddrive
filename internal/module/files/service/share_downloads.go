@@ -22,6 +22,9 @@ func (s *Sharing) CreateDownload(ctx context.Context, token, ticket, id string) 
 	if !s.authorized(snapshot) {
 		return DownloadGrant{}, model.ErrShareLocked
 	}
+	if !snapshot.Share.Permissions.Allows(model.ShareDownload) {
+		return DownloadGrant{}, model.ErrShareForbidden
+	}
 	entry, ok := model.Find(snapshot.Entries, id)
 	if !ok || entry.Kind != model.File || !model.Visible(snapshot.Entries, entry) || !Within(snapshot.Entries, snapshot.Share.RootID, id) {
 		return DownloadGrant{}, model.ErrMissing
@@ -38,7 +41,7 @@ func (s *Sharing) CreateDownload(ctx context.Context, token, ticket, id string) 
 	if snapshot.Share.PasswordHash != "" && snapshot.Grant.ExpiresAt.Before(expires) {
 		expires = snapshot.Grant.ExpiresAt
 	}
-	grant := model.ShareGrant{Digest: credentialDigest("download", secret), ShareID: snapshot.Share.ID, EntryID: id, ContentRevision: entry.ContentRevision, ExpiresAt: expires}
+	grant := model.ShareGrant{ShareRevision: snapshot.Share.Revision, Digest: credentialDigest("download", secret), ShareID: snapshot.Share.ID, EntryID: id, ContentRevision: entry.ContentRevision, ExpiresAt: expires}
 	if err := s.store.PutDownloadGrant(ctx, grant, now, s.policy.DownloadLimit); err != nil {
 		return DownloadGrant{}, err
 	}
@@ -49,12 +52,15 @@ func (s *Sharing) downloadSnapshot(ctx context.Context, ticket string) (ShareSna
 	if !validSecret(ticket) {
 		return ShareSnapshot{}, model.Entry{}, model.ErrMissing
 	}
-	snapshot, err := s.store.ReadDownloadGrant(ctx, credentialDigest("download", ticket))
+	snapshot, err := s.store.ReadDownloadGrant(ctx, credentialDigest("download", ticket), s.files.policy.SearchTreeEntries)
 	if err != nil {
 		return ShareSnapshot{}, model.Entry{}, err
 	}
-	if snapshot.Grant == nil || snapshot.Grant.EntryID == "" || snapshot.Grant.ShareID != snapshot.Share.ID || !s.files.clock.Now().Before(snapshot.Grant.ExpiresAt) || shareStatus(snapshot.Share, snapshot.Entries, s.files.clock.Now().UTC()) != "active" {
+	if snapshot.Grant == nil || snapshot.Grant.EntryID == "" || snapshot.Grant.ShareID != snapshot.Share.ID || snapshot.Grant.ShareRevision != snapshot.Share.Revision || !snapshot.Share.Permissions.Allows(model.ShareDownload) || !s.files.clock.Now().Before(snapshot.Grant.ExpiresAt) || shareStatus(snapshot.Share, snapshot.Entries, s.files.clock.Now().UTC()) != "active" {
 		return ShareSnapshot{}, model.Entry{}, model.ErrMissing
+	}
+	if err := s.authorizeAccount(ctx, snapshot.Share.OwnerID, ShareAccountRead); err != nil {
+		return ShareSnapshot{}, model.Entry{}, err
 	}
 	entry, ok := model.Find(snapshot.Entries, snapshot.Grant.EntryID)
 	if !ok || entry.Kind != model.File || entry.ContentRevision != snapshot.Grant.ContentRevision || !model.Visible(snapshot.Entries, entry) || !Within(snapshot.Entries, snapshot.Share.RootID, entry.ID) {

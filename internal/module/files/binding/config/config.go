@@ -30,6 +30,8 @@ type Config struct {
 }
 
 type ShareConfig struct {
+	ActiveLimit    int           `mapstructure:"activeLimit"`
+	BatchEntries   int           `mapstructure:"batchEntries"`
 	MaxAge         time.Duration `mapstructure:"maxAge"`
 	GrantTTL       time.Duration `mapstructure:"grantTTL"`
 	AttemptWindow  time.Duration `mapstructure:"attemptWindow"`
@@ -41,7 +43,7 @@ type ShareConfig struct {
 
 func (c Config) SharePolicy() service.SharePolicy {
 	p := c.Sharing
-	return service.SharePolicy{MaxAge: p.MaxAge, GrantTTL: p.GrantTTL, AttemptWindow: p.AttemptWindow, AttemptLimit: p.AttemptLimit, KDFConcurrency: p.KDFConcurrency, DownloadTTL: p.DownloadTTL, DownloadLimit: p.DownloadLimit}
+	return service.SharePolicy{ActiveLimit: p.ActiveLimit, BatchEntries: p.BatchEntries, MaxAge: p.MaxAge, GrantTTL: p.GrantTTL, AttemptWindow: p.AttemptWindow, AttemptLimit: p.AttemptLimit, KDFConcurrency: p.KDFConcurrency, DownloadTTL: p.DownloadTTL, DownloadLimit: p.DownloadLimit}
 }
 
 func (c Config) Policy() service.Policy {
@@ -51,7 +53,7 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 	p := service.DefaultPolicy()
 	c := Config{MaxFileBytes: p.MaxFileBytes, QuotaBytes: p.QuotaBytes, ConcurrentUploads: p.ConcurrentUploads, MaxTextBytes: p.MaxTextBytes, MaxArchiveBytes: p.MaxArchiveBytes, MaxBatchEntries: p.MaxBatchEntries, MaxThumbnailBytes: p.MaxThumbnailBytes, MaxMediaBytes: p.MaxMediaBytes, MaxGalleryEntries: p.MaxGalleryEntries}
 	share := service.DefaultSharePolicy()
-	c.Sharing = ShareConfig{MaxAge: share.MaxAge, GrantTTL: share.GrantTTL, AttemptWindow: share.AttemptWindow, AttemptLimit: share.AttemptLimit, KDFConcurrency: share.KDFConcurrency, DownloadTTL: share.DownloadTTL, DownloadLimit: share.DownloadLimit}
+	c.Sharing = ShareConfig{ActiveLimit: share.ActiveLimit, BatchEntries: share.BatchEntries, MaxAge: share.MaxAge, GrantTTL: share.GrantTTL, AttemptWindow: share.AttemptWindow, AttemptLimit: share.AttemptLimit, KDFConcurrency: share.KDFConcurrency, DownloadTTL: share.DownloadTTL, DownloadLimit: share.DownloadLimit}
 	c.Offline = service.DefaultDownloadPolicy()
 	c.Transfers = defaultTransfers()
 	c.Connections = defaultConnections()
@@ -129,7 +131,15 @@ func (defaults) Defaults(ctx context.Context) (config.Object, config.Control, er
 	if err != nil {
 		return nil, config.Continue, err
 	}
-	fields = append(fields, config.FieldOf("sharing", config.ObjectValue(config.Object{config.FieldOf("maxAge", config.String(share.MaxAge.String())), config.FieldOf("grantTTL", config.String(share.GrantTTL.String())), config.FieldOf("attemptWindow", config.String(share.AttemptWindow.String())), config.FieldOf("attemptLimit", limit), config.FieldOf("kdfConcurrency", kdf), config.FieldOf("downloadTTL", config.String(share.DownloadTTL.String())), config.FieldOf("downloadLimit", downloadLimit)})))
+	shareActiveLimit, err := config.Number(fmt.Sprint(share.ActiveLimit))
+	if err != nil {
+		return nil, config.Continue, err
+	}
+	shareBatchEntries, err := config.Number(fmt.Sprint(share.BatchEntries))
+	if err != nil {
+		return nil, config.Continue, err
+	}
+	fields = append(fields, config.FieldOf("sharing", config.ObjectValue(config.Object{config.FieldOf("activeLimit", shareActiveLimit), config.FieldOf("batchEntries", shareBatchEntries), config.FieldOf("maxAge", config.String(share.MaxAge.String())), config.FieldOf("grantTTL", config.String(share.GrantTTL.String())), config.FieldOf("attemptWindow", config.String(share.AttemptWindow.String())), config.FieldOf("attemptLimit", limit), config.FieldOf("kdfConcurrency", kdf), config.FieldOf("downloadTTL", config.String(share.DownloadTTL.String())), config.FieldOf("downloadLimit", downloadLimit)})))
 	transfers, err := transferDefaults(ctx)
 	if err != nil {
 		return nil, config.Continue, err

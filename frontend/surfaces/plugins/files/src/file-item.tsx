@@ -6,7 +6,7 @@ import { CheckboxField } from '@clouddrive/ui-adapter/form-field';
 import type { FileEntry } from '../../../src/files/model';
 import type { FileViewPreferences, FileColumn } from '../../../src/files/view-options';
 import { FileGlyph } from '../../../src/files/icons';
-import { formatFileBytes } from './file-presentation';
+import { formatFileBytes } from '../../../src/files/format';
 import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
 import { TagBadges } from './tag-badges';
 

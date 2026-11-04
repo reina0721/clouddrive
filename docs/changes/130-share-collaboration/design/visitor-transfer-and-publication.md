@@ -1,0 +1,13 @@
+# 访客传输与发布
+
+Transfer新增SourceShare和ShareID/ShareRevision/ShareGrantDigest私有绑定；不把访客传输放进原生Tus列表或允许从私有控制端误用。大小与完整SHA由现有Host hashFile逐块计算，创建时预留owner配额与全局暂存，单块沿用4MiB，复用tusd数据面。公开的create/read/HEAD/PATCH/commit/cancel都绑定同一share token与解锁票据；不另做整文件POST、流式Ingest、文件系统或Storage客户端，Next32MiB代理预算保持不变。
+
+Transfer创建核心抽成按明确来源授权的内部路径，私有Create仍仅SourceTus。ShareTransfers持有Sharing和Transfers，每次读取/写块前校验最新策略/票据与范围；最终发布许可统一为窄transferPublication契约，Download与Share分别实现。TransferRepository在同owner事务加载关联Share/Grant到TransferSnapshot，发布前验证ShareRevision、启用/过期/撤销、upload能力、父目录与grant；StoragePut前后重新检查当前IAM。权限改变期间可写临时候选，但最终保存必须拒绝并清理，不能只依赖前端隐藏控件。
+
+访客上传不覆盖既有文件；同名冲突可改名后重新选取或取消。原有文字CAS编辑支持覆盖且保留历史。Share上传的JSON DTO只公开id/state/真实offset/size/entryId/预算，不泄露拥有者完整目标路径或授权摘要。故障或取消先清理候选，再释放预算；失败保留清理债。绑定原凭据的取消只释放本候选，不允许授权失效后发布或删除已完成文件；进程崩溃候选沿既有过期sweep回收。
+
+Host拥有文件候选Map、AbortController、散列及逐块请求；卸载/退出/换链接取消请求、释放File与Blob URL，不在localStorage保存share token/grant/文件内容。未承诺访客跨刷新恢复队列，不能伪造恢复状态。上传返回的偏移来自真实tus HEAD/PATCH，未知或失败不显示100%。Surface只持有候选描述与语义进度，上传和取消由Port执行。
+
+公开mutation全部要求可信Origin，credentials:omit，使用Share能力及X-Share-Grant，不使用IAM Cookie/CSRF作访客身份。新传输路由显式使用现有transfer预算/准入；密码与策略JSON保持有界。日志只记录phase、operation、稳定code和受控resource ID，禁止token、密码、grant、query、文件名和原始错误文本。
+
+Host上传散列实现和访客操作对话框按实际使用加载，以守住既有页面脚本预算；媒体继续复用唯一FileMediaView。公开内容在download许可下允许原始字节，只有preview时检查安全类型及预算；Host预览始终有界。不能识别ID的创建响应丢失只保证原有限期限，不承诺立即清理；无密码链接持有者共享同一链接capability。

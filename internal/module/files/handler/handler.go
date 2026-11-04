@@ -23,6 +23,7 @@ type Handler struct {
 	Downloads        *service.OfflineDownloads
 	Service          *service.Service
 	Sharing          *service.Sharing
+	ShareTransfers   *service.ShareTransfers
 	Connections      *service.Connections
 	ConnectionOrigin string
 	Navigation       *service.Navigation
@@ -47,6 +48,8 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 	status, code := http.StatusInternalServerError, "files_unavailable"
 	var protocolError *httpx.StatusError
 	switch {
+	case errors.Is(err, model.ErrShareForbidden):
+		status, code = http.StatusForbidden, "files_share_forbidden"
 	case errors.Is(err, model.ErrDownloadMetadataLimited):
 		status, code = 413, "files_offline_metadata_limited"
 	case errors.Is(err, model.ErrDownloadUnavailable):

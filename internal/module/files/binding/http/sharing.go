@@ -5,7 +5,6 @@ import (
 	"github.com/reina0721/clouddrive/internal/module/files/model"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/reina0721/clouddrive/internal/module/files/handler"
@@ -16,26 +15,25 @@ import (
 const publicSharePrefix = "/api/v1/file-shares"
 const maxShareUnlockBodyBytes = 4096
 
-type shareCreateInput struct {
-	Body struct {
-		RootID    string     `json:"rootId" minLength:"1" maxLength:"36"`
-		Password  string     `json:"password,omitempty" maxLength:"128"`
-		ExpiresAt *time.Time `json:"expiresAt,omitempty"`
-	}
-}
-type shareRevokeInput struct {
+type shareCreateInput struct{ Body service.ShareCreate }
+type sharePathInput struct {
 	ShareID string `path:"shareId" minLength:"1" maxLength:"36"`
 }
-type sharesOutput struct{ Body []service.ShareSummary }
+type sharesOutput struct{ Body service.ShareListing }
 type shareOutput struct{ Body service.ShareSummary }
 type publicShareInput struct {
 	Token string `path:"token" minLength:"43" maxLength:"43"`
 	Grant string `header:"X-Share-Grant" maxLength:"43"`
 }
 type publicEntriesInput struct {
-	Token  string `path:"token" minLength:"43" maxLength:"43"`
-	Grant  string `header:"X-Share-Grant" maxLength:"43"`
-	Parent string `query:"parent" maxLength:"36"`
+	Token  string              `path:"token" minLength:"43" maxLength:"43"`
+	Grant  string              `header:"X-Share-Grant" maxLength:"43"`
+	Parent string              `query:"parent" maxLength:"36"`
+	Search string              `query:"search" maxLength:"255"`
+	Sort   service.SortKey     `query:"sort" enum:",name,size,updated,created"`
+	Desc   bool                `query:"desc"`
+	Scope  service.SearchScope `query:"scope" enum:",folder,tree"`
+	Page   int                 `query:"page" minimum:"1" default:"1"`
 }
 type publicContentInput struct {
 	Token string `path:"token" minLength:"43" maxLength:"43"`
@@ -78,12 +76,15 @@ func registerSharing(api huma.API, h *handler.Handler, operation func(string, st
 		op.Middlewares = append(op.Middlewares, sharingHeaders)
 		return op
 	}
-	huma.Register(api, private("files.shares.list", http.MethodGet, "/shares", "files:read", false), func(ctx context.Context, _ *struct{}) (*sharesOutput, error) {
+	registerShareManagement(api, h, private)
+	registerSharedFiles(api, h)
+	registerSharedTransfers(api, h)
+	huma.Register(api, private("files.shares.list", http.MethodGet, "/shares", "files:read", false), func(ctx context.Context, input *shareListInput) (*sharesOutput, error) {
 		owner, err := h.Owner(ctx)
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
-		shares, err := h.Sharing.List(ctx, owner)
+		shares, err := h.Sharing.List(ctx, owner, service.ShareQuery{Search: input.Search, State: input.State, Sort: input.Sort, Page: input.Page})
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
@@ -94,14 +95,14 @@ func registerSharing(api huma.API, h *handler.Handler, operation func(string, st
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
-		share, err := h.Sharing.Create(ctx, owner, input.Body.RootID, input.Body.Password, input.Body.ExpiresAt)
+		share, err := h.Sharing.Create(ctx, owner, input.Body)
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
 		h.Logger.Info("files.share.created")
 		return &shareOutput{Body: share}, nil
 	})
-	huma.Register(api, private("files.shares.revoke", http.MethodPost, "/shares/{shareId}/revoke", "files:write", false), func(ctx context.Context, input *shareRevokeInput) (*shareOutput, error) {
+	huma.Register(api, private("files.shares.revoke", http.MethodPost, "/shares/{shareId}/revoke", "files:write", false), func(ctx context.Context, input *sharePathInput) (*shareOutput, error) {
 		owner, err := h.Owner(ctx)
 		if err != nil {
 			return nil, h.Present(ctx, err)
@@ -121,7 +122,7 @@ func registerSharing(api huma.API, h *handler.Handler, operation func(string, st
 		return &publicShareOutput{Body: share}, nil
 	})
 	huma.Register(api, publicShareOperation("files.public.entries", http.MethodGet, "/{token}/entries", false), func(ctx context.Context, input *publicEntriesInput) (*publicEntriesOutput, error) {
-		listing, err := h.Sharing.Entries(ctx, input.Token, input.Grant, input.Parent)
+		listing, err := h.Sharing.Entries(ctx, input.Token, input.Grant, service.PublicFileQuery{Parent: input.Parent, Search: input.Search, Sort: input.Sort, Desc: input.Desc, Scope: input.Scope, Page: input.Page})
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
@@ -149,7 +150,7 @@ func registerSharing(api huma.API, h *handler.Handler, operation func(string, st
 		download.Responses = map[string]*huma.Response{"200": {Description: "分享范围内的原始内容和字节范围", Content: map[string]*huma.MediaType{"application/octet-stream": {Schema: &huma.Schema{Type: "string", Format: "binary"}}}}}
 		huma.Register(api, download, func(ctx context.Context, input *publicContentInput) (*contentOutput, error) {
 			return contentResponse(ctx, h, func(ctx context.Context, use func(model.Entry, io.ReadSeeker) error) error {
-				return h.Sharing.DownloadTo(ctx, input.Token, input.Grant, input.ID, use)
+				return h.Sharing.ContentTo(ctx, input.Token, input.Grant, input.ID, use)
 			}), nil
 		})
 	}

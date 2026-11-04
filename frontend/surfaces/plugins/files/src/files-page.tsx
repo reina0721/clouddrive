@@ -25,7 +25,7 @@ import { VersionsPanel } from './versions-panel';
 import { TagsBatchDialog } from './tags-batch-dialog';
 import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
 import { FileItem, FileListHeader, type FileSelectionGesture } from './file-item';
-import { formatFileBytes as bytes } from './file-presentation';
+import { formatFileBytes as bytes } from '../../../src/files/format';
 import { decodeFileFilters, encodeFileFilters, type FileFilters } from '../../../src/files/search';
 import {
   fileViewPreferencesSchema,

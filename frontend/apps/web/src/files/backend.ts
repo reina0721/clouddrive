@@ -3,6 +3,7 @@ import {
   fileListingSchema,
   fileDetailSchema,
   fileShareSchema,
+  shareListingSchema,
   FilesError,
   fileViewPreferencesSchema,
   defaultFileViewPreferences,
@@ -14,7 +15,7 @@ import {
 } from '@clouddrive/surface/files';
 import { createJsonClient, csrfTokenOf, ApiError } from '../api/json-client';
 import { createTransferRuntime } from './transfer-runtime';
-import { nativeDownload } from './native-download';
+import { nativeDownload, downloadBlob as saveBlob } from './native-download';
 import { createConnectionsPort } from './connections';
 import { createFileNavigationPort } from './navigation';
 import { fileShareAddress } from './share-address';
@@ -137,14 +138,7 @@ export function createFilesRuntime(
 
   function downloadBlob(blob: Blob, name: string) {
     if (disposed) throw new FilesError('canceled');
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = name;
-    document.body.append(anchor);
-    anchor.click();
-    anchor.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 0);
+    saveBlob(blob, name);
   }
   function shareLink(token: string) {
     return fileShareAddress(token, location.origin);
@@ -326,13 +320,37 @@ export function createFilesRuntime(
       if (!(blob instanceof Blob)) throw new FilesError('unavailable');
       downloadBlob(blob, 'files.zip');
     },
-    shares: async (signal) =>
-      fileShareSchema.array().parse(await call('/shares', signal ? { signal } : {})),
-    createShare: async (rootId, password, expiresAt) =>
+    shares: async (query, signal) =>
+      shareListingSchema.parse(
+        await call(
+          '/shares?' +
+            new URLSearchParams({
+              search: query.search,
+              state: query.state,
+              sort: query.sort,
+              page: String(query.page),
+            }).toString(),
+          signal ? { signal } : {},
+        ),
+      ),
+    readShare: async (id, signal) =>
       fileShareSchema.parse(
-        await call('/shares', {
-          method: 'POST',
-          body: { rootId, password, ...(expiresAt === undefined ? {} : { expiresAt }) },
+        await call('/shares/' + encodeURIComponent(id), signal ? { signal } : {}),
+      ),
+    createShare: async (input) =>
+      fileShareSchema.parse(await call('/shares', { method: 'POST', body: input })),
+    updateShare: async (share, input) =>
+      fileShareSchema.parse(
+        await call('/shares/' + encodeURIComponent(share.id), {
+          method: 'PUT',
+          body: { ...input, revision: share.revision },
+        }),
+      ),
+    setShareEnabled: async (share, enabled) =>
+      fileShareSchema.parse(
+        await call('/shares/' + encodeURIComponent(share.id) + '/state', {
+          method: 'PUT',
+          body: { revision: share.revision, enabled },
         }),
       ),
     revokeShare: async (id) =>

@@ -13,3 +13,15 @@ export function nativeDownload(path: string, name: string) {
   link.click();
   link.remove();
 }
+
+/** downloadBlob 仅保存已有有界产物，浏览器接管后释放本次自有URL。 */
+export function downloadBlob(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = name;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}

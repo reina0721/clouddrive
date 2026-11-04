@@ -20,6 +20,20 @@ import (
 // filesConnectionAuthority 将files的操作语义转换为IAM公开的当前账号授权。
 type filesConnectionAuthority struct{ access iam.AccountAuthorizer }
 
+func (a filesConnectionAuthority) AuthorizeShare(ctx context.Context, owner string, access filesservice.ShareAccountAccess) (bool, error) {
+	if a.access == nil {
+		return false, fmt.Errorf("file share authorization unavailable")
+	}
+	switch access {
+	case filesservice.ShareAccountRead:
+		return a.access.AuthorizeAccount(ctx, owner, filespermission.Read)
+	case filesservice.ShareAccountWrite:
+		return a.access.AuthorizeAccount(ctx, owner, filespermission.Write)
+	default:
+		return false, filesservice.ErrConnectionUnavailable
+	}
+}
+
 func (a filesConnectionAuthority) AuthorizeDownload(ctx context.Context, owner string) (bool, error) {
 	if a.access == nil {
 		return false, fmt.Errorf("file download authorization unavailable")
