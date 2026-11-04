@@ -54,6 +54,7 @@ export function createBackendIdentityService(
       return await json(path, { method, ...(body === undefined ? {} : { body }) });
     } catch (error) {
       if (!(error instanceof ApiError)) throw new IdentityError('unavailable');
+      if (error.code === 'limit') throw error;
       if (error.code !== 'http') throw new IdentityError(error.code);
       const expected = statusCodes[error.status] ?? 'unavailable';
       if (expected === 'unauthenticated') throw new IdentityError('unauthenticated');

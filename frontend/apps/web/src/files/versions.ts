@@ -20,7 +20,12 @@ export function createVersionsPort(
   };
   // 新旧比较与媒体共用有界读取顺序，避免同一面板并行抢占服务端传输名额。
   let readTail = Promise.resolve();
-  const readContent = async (id: string, revision: number, signal?: AbortSignal) => {
+  const readContent = async (
+    id: string,
+    revision: number,
+    signal?: AbortSignal,
+    budget?: Readonly<{ maxBlobBytes: number; timeoutMs: number }>,
+  ) => {
     const previous = readTail;
     let release = () => {};
     readTail = new Promise<void>((resolve) => {
@@ -32,6 +37,9 @@ export function createVersionsPort(
       if (signal?.aborted) throw new FilesError('canceled');
       const value = await call(path(id, revision) + '/content', {
         responseType: 'blob',
+        ...(budget === undefined
+          ? {}
+          : { maxBlobBytes: budget.maxBlobBytes, timeoutMs: budget.timeoutMs }),
         ...(signal ? { signal } : {}),
       });
       assertCurrent();

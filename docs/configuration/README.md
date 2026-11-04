@@ -114,3 +114,5 @@ files 模块拥有 `files` 的逻辑配额、文本/ZIP/条目/媒体预算，`t
 `files.search` 拥有只读文件检索的账号元数据树预算，沿用同一默认注册、严格校验与 RestartRequired 装配；具体上限与超预算行为统一见[文件管理](../operations/file-management.md#高级搜索与文件视图)。
 
 `files.archive` 拥有压缩解析请求的超时和子进程内存预算，严格校验并使用RestartRequired装配；默认值、平台支持与失败语义只在[文件管理](../operations/file-management.md#本人压缩包浏览与提取)维护。
+
+`files.pdfReader` 统一声明私有PDF阅读的页数、画布/图像像素、大纲、缩略图和操作期限；严格正值、只允许收紧、RestartRequired。唯一默认值和使用/部署边界见[文件管理](../operations/file-management.md#本人-pdf-阅读与临时批注)，不创建独立PDF服务器配置。

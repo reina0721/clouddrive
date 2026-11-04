@@ -26,21 +26,21 @@
   },
   "dependencies": {
     "@clouddrive/core": "workspace:*",
-    "@clouddrive/state-foundation": "workspace:*",
-    "@clouddrive/plugin-framework": "workspace:*",
-    "@clouddrive/surface-foundation": "workspace:*",
     "@clouddrive/form-foundation": "workspace:*",
     "@clouddrive/i18n": "workspace:*",
+    "@clouddrive/plugin-framework": "workspace:*",
     "@clouddrive/schemas": "workspace:*",
+    "@clouddrive/state-foundation": "workspace:*",
+    "@clouddrive/surface-foundation": "workspace:*",
     "@clouddrive/types": "workspace:*",
     "@clouddrive/ui-adapter": "workspace:*",
     "lucide-react": "^1.37.0",
     "react": "^19.2.8",
-    "zod": "^4.5.2"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@types/react": "^19.2.7",
-    "next": "^16.3.3",
+    "next": "^16.4.5",
     "react-dom": "^19.2.8",
     "vitest": "^4.1.11"
   }

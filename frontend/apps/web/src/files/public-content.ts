@@ -1,48 +1,27 @@
 import { FilesError } from '@clouddrive/surface/files';
+import { BlobBodyError, readBoundedBlob } from '../api/blob-body';
 
-/** readPublicBlob 在读取过程中执行预算并关闭reader，不等待整份响应进入JS堆后才拒绝超额。 */
+/** readPublicBlob 复用Host流式边界，并保持公开文件的错误契约。 */
 export async function readPublicBlob(
   response: Response,
   maxBytes: number,
   signal: AbortSignal,
 ): Promise<Blob> {
-  if (!response.body) throw new FilesError('unavailable');
-  const reader = response.body.getReader();
-  const parts: Uint8Array<ArrayBuffer>[] = [];
-  let received = 0;
-  let failure: unknown;
-  let failed = false;
   try {
-    const length = response.headers.get('Content-Length');
-    if (
-      length !== null &&
-      (!/^\d+$/.test(length) || !Number.isSafeInteger(Number(length)) || Number(length) > maxBytes)
-    )
-      throw new FilesError('large');
-    for (;;) {
-      if (signal.aborted) throw new FilesError('canceled');
-      const chunk = await reader.read();
-      if (chunk.done) break;
-      received += chunk.value.byteLength;
-      if (received > maxBytes) throw new FilesError('large');
-      parts.push(new Uint8Array(chunk.value));
-    }
-    if (signal.aborted) throw new FilesError('canceled');
+    return await readBoundedBlob(response, maxBytes, signal);
   } catch (error) {
-    failure = error;
-    failed = true;
+    const cause = error instanceof BlobBodyError ? (error.cause ?? error) : error;
+    const primary = cause instanceof AggregateError ? (cause.errors[0] as unknown) : cause;
+    const code =
+      primary instanceof FilesError
+        ? primary.code
+        : error instanceof BlobBodyError
+          ? error.code === 'limit'
+            ? 'large'
+            : error.code === 'canceled'
+              ? 'canceled'
+              : 'unavailable'
+          : 'unavailable';
+    throw new FilesError(code, { cause });
   }
-  try {
-    await reader.cancel();
-  } catch (cleanup) {
-    throw new FilesError(failure instanceof FilesError ? failure.code : 'unavailable', {
-      cause: failed ? new AggregateError([failure, cleanup]) : cleanup,
-    });
-  } finally {
-    reader.releaseLock();
-  }
-  if (failed) throw failure;
-  return new Blob(parts, {
-    type: response.headers.get('Content-Type') ?? 'application/octet-stream',
-  });
 }

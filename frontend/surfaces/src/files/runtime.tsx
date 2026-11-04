@@ -12,6 +12,7 @@ import type { ConnectionsPort } from './connections';
 import type { DownloadsPort } from './downloads';
 import type { FileEntry, FilesPort, PublicFilesPort } from './model';
 import type { NavigationPort } from './navigation';
+import type { FileDocumentProps } from './pdf-contract';
 import type { ArchivesPort } from './archives';
 import type { TransfersPort } from './transfers';
 export { loadFileAnnotationMessages, loadPublicFileMessages } from './messages';
@@ -23,6 +24,7 @@ export type FileMediaProps = Readonly<{
   version?: number;
   labels?: Readonly<{ loading: string; unsupported: string; tooLarge: string; retry: string }>;
 }>;
+const DocumentContext = createContext<ComponentType<FileDocumentProps> | null>(null);
 const AccountToolsContext = createContext<ComponentType | null>(null);
 const MediaContext = createContext<ComponentType<FileMediaProps> | null>(null);
 
@@ -37,6 +39,7 @@ export function FilesProvider({
   archives,
   children,
   media: Media,
+  pdfReader: Document,
   accountTools: AccountTools,
   transfers,
   downloads,
@@ -51,6 +54,7 @@ export function FilesProvider({
   navigation: NavigationPort;
   children: ReactNode;
   media: ComponentType<FileMediaProps>;
+  pdfReader: ComponentType<FileDocumentProps>;
   accountTools: ComponentType;
 }>) {
   return (
@@ -61,7 +65,9 @@ export function FilesProvider({
             <DownloadsContext value={downloads}>
               <MediaContext value={Media}>
                 <AccountToolsContext value={AccountTools}>
-                  <ArchivesContext value={archives}>{children}</ArchivesContext>
+                  <ArchivesContext value={archives}>
+                    <DocumentContext value={Document}>{children}</DocumentContext>
+                  </ArchivesContext>
                 </AccountToolsContext>
               </MediaContext>
             </DownloadsContext>
@@ -139,4 +145,11 @@ export function FileAccountTools() {
   const renderer = useContext(AccountToolsContext);
   if (!renderer) throw new Error('File account tools renderer is required');
   return createElement(renderer);
+}
+
+/** FileDocument 使用Host显式注入的文档renderer。 */
+export function FileDocument(props: FileDocumentProps) {
+  const renderer = useContext(DocumentContext);
+  if (!renderer) throw new Error('File PDF renderer is required');
+  return createElement(renderer, props);
 }

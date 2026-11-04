@@ -11238,7 +11238,7 @@
                           "type": "string",
                           "maxLength": 254,
                           "format": "email",
-                          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                         },
                         "status": {
                           "type": "string",
@@ -12632,7 +12632,7 @@
                             "type": "string",
                             "maxLength": 254,
                             "format": "email",
-                            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                           },
                           "status": {
                             "type": "string",
@@ -12951,7 +12951,7 @@
                           "type": "string",
                           "maxLength": 254,
                           "format": "email",
-                          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                         },
                         "status": {
                           "type": "string",
@@ -13212,7 +13212,7 @@
                     "type": "string",
                     "maxLength": 254,
                     "format": "email",
-                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                   },
                   "password": {
                     "type": "string",
@@ -13297,7 +13297,7 @@
                           "type": "string",
                           "maxLength": 254,
                           "format": "email",
-                          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                         },
                         "status": {
                           "type": "string",
@@ -13603,7 +13603,7 @@
                           "type": "string",
                           "maxLength": 254,
                           "format": "email",
-                          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                         },
                         "status": {
                           "type": "string",
@@ -13864,7 +13864,7 @@
                     "type": "string",
                     "maxLength": 254,
                     "format": "email",
-                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                   },
                   "version": {
                     "type": "integer",
@@ -13946,7 +13946,7 @@
                           "type": "string",
                           "maxLength": 254,
                           "format": "email",
-                          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                         },
                         "status": {
                           "type": "string",
@@ -14283,7 +14283,7 @@
                           "type": "string",
                           "maxLength": 254,
                           "format": "email",
-                          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                         },
                         "status": {
                           "type": "string",
@@ -14636,7 +14636,7 @@
                                     "type": "string",
                                     "maxLength": 254,
                                     "format": "email",
-                                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                                   },
                                   "status": {
                                     "type": "string",
@@ -15028,7 +15028,7 @@
                           "type": "string",
                           "maxLength": 254,
                           "format": "email",
-                          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                         },
                         "status": {
                           "type": "string",
@@ -15326,7 +15326,7 @@
                           "type": "string",
                           "maxLength": 254,
                           "format": "email",
-                          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                         },
                         "status": {
                           "type": "string",
@@ -15587,7 +15587,7 @@
                     "type": "string",
                     "maxLength": 254,
                     "format": "email",
-                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                   },
                   "version": {
                     "type": "integer",
@@ -17119,7 +17119,7 @@
                             "type": "string",
                             "maxLength": 254,
                             "format": "email",
-                            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                           },
                           "status": {
                             "type": "string",
@@ -17446,7 +17446,7 @@
                           "type": "string",
                           "maxLength": 254,
                           "format": "email",
-                          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                         },
                         "status": {
                           "type": "string",
@@ -17788,7 +17788,7 @@
                           "type": "string",
                           "maxLength": 254,
                           "format": "email",
-                          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                         },
                         "status": {
                           "type": "string",
@@ -30211,6 +30211,9 @@
             "format": "int64",
             "type": "integer"
           },
+          "pdfReader": {
+            "$ref": "#/components/schemas/PDFReaderLimits"
+          },
           "quotaBytes": {
             "format": "int64",
             "type": "integer"
@@ -30229,6 +30232,7 @@
           }
         },
         "required": [
+          "pdfReader",
           "items",
           "breadcrumbs",
           "usedBytes",
@@ -30511,6 +30515,64 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "PDFReaderLimits": {
+        "additionalProperties": false,
+        "properties": {
+          "maxBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxCanvasPixels": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxImagePixels": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxOutlineDepth": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxOutlineEntries": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxPages": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxThumbnailBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxThumbnailPixels": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "workTimeoutMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "workerReadyTimeoutMs": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "maxBytes",
+          "maxPages",
+          "maxCanvasPixels",
+          "maxImagePixels",
+          "maxOutlineEntries",
+          "maxOutlineDepth",
+          "maxThumbnailPixels",
+          "maxThumbnailBytes",
+          "workTimeoutMs",
+          "workerReadyTimeoutMs"
+        ],
         "type": "object"
       },
       "PasswordInputBody": {
@@ -32856,6 +32918,9 @@
             "format": "int64",
             "type": "integer"
           },
+          "pdfReader": {
+            "$ref": "#/components/schemas/PDFReaderLimits"
+          },
           "perFile": {
             "format": "int64",
             "type": "integer"
@@ -32874,6 +32939,7 @@
           }
         },
         "required": [
+          "pdfReader",
           "entry",
           "items",
           "page",

@@ -1,0 +1,774 @@
+'use client';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useFrontendTranslation } from '@clouddrive/i18n';
+import { FilesError, type FileDocumentProps } from '@clouddrive/surface/files';
+import { Action } from '@clouddrive/ui-adapter/action';
+import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
+import { CheckboxField, PasswordField, TextField } from '@clouddrive/ui-adapter/form-field';
+import { SearchBox } from '@clouddrive/ui-adapter/search-box';
+import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+  ArrowRight,
+  Undo2,
+  Redo2,
+  Search,
+} from 'lucide-react';
+import { downloadBlob } from '../native-download';
+import { PDFFrameSession, PDFFrameError, checkedOutline } from './session';
+import {
+  emptyPdfState,
+  pdfSearchMaxLength,
+  pdfThumbnailPageSize,
+  pdfPasswordMaxLength,
+  pdfMinScale,
+  pdfMaxScale,
+  type PdfCommand,
+  type PdfOutline,
+  type PdfEditorMode,
+} from './protocol';
+
+type Props = FileDocumentProps & {
+  readContent: (props: FileDocumentProps, signal: AbortSignal) => Promise<ArrayBuffer>;
+};
+const currentTheme = (): 'light' | 'dark' => {
+  const theme = document.documentElement.dataset.theme;
+  if (theme === 'light' || theme === 'dark') return theme;
+  throw new PDFFrameError('unavailable');
+};
+/** PDFReaderView 拥有阅读会话、用户意图和所有临时URL，不把SDK类型交给Surface。 */
+export function PDFReaderView(props: Props) {
+  const {
+    entry,
+    limits: suppliedLimits,
+    version,
+    readContent,
+    onClose,
+    closeRequestSequence,
+  } = props;
+  // 会话预算固定在打开时，后台列表返回同值新对象不能重开frame、丢弃临时批注。
+  const [limits] = useState(() => ({ ...suppliedLimits }));
+  const { t, locale } = useFrontendTranslation();
+  const p = useCallback(
+    (key: string, values?: Record<string, string | number>) => t('files.pdf.' + key, values ?? {}),
+    [t],
+  );
+  const [phase, setPhase] = useState<'loading' | 'password' | 'ready' | 'error'>('loading');
+  const [state, setState] = useState({ ...emptyPdfState });
+  const [failure, setFailure] = useState(''),
+    [notice, setNotice] = useState(''),
+    [attempt, setAttempt] = useState(0),
+    [busy, setBusy] = useState(false);
+  const [pageDraft, setPageDraft] = useState('1'),
+    [password, setPassword] = useState(''),
+    [incorrect, setIncorrect] = useState(false),
+    [discard, setDiscard] = useState(false);
+  const [panel, setPanel] = useState<'none' | 'thumbnails' | 'outline'>('none'),
+    [outline, setOutline] = useState<readonly PdfOutline[]>(),
+    [sideFailure, setSideFailure] = useState('');
+  const [thumbnailPage, setThumbnailPage] = useState(1),
+    [thumbnails, setThumbnails] = useState<readonly { page: number; url: string }[]>([]),
+    [thumbnailLoading, setThumbnailLoading] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false),
+    [query, setQuery] = useState(''),
+    [caseSensitive, setCaseSensitive] = useState(false),
+    [wholeWord, setWholeWord] = useState(false);
+  const [submitted, setSubmitted] = useState<{
+    query: string;
+    caseSensitive: boolean;
+    wholeWord: boolean;
+  }>();
+  const frame = useRef<HTMLIFrameElement>(null),
+    root = useRef<HTMLElement>(null),
+    session = useRef<PDFFrameSession | null>(null);
+  const activeState = useRef(state),
+    operation = useRef(false),
+    handledClose = useRef(closeRequestSequence),
+    thumbnailTail = useRef(Promise.resolve());
+  const labels = useRef({ p, t, locale });
+  const closeCallback = useRef<() => void>(() => {});
+  useEffect(() => {
+    labels.current = { p, t, locale };
+  }, [p, t, locale]);
+  const errorText = useCallback((error: unknown) => {
+    if (error instanceof PDFFrameError) return labels.current.p(error.code);
+    if (error instanceof FilesError) {
+      if (error.code === 'conflict') return labels.current.p('sourceConflict');
+      if (error.code === 'large') return labels.current.p('limit');
+      return labels.current.t('files.errors.' + error.code);
+    }
+    return labels.current.p('unavailable');
+  }, []);
+  const finishClose = useCallback(async () => {
+    await session.current?.dispose();
+    onClose();
+  }, [onClose]);
+  const requestClose = useCallback(() => {
+    if (activeState.current.modified) setDiscard(true);
+    else void finishClose();
+  }, [finishClose]);
+  useEffect(() => {
+    closeCallback.current = requestClose;
+  }, [requestClose]);
+  useEffect(() => {
+    if (handledClose.current !== closeRequestSequence) {
+      handledClose.current = closeRequestSequence;
+      closeCallback.current();
+    }
+  }, [closeRequestSequence]);
+  useEffect(() => {
+    const element = root.current,
+      parent = element?.parentElement;
+    if (!element || !parent) return;
+    const observer = new ResizeObserver(() => {
+      const style = getComputedStyle(parent),
+        padding = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom);
+      const height = parent.clientHeight - (Number.isFinite(padding) ? padding : 0);
+      if (height > 0) element.style.setProperty('--pdf-reader-height', Math.floor(height) + 'px');
+    });
+    observer.observe(parent);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    const element = frame.current;
+    if (!element) return;
+    const controller = new AbortController();
+    let active = true;
+    const owned = new PDFFrameSession(element, limits, {
+      state: (value) => {
+        if (!active) return;
+        if (value.page !== activeState.current.page) setPageDraft(String(value.page));
+        activeState.current = value;
+        setState(value);
+      },
+      ready: () => {
+        if (active) {
+          setPhase('ready');
+          setPassword('');
+        }
+      },
+      password: (wrong) => {
+        if (active) {
+          setPhase('password');
+          setIncorrect(wrong);
+          setBusy(false);
+          operation.current = false;
+        }
+      },
+      error: (error) => {
+        if (active) {
+          setFailure(errorText(error));
+          setPhase('error');
+        }
+      },
+      close: () => closeCallback.current(),
+    });
+    session.current = owned;
+    void readContent({ ...props, limits }, controller.signal)
+      .then((bytes) => {
+        if (active) return owned.open(bytes, labels.current.locale, currentTheme());
+      })
+      .catch((error) => {
+        if (active && !controller.signal.aborted) {
+          setFailure(errorText(error));
+          setPhase('error');
+          owned.forceClose();
+        }
+      });
+    return () => {
+      active = false;
+      controller.abort();
+      owned.forceClose();
+      if (session.current === owned) session.current = null;
+    };
+    // 语言在打开时传入；切换界面语言不销毁尚未导出的标注。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    entry.id,
+    entry.contentRevision,
+    entry.sizeBytes,
+    version,
+    limits,
+    readContent,
+    attempt,
+    errorText,
+  ]);
+  useEffect(() => {
+    const update = () => session.current?.theme(currentTheme());
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class', 'style', 'data-theme'],
+    });
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+  useEffect(() => {
+    if (!state.modified) return;
+    const handler = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [state.modified]);
+  const act = useCallback(
+    async (
+      command: PdfCommand,
+      consume?: (value: Awaited<ReturnType<PDFFrameSession['command']>>) => Promise<void>,
+    ) => {
+      if (operation.current || !session.current) return;
+      operation.current = true;
+      setBusy(true);
+      setNotice('');
+      setFailure('');
+      try {
+        const result = await session.current.command(command);
+        await consume?.(result);
+      } catch (error) {
+        setFailure(errorText(error));
+      } finally {
+        operation.current = false;
+        setBusy(false);
+      }
+    },
+    [errorText],
+  );
+  useEffect(() => {
+    if (panel !== 'outline' || phase !== 'ready' || !session.current) return;
+    const owned = session.current;
+    let active = true;
+    void owned
+      .command({ kind: 'outline' })
+      .then((value) => {
+        if (active) setOutline(checkedOutline(value.outline, limits));
+      })
+      .catch((error) => {
+        if (active) setSideFailure(errorText(error));
+      });
+    return () => {
+      active = false;
+    };
+  }, [panel, phase, limits, errorText]);
+  useEffect(() => {
+    if (panel !== 'thumbnails' || phase !== 'ready' || !session.current) return;
+    const owned = session.current,
+      controller = new AbortController(),
+      urls: string[] = [];
+    queueMicrotask(() => {
+      if (!controller.signal.aborted) {
+        setThumbnails([]);
+        setThumbnailLoading(true);
+      }
+    });
+    const previous = thumbnailTail.current;
+    const task = previous
+      .then(async () => {
+        if (controller.signal.aborted) return;
+        const start = (thumbnailPage - 1) * pdfThumbnailPageSize + 1;
+        for (
+          let page = start;
+          page <= Math.min(state.pages, start + pdfThumbnailPageSize - 1);
+          page++
+        ) {
+          if (controller.signal.aborted) return;
+          const result = await owned.command({ kind: 'thumbnail', page });
+          if (controller.signal.aborted) return;
+          if (
+            !(result.bytes instanceof ArrayBuffer) ||
+            result.page !== page ||
+            result.bytes.byteLength > limits.maxThumbnailBytes
+          )
+            throw new PDFFrameError('limit');
+          const url = URL.createObjectURL(new Blob([result.bytes], { type: 'image/png' }));
+          urls.push(url);
+          setThumbnails((current) => [...current, { page, url }]);
+        }
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) setSideFailure(errorText(error));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setThumbnailLoading(false);
+      });
+    thumbnailTail.current = task;
+    return () => {
+      controller.abort();
+      for (const url of urls) URL.revokeObjectURL(url);
+    };
+  }, [panel, phase, thumbnailPage, state.pages, state.rotation, limits, errorText]);
+  const available = phase === 'ready' && !busy && state.rendered;
+  const displayItems = [
+    ['first', state.page === 1],
+    ['last', state.page === state.pages],
+    ['zoomIn', state.scale >= pdfMaxScale],
+    ['zoomOut', state.scale <= pdfMinScale],
+    ['fitPage', false],
+    ['fitWidth', false],
+    ['actualSize', false],
+    ['rotateLeft', false],
+    ['rotateRight', false],
+  ].map(([id, disabled]) => ({
+    id: String(id),
+    label: p(String(id)),
+    disabled: !available || Boolean(disabled),
+  }));
+  const displayAction = (id: string) => {
+    const commands: Record<string, PdfCommand> = {
+      first: { kind: 'page', page: 1 },
+      last: { kind: 'page', page: state.pages },
+      zoomIn: { kind: 'scale', scale: Math.min(pdfMaxScale, state.scale * 1.25) },
+      zoomOut: { kind: 'scale', scale: Math.max(pdfMinScale, state.scale / 1.25) },
+      fitPage: { kind: 'scale', scale: 'page-fit' },
+      fitWidth: { kind: 'scale', scale: 'page-width' },
+      actualSize: { kind: 'scale', scale: 1 },
+      rotateLeft: { kind: 'rotate', direction: -1 },
+      rotateRight: { kind: 'rotate', direction: 1 },
+    };
+    const command = commands[id];
+    if (command) void act(command);
+  };
+  const openPanel = (next: 'none' | 'thumbnails' | 'outline') => {
+    setSideFailure('');
+    setOutline(undefined);
+    setThumbnails([]);
+    setThumbnailPage(1);
+    setPanel(next);
+  };
+  const find = (again = false, previous = false) => {
+    if (state.searchPending) return;
+    const value = again ? submitted : { query, caseSensitive, wholeWord };
+    if (!value) return;
+    setSubmitted(value);
+    void act({ kind: 'find', ...value, again, previous });
+  };
+  const outlineNodes = (items: readonly PdfOutline[]): ReactNode => (
+    <ul className="space-y-2">
+      {items.map((item) => (
+        <li key={item.id}>
+          <Action
+            size="sm"
+            variant="quiet"
+            disabled={!available || !item.navigable}
+            onPress={() => {
+              void act({ kind: 'destination', destinationId: item.id });
+            }}
+          >
+            {item.title || p('outlineUntitled', { id: item.id })}
+          </Action>
+          {item.items.length ? <div className="pl-4">{outlineNodes(item.items)}</div> : null}
+        </li>
+      ))}
+    </ul>
+  );
+  const searchCurrent =
+    submitted?.query === query &&
+    submitted.caseSensitive === caseSensitive &&
+    submitted.wholeWord === wholeWord;
+  return (
+    <section
+      ref={root}
+      aria-label={p('title')}
+      className="flex min-h-0 flex-col gap-3"
+      style={{ height: 'var(--pdf-reader-height,65dvh)' }}
+    >
+      <div className="shrink-0 overflow-x-auto">
+        <div
+          className="flex items-end gap-2"
+          style={{ minWidth: 'max-content' }}
+          role="toolbar"
+          aria-label={p('title')}
+        >
+          <Action
+            size="sm"
+            variant="secondary"
+            disabled={!available || state.page <= 1}
+            leadingIcon={<ChevronLeft />}
+            onPress={() => {
+              void act({ kind: 'page', page: state.page - 1 });
+            }}
+          >
+            <span className="sr-only">{p('previous')}</span>
+          </Action>
+          <form
+            className="flex items-end gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const page = Number(pageDraft);
+              if (
+                !/^\d+$/.test(pageDraft) ||
+                !Number.isSafeInteger(page) ||
+                page < 1 ||
+                page > state.pages
+              ) {
+                setFailure(p('invalidPage'));
+                return;
+              }
+              void act({ kind: 'page', page });
+            }}
+          >
+            <div className="w-20">
+              <TextField
+                label={p('page')}
+                value={pageDraft}
+                disabled={phase !== 'ready'}
+                onChange={(event) => setPageDraft(event.target.value.slice(0, 12))}
+              />
+            </div>
+            <Action size="sm" type="submit" variant="secondary" disabled={!available}>
+              {p('go')}
+            </Action>
+          </form>
+          <Action
+            size="sm"
+            variant="secondary"
+            disabled={!available || state.page >= state.pages}
+            leadingIcon={<ChevronRight />}
+            onPress={() => {
+              void act({ kind: 'page', page: state.page + 1 });
+            }}
+          >
+            <span className="sr-only">{p('next')}</span>
+          </Action>
+          <MenuButton
+            triggerSize="sm"
+            label={p('display') + ' · ' + Math.round(state.scale * 100) + '%'}
+            ariaLabel={p('display')}
+            items={displayItems}
+            onAction={displayAction}
+          />
+          <MenuButton
+            triggerSize="sm"
+            label={p('navigation')}
+            ariaLabel={p('navigation')}
+            items={['thumbnails', 'outline', 'hidePanel'].map((id) => ({
+              id,
+              label: p(id),
+              disabled: phase !== 'ready',
+            }))}
+            onAction={(id) =>
+              openPanel(id === 'thumbnails' ? 'thumbnails' : id === 'outline' ? 'outline' : 'none')
+            }
+          />
+          <Action
+            size="sm"
+            variant="secondary"
+            disabled={!available}
+            leadingIcon={<Search />}
+            onPress={() => setSearchOpen((value) => !value)}
+          >
+            <span className="sr-only">{p('search')}</span>
+          </Action>
+          <Action
+            size="sm"
+            variant="quiet"
+            disabled={!available || !state.historyBack}
+            leadingIcon={<ArrowLeft />}
+            onPress={() => {
+              void act({ kind: 'history', direction: -1 });
+            }}
+          >
+            <span className="sr-only">{p('back')}</span>
+          </Action>
+          <Action
+            size="sm"
+            variant="quiet"
+            disabled={!available || !state.historyForward}
+            leadingIcon={<ArrowRight />}
+            onPress={() => {
+              void act({ kind: 'history', direction: 1 });
+            }}
+          >
+            <span className="sr-only">{p('forward')}</span>
+          </Action>
+          <MenuButton
+            triggerSize="sm"
+            label={p('editor')}
+            ariaLabel={p('editor')}
+            items={(['none', 'text', 'highlight', 'ink'] as const).map((id) => ({
+              id,
+              label: p(id),
+              disabled: !available,
+            }))}
+            onAction={(mode) => {
+              if (['none', 'text', 'highlight', 'ink'].includes(mode))
+                void act({ kind: 'editor', mode: mode as PdfEditorMode });
+            }}
+          />
+          <Action
+            size="sm"
+            variant="quiet"
+            disabled={!available || !state.undo}
+            leadingIcon={<Undo2 />}
+            onPress={() => {
+              void act({ kind: 'edit', action: 'undo' });
+            }}
+          >
+            <span className="sr-only">{p('undo')}</span>
+          </Action>
+          <Action
+            size="sm"
+            variant="quiet"
+            disabled={!available || !state.redo}
+            leadingIcon={<Redo2 />}
+            onPress={() => {
+              void act({ kind: 'edit', action: 'redo' });
+            }}
+          >
+            <span className="sr-only">{p('redo')}</span>
+          </Action>
+          <Action
+            size="sm"
+            variant="secondary"
+            disabled={!available || !state.modified}
+            onPress={() => {
+              void act({ kind: 'save' }, async (value) => {
+                if (
+                  !(value.bytes instanceof ArrayBuffer) ||
+                  value.bytes.byteLength > limits.maxBytes ||
+                  new TextDecoder().decode(value.bytes.slice(0, 5)) !== '%PDF-'
+                )
+                  throw new PDFFrameError('invalid');
+                downloadBlob(
+                  new Blob([value.bytes], { type: 'application/pdf' }),
+                  entry.name.replace(/\.pdf$/i, '') + '.' + p('exportName') + '.pdf',
+                );
+                await session.current?.command({ kind: 'exported' });
+                setNotice(p('exported'));
+              });
+            }}
+          >
+            {p('export')}
+          </Action>
+        </div>
+      </div>
+      <div className="flex shrink-0 flex-wrap gap-3 text-sm" role="status">
+        <span>{p('pageCount', { page: state.page, pages: state.pages })}</span>
+        <span className="text-xs text-ink-muted">
+          {p('imageBudget', { pixels: limits.maxImagePixels.toLocaleString(locale) })}
+        </span>
+        {state.modified ? <span>{p('modified')}</span> : null}
+        {busy ? <span>{p('working')}</span> : null}
+      </div>
+      {phase === 'loading' ? <p role="status">{p('loading')}</p> : null}
+      {phase === 'password' ? (
+        <form
+          className="space-y-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setPhase('loading');
+            session.current?.password(password);
+            setPassword('');
+          }}
+        >
+          <p>{p(incorrect ? 'passwordIncorrect' : 'passwordNeeded')}</p>
+          <PasswordField
+            purpose="transient"
+            label={p('password')}
+            showLabel={p('showPassword')}
+            hideLabel={p('hidePassword')}
+            value={password}
+            onChange={(event) => setPassword(event.target.value.slice(0, pdfPasswordMaxLength))}
+          />
+          <Action type="submit" disabled={!password}>
+            {p('unlock')}
+          </Action>
+        </form>
+      ) : null}
+      {failure ? <p role="alert">{failure}</p> : null}
+      {notice ? <p role="status">{notice}</p> : null}
+      {phase === 'error' ? (
+        <Action
+          variant="secondary"
+          onPress={() => {
+            setFailure('');
+            setPhase('loading');
+            setState({ ...emptyPdfState });
+            activeState.current = { ...emptyPdfState };
+            setPanel('none');
+            setAttempt((value) => value + 1);
+          }}
+        >
+          {p('retry')}
+        </Action>
+      ) : null}
+      {searchOpen && phase === 'ready' ? (
+        <form
+          className="shrink-0 space-y-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            find();
+          }}
+        >
+          <SearchBox
+            label={p('query')}
+            placeholder={p('query')}
+            value={query}
+            onValueChange={(value) => setQuery(value.slice(0, pdfSearchMaxLength))}
+          />
+          <div className="flex flex-wrap gap-3">
+            <div className="w-40">
+              <CheckboxField
+                label={p('caseSensitive')}
+                checked={caseSensitive}
+                onCheckedChange={setCaseSensitive}
+              />
+            </div>
+            <div className="w-40">
+              <CheckboxField
+                label={p('wholeWord')}
+                checked={wholeWord}
+                onCheckedChange={setWholeWord}
+              />
+            </div>
+            <Action size="sm" type="submit" disabled={busy || state.searchPending}>
+              {p('find')}
+            </Action>
+            <Action
+              size="sm"
+              variant="secondary"
+              disabled={!searchCurrent || state.searchPending || !state.matchesTotal}
+              onPress={() => find(true, true)}
+            >
+              {p('previousMatch')}
+            </Action>
+            <Action
+              size="sm"
+              variant="secondary"
+              disabled={!searchCurrent || state.searchPending || !state.matchesTotal}
+              onPress={() => find(true, false)}
+            >
+              {p('nextMatch')}
+            </Action>
+            <Action
+              size="sm"
+              variant="quiet"
+              disabled={state.searchPending}
+              onPress={() => {
+                setQuery('');
+                setSubmitted(undefined);
+                void act({
+                  kind: 'find',
+                  query: '',
+                  caseSensitive: false,
+                  wholeWord: false,
+                  previous: false,
+                  again: false,
+                });
+              }}
+            >
+              {p('clearSearch')}
+            </Action>
+          </div>
+          <p role="status">
+            {state.searchPending
+              ? p('searching')
+              : submitted
+                ? p('matches', { current: state.matchesCurrent, total: state.matchesTotal })
+                : p('queryHint')}
+          </p>
+        </form>
+      ) : null}
+      <div className="flex min-h-0 flex-1 flex-col gap-3 md:flex-row">
+        {panel !== 'none' ? (
+          <aside className="max-h-60 overflow-y-auto space-y-2" aria-label={p(panel)}>
+            <h3 className="font-semibold">{p(panel)}</h3>
+            {sideFailure ? <p role="alert">{sideFailure}</p> : null}
+            {panel === 'outline' ? (
+              outline ? (
+                outline.length ? (
+                  outlineNodes(outline)
+                ) : (
+                  <p>{p('noOutline')}</p>
+                )
+              ) : (
+                <p role="status">{p('outlineLoading')}</p>
+              )
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <Action
+                    size="sm"
+                    variant="quiet"
+                    disabled={thumbnailPage <= 1 || thumbnailLoading}
+                    onPress={() => {
+                      setThumbnails([]);
+                      setThumbnailPage((value) => value - 1);
+                    }}
+                  >
+                    {p('previousGroup')}
+                  </Action>
+                  <Action
+                    size="sm"
+                    variant="quiet"
+                    disabled={
+                      thumbnailPage * pdfThumbnailPageSize >= state.pages || thumbnailLoading
+                    }
+                    onPress={() => {
+                      setThumbnails([]);
+                      setThumbnailPage((value) => value + 1);
+                    }}
+                  >
+                    {p('nextGroup')}
+                  </Action>
+                </div>
+                {thumbnailLoading ? <p role="status">{p('thumbnailLoading')}</p> : null}
+                <ul className="space-y-2">
+                  {thumbnails.map((item) => (
+                    <li key={item.page}>
+                      <Action
+                        size="sm"
+                        variant="quiet"
+                        disabled={!available}
+                        onPress={() => {
+                          void act({ kind: 'page', page: item.page });
+                        }}
+                      >
+                        <span className="flex items-center gap-2">
+                          <img
+                            src={item.url}
+                            alt=""
+                            className="max-h-24 max-w-full object-contain"
+                          />
+                          <span>{p('thumbnailPage', { page: item.page })}</span>
+                        </span>
+                      </Action>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </aside>
+        ) : null}
+        <iframe
+          key={attempt}
+          ref={frame}
+          inert={busy}
+          data-pdf-editor={state.editor}
+          title={p('frame')}
+          sandbox="allow-scripts allow-same-origin"
+          className="min-h-0 w-full flex-1 rounded-control border border-border"
+        />
+      </div>
+      {discard ? (
+        <DialogSurface
+          isOpen
+          triggerLabel={p('discardTitle')}
+          title={p('discardTitle')}
+          description={p('discardHint')}
+          cancelLabel={p('keepReading')}
+          confirmLabel={p('discard')}
+          onOpenChange={(open) => {
+            if (!open) setDiscard(false);
+          }}
+          onConfirm={finishClose}
+        >
+          <p>{p('modified')}</p>
+        </DialogSurface>
+      ) : null}
+    </section>
+  );
+}

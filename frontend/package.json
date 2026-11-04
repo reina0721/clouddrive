@@ -19,7 +19,7 @@
     "architecture:check": "node tooling/check-boundaries-fixtures.mjs && node tooling/check-boundaries.mjs",
     "foundation:check": "node tooling/check-foundation-fixtures.mjs && node tooling/check-foundation-governance.mjs && node tooling/check-tailwind-sources.mjs",
     "dependency:check": "node tooling/check-dependencies.mjs",
-    "performance:check": "node tooling/check-performance-budget.mjs",
+    "performance:check": "node tooling/check-performance-budget.mjs && node tooling/check-pdf-assets.mjs",
     "codegen:plugins": "node tooling/plugin-codegen/codegen.mjs",
     "codegen:plugins:check": "node tooling/plugin-codegen/codegen.mjs --check",
     "codegen:plugins:watch": "node tooling/plugin-codegen/watch.mjs",

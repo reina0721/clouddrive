@@ -92,6 +92,18 @@ describe('历史内容客户端边界', () => {
       quotaBytes: 100,
       maxTextBytes: 1024,
       maxMediaBytes: 1024,
+      pdfReader: {
+        maxBytes: 1024,
+        maxPages: 500,
+        maxCanvasPixels: 4194304,
+        maxImagePixels: 8388608,
+        maxOutlineEntries: 500,
+        maxOutlineDepth: 16,
+        maxThumbnailPixels: 65536,
+        maxThumbnailBytes: 524288,
+        workTimeoutMs: 30000,
+        workerReadyTimeoutMs: 10000,
+      },
     };
     expect(fileVersionPageSchema.safeParse(page).success).toBe(true);
     for (const changed of [

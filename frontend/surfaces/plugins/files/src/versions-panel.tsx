@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { formatDate, useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { CheckboxField, SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
@@ -13,12 +13,16 @@ import {
 } from '../../../src/files/versions';
 import { formatFileBytes as bytes } from '../../../src/files/format';
 
+import { isPDFDocument } from '../../../src/files/pdf-contract';
+const PdfDialog = lazy(() =>
+  import('./pdf-dialog').then((module) => ({ default: module.PdfDialog })),
+);
 type Props = { entry: FileEntry; onClose: () => void; onSaved: () => void };
 type Confirmation =
   | { kind: 'restore'; version: FileVersion }
   | { kind: 'copy'; version: FileVersion }
   | { kind: 'delete'; mode: 'selected' | 'all-history'; revisions: number[] };
-type Preview = { mode: 'text' | 'compare' | 'media'; version: FileVersion };
+type Preview = { mode: 'text' | 'compare' | 'media' | 'pdf'; version: FileVersion };
 const readableText = (v: Pick<FileVersion, 'mediaType' | 'name'>) =>
   v.mediaType.startsWith('text/') || /\.(txt|md|json|csv|xml|html|css|js|log)$/i.test(v.name);
 
@@ -285,9 +289,11 @@ function VersionPanelContent({
                         disabled={reading}
                         onPress={() =>
                           setPreview({
-                            mode: /^(image|audio|video)\//.test(version.mediaType)
-                              ? 'media'
-                              : 'text',
+                            mode: isPDFDocument(version)
+                              ? 'pdf'
+                              : /^(image|audio|video)\//.test(version.mediaType)
+                                ? 'media'
+                                : 'text',
                             version,
                           })
                         }
@@ -422,7 +428,23 @@ function VersionPanelContent({
           )}
         </DialogSurface>
       ) : null}
-      {preview && snapshot ? (
+      {preview?.mode === 'pdf' && snapshot ? (
+        <Suspense fallback={<p role="status">{preview.version.name}</p>}>
+          <PdfDialog
+            entry={{
+              ...snapshot.entry,
+              name: preview.version.name,
+              sizeBytes: preview.version.sizeBytes,
+              mediaType: preview.version.mediaType,
+              contentRevision: preview.version.revision,
+            }}
+            version={preview.version.revision}
+            limits={snapshot.pdfReader}
+            onClose={() => setPreview(undefined)}
+          />
+        </Suspense>
+      ) : null}
+      {preview && preview.mode !== 'pdf' && snapshot ? (
         <DialogSurface
           triggerLabel={t('files.versions.preview')}
           title={t(

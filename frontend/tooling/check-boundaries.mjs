@@ -21,6 +21,9 @@ async function collectSourceFiles(directory) {
   for (const entry of entries) {
     if (entry.isDirectory() && ignoredDirectories.has(entry.name)) continue;
     const entryPath = join(directory, entry.name);
+    // PDF SDK是可复现生成的独立文档应用；原始源码仍受检查，生成资源另由摘要/allowlist/预算检查。
+    if (entry.isDirectory() && entryPath === join(frontendRoot, 'apps/web/public/file-viewers/pdf'))
+      continue;
     if (entry.isDirectory()) files.push(...(await collectSourceFiles(entryPath)));
     if (entry.isFile() && sourceExtensions.has(extname(entry.name))) files.push(entryPath);
   }

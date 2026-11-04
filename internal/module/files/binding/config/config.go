@@ -10,24 +10,25 @@ import (
 )
 
 type Config struct {
-	Archive           service.ArchivePolicy  `mapstructure:"archive"`
-	Offline           service.DownloadPolicy `mapstructure:"offline"`
-	MaxFileBytes      int64                  `mapstructure:"maxFileBytes"`
-	QuotaBytes        int64                  `mapstructure:"quotaBytes"`
-	ConcurrentUploads int                    `mapstructure:"concurrentUploads"`
-	MaxTextBytes      int64                  `mapstructure:"maxTextBytes"`
-	MaxArchiveBytes   int64                  `mapstructure:"maxArchiveBytes"`
-	MaxBatchEntries   int                    `mapstructure:"maxBatchEntries"`
-	MaxMediaBytes     int64                  `mapstructure:"maxMediaBytes"`
-	MaxThumbnailBytes int64                  `mapstructure:"maxThumbnailBytes"`
-	MaxGalleryEntries int                    `mapstructure:"maxGalleryEntries"`
-	Sharing           ShareConfig            `mapstructure:"sharing"`
-	Transfers         TransferConfig         `mapstructure:"transfers"`
-	Connections       ConnectionConfig       `mapstructure:"connections"`
-	Navigation        NavigationConfig       `mapstructure:"navigation"`
-	Search            SearchConfig           `mapstructure:"search"`
-	Annotations       AnnotationConfig       `mapstructure:"annotations"`
-	History           HistoryConfig          `mapstructure:"history"`
+	PDFReader         service.PDFReaderPolicy `mapstructure:"pdfReader"`
+	Archive           service.ArchivePolicy   `mapstructure:"archive"`
+	Offline           service.DownloadPolicy  `mapstructure:"offline"`
+	MaxFileBytes      int64                   `mapstructure:"maxFileBytes"`
+	QuotaBytes        int64                   `mapstructure:"quotaBytes"`
+	ConcurrentUploads int                     `mapstructure:"concurrentUploads"`
+	MaxTextBytes      int64                   `mapstructure:"maxTextBytes"`
+	MaxArchiveBytes   int64                   `mapstructure:"maxArchiveBytes"`
+	MaxBatchEntries   int                     `mapstructure:"maxBatchEntries"`
+	MaxMediaBytes     int64                   `mapstructure:"maxMediaBytes"`
+	MaxThumbnailBytes int64                   `mapstructure:"maxThumbnailBytes"`
+	MaxGalleryEntries int                     `mapstructure:"maxGalleryEntries"`
+	Sharing           ShareConfig             `mapstructure:"sharing"`
+	Transfers         TransferConfig          `mapstructure:"transfers"`
+	Connections       ConnectionConfig        `mapstructure:"connections"`
+	Navigation        NavigationConfig        `mapstructure:"navigation"`
+	Search            SearchConfig            `mapstructure:"search"`
+	Annotations       AnnotationConfig        `mapstructure:"annotations"`
+	History           HistoryConfig           `mapstructure:"history"`
 }
 
 type ShareConfig struct {
@@ -48,7 +49,7 @@ func (c Config) SharePolicy() service.SharePolicy {
 }
 
 func (c Config) Policy() service.Policy {
-	return service.Policy{MaxFileBytes: c.MaxFileBytes, QuotaBytes: c.QuotaBytes, ConcurrentUploads: c.ConcurrentUploads, MaxTextBytes: c.MaxTextBytes, MaxArchiveBytes: c.MaxArchiveBytes, MaxBatchEntries: c.MaxBatchEntries, MaxThumbnailBytes: c.MaxThumbnailBytes, MaxMediaBytes: c.MaxMediaBytes, MaxGalleryEntries: c.MaxGalleryEntries, ShortcutLimit: c.Navigation.ShortcutLimit, SearchTreeEntries: c.Search.TreeEntries, AnnotationMaxBytes: c.Annotations.MaxBytes, AnnotationBatchEntries: c.Annotations.BatchEntries, HistoryEnabled: c.History.Enabled, HistoryPerFile: c.History.PerFile, HistoryPerOwner: c.History.PerOwner}
+	return service.Policy{PDFReader: c.PDFReader, MaxFileBytes: c.MaxFileBytes, QuotaBytes: c.QuotaBytes, ConcurrentUploads: c.ConcurrentUploads, MaxTextBytes: c.MaxTextBytes, MaxArchiveBytes: c.MaxArchiveBytes, MaxBatchEntries: c.MaxBatchEntries, MaxThumbnailBytes: c.MaxThumbnailBytes, MaxMediaBytes: c.MaxMediaBytes, MaxGalleryEntries: c.MaxGalleryEntries, ShortcutLimit: c.Navigation.ShortcutLimit, SearchTreeEntries: c.Search.TreeEntries, AnnotationMaxBytes: c.Annotations.MaxBytes, AnnotationBatchEntries: c.Annotations.BatchEntries, HistoryEnabled: c.History.Enabled, HistoryPerFile: c.History.PerFile, HistoryPerOwner: c.History.PerOwner}
 }
 func Decode(snapshot config.Snapshot) (Config, error) {
 	p := service.DefaultPolicy()
@@ -57,6 +58,7 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 	c.Sharing = ShareConfig{ActiveLimit: share.ActiveLimit, BatchEntries: share.BatchEntries, MaxAge: share.MaxAge, GrantTTL: share.GrantTTL, AttemptWindow: share.AttemptWindow, AttemptLimit: share.AttemptLimit, KDFConcurrency: share.KDFConcurrency, DownloadTTL: share.DownloadTTL, DownloadLimit: share.DownloadLimit}
 	c.Offline = service.DefaultDownloadPolicy()
 	c.Archive = service.DefaultArchivePolicy()
+	c.PDFReader = service.DefaultPDFReaderPolicy()
 	c.Transfers = defaultTransfers()
 	c.Connections = defaultConnections()
 	c.Navigation = defaultNavigation()
@@ -186,5 +188,10 @@ func (defaults) Defaults(ctx context.Context) (config.Object, config.Control, er
 		return nil, config.Continue, err
 	}
 	fields = append(fields, config.FieldOf("archive", config.ObjectValue(config.Object{config.FieldOf("timeout", config.String(archive.Timeout.String())), config.FieldOf("workerMemoryBytes", memory)})))
+	pdf, err := pdfReaderDefaults(ctx)
+	if err != nil {
+		return nil, config.Continue, err
+	}
+	fields = append(fields, config.FieldOf("pdfReader", config.ObjectValue(pdf)))
 	return fields, config.Continue, nil
 }

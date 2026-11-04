@@ -34,3 +34,5 @@ WebDAV 管理使用 `/api/v1/files/connections`（列表/创建）和 `/{connect
 分享引用管理为 `/api/v1/files/shortcuts`（GET 列表 / POST 保存）、`/{shortcutId}`（DELETE 已回收引用，body 带 revision）和 `/{shortcutId}/open`（受保护 GET 返回 303，Location 为 `/share#token=...`）。固定集合为 `/files/pins`（GET / POST）、`/{pinId}`（DELETE）与 `/order`（PUT 完整有序 ID 集合），所有写入携带集合 revision，冲突 409。快捷方式改名/移动复用条目 PATCH 并要求 expectedRevision。控制 JSON 限 4096 字节，当前 IAM / CSRF 与 owner 检查不变；响应 private/no-store、no-referrer。
 
 本人压缩包使用 "POST /api/v1/files/{id}/archive/inspect"、"/member"、"/download"、"/extract"，均带源expectedRevision及可选密码（仅body）。前三项files:read，提取files:write，全部要求会话及CSRF；源/目标归属、预算和错误语义见[文件管理](../docs/operations/file-management.md#本人压缩包浏览与提取)。
+
+本人PDF阅读复用当前私有内容operation；普通文件列表与版本页新增`pdfReader` typed预算投影，字节、像素和毫秒单位明确。未新增operation或迁移，原生operation仍154。生成来源与使用限制见[文件管理](../docs/operations/file-management.md#本人-pdf-阅读与临时批注)。

@@ -12,3 +12,8 @@ supportedArchitectures:
 onlyBuiltDependencies:
   - esbuild
   - msw
+
+# R134-002：上游修复下界尚未进入父依赖范围时，限定父依赖覆盖；上游保证下界后移除。
+overrides:
+  'ajv>fast-uri': '3.1.9'
+  'postcss>source-map-js': '1.2.2'

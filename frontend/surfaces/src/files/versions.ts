@@ -1,3 +1,4 @@
+import { pdfReaderLimitsSchema } from './pdf-contract';
 import { z } from 'zod';
 import { fileEntrySchema, type FileEntry } from './model';
 export const fileHistoryMaxVersions = 20;
@@ -15,6 +16,7 @@ export type FileVersion = z.infer<typeof fileVersionSchema>;
 export type VersionOrder = 'newest' | 'oldest';
 export const fileVersionPageSchema = z
   .object({
+    pdfReader: pdfReaderLimitsSchema,
     entry: fileEntrySchema,
     items: z.array(fileVersionSchema).max(fileHistoryMaxVersions + 1),
     page: z.number().int().positive(),

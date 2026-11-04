@@ -1,0 +1,35 @@
+schema_version: 1
+id: R134-002
+title: production依赖安全刷新
+question: 19条production依赖公告的最窄修正与验证范围是什么
+research_type: current-project-and-official-source
+topics: [Next.js, Zod, dependency-security]
+keywords: [Next.js, Zod, dependency-security]
+status: active
+summary: 保留现有架构，升级Next/Zod并窄约束传递修复版本。
+applicable_scenarios: [当前私有文件应用, production依赖]
+non_applicable_scenarios: [开发依赖全面审计, 所有未知漏洞零风险承诺]
+evidence:
+  types: [source-code, official-source, tests]
+  primary_sources:
+    - title: 官方Next release
+      locator: https://github.com/vercel/next.js/releases/tag/v16.4.5
+      snapshot: 16.4.5，2026-11-04复核
+    - title: 公告与注册元数据快照
+      locator: .data/134-security-source-snapshots.json
+      snapshot: 2026-11-04
+    - title: 生产锁文件
+      locator: frontend/pnpm-lock.yaml
+      snapshot: 134实施快照
+researched_at: 2026-11-04
+verified_at: 2026-11-04
+validity:
+  mode: snapshot
+  review_after: 2026-12-04
+  refresh_triggers: [受影响依赖或官方公告变化, 路由代理Surface预算或测试被破坏]
+relations:
+  extends: []
+  related: [R134-001]
+  supersedes: []
+  superseded_by: []
+report: report.md

@@ -45,6 +45,9 @@ function resolveNextBin() {
   }
 }
 
+// 启动任何子进程前准备同一套本地PDF资源；失败不得留下半启动的开发进程。
+await import('../prepare-pdf-assets.mjs');
+
 const children = [];
 
 function run(name, command, args, options = {}) {

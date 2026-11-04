@@ -26,6 +26,23 @@ export default function nextConfig(phase: string): NextConfig {
           },
         }
       : {}),
+    headers() {
+      return Promise.resolve([
+        {
+          source: '/file-viewers/pdf/:path*',
+          headers: [
+            {
+              key: 'Content-Security-Policy',
+              value:
+                "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'",
+            },
+            { key: 'Referrer-Policy', value: 'no-referrer' },
+            { key: 'X-Content-Type-Options', value: 'nosniff' },
+            { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+          ],
+        },
+      ]);
+    },
     transpilePackages: [
       '@clouddrive/config',
       '@clouddrive/core',

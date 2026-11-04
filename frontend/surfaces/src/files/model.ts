@@ -1,3 +1,4 @@
+import { pdfReaderLimitsSchema } from './pdf-contract';
 import { z } from 'zod';
 import { annotationLimitsSchema, annotationSummarySchema } from './annotation-values';
 import type { AnnotationsPort } from './annotations';
@@ -54,6 +55,7 @@ export const fileEntrySchema = z.object({
 });
 export type FileEntry = z.infer<typeof fileEntrySchema>;
 export const fileListingSchema = z.object({
+  pdfReader: pdfReaderLimitsSchema,
   items: z.array(fileEntrySchema),
   breadcrumbs: z.array(fileEntrySchema),
   usedBytes: z.number(),

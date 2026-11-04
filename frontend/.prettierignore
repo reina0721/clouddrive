@@ -2,3 +2,6 @@ apps/web/next-env.d.ts
 pnpm-lock.yaml
 
 apps/web/src/generated/native-openapi.json
+
+apps/web/public/file-viewers/pdf/
+apps/web/src/files/pdf/locales/

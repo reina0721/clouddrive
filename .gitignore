@@ -72,3 +72,6 @@ node_modules/
 frontend/apps/web/dist/
 frontend/test-results/
 frontend/playwright-report/
+
+# 固定SDK与项目frame的可复现生成资源
+/frontend/apps/web/public/file-viewers/pdf/

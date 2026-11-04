@@ -1,0 +1,33 @@
+schema_version: 1
+change: 134-pdf-reader
+areas:
+  - id: repository
+    decision: updated
+    documents: [README.md, docs/repository-scope.md]
+    reason: 第十四批私有PDF能力与当前验收、部署和未实现范围同步。
+  - id: webui
+    decision: updated
+    documents: [README.md, frontend/README.md]
+    reason: 私有当前/历史PDF路径、Host注入和本地资源构建及双重预算。
+  - id: frontend
+    decision: updated
+    documents: [frontend/README.md]
+    reason: SDK在独立frame与显式Worker中装配，不穿透Surface；Dialog使用可选workspace布局。
+  - id: configuration
+    decision: updated
+    documents: [docs/configuration/README.md]
+    reason: files.pdfReader正值收紧策略、单位及RestartRequired归属。
+  - id: capability
+    decision: updated
+    documents: [docs/architecture/README.md, docs/architecture/technology-selection.md, docs/operations/runtime-capabilities.md]
+    reason: PDF.js窄接入、资源所有权、成熟方案取舍和安全刷新。
+  - id: startup
+    decision: reviewed-no-change
+    reason: 原Go/Next双进程、迁移及首次设置步骤不变；现有pnpm dev/build内部自动准备本地PDF资源。
+  - id: module
+    decision: reviewed-no-change
+    reason: 仍由files既有配置binding及公开内容接口承担，无新增模块、Go资源或跨模块依赖。
+  - id: api
+    decision: updated
+    documents: [api/README.md]
+    reason: 普通列表/版本页的typed PDFReaderLimits投影，operation仍154且无迁移。

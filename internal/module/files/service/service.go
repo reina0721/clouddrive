@@ -32,6 +32,7 @@ const (
 )
 
 type Policy struct {
+	PDFReader              PDFReaderPolicy
 	MaxFileBytes           int64
 	QuotaBytes             int64
 	ConcurrentUploads      int
@@ -51,9 +52,12 @@ type Policy struct {
 }
 
 func DefaultPolicy() Policy {
-	return Policy{MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries, ShortcutLimit: DefaultShortcutLimit, SearchTreeEntries: DefaultSearchTreeEntries, AnnotationMaxBytes: model.MaxAnnotationBytes, AnnotationBatchEntries: DefaultAnnotationBatchEntries, HistoryEnabled: true, HistoryPerFile: model.MaxFileHistory, HistoryPerOwner: model.MaxOwnerHistory}
+	return Policy{PDFReader: DefaultPDFReaderPolicy(), MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries, ShortcutLimit: DefaultShortcutLimit, SearchTreeEntries: DefaultSearchTreeEntries, AnnotationMaxBytes: model.MaxAnnotationBytes, AnnotationBatchEntries: DefaultAnnotationBatchEntries, HistoryEnabled: true, HistoryPerFile: model.MaxFileHistory, HistoryPerOwner: model.MaxOwnerHistory}
 }
 func (p Policy) Validate() error {
+	if err := p.PDFReader.Validate(); err != nil {
+		return err
+	}
 	if p.HistoryPerFile < 1 || p.HistoryPerFile > model.MaxFileHistory || p.HistoryPerOwner < 1 || p.HistoryPerOwner > model.MaxOwnerHistory {
 		return fmt.Errorf("invalid file history budgets")
 	}

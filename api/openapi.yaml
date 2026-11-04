@@ -1865,6 +1865,8 @@ components:
         pageSize:
           format: int64
           type: integer
+        pdfReader:
+          $ref: "#/components/schemas/PDFReaderLimits"
         quotaBytes:
           format: int64
           type: integer
@@ -1878,6 +1880,7 @@ components:
           format: int64
           type: integer
       required:
+        - pdfReader
         - items
         - breadcrumbs
         - usedBytes
@@ -2086,6 +2089,51 @@ components:
           type: boolean
         showSummaries:
           type: boolean
+      type: object
+    PDFReaderLimits:
+      additionalProperties: false
+      properties:
+        maxBytes:
+          format: int64
+          type: integer
+        maxCanvasPixels:
+          format: int64
+          type: integer
+        maxImagePixels:
+          format: int64
+          type: integer
+        maxOutlineDepth:
+          format: int64
+          type: integer
+        maxOutlineEntries:
+          format: int64
+          type: integer
+        maxPages:
+          format: int64
+          type: integer
+        maxThumbnailBytes:
+          format: int64
+          type: integer
+        maxThumbnailPixels:
+          format: int64
+          type: integer
+        workTimeoutMs:
+          format: int64
+          type: integer
+        workerReadyTimeoutMs:
+          format: int64
+          type: integer
+      required:
+        - maxBytes
+        - maxPages
+        - maxCanvasPixels
+        - maxImagePixels
+        - maxOutlineEntries
+        - maxOutlineDepth
+        - maxThumbnailPixels
+        - maxThumbnailBytes
+        - workTimeoutMs
+        - workerReadyTimeoutMs
       type: object
     PasswordInputBody:
       additionalProperties: false
@@ -3818,6 +3866,8 @@ components:
         pageSize:
           format: int64
           type: integer
+        pdfReader:
+          $ref: "#/components/schemas/PDFReaderLimits"
         perFile:
           format: int64
           type: integer
@@ -3831,6 +3881,7 @@ components:
           format: int64
           type: integer
       required:
+        - pdfReader
         - entry
         - items
         - page

@@ -9,6 +9,7 @@ export async function loadFileAnnotationMessages(): Promise<TranslationResources
   const collaboration = await import('../../plugins/files/collaboration-i18n');
   const workspace = await import('../../plugins/files/workspace-i18n');
   const archives = await import('../../plugins/files/archive-i18n');
+  const pdf = await import('../../plugins/files/pdf-i18n');
   return {
     'zh-CN': {
       translation: {
@@ -20,6 +21,7 @@ export async function loadFileAnnotationMessages(): Promise<TranslationResources
           collaboration: collaboration.zhCollaboration,
           workspace: workspace.zhWorkspace,
           archives: archives.zhArchives,
+          pdf: pdf.zhPDF,
           shareStatuses: { paused: '已暂停', limited: '目录信息受限' },
           shareHint: '访客仅能使用授予此链接的能力，密码和有效期始终生效。',
           errors: {
@@ -43,6 +45,7 @@ export async function loadFileAnnotationMessages(): Promise<TranslationResources
           collaboration: collaboration.enCollaboration,
           workspace: workspace.enWorkspace,
           archives: archives.enArchives,
+          pdf: pdf.enPDF,
           shareStatuses: { paused: 'Paused', limited: 'Folder information limited' },
           shareHint:
             'Visitors can use only the capabilities granted to this link. Password and expiration still apply.',

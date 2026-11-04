@@ -12,3 +12,6 @@
 *.webp -text
 *.woff -text
 *.woff2 -text
+
+# PDF测试夹具必须保留原始字节和xref偏移，不参与文本diff或行尾转换。
+/frontend/file-tests/fixtures/pdf/*.pdf binary

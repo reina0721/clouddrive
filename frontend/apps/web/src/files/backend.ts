@@ -1,3 +1,4 @@
+import { createDocumentReader } from './document-reader';
 import { createArchivesRuntime } from './archives';
 import {
   defaultFileViewPreferences,
@@ -106,7 +107,9 @@ export function createFilesRuntime(
       if (options?.signal?.aborted) code = 'canceled';
       else if (error instanceof ApiError) {
         const payload = JSON.stringify(error.payload);
-        if (error.status === 401) code = 'unauthenticated';
+        if (error.code === 'limit') code = 'large';
+        else if (error.code === 'timeout') code = 'timeout';
+        else if (error.status === 401) code = 'unauthenticated';
         else if (error.status === 403)
           code = payload?.includes('files_archive_password') ? 'archive-password' : 'forbidden';
         else if (error.status === 504) code = 'timeout';
@@ -512,6 +515,7 @@ export function createFilesRuntime(
   };
   return {
     archives: archives.port,
+    readDocument: createDocumentReader(call, versions.readContent, assertCurrent),
     port,
     navigation: createFileNavigationPort(call, base + native, () => {
       if (disposed || !account || owner() !== account) throw new FilesError('canceled');

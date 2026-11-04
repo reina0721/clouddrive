@@ -84,3 +84,7 @@ Files 高级搜索使用 Surface 自有类型与规范化条件编码，Host 负
 ApplicationChrome 使用既有 Next dynamic 与共享加载界面延后 FilesRuntime、AppShell 脚本。FilesRuntime 在组件树中保持同一位置，不随文件/管理路由切换重建，传输队列仍只有一个所有者；异步边界不改变认证、账号隔离和资源关闭策略。
 
 压缩浏览窗口只在本人ZIP/7Z打开时挂载，使用cover大小的DialogSurface；普通确认维持lg。Host拥有包内图像URL，关闭预览及运行域销毁均归还资源，密码只留在当前窗口。当前范围与预算见[文件管理](../docs/operations/file-management.md#本人压缩包浏览与提取)。
+
+私有PDF由Host通过`FileDocument`/`FileDocumentProps`注入，Surface契约位于`surfaces/src/files/pdf-contract.ts`，只携带元数据、普通预算和关闭意图。Host拥有有界HTTP、当前版本围栏、同源frame、显式module Worker、SDK及临时URL；第三方对象不穿越Surface。固定本地PDF资产在dev/build准备，`performance:check`同时校验其摘要和独立预算，不提高主应用预算。组件来源及许可见[PDF资源](apps/web/src/files/pdf/README.md)，用户行为和限制仍以[文件管理](../docs/operations/file-management.md#本人-pdf-阅读与临时批注)为准。
+
+PDF frame源码不由Next HMR转译；修改其源码后重启开发进程，统一准备步骤重新生成本地frame资源。常规Host React界面仍使用Next开发流程。

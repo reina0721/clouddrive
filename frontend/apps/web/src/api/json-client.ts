@@ -1,6 +1,6 @@
 export class ApiError extends Error {
   constructor(
-    public readonly code: 'http' | 'network' | 'timeout' | 'protocol',
+    public readonly code: 'http' | 'network' | 'timeout' | 'protocol' | 'limit',
     public readonly status = 0,
     public readonly payload: unknown = undefined,
     options?: ErrorOptions,
@@ -33,6 +33,7 @@ export function createJsonClient(apiBaseUrl: string, request: typeof fetch = fet
       body?: unknown;
       rawBody?: Blob;
       responseType?: 'json' | 'blob';
+      maxBlobBytes?: number;
       timeoutMs?: number;
       headers?: Readonly<Record<string, string>>;
       signal?: AbortSignal;
@@ -82,7 +83,17 @@ export function createJsonClient(apiBaseUrl: string, request: typeof fetch = fet
         throw new ApiError('http', response.status, payload);
       }
       if (response.status === 204) return null;
-      if (options.responseType === 'blob') return await response.blob();
+      if (options.responseType === 'blob') {
+        if (options.maxBlobBytes === undefined) return await response.blob();
+        const { BlobBodyError, readBoundedBlob } = await import('./blob-body');
+        try {
+          return await readBoundedBlob(response, options.maxBlobBytes, signal);
+        } catch (error) {
+          if (error instanceof BlobBodyError && error.code === 'limit')
+            throw new ApiError('limit', 0, undefined, { cause: error });
+          throw error;
+        }
+      }
       try {
         return await response.json();
       } catch {

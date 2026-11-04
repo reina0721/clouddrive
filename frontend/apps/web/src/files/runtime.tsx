@@ -1,4 +1,6 @@
 'use client';
+import { lazy, Suspense } from 'react';
+import type { FileDocumentProps } from '@clouddrive/surface/files';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { FilesProvider, type FileMediaProps } from '@clouddrive/surface/files/runtime';
 import { Page, PageHeader } from '@clouddrive/surface-foundation/layout';
@@ -13,6 +15,9 @@ import { createFilesRuntime, fileDestinationHrefs } from './backend';
 import { fileDestinationHref } from './destinations';
 import { FileMediaView } from './media-view';
 
+const PDFReader = lazy(() =>
+  import('./pdf/reader-view').then((module) => ({ default: module.PDFReaderView })),
+);
 export function FilesRuntime({
   children,
   fileWorkspace,
@@ -45,6 +50,19 @@ export function FilesRuntime({
         : undefined,
     [runtime],
   );
+  const Document = useMemo(
+    () =>
+      runtime
+        ? function DocumentRenderer(props: FileDocumentProps) {
+            return (
+              <Suspense fallback={<p role="status">{props.entry.name}</p>}>
+                <PDFReader {...props} readContent={runtime.readDocument} />
+              </Suspense>
+            );
+          }
+        : undefined,
+    [runtime],
+  );
   useLayoutEffect(() => {
     if (!runtime) return;
     runtime.activate();
@@ -52,7 +70,7 @@ export function FilesRuntime({
       void runtime.dispose().catch(() => setTransferFailure(true));
     };
   }, [runtime]);
-  if (!runtime || !Media)
+  if (!runtime || !Media || !Document)
     return fileWorkspace ? (
       <main id="main-content" tabIndex={-1} className="p-4">
         <Page>
@@ -77,6 +95,7 @@ export function FilesRuntime({
       port={runtime.port}
       archives={runtime.archives}
       media={Media}
+      pdfReader={Document}
       accountTools={FileAccountMenu}
       transfers={runtime.transfers}
       connections={runtime.connections}

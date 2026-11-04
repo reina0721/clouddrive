@@ -150,6 +150,10 @@
     "@internationalized/date": {
       "owner": "UI Adapter calendar value parsing for HeroUI date controls",
       "allowed": ["packages/ui-adapter"]
+    },
+    "pdfjs-dist": {
+      "owner": "Host PDF应用：固定本地SDK资源与独立frame/Worker生命周期；SDK对象不得穿越Surface契约",
+      "allowed": ["apps/web"]
     }
   }
 }

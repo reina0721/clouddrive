@@ -1,0 +1,11 @@
+{
+  "version": "6.4.299",
+  "publicPath": "/file-viewers/pdf/6.4.299",
+  "protocolVersion": 1,
+  "assetBudgets": {
+    "coreGzipBytes": 524288,
+    "workerGzipBytes": 1048576,
+    "cssGzipBytes": 65536,
+    "totalBytes": 41943040
+  }
+}

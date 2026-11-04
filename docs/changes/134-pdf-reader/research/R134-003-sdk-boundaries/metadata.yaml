@@ -1,0 +1,35 @@
+schema_version: 1
+id: R134-003
+title: PDF.js真实编辑和资源语义
+question: 编辑模式就绪、图像预算与显式Worker如何形成可验证边界
+research_type: current-project-and-official-source
+topics: [PDF.js, Worker, image-budget, annotation]
+keywords: [PDF.js, Worker, image-budget, annotation]
+status: active
+summary: 等待公开编辑事件及自有Worker启动；图像超额为可见省略，不伪装全保真。
+applicable_scenarios: [私有有界PDF阅读, 临时标注与副本导出]
+non_applicable_scenarios: [硬内存上限, 超大图像的全保真, 上游私有协议扩展]
+evidence:
+  types: [source-code, official-source, tests]
+  primary_sources:
+    - title: 官方当前SDK
+      locator: frontend/apps/web/node_modules/pdfjs-dist/web/pdf_viewer.mjs
+      snapshot: 6.4.299
+    - title: 官方图像worker
+      locator: frontend/apps/web/node_modules/pdfjs-dist/build/pdf.worker.mjs
+      snapshot: 6.4.299
+    - title: 真实浏览器验收
+      locator: .data/134-pdf-delivery.log
+      snapshot: 2026-11-04，11例通过
+researched_at: 2026-11-04
+verified_at: 2026-11-04
+validity:
+  mode: snapshot
+  review_after: 2026-12-04
+  refresh_triggers: [pdfjs-dist版本或公共API变化, SDK新增typed图像省略错误, 内容与会话围栏变化]
+relations:
+  extends: []
+  related: [R134-002]
+  supersedes: [R134-001]
+  superseded_by: []
+report: report.md

@@ -11,6 +11,8 @@ export type DialogSurfaceProps = Readonly<{
   cancelLabel: string;
   /** 压缩包等连续浏览工作区使用cover，普通确认保持lg。 */
   size?: 'lg' | 'cover';
+  /** workspace 为连续阅读保留视口，使用紧凑边距；普通确认保持standard。 */
+  layout?: 'standard' | 'workspace';
   /**
    * 可选确认动作：缺省时 Dialog 只保留关闭动作（设置面板等不需要二次确认的
    * 普通决策场景），不再强行渲染"确认"语义。
@@ -35,6 +37,7 @@ export function DialogSurface({
   children,
   cancelLabel,
   size = 'lg',
+  layout = 'standard',
   confirmLabel,
   defaultOpen = false,
   confirmDisabled = false,
@@ -87,18 +90,47 @@ export function DialogSurface({
         className="ui-overlay-motion bg-scrim backdrop-blur-sm"
       >
         <Modal.Container className="ui-overlay-motion" placement="center" size={size}>
-          <Modal.Dialog className="ui-overlay-surface ui-dialog-layout w-full">
-            <Modal.Header className="shrink-0 border-b border-border px-6 py-5">
+          <Modal.Dialog
+            className="ui-overlay-surface ui-dialog-layout w-full"
+            {...(layout === 'workspace' ? { style: { height: '100dvh' } } : {})}
+          >
+            <Modal.Header
+              className={
+                layout === 'workspace'
+                  ? 'shrink-0 border-b border-border px-3 py-3'
+                  : 'shrink-0 border-b border-border px-6 py-5'
+              }
+            >
               <Modal.Heading className="text-lg font-bold text-ink">{title}</Modal.Heading>
-              <p className="mt-1 text-sm leading-6 text-ink-muted">{description}</p>
+              <p
+                className={
+                  layout === 'workspace'
+                    ? 'mt-1 text-xs leading-5 text-ink-muted'
+                    : 'mt-1 text-sm leading-6 text-ink-muted'
+                }
+              >
+                {description}
+              </p>
             </Modal.Header>
-            <Modal.Body className="ui-dialog-body px-6 py-5">{children}</Modal.Body>
+            <Modal.Body
+              className={
+                layout === 'workspace' ? 'ui-dialog-body px-3 py-3' : 'ui-dialog-body px-6 py-5'
+              }
+            >
+              {children}
+            </Modal.Body>
             {failed && failureMessage ? (
               <p className="px-6 pb-4 text-sm font-medium text-danger" role="alert">
                 {failureMessage}
               </p>
             ) : null}
-            <Modal.Footer className="flex shrink-0 flex-wrap justify-end gap-3 border-t border-border px-6 py-4">
+            <Modal.Footer
+              className={
+                layout === 'workspace'
+                  ? 'flex shrink-0 flex-wrap justify-end gap-3 border-t border-border px-3 py-2'
+                  : 'flex shrink-0 flex-wrap justify-end gap-3 border-t border-border px-6 py-4'
+              }
+            >
               <Modal.CloseTrigger
                 aria-label={cancelLabel}
                 className="static inline-flex min-h-control w-auto min-w-20 items-center justify-center rounded-control border border-border bg-surface px-4 text-sm font-semibold leading-none text-ink shadow-sm hover:bg-surface-muted"

@@ -22,3 +22,12 @@ describe('JSON 传输的 HEAD 与错误链', () => {
     await expect(call('/history')).rejects.toBeInstanceOf(ApiError);
   });
 });
+it('有界客户端超额保留limit和原因，不伪造服务端HTTP413', async () => {
+  const request = vi.fn<typeof fetch>().mockResolvedValue(new Response('bounded', { status: 200 }));
+  const failure = createJsonClient('/api', request)('/file', {
+    responseType: 'blob',
+    maxBlobBytes: 2,
+  });
+  await expect(failure).rejects.toMatchObject({ code: 'limit', status: 0 });
+  await expect(failure).rejects.toHaveProperty('cause.code', 'limit');
+});

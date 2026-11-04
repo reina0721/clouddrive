@@ -75,6 +75,7 @@ type Query struct {
 }
 
 type Listing struct {
+	PDFReader           PDFReaderLimits     `json:"pdfReader"`
 	Items               []model.Entry       `json:"items"`
 	Breadcrumbs         []model.Entry       `json:"breadcrumbs"`
 	UsedBytes           int64               `json:"usedBytes"`
@@ -372,7 +373,7 @@ func (s *Service) List(ctx context.Context, owner string, input Query) (Listing,
 	if err != nil {
 		return Listing{}, err
 	}
-	result := Listing{Items: []model.Entry{}, Breadcrumbs: []model.Entry{}, UsedBytes: model.Used(entries), QuotaBytes: s.policy.QuotaBytes, MaxFileBytes: s.policy.MaxFileBytes, ConcurrentUploads: s.policy.ConcurrentUploads, MaxTextBytes: s.policy.MaxTextBytes, MaxArchiveBytes: s.policy.MaxArchiveBytes, MaxBatchEntries: s.policy.MaxBatchEntries, MaxThumbnailBytes: s.policy.MaxThumbnailBytes, MaxMediaBytes: s.policy.MaxMediaBytes, MaxGalleryEntries: s.policy.MaxGalleryEntries, DefaultPageSize: DefaultListPageSize, MaxPageSize: MaxListPageSize, SearchTreeEntries: s.policy.SearchTreeEntries, MaxKeywords: MaxQueryKeywords, MaxExtensions: MaxQueryExtensions}
+	result := Listing{PDFReader: s.policy.PDFReader.Limits(s.policy.MaxMediaBytes), Items: []model.Entry{}, Breadcrumbs: []model.Entry{}, UsedBytes: model.Used(entries), QuotaBytes: s.policy.QuotaBytes, MaxFileBytes: s.policy.MaxFileBytes, ConcurrentUploads: s.policy.ConcurrentUploads, MaxTextBytes: s.policy.MaxTextBytes, MaxArchiveBytes: s.policy.MaxArchiveBytes, MaxBatchEntries: s.policy.MaxBatchEntries, MaxThumbnailBytes: s.policy.MaxThumbnailBytes, MaxMediaBytes: s.policy.MaxMediaBytes, MaxGalleryEntries: s.policy.MaxGalleryEntries, DefaultPageSize: DefaultListPageSize, MaxPageSize: MaxListPageSize, SearchTreeEntries: s.policy.SearchTreeEntries, MaxKeywords: MaxQueryKeywords, MaxExtensions: MaxQueryExtensions}
 	result.AnnotationSummaries = []AnnotationSummary{}
 	result.AnnotationLimits = s.annotationLimits()
 	if q.ParentID != "" {

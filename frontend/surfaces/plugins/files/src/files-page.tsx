@@ -35,6 +35,7 @@ import {
   type FileViewPreferences,
   type UploadCandidate,
 } from '../../../src/files/model';
+import { isPDFDocument } from '../../../src/files/pdf-contract';
 import type { PinTarget } from '../../../src/files/navigation';
 import {
   FileMedia,
@@ -62,6 +63,9 @@ import { TextDialog, type TextRequest } from './text-dialog';
 import { VersionsPanel } from './versions-panel';
 import { ViewOptionsDialog } from './view-options-dialog';
 
+const PdfDialog = lazy(() =>
+  import('./pdf-dialog').then((module) => ({ default: module.PdfDialog })),
+);
 const ArchiveDialog = lazy(() =>
   import('./archive-dialog').then((module) => ({ default: module.ArchiveDialog })),
 );
@@ -137,6 +141,7 @@ export function FilesPage({
   const [dialog, setDialog] = useState<Dialog>();
   const [shareTarget, setShareTarget] = useState<FileEntry>();
   const [textRequest, setTextRequest] = useState<TextRequest>();
+  const [pdfEntry, setPdfEntry] = useState<FileEntry>();
   const [mediaEntry, setMediaEntry] = useState<FileEntry>();
   const [archiveEntry, setArchiveEntry] = useState<FileEntry>();
   const [contextEntry, setContextEntry] = useState<string>();
@@ -433,6 +438,10 @@ export function FilesPage({
       }
       if (entry.kind === 'shortcut') {
         navigation.openShortcut(entry.id);
+        return;
+      }
+      if (isPDFDocument(entry)) {
+        setPdfEntry(entry);
         return;
       }
       if (/^(image|audio|video)\//.test(entry.mediaType)) {
@@ -1565,6 +1574,15 @@ export function FilesPage({
             reload();
           }}
         />
+      ) : null}
+      {pdfEntry && listing ? (
+        <Suspense fallback={<p role="status">{pdfEntry.name}</p>}>
+          <PdfDialog
+            entry={pdfEntry}
+            limits={listing.pdfReader}
+            onClose={() => setPdfEntry(undefined)}
+          />
+        </Suspense>
       ) : null}
       {mediaEntry && listing ? (
         <DialogSurface

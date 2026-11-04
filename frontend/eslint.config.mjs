@@ -7,7 +7,14 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/out/**', '**/.next/**', '**/coverage/**', '**/node_modules/**'],
+    ignores: [
+      '**/dist/**',
+      '**/out/**',
+      '**/.next/**',
+      '**/coverage/**',
+      '**/node_modules/**',
+      'apps/web/public/file-viewers/pdf/**',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked.map((config) => ({

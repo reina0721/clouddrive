@@ -47,3 +47,5 @@ WebDAV 连接当前提供 `/home/connections` 与独立 `/dav/{connectionId}/...
 分享快捷方式与固定集合复用 files 的数据库 owner 事务和现有会话，未新增 Kernel 资源。SQLite/HTTP 验证两个 owner、版本 CAS、引用数量/元数据预算、原分享密码/撤销/到期/根目录可见性及真正停止重建；引用不产生文件字节、不扩展嵌套分享授权。
 
 高级文件查询复用现有 GORM 租约和 Go 字符串/时间处理，无独立连接、索引或 worker。账号元数据扫描明确受 `files.search.treeEntries` 限制，超预算返回失败，不截断为成功；查询只读，不变更既有迁移或内容。
+
+私有PDF阅读为浏览器Host内的有界文档应用，复用files/IAM及现有内容接口；本地frame/Worker资源不成为Go Kernel后台服务。使用与限制统一见[文件管理](file-management.md#本人-pdf-阅读与临时批注)。

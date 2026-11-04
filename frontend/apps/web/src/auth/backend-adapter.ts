@@ -27,6 +27,7 @@ export function createBackendAuthService(
       return await json(path, body ? { method: 'POST', body } : {});
     } catch (error) {
       if (!(error instanceof ApiError)) throw new AuthError('unavailable');
+      if (error.code === 'limit') throw error;
       if (error.code !== 'http') throw new AuthError(error.code);
       if (error.status === 401)
         throw new AuthError(path === '/auth/session' ? 'expired' : 'credentials');

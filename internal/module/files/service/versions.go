@@ -27,22 +27,23 @@ type FileVersion struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 type VersionPage struct {
-	Entry             model.Entry   `json:"entry"`
-	Items             []FileVersion `json:"items"`
-	Page              int           `json:"page"`
-	PageSize          int           `json:"pageSize"`
-	Total             int           `json:"total"`
-	ContentRevision   int64         `json:"contentRevision"`
-	HistoryRevision   int64         `json:"historyRevision"`
-	HistoryEnabled    bool          `json:"historyEnabled"`
-	PerFile           int           `json:"perFile"`
-	PerOwner          int           `json:"perOwner"`
-	FileHistoryBytes  int64         `json:"fileHistoryBytes"`
-	OwnerHistoryBytes int64         `json:"ownerHistoryBytes"`
-	OwnerUsedBytes    int64         `json:"ownerUsedBytes"`
-	QuotaBytes        int64         `json:"quotaBytes"`
-	MaxTextBytes      int64         `json:"maxTextBytes"`
-	MaxMediaBytes     int64         `json:"maxMediaBytes"`
+	PDFReader         PDFReaderLimits `json:"pdfReader"`
+	Entry             model.Entry     `json:"entry"`
+	Items             []FileVersion   `json:"items"`
+	Page              int             `json:"page"`
+	PageSize          int             `json:"pageSize"`
+	Total             int             `json:"total"`
+	ContentRevision   int64           `json:"contentRevision"`
+	HistoryRevision   int64           `json:"historyRevision"`
+	HistoryEnabled    bool            `json:"historyEnabled"`
+	PerFile           int             `json:"perFile"`
+	PerOwner          int             `json:"perOwner"`
+	FileHistoryBytes  int64           `json:"fileHistoryBytes"`
+	OwnerHistoryBytes int64           `json:"ownerHistoryBytes"`
+	OwnerUsedBytes    int64           `json:"ownerUsedBytes"`
+	QuotaBytes        int64           `json:"quotaBytes"`
+	MaxTextBytes      int64           `json:"maxTextBytes"`
+	MaxMediaBytes     int64           `json:"maxMediaBytes"`
 }
 type VersionMutation struct {
 	ExpectedContentRevision int64 `json:"expectedContentRevision" minimum:"1" maximum:"9007199254740991"`
@@ -141,7 +142,7 @@ func (s *Service) Versions(ctx context.Context, owner, id string, page int, orde
 	if order == VersionsNewest {
 		slices.Reverse(versions)
 	}
-	result := VersionPage{Entry: entry, Items: []FileVersion{}, Page: page, PageSize: DefaultVersionPageSize, Total: len(versions), ContentRevision: entry.ContentRevision, HistoryRevision: entry.HistoryRevision, HistoryEnabled: s.policy.HistoryEnabled, PerFile: s.policy.HistoryPerFile, PerOwner: s.policy.HistoryPerOwner, FileHistoryBytes: model.HistoryBytes(entry), OwnerUsedBytes: model.Used(entries), QuotaBytes: s.policy.QuotaBytes, MaxTextBytes: s.policy.MaxTextBytes, MaxMediaBytes: s.policy.MaxMediaBytes}
+	result := VersionPage{PDFReader: s.policy.PDFReader.Limits(s.policy.MaxMediaBytes), Entry: entry, Items: []FileVersion{}, Page: page, PageSize: DefaultVersionPageSize, Total: len(versions), ContentRevision: entry.ContentRevision, HistoryRevision: entry.HistoryRevision, HistoryEnabled: s.policy.HistoryEnabled, PerFile: s.policy.HistoryPerFile, PerOwner: s.policy.HistoryPerOwner, FileHistoryBytes: model.HistoryBytes(entry), OwnerUsedBytes: model.Used(entries), QuotaBytes: s.policy.QuotaBytes, MaxTextBytes: s.policy.MaxTextBytes, MaxMediaBytes: s.policy.MaxMediaBytes}
 	for _, item := range entries {
 		result.OwnerHistoryBytes += model.HistoryBytes(item)
 	}

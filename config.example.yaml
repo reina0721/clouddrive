@@ -327,6 +327,16 @@ observability:
 
 # 私有文件的有界传输预算；变更后重启服务。
 files:
+  pdfReader:
+    maxPages: 500
+    maxCanvasPixels: 4194304
+    maxImagePixels: 8388608
+    maxOutlineEntries: 500
+    maxOutlineDepth: 16
+    maxThumbnailPixels: 65536
+    maxThumbnailBytes: 524288
+    workTimeout: 30s
+    workerReadyTimeout: 10s
   offline:
     enabled: true
     batchEntries: 20
