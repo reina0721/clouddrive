@@ -32,4 +32,4 @@
 - [x] V01 集中验收；前置20项齐备；完成条件：Go/HTTP/安全/前端/浏览器/失败边界和性能证据完整。
 - [x] V02 最新预览；前置V01；完成条件：两套最新服务、120条既有文件保留、访问资料与视觉复核。
 - [x] D01 文档与完整审阅；前置V01/V02；完成条件：当前authority、影响、生成/凭据/旧路径检查。
-- [ ] C01 提交与推送；前置D01；完成条件：精确Conventional Commit、实际push结果；403不勾选。
+- [x] C01 提交与推送；前置D01；完成条件已满足：84项任务路径精确提交dcafaac（feat(files): add durable HTTP offline downloads），实际push退出0，origin/main由305667e更新为dcafaac；原始日志.data/129-push-final.log。保留当前main与原remote，未改写既有历史。

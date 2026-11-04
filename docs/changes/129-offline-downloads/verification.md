@@ -39,3 +39,7 @@
 普通4173/8080/9090和用户预览4180/8120/9120均已重启到最新代码，files v11 compatible。普通开发保留本地配置原有Scheduler关闭决策，离线创建明确不可用；用户预览Scheduler启用且新建入口可用。预览不放开回环来源策略，隔离4191服务仅为本批真实来源夹具显式允许127.0.0.1/32。
 
 两份实施前一致性备份逐条比较全部Entry列，普通库0条、预览库120条既有文件全部保留。最新预览实际账号登录、下载页面/新建弹窗/390px导航只读检查通过，没有在用户库创建或删除任务/文件。访问账号、密码、令牌与会话仅保存在ignored `.data/preview-access.json`，说明为`129-preview-guide.txt`，运行态证据为`129-runtime-receipt.json`与`129-preview-browser-receipt.json`。服务保持运行。
+
+## 提交与远端
+
+功能提交dcafaac：`feat(files): add durable HTTP offline downloads`，84项任务文件。实际`git push origin main`退出0，远端由305667e更新为dcafaac，日志为ignored `129-push-final.log`。本次没有沿用128的403结论；当前实际推送已成功。收尾时当前分支为main，revision与研究基线相同，保留当前分支、remote及既有提交历史。验收清单的推送事实在成功之后补记，不提前勾选。
