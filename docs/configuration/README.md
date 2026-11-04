@@ -112,3 +112,5 @@ memory backend 只在单进程内可见，记录同步写入，不提供外部�
 files 模块拥有 `files` 的逻辑配额、文本/ZIP/条目/媒体预算，`transfers` 暂存/分块/容量/期限/锁预算、`connections` 独立连接/目录扫描/协议预算/实际公网 origin，`navigation` 账号引用/固定集合/元数据预算，及 `sharing` 有效期、单文件下载票据、尝试窗口和 KDF 准入，统一默认、严格校验及 RestartRequired 策略；默认值、传输约束和位置保护只在[文件管理](../operations/file-management.md)维护。精确传输路由使用 `http.transferTimeout`，核心 PATCH 在认证准入后使用分块 body 上限，WebDAV PUT 在独立凭据认证准入后使用文件流式上限；普通 HTTP 请求预算保持独立。
 
 `files.search` 拥有只读文件检索的账号元数据树预算，沿用同一默认注册、严格校验与 RestartRequired 装配；具体上限与超预算行为统一见[文件管理](../operations/file-management.md#高级搜索与文件视图)。
+
+`files.archive` 拥有压缩解析请求的超时和子进程内存预算，严格校验并使用RestartRequired装配；默认值、平台支持与失败语义只在[文件管理](../operations/file-management.md#本人压缩包浏览与提取)维护。

@@ -6,7 +6,16 @@ import { CheckboxField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
 import { fileClipboardMaxEntries, type FileClipboardMode } from '../../../src/files/clipboard';
 import { formatFileBytes as bytes } from '../../../src/files/format';
@@ -52,6 +61,15 @@ import { TagsBatchDialog } from './tags-batch-dialog';
 import { TextDialog, type TextRequest } from './text-dialog';
 import { VersionsPanel } from './versions-panel';
 import { ViewOptionsDialog } from './view-options-dialog';
+
+const ArchiveDialog = lazy(() =>
+  import('./archive-dialog').then((module) => ({ default: module.ArchiveDialog })),
+);
+const archiveFile = (entry: FileEntry) =>
+  entry.kind === 'file' &&
+  (/\.(zip|7z)$/i.test(entry.name) ||
+    entry.mediaType === 'application/zip' ||
+    entry.mediaType === 'application/x-7z-compressed');
 
 type Props = Readonly<{
   parent: string;
@@ -120,6 +138,7 @@ export function FilesPage({
   const [shareTarget, setShareTarget] = useState<FileEntry>();
   const [textRequest, setTextRequest] = useState<TextRequest>();
   const [mediaEntry, setMediaEntry] = useState<FileEntry>();
+  const [archiveEntry, setArchiveEntry] = useState<FileEntry>();
   const [contextEntry, setContextEntry] = useState<string>();
   const [galleryPage, setGalleryPage] = useState(0);
   const [archiving, setArchiving] = useState(false);
@@ -408,6 +427,10 @@ export function FilesPage({
   }
   const showPreview = useCallback(
     async (entry: FileEntry) => {
+      if (archiveFile(entry)) {
+        setArchiveEntry(entry);
+        return;
+      }
       if (entry.kind === 'shortcut') {
         navigation.openShortcut(entry.id);
         return;
@@ -1221,6 +1244,9 @@ export function FilesPage({
                               ...(entry.kind === 'file'
                                 ? [
                                     { id: 'download', label: t('files.download') },
+                                    ...(archiveFile(entry)
+                                      ? [{ id: 'browse-archive', label: t('files.archives.title') }]
+                                      : []),
                                     { id: 'versions', label: t('files.versions.title') },
                                     { id: 'upload-version', label: t('files.versions.upload') },
                                     ...(entry.mediaType.startsWith('text/') ||
@@ -1240,7 +1266,8 @@ export function FilesPage({
                       }
                       onAction={(action) => {
                         setContextEntry(undefined);
-                        if (action === 'versions') setVersionEntry(entry);
+                        if (action === 'browse-archive') setArchiveEntry(entry);
+                        else if (action === 'versions') setVersionEntry(entry);
                         else if (action === 'upload-version') void uploadVersion(entry);
                         else if (action === 'queue-copy' || action === 'queue-cut')
                           queueClipboard(
@@ -1599,6 +1626,15 @@ export function FilesPage({
             reload();
           }}
         />
+      ) : null}
+      {archiveEntry ? (
+        <Suspense fallback={<p role="status">{t('files.previewLoading')}</p>}>
+          <ArchiveDialog
+            entry={archiveEntry}
+            onClose={() => setArchiveEntry(undefined)}
+            onChanged={reload}
+          />
+        </Suspense>
       ) : null}
       {preview ? (
         <DialogSurface

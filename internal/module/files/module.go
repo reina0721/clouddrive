@@ -32,6 +32,7 @@ func ValidateStorage(ctx context.Context, access repo.Access, identity string) e
 }
 
 type Dependencies struct {
+	ArchiveProcessor         service.ArchiveProcessor
 	OfflinePolicy            service.DownloadPolicy
 	OfflineDispatcherEnabled bool
 	OfflineAuthority         service.DownloadAccountAuthority
@@ -71,6 +72,10 @@ func New(deps Dependencies) (Module, error) {
 		return Module{}, err
 	}
 	useCases, err := service.New(repository, deps.Content, deps.Clock, deps.IDs, unicodename.Normalizer{}, deps.Policy)
+	if err != nil {
+		return Module{}, err
+	}
+	archives, err := service.NewArchives(useCases, deps.ArchiveProcessor)
 	if err != nil {
 		return Module{}, err
 	}
@@ -120,6 +125,7 @@ func New(deps Dependencies) (Module, error) {
 		return Module{}, err
 	}
 	boundary := &handler.Handler{Service: useCases, Sharing: sharing, ShareTransfers: shareTransfers, Navigation: navigation, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
+	boundary.Archives = archives
 	boundary.WebDAV, err = webdavbinding.New(boundary, davFiles, deps.ConnectionPolicy, deps.Policy.MaxFileBytes)
 	if err != nil {
 		return Module{}, err

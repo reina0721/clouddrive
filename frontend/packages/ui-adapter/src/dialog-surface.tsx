@@ -9,6 +9,8 @@ export type DialogSurfaceProps = Readonly<{
   description: string;
   children: ReactNode;
   cancelLabel: string;
+  /** 压缩包等连续浏览工作区使用cover，普通确认保持lg。 */
+  size?: 'lg' | 'cover';
   /**
    * 可选确认动作：缺省时 Dialog 只保留关闭动作（设置面板等不需要二次确认的
    * 普通决策场景），不再强行渲染"确认"语义。
@@ -32,6 +34,7 @@ export function DialogSurface({
   description,
   children,
   cancelLabel,
+  size = 'lg',
   confirmLabel,
   defaultOpen = false,
   confirmDisabled = false,
@@ -83,7 +86,7 @@ export function DialogSurface({
         isKeyboardDismissDisabled={pending}
         className="ui-overlay-motion bg-scrim backdrop-blur-sm"
       >
-        <Modal.Container className="ui-overlay-motion" placement="center" size="lg">
+        <Modal.Container className="ui-overlay-motion" placement="center" size={size}>
           <Modal.Dialog className="ui-overlay-surface ui-dialog-layout w-full">
             <Modal.Header className="shrink-0 border-b border-border px-6 py-5">
               <Modal.Heading className="text-lg font-bold text-ink">{title}</Modal.Heading>

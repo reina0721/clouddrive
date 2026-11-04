@@ -42,3 +42,5 @@ one-shot CLI 走 Bootstrap 或 invocation-scoped Kernel 路径，不启动长期
 ## 当前权威与历史证据
 
 当前架构说明以本页链接的主题文档为准。历史研究和设计过程保存在 [研究档案](../research/README.md) 与 [任务级变更记录](../changes/README.md)，用于解释决策来源和验证证据，不作为并列的当前规范。新增架构能力必须同步更新本页或对应主题页，不能只在最近代码目录旁新增说明。
+
+压缩解析是按请求创建的受限子进程，由files模块公开工厂装配，并通过模块入口分派私有worker参数。worker在读取源字节前建立操作系统资源限制，不初始化Application、配置、数据库、监听器或第二个Logger；父请求拥有取消、终止、Wait及句柄清理。它不是新的常驻Service或任务调度系统；详细技术边界见[技术选型](technology-selection.md#有界压缩解析)。

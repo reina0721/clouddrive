@@ -10,6 +10,10 @@ export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
 export type FilesErrorCode =
+  | 'archive-password'
+  | 'archive-checksum'
+  | 'archive-worker'
+  | 'timeout'
   | 'metadata-limited'
   | 'history-full'
   | 'unavailable'

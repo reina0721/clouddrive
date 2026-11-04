@@ -83,3 +83,9 @@ HTTP 重试、熔断、限流、缓存加载和执行恢复都涉及不同的幂
 7. **架构切片**：启动期 `applicationBlueprint` 已移出纯 catalog/policy/contract；runtime graph 继续由 Generation 原子切换，后续 owner 调整必须另以真实收益研究。
 
 每一步都是非文档变更，必须使用 057 的明确任务 ID，在计划报告后的后续消息中获得确认；新事实改变依赖、公共接口、迁移或生命周期边界时重新研究和确认。
+
+## 有界压缩解析
+
+本人ZIP/7Z解析保留标准 `archive/zip`，选择 `bodgit/sevenzip v1.6.5` 提供7Z；升级其兼容依赖lz4/v4至4.1.27。未引入通用多格式框架、外部7z命令或持久任务框架：当前需求只有ZIP/7Z，额外格式没有对应使用方。sevenzip的头部与字典可能在成员预算前分配，故采用同程序受限进程，而不是在HTTP进程解析或用Go软内存目标冒充硬限制。
+
+files模块工厂装配窄 `ArchiveProcessor`，composition只访问公开模块入口；解析Adapter不进入上层业务契约。Windows使用现有x/sys Job Object，Linux使用RLIMIT_DATA，未知平台拒绝能力。files Service继续负责归属、名称、选择、配额、单事务发布与失败补偿。新格式、远端索引、公开分享、后台任务或新平台都需要刷新研究；不保留无约束旧解析回退。取舍与替换条件见[133研究](../changes/133-archive-browser/research/R133-001-archive-boundary/report.md)。

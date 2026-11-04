@@ -82,3 +82,5 @@ Files 提供 `/home/shared` 和 NavigationPort，统一保存引用、固定项�
 Files 高级搜索使用 Surface 自有类型与规范化条件编码，Host 负责查询参数、按账号隔离的视图偏好和 DOM 焦点。普通网格/列表由服务端分页，选择与范围锚点只覆盖当前页；列、缩略图和目录优先沿用同一偏好契约。无效 URL 明确报错，不偷偷降级为无条件查询；日期采用 UTC 整日，条件编码有独立长度上限。具体预算与键盘操作统一见[文件管理](../docs/operations/file-management.md)。
 
 ApplicationChrome 使用既有 Next dynamic 与共享加载界面延后 FilesRuntime、AppShell 脚本。FilesRuntime 在组件树中保持同一位置，不随文件/管理路由切换重建，传输队列仍只有一个所有者；异步边界不改变认证、账号隔离和资源关闭策略。
+
+压缩浏览窗口只在本人ZIP/7Z打开时挂载，使用cover大小的DialogSurface；普通确认维持lg。Host拥有包内图像URL，关闭预览及运行域销毁均归还资源，密码只留在当前窗口。当前范围与预算见[文件管理](../docs/operations/file-management.md#本人压缩包浏览与提取)。

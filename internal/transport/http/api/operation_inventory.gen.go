@@ -19,6 +19,10 @@ const (
 	OperationFilesAnnotationsSummaries      OperationID = "files.annotations.summaries"
 	OperationFilesAnnotationsTagsBatch      OperationID = "files.annotations.tags-batch"
 	OperationFilesArchive                   OperationID = "files.archive"
+	OperationFilesArchiveDownload           OperationID = "files.archive.download"
+	OperationFilesArchiveExtract            OperationID = "files.archive.extract"
+	OperationFilesArchiveInspect            OperationID = "files.archive.inspect"
+	OperationFilesArchiveMember             OperationID = "files.archive.member"
 	OperationFilesConnectionsCreate         OperationID = "files.connections.create"
 	OperationFilesConnectionsList           OperationID = "files.connections.list"
 	OperationFilesConnectionsRead           OperationID = "files.connections.read"
@@ -172,6 +176,10 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesAnnotationsSummaries, Method: "GET", Path: "/api/v1/files/annotations/summaries", Policy: "protected", Scope: "files:read", Action: "files.annotations.summaries"},
 	{ID: OperationFilesAnnotationsTagsBatch, Method: "POST", Path: "/api/v1/files/annotations/tags-batch", Policy: "protected", Scope: "files:write", Action: "files.annotations.tags-batch"},
 	{ID: OperationFilesArchive, Method: "POST", Path: "/api/v1/files/archive", Policy: "protected", Scope: "files:read", Action: "files.archive"},
+	{ID: OperationFilesArchiveDownload, Method: "POST", Path: "/api/v1/files/{id}/archive/download", Policy: "protected", Scope: "files:read", Action: "files.archive.download"},
+	{ID: OperationFilesArchiveExtract, Method: "POST", Path: "/api/v1/files/{id}/archive/extract", Policy: "protected", Scope: "files:write", Action: "files.archive.extract"},
+	{ID: OperationFilesArchiveInspect, Method: "POST", Path: "/api/v1/files/{id}/archive/inspect", Policy: "protected", Scope: "files:read", Action: "files.archive.inspect"},
+	{ID: OperationFilesArchiveMember, Method: "POST", Path: "/api/v1/files/{id}/archive/member", Policy: "protected", Scope: "files:read", Action: "files.archive.member"},
 	{ID: OperationFilesConnectionsCreate, Method: "POST", Path: "/api/v1/files/connections", Policy: "protected", Scope: "files:write", Action: "files.connections.create"},
 	{ID: OperationFilesConnectionsList, Method: "GET", Path: "/api/v1/files/connections", Policy: "protected", Scope: "files:read", Action: "files.connections.list"},
 	{ID: OperationFilesConnectionsRead, Method: "GET", Path: "/api/v1/files/connections/{connectionId}", Policy: "protected", Scope: "files:read", Action: "files.connections.read"},

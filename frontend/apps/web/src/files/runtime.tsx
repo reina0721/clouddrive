@@ -75,6 +75,7 @@ export function FilesRuntime({
     <FilesProvider
       key={account}
       port={runtime.port}
+      archives={runtime.archives}
       media={Media}
       accountTools={FileAccountMenu}
       transfers={runtime.transfers}

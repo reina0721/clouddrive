@@ -361,6 +361,9 @@ files:
   concurrentUploads: 2
   maxTextBytes: 1048576
   maxArchiveBytes: 67108864
+  archive:
+    timeout: 30s
+    workerMemoryBytes: 536870912
   maxBatchEntries: 500
   maxThumbnailBytes: 2097152
   maxMediaBytes: 33554432

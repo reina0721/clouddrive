@@ -12,6 +12,7 @@ import type { ConnectionsPort } from './connections';
 import type { DownloadsPort } from './downloads';
 import type { FileEntry, FilesPort, PublicFilesPort } from './model';
 import type { NavigationPort } from './navigation';
+import type { ArchivesPort } from './archives';
 import type { TransfersPort } from './transfers';
 export { loadFileAnnotationMessages, loadPublicFileMessages } from './messages';
 
@@ -26,12 +27,14 @@ const AccountToolsContext = createContext<ComponentType | null>(null);
 const MediaContext = createContext<ComponentType<FileMediaProps> | null>(null);
 
 const Context = createContext<FilesPort | null>(null);
+const ArchivesContext = createContext<ArchivesPort | null>(null);
 const TransfersContext = createContext<TransfersPort | null>(null);
 const DownloadsContext = createContext<DownloadsPort | null>(null);
 const ConnectionsContext = createContext<ConnectionsPort | null>(null);
 const NavigationContext = createContext<NavigationPort | null>(null);
 export function FilesProvider({
   port,
+  archives,
   children,
   media: Media,
   accountTools: AccountTools,
@@ -41,6 +44,7 @@ export function FilesProvider({
   navigation,
 }: Readonly<{
   port: FilesPort;
+  archives: ArchivesPort;
   transfers: TransfersPort;
   downloads: DownloadsPort;
   connections: ConnectionsPort;
@@ -56,7 +60,9 @@ export function FilesProvider({
           <NavigationContext value={navigation}>
             <DownloadsContext value={downloads}>
               <MediaContext value={Media}>
-                <AccountToolsContext value={AccountTools}>{children}</AccountToolsContext>
+                <AccountToolsContext value={AccountTools}>
+                  <ArchivesContext value={archives}>{children}</ArchivesContext>
+                </AccountToolsContext>
               </MediaContext>
             </DownloadsContext>
           </NavigationContext>
@@ -69,6 +75,12 @@ export function FilesProvider({
 export function useFileNavigation() {
   const port = useContext(NavigationContext);
   if (!port) throw new Error('File navigation runtime is required');
+  return port;
+}
+
+export function useArchives() {
+  const port = useContext(ArchivesContext);
+  if (!port) throw new Error('File archive runtime is required');
   return port;
 }
 

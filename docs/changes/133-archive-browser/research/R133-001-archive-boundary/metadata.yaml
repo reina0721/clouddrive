@@ -1,0 +1,46 @@
+schema_version: 1
+id: R133-001
+title: 压缩包解析、资源隔离与原子发布
+question: 如何补齐ZIP/7Z在线浏览及选择解压，同时约束解码内存并保留文件归属、配额和取消语义？
+research_type: current-project-and-external-primary-source
+topics: [archive, zip, sevenzip, process-isolation, atomic-publication]
+keywords: [ZIP, 7Z, bodgit, JobObject, RLIMIT_DATA, owner-CAS]
+status: active
+summary: 标准archive/zip与sevenzip v1.6.5放入受控同二进制worker；files继续拥有选择、命名、配额和事务发布。
+applicable_scenarios: [本人有界ZIP或7Z, Windows或Linux受控子进程, 当前Content与Repository]
+non_applicable_scenarios: [分卷或自解压文件, 加密ZIP, 公开分享, 持久后台解压任务, 无资源限制的任意可执行文件]
+evidence:
+  types: [source-code, official-documentation, official-source, security-advisory, git-history]
+  primary_sources:
+    - title: 当前工程
+      locator: report.md
+      snapshot: d23dc6493ab7d15a7ae307d373ef380b04bc0f00
+    - title: Cloudreve浏览应用
+      locator: https://docs.cloudreve.org/zh/usage/file-apps
+      snapshot: 2026-11-04复核ZIP/7Z结构预览与选择解压
+    - title: sevenzip候选
+      locator: https://github.com/bodgit/sevenzip/releases/tag/v1.6.5
+      snapshot: release 2026-07-10，仓库最近push 2026-10-28，BSD-3-Clause，go1.25
+    - title: 解码源码
+      locator: https://github.com/bodgit/sevenzip/blob/v1.6.5/internal/lzma2/reader.go
+      snapshot: 字典容量取自包内属性；NewReader阶段也可能解码header，无每实例预算选项
+    - title: Go进程等待
+      locator: https://pkg.go.dev/os/exec
+      snapshot: 2026-11-04复核；实施使用本地Go1.26.10签名，不据最新文档升级工具链
+    - title: Windows进程资源
+      locator: https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects
+      snapshot: Job内存限制及KillOnClose，Windows8以上支持嵌套
+    - title: Linux资源限制
+      locator: https://man7.org/linux/man-pages/man2/getrlimit.2.html
+      snapshot: RLIMIT_DATA约束brk及Linux4.7起mmap分配，不将Go软内存目标称为硬限制
+researched_at: 2026-11-04
+verified_at: 2026-11-04
+validity:
+  mode: snapshot
+  refresh_triggers: [解析库版本或安全公告变化, worker入口和资源限制变化, Content或文件事务契约变化, 公共分享或持久任务扩展, 新平台运行目标]
+relations:
+  extends: []
+  related: [R128-001, R129-001, R131-001, R119-001]
+  supersedes: []
+  superseded_by: []
+report: report.md

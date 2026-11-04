@@ -17,7 +17,7 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 文件复制为 `POST /api/v1/files/{id}/copy`；文本替换为 `PUT /{id}/text`，必须带 `expectedRevision`；ZIP 为 `POST /api/v1/files/archive`。分享管理使用 `/api/v1/files/shares` 的创建/检索、`/{shareId}` 的读取/CAS设置、`/{shareId}/state` 的CAS暂停/恢复和 `/{shareId}/revoke`，仍要求 IAM 会话、文件权限和写请求 CSRF。
 
-访客入口 `/api/v1/file-shares/{token}` 的 metadata、entries、unlock、content、text、folders、entries/change、entries/batch、archive及transfers（create/read/data/commit/cancel）operation 显式声明 public，不放宽任何私有 files operation。所有公开写入需要可信Origin，文件操作额外检查当前分享能力、策略版本和范围。解锁POST需要可信Origin，票据通过 `X-Share-Grant` header 传递，不能用 IAM 会话代替。原生浏览器下载经 `POST /file-shares/{token}/content/{id}/download` 授权，随后以短期限定文件句柄访问 `GET/HEAD /file-downloads/{ticket}`。私有和公开下载提供 Range/条件请求，每次检查撤销、到期和范围；完整 code-first 结果为当前 150 个原生 operation。
+访客入口 `/api/v1/file-shares/{token}` 的 metadata、entries、unlock、content、text、folders、entries/change、entries/batch、archive及transfers（create/read/data/commit/cancel）operation 显式声明 public，不放宽任何私有 files operation。所有公开写入需要可信Origin，文件操作额外检查当前分享能力、策略版本和范围。解锁POST需要可信Origin，票据通过 `X-Share-Grant` header 传递，不能用 IAM 会话代替。原生浏览器下载经 `POST /file-shares/{token}/content/{id}/download` 授权，随后以短期限定文件句柄访问 `GET/HEAD /file-downloads/{ticket}`。私有和公开下载提供 Range/条件请求，每次检查撤销、到期和范围；完整 code-first 结果为当前 154 个原生 operation。
 
 原生 OpenAPI 与 operation inventory 通过 `internal/composition/httpcatalog` 的同一清单生成；生成器不再单独选择模块，也不导入带资源的应用组合根。
 
@@ -27,8 +27,10 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 通知与 API 工作区、历史、任务按用户隔离。API 执行权限为 console:workbench:execute；任务写入还需要 console:workbench:write。目标地址、取消、超时和响应限制由服务端执行；不支持的指纹/代理功能返回明确失败。
 
-WebDAV 管理使用 `/api/v1/files/connections`（列表/创建）和 `/{connectionId}`（读取/CAS修改）、`/state`、`/rotate`。一次性密码不进入列表。独立协议入口为 `/dav/{connectionId}/...`，支持 OPTIONS、PROPFIND、受保护属性的 PROPPATCH、GET/HEAD、PUT、MKCOL、COPY、MOVE 和 DELETE，使用独立 Basic 凭据及当前 IAM 权限。该协议不属于 OpenAPI 标准方法清单，不计入上述150个JSON/原生operation；LOCK/UNLOCK不可用。实际客户端地址由管理响应的 endpointOrigin/endpointPath 提供，限制见[文件管理](../docs/operations/file-management.md)。
+WebDAV 管理使用 `/api/v1/files/connections`（列表/创建）和 `/{connectionId}`（读取/CAS修改）、`/state`、`/rotate`。一次性密码不进入列表。独立协议入口为 `/dav/{connectionId}/...`，支持 OPTIONS、PROPFIND、受保护属性的 PROPPATCH、GET/HEAD、PUT、MKCOL、COPY、MOVE 和 DELETE，使用独立 Basic 凭据及当前 IAM 权限。该协议不属于 OpenAPI 标准方法清单，不计入上述154个JSON/原生operation；LOCK/UNLOCK不可用。实际客户端地址由管理响应的 endpointOrigin/endpointPath 提供，限制见[文件管理](../docs/operations/file-management.md)。
 
 `GET /api/v1/files` 在同一 operation 承载高级搜索：重复的 `keywords`、`extensions`、`kinds` 参数，`scope`、`match`、`caseSensitive`、字节/时间上下界、`foldersFirst`、`page` 和 `pageSize`。数组不按逗号拆分，字节零值区别于缺失；时间为包含起点、不含终点。返回 `total` 与生效分页及预算。未指定 `pageSize` 或显式 0 保留有界非分页读取，普通网页显式请求 50/100/200；范围、排序和日期语义见[文件管理](../docs/operations/file-management.md)。
 
 分享引用管理为 `/api/v1/files/shortcuts`（GET 列表 / POST 保存）、`/{shortcutId}`（DELETE 已回收引用，body 带 revision）和 `/{shortcutId}/open`（受保护 GET 返回 303，Location 为 `/share#token=...`）。固定集合为 `/files/pins`（GET / POST）、`/{pinId}`（DELETE）与 `/order`（PUT 完整有序 ID 集合），所有写入携带集合 revision，冲突 409。快捷方式改名/移动复用条目 PATCH 并要求 expectedRevision。控制 JSON 限 4096 字节，当前 IAM / CSRF 与 owner 检查不变；响应 private/no-store、no-referrer。
+
+本人压缩包使用 "POST /api/v1/files/{id}/archive/inspect"、"/member"、"/download"、"/extract"，均带源expectedRevision及可选密码（仅body）。前三项files:read，提取files:write，全部要求会话及CSRF；源/目标归属、预算和错误语义见[文件管理](../docs/operations/file-management.md#本人压缩包浏览与提取)。

@@ -1,3 +1,4 @@
+import { createArchivesRuntime } from './archives';
 import {
   defaultFileViewPreferences,
   fileDetailSchema,
@@ -106,11 +107,17 @@ export function createFilesRuntime(
       else if (error instanceof ApiError) {
         const payload = JSON.stringify(error.payload);
         if (error.status === 401) code = 'unauthenticated';
-        else if (error.status === 403) code = 'forbidden';
+        else if (error.status === 403)
+          code = payload?.includes('files_archive_password') ? 'archive-password' : 'forbidden';
+        else if (error.status === 504) code = 'timeout';
+        else if (error.status === 503 && payload?.includes('files_archive_worker_unavailable'))
+          code = 'archive-worker';
         else if (error.status === 404) code = 'missing';
         else if (error.status === 410) code = 'expired';
         else if (error.status === 422 && payload?.includes('files_transfer_checksum'))
           code = 'checksum';
+        else if (error.status === 422 && payload?.includes('files_archive_checksum'))
+          code = 'archive-checksum';
         else if (error.status === 422 && payload?.includes('files_unsupported'))
           code = 'unsupported';
         else if (error.status === 409)
@@ -261,6 +268,7 @@ export function createFilesRuntime(
     copy: (id, parentId, name) => port.copy(id, parentId, name),
     update: (id, change) => port.update(id, change),
   });
+  const archives = createArchivesRuntime(call, assertCurrent);
   const port: FilesPort = {
     clipboard: clipboard.port,
     versions: versions.port,
@@ -503,6 +511,7 @@ export function createFilesRuntime(
     },
   };
   return {
+    archives: archives.port,
     port,
     navigation: createFileNavigationPort(call, base + native, () => {
       if (disposed || !account || owner() !== account) throw new FilesError('canceled');
@@ -549,6 +558,7 @@ export function createFilesRuntime(
       for (const listener of dropListeners) listener(candidates);
     },
     dispose: async () => {
+      archives.dispose();
       clipboard.dispose();
       downloads.dispose();
       disposed = true;

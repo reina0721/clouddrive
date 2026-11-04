@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/reina0721/clouddrive/internal/module/files"
 	"io"
 	"runtime"
 
@@ -71,6 +72,12 @@ type Application struct {
 
 // Run 从进程入口输入构造基线日志与 Application，并完整释放入口拥有的日志资源。
 func Run(ctx context.Context, cfg EntryConfig, args []string) (runErr error) {
+	if len(args) > 0 && args[0] == files.ArchiveWorkerArgument {
+		if ctx == nil {
+			return fmt.Errorf("archive worker context missing")
+		}
+		return files.RunArchiveWorker(ctx, cfg.Stdin, cfg.Stdout, args[1:])
+	}
 	baselineConfig := pkglogger.DefaultConfig()
 	baselineConfig.OutputPaths = []string{"stderr"}
 	baseline, err := pkglogger.New(&baselineConfig)

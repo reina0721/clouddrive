@@ -583,6 +583,71 @@
         ],
         "type": "object"
       },
+      "ArchiveDownloadInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "expectedRevision": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "password": {
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/ArchiveSelection"
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "password",
+          "selection"
+        ],
+        "type": "object"
+      },
+      "ArchiveExtractRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "conflict": {
+            "enum": [
+              "reject",
+              "skip",
+              "rename"
+            ],
+            "type": "string"
+          },
+          "expectedRevision": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "folderName": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/ArchiveSelection"
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "password",
+          "selection",
+          "parentId",
+          "folderName",
+          "conflict"
+        ],
+        "type": "object"
+      },
       "ArchiveInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -598,6 +663,197 @@
         },
         "required": [
           "ids"
+        ],
+        "type": "object"
+      },
+      "ArchiveInspectInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "expectedRevision": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "password": {
+            "maxLength": 1024,
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "password"
+        ],
+        "type": "object"
+      },
+      "ArchiveManifest": {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "$ref": "#/components/schemas/Entry"
+          },
+          "format": {
+            "type": "string"
+          },
+          "maxBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxImageBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxMembers": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxTextBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/ArchiveMember"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "totalBytes": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "entry",
+          "format",
+          "members",
+          "totalBytes",
+          "maxBytes",
+          "maxMembers",
+          "maxTextBytes",
+          "maxImageBytes"
+        ],
+        "type": "object"
+      },
+      "ArchiveMember": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "path",
+          "kind",
+          "sizeBytes"
+        ],
+        "type": "object"
+      },
+      "ArchiveMemberInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "expectedRevision": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "password": {
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "password",
+          "path"
+        ],
+        "type": "object"
+      },
+      "ArchiveReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "created": {
+            "items": {
+              "$ref": "#/components/schemas/Entry"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "destinationId": {
+            "type": "string"
+          },
+          "renamed": {
+            "items": {
+              "$ref": "#/components/schemas/ArchiveRenamed"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "skipped": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "destinationId",
+          "created",
+          "skipped",
+          "renamed"
+        ],
+        "type": "object"
+      },
+      "ArchiveRenamed": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "name"
+        ],
+        "type": "object"
+      },
+      "ArchiveSelection": {
+        "additionalProperties": false,
+        "properties": {
+          "mode": {
+            "enum": [
+              "all",
+              "selected"
+            ],
+            "type": "string"
+          },
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "mode",
+          "paths"
         ],
         "type": "object"
       },
@@ -9496,6 +9752,238 @@
               }
             },
             "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/{id}/archive/download": {
+      "post": {
+        "operationId": "files.archive.download",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveDownloadInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                  "x-contentMediaType": "application/octet-stream"
+                }
+              }
+            },
+            "description": "包内所选内容的有界ZIP"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/{id}/archive/extract": {
+      "post": {
+        "operationId": "files.archive.extract",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveExtractRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveReceipt"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/{id}/archive/inspect": {
+      "post": {
+        "operationId": "files.archive.inspect",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveInspectInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveManifest"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/{id}/archive/member": {
+      "post": {
+        "operationId": "files.archive.member",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveMemberInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                  "x-contentMediaType": "application/octet-stream"
+                }
+              }
+            },
+            "description": "包内单个成员的有界字节"
           },
           "default": {
             "content": {

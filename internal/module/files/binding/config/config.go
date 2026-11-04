@@ -10,6 +10,7 @@ import (
 )
 
 type Config struct {
+	Archive           service.ArchivePolicy  `mapstructure:"archive"`
 	Offline           service.DownloadPolicy `mapstructure:"offline"`
 	MaxFileBytes      int64                  `mapstructure:"maxFileBytes"`
 	QuotaBytes        int64                  `mapstructure:"quotaBytes"`
@@ -55,6 +56,7 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 	share := service.DefaultSharePolicy()
 	c.Sharing = ShareConfig{ActiveLimit: share.ActiveLimit, BatchEntries: share.BatchEntries, MaxAge: share.MaxAge, GrantTTL: share.GrantTTL, AttemptWindow: share.AttemptWindow, AttemptLimit: share.AttemptLimit, KDFConcurrency: share.KDFConcurrency, DownloadTTL: share.DownloadTTL, DownloadLimit: share.DownloadLimit}
 	c.Offline = service.DefaultDownloadPolicy()
+	c.Archive = service.DefaultArchivePolicy()
 	c.Transfers = defaultTransfers()
 	c.Connections = defaultConnections()
 	c.Navigation = defaultNavigation()
@@ -80,6 +82,9 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 		return Config{}, err
 	}
 	if err := c.Offline.Validate(); err != nil {
+		return Config{}, err
+	}
+	if err := c.Archive.Validate(); err != nil {
 		return Config{}, err
 	}
 	return c, c.validateTransfers()
@@ -175,5 +180,11 @@ func (defaults) Defaults(ctx context.Context) (config.Object, config.Control, er
 		return nil, config.Continue, err
 	}
 	fields = append(fields, config.FieldOf("offline", config.ObjectValue(offline)))
+	archive := service.DefaultArchivePolicy()
+	memory, err := config.Number(fmt.Sprint(archive.WorkerMemoryBytes))
+	if err != nil {
+		return nil, config.Continue, err
+	}
+	fields = append(fields, config.FieldOf("archive", config.ObjectValue(config.Object{config.FieldOf("timeout", config.String(archive.Timeout.String())), config.FieldOf("workerMemoryBytes", memory)})))
 	return fields, config.Continue, nil
 }

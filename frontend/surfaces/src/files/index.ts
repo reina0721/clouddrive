@@ -11,3 +11,4 @@ export * from './clipboard';
 
 export * from './versions';
 export * from './downloads';
+export * from './archives';

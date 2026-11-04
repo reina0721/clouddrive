@@ -20,6 +20,7 @@ type TransferProtocol interface {
 	Handle(http.ResponseWriter, *http.Request, string)
 }
 type Handler struct {
+	Archives         *service.Archives
 	Downloads        *service.OfflineDownloads
 	Service          *service.Service
 	Sharing          *service.Sharing
@@ -72,6 +73,10 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 		status, code = 409, "files_history_full"
 	case errors.Is(err, model.ErrUnsupported):
 		status, code = http.StatusUnprocessableEntity, "files_unsupported"
+	case errors.Is(err, service.ErrArchivePassword):
+		status, code = http.StatusForbidden, "files_archive_password"
+	case errors.Is(err, service.ErrArchiveChecksum):
+		status, code = http.StatusUnprocessableEntity, "files_archive_checksum"
 	case errors.Is(err, service.ErrContentPrecondition):
 		status, code = 412, "files_content_precondition"
 	case errors.Is(err, service.ErrConnectionSystemFile):
@@ -108,6 +113,8 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 		status, code = 499, "files_canceled"
 	case errors.Is(err, context.DeadlineExceeded):
 		status, code = 504, "files_timeout"
+	case errors.Is(err, service.ErrArchiveWorker):
+		status, code = 503, "files_archive_worker_unavailable"
 	}
 	if status >= 500 && !errors.Is(err, context.DeadlineExceeded) {
 		h.Logger.Error("files.request.failed", logger.String("code", code))

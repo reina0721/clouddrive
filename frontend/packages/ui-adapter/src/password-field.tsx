@@ -11,7 +11,8 @@ import type { TextFieldProps } from './text-field';
 
 export type PasswordFieldProps = Omit<TextFieldProps, 'purpose' | 'autoComplete'> &
   Readonly<{
-    purpose: 'current' | 'new';
+    /** transient用于压缩包等临时密钥，不声明账号密码自动填充语义。 */
+    purpose: 'current' | 'new' | 'transient';
     showLabel: string;
     hideLabel: string;
     visibilityIcons?: Readonly<{ show: ReactNode; hide: ReactNode }>;
@@ -45,7 +46,13 @@ export function PasswordField({
         <InputGroup.Input
           className="w-0 min-w-0 flex-1 rounded-none border-0 bg-transparent p-0 text-sm text-ink shadow-none outline-none"
           type={visible ? 'text' : 'password'}
-          autoComplete={purpose === 'new' ? 'new-password' : 'current-password'}
+          autoComplete={
+            purpose === 'transient'
+              ? 'off'
+              : purpose === 'new'
+                ? 'new-password'
+                : 'current-password'
+          }
           {...inputProps}
         />
         <InputGroup.Suffix className="bg-transparent p-0">
