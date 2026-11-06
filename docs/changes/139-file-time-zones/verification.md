@@ -34,3 +34,5 @@ DST远期案例用于验证消歧和正确ISO请求，并明确由服务端30天
 区域保存范围沿用现有机制，界面设置为当前浏览器，账户跨设备偏好单独保存；不是文件视图同步。支持的时区取决于运行环境，不自带另一份IANA数据库。自定义草稿固定打开时的实际时区，keep不损失精度，相对小时不是日历加减。版本保留设置、BT/magnet、远程节点、Office等仍待后续批次。本批没有新增或更新视觉golden。
 
 最终主预览4181与QA4194分别运行.next/139-primary-r3、.next/139-qa-r3，开发4173已重启成功；后端保持137-lf。17项运行检查通过。主预览通过浏览器实际打开分享草稿，确认时区及绝对时刻预览（.data/139-primary-time.png），没有提交分享或修改原文件。访问资料位于忽略目录.data/139-preview-guide.txt。
+
+功能提交`778f62790ca0f7edb39b40d54253b8dc775a074c`（`feat(files): align file times and share expiry with time zones`）已推送至origin/main，并用ls-remote核对一致。运行目录、凭据、数据库、构建和测试产物均未纳入提交。
