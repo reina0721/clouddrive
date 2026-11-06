@@ -554,8 +554,8 @@ export const pluginI18nResources = {
             'DescriptionList 保留 term/description 语义、缺失值和窄屏重排。',
           optionalValue: '可选字段',
           navigationDescription: '文本链接、层级导航、分页和内容 Tabs 分别保留原生导航语义。',
-          treeExpand: '展开 {{label}}',
-          treeCollapse: '收起 {{label}}',
+          treeExpand: '展开',
+          treeCollapse: '收起',
           textLinkDescription:
             'TextLink 用于真实导航；SPA 拦截由 Host Adapter 注入，Action 不伪装链接。',
           backToActions: '返回 Actions',
@@ -1030,8 +1030,8 @@ export const pluginI18nResources = {
           optionalValue: 'Optional value',
           navigationDescription:
             'Text links, hierarchy, pagination, and content tabs each preserve their native navigation meaning.',
-          treeExpand: 'Expand {{label}}',
-          treeCollapse: 'Collapse {{label}}',
+          treeExpand: 'Expand',
+          treeCollapse: 'Collapse',
           textLinkDescription:
             'TextLink performs navigation; SPA interception belongs to the Host adapter and Action never impersonates a link.',
           backToActions: 'Back to actions',

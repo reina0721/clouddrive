@@ -37,6 +37,8 @@ export type TreeNode = Readonly<{
   /** optional：行级 leading icon（受控 ReactNode，只做内容，不承担展开）。 */
   leadingIcon?: ReactNode;
   disabled?: boolean;
+  /** 尚未加载子集合时仍可展开；读取为空后应明确传false。 */
+  hasChildItems?: boolean;
   children?: readonly TreeNode[];
 }>;
 
@@ -44,10 +46,17 @@ export type TreeProps = Readonly<{
   label: string;
   nodes: readonly TreeNode[];
   selectionMode?: 'none' | 'single' | 'multiple';
+  selectionBehavior?: 'toggle' | 'replace';
+  /** 导航树以完整press激活；普通集合保留RAC动作语义。 */
+  activationBehavior?: 'action' | 'press';
   selectedIds?: ReadonlySet<string>;
   defaultExpandedIds?: ReadonlySet<string>;
-  expandLabel: (nodeLabel: string) => string;
-  collapseLabel: (nodeLabel: string) => string;
+  expandedIds?: ReadonlySet<string>;
+  onExpandedChange?: (ids: ReadonlySet<string>) => void;
+  density?: 'standard' | 'compact';
+  /** 仅提供动作名称；RAC会关联行名称，调用方不能再重复插入节点名。 */
+  expandLabel: string;
+  collapseLabel: string;
   onSelectionChange?: (ids: ReadonlySet<string>) => void;
   onAction?: (id: string) => void;
 }>;
@@ -74,29 +83,42 @@ function DisclosureChevronIcon({ expanded }: Readonly<{ expanded: boolean }>) {
 
 function renderTreeItem(
   node: TreeNode,
-  expandLabel: (nodeLabel: string) => string,
-  collapseLabel: (nodeLabel: string) => string,
-  onAction?: (id: string) => void,
+  expandLabel: string,
+  collapseLabel: string,
+  density: 'standard' | 'compact',
+  onPress?: (id: string) => void,
 ) {
   return (
     <AriaTreeItem
       id={node.id}
       key={node.id}
       textValue={node.label}
+      {...(node.hasChildItems === undefined ? {} : { hasChildItems: node.hasChildItems })}
       {...(node.disabled === undefined ? {} : { isDisabled: node.disabled })}
-      {...(onAction ? { onAction: () => onAction(node.id) } : {})}
+      {...(onPress
+        ? {
+            onPress: () => {
+              if (!node.disabled) onPress(node.id);
+            },
+          }
+        : {})}
     >
       <TreeItemContent>
         {({ hasChildItems, isExpanded, isFocusVisible, isSelected, level }) => (
           <div
-            className={`ui-tree-row group flex w-full min-h-option items-center gap-2 rounded-control py-1 pe-2 text-start outline-none transition-colors ${
+            className={`ui-tree-row group flex w-full items-center rounded-control pe-2 text-start outline-none transition-colors ${density === 'compact' ? 'min-h-0 gap-1 py-1' : 'min-h-option gap-2 py-1'} ${
               isSelected ? 'bg-brand-soft text-brand-strong' : 'text-ink hover:bg-surface-muted'
             } ${isFocusVisible ? 'ring-2 ring-focus' : ''}`}
-            style={{ ['--tree-row-level' as string]: String(level) }}
+            style={{
+              ['--tree-row-level' as string]: String(level),
+              ...(density === 'compact'
+                ? { ['--tree-depth-step' as string]: 'calc(var(--spacing, 0.25rem) * 4)' }
+                : {}),
+            }}
           >
             {hasChildItems ? (
               <Button
-                aria-label={isExpanded ? collapseLabel(node.label) : expandLabel(node.label)}
+                aria-label={isExpanded ? collapseLabel : expandLabel}
                 className="grid size-5 shrink-0 place-items-center rounded-control text-ink-muted outline-none transition-colors hover:bg-surface-raised hover:text-ink focus-visible:ring-2 focus-visible:ring-focus"
                 slot="chevron"
               >
@@ -123,7 +145,9 @@ function renderTreeItem(
           </div>
         )}
       </TreeItemContent>
-      {node.children?.map((child) => renderTreeItem(child, expandLabel, collapseLabel, onAction))}
+      {node.children?.map((child) =>
+        renderTreeItem(child, expandLabel, collapseLabel, density, onPress),
+      )}
     </AriaTreeItem>
   );
 }
@@ -142,8 +166,13 @@ export function Tree({
   expandLabel,
   collapseLabel,
   selectionMode = 'none',
+  selectionBehavior,
+  activationBehavior = 'action',
   selectedIds,
   defaultExpandedIds,
+  expandedIds,
+  onExpandedChange,
+  density = 'standard',
   onSelectionChange,
   onAction,
 }: TreeProps) {
@@ -155,7 +184,18 @@ export function Tree({
       aria-label={label}
       className="ui-tree outline-none focus-visible:ring-2 focus-visible:ring-focus"
       selectionMode={selectionMode}
+      {...(selectionBehavior ? { selectionBehavior } : {})}
+      {...(onAction && activationBehavior === 'action'
+        ? { onAction: (key: Key) => onAction(String(key)) }
+        : {})}
       {...(defaultExpandedKeys ? { defaultExpandedKeys } : {})}
+      {...(expandedIds ? { expandedKeys: new Set<Key>(expandedIds) } : {})}
+      {...(onExpandedChange
+        ? {
+            onExpandedChange: (keys: Set<Key>) =>
+              onExpandedChange(new Set(Array.from(keys, String))),
+          }
+        : {})}
       {...(onSelectionChange
         ? {
             onSelectionChange: (selection: Selection) =>
@@ -164,7 +204,15 @@ export function Tree({
         : {})}
       {...(selectedKeys ? { selectedKeys } : {})}
     >
-      {nodes.map((node) => renderTreeItem(node, expandLabel, collapseLabel, onAction))}
+      {nodes.map((node) =>
+        renderTreeItem(
+          node,
+          expandLabel,
+          collapseLabel,
+          density,
+          activationBehavior === 'press' ? onAction : undefined,
+        ),
+      )}
     </AriaTree>
   );
 }

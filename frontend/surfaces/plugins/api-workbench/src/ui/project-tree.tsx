@@ -158,8 +158,8 @@ export function ProjectTree({
           selectionMode="single"
           selectedIds={new Set(selectedId ? [selectedId] : [])}
           defaultExpandedIds={new Set([...projects, ...collections].map((item) => item.id))}
-          expandLabel={(label) => t('apiWorkbench.common.expand', { name: label })}
-          collapseLabel={(label) => t('apiWorkbench.common.collapse', { name: label })}
+          expandLabel={t('apiWorkbench.common.expand')}
+          collapseLabel={t('apiWorkbench.common.collapse')}
           onSelectionChange={(ids) => {
             const id = [...ids][0];
             if (!id) return;

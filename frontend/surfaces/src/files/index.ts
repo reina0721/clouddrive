@@ -16,3 +16,4 @@ export * from './archives';
 export * from './pdf-contract';
 
 export * from './access';
+export * from './sidebar-preferences';

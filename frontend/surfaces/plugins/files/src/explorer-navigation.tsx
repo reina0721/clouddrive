@@ -18,8 +18,12 @@ export function ExplorerNavigation({
   const [open, setOpen] = useState(false);
   const wasOpen = useRef(false);
   useEffect(() => {
-    if (wasOpen.current && !open) onFocusFiles();
+    const closed = wasOpen.current && !open;
     wasOpen.current = open;
+    if (!closed) return;
+    // 等待抽屉清除背景隔离和恢复焦点，再把焦点交给文件区域。
+    const frame = requestAnimationFrame(onFocusFiles);
+    return () => cancelAnimationFrame(frame);
   }, [open, onFocusFiles]);
   return (
     <>

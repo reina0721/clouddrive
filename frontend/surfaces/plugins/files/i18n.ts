@@ -2,7 +2,9 @@ import { zhConnections, enConnections } from './connections-i18n';
 import { zhNavigation, enNavigation } from './navigation-i18n';
 import { zhDiscovery, enDiscovery } from './discovery-i18n';
 import { zhPreferences, enPreferences } from './preference-i18n';
+import { zhTree, enTree } from './tree-i18n';
 const zh = {
+  tree: zhTree,
   preferences: zhPreferences,
   discovery: zhDiscovery,
   navigation: zhNavigation,
@@ -203,6 +205,7 @@ const zh = {
   },
 };
 const en: typeof zh = {
+  tree: enTree,
   preferences: enPreferences,
   discovery: enDiscovery,
   navigation: enNavigation,

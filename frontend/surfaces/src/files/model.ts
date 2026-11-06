@@ -8,6 +8,7 @@ import type { FileFilters } from './search';
 import type { FileShare, ShareCreate, ShareListing, ShareQuery, ShareUpdate } from './sharing';
 import type { VersionsPort } from './versions';
 import type { FilePreferenceSnapshot } from './preferences';
+import type { FileSidebarPreferences } from './sidebar-preferences';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
@@ -185,8 +186,8 @@ export type FilesPort = Readonly<{
   releaseCandidate(id: string): void;
   download(entry: FileEntry): Promise<void>;
   preview(entry: FileEntry, signal?: AbortSignal): Promise<string>;
-  loadSidebarCollapsed(): boolean;
-  saveSidebarCollapsed(collapsed: boolean): void;
+  loadSidebarPreferences(): FileSidebarPreferences;
+  saveSidebarPreferences(value: FileSidebarPreferences): void;
   loadPreferences(
     signal?: AbortSignal,
     source?: 'current' | 'server',

@@ -1,11 +1,12 @@
 'use client';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
+import { IconAction } from '@clouddrive/ui-adapter/icon-action';
 import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
 import { DrawerSurface } from '@clouddrive/ui-adapter/overlays';
 import { ProgressMeter } from '@clouddrive/ui-adapter/progress-meter';
 import { SearchBox } from '@clouddrive/ui-adapter/search-box';
-import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
+import { Fragment, lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
 import { filesAccentStyle } from '../../../src/files/appearance';
 import { formatFileBytes } from '../../../src/files/format';
 import {
@@ -28,6 +29,11 @@ import {
 } from '../../../src/files/model';
 import { FileAccountTools, useFiles, useTransferSnapshot } from '../../../src/files/runtime';
 import { transferMatches } from '../../../src/files/transfers';
+import {
+  defaultFileSidebarPreferences,
+  type FileSidebarPreferences,
+} from '../../../src/files/sidebar-preferences';
+import { useDirectoryTree } from './use-directory-tree';
 import { useWorkspaceRevision, WorkspaceCreateContext } from '../stores/workspace';
 import { ExplorerNavigation } from './explorer-navigation';
 import { FileLink } from './file-link';
@@ -38,6 +44,9 @@ const Create = lazy(() =>
 );
 const Transfers = lazy(() =>
   import('./transfer-panel').then((module) => ({ default: module.TransferPanel })),
+);
+const DirectoryTree = lazy(() =>
+  import('./directory-tree').then((module) => ({ default: module.DirectoryTree })),
 );
 export function FileWorkspace({
   pathname,
@@ -57,12 +66,12 @@ export function FileWorkspace({
     [notice, setNotice] = useState(''),
     [sidebarPreference] = useState(() => {
       try {
-        return { collapsed: port.loadSidebarCollapsed(), failed: false };
+        return { preferences: port.loadSidebarPreferences(), failed: false };
       } catch {
-        return { collapsed: false, failed: true };
+        return { preferences: defaultFileSidebarPreferences, failed: true };
       }
     }),
-    [collapsed, setCollapsed] = useState(sidebarPreference.collapsed),
+    [sidebarSettings, setSidebarSettings] = useState(sidebarPreference.preferences),
     [searchDraft, setSearchDraft] = useState<{ scope: string; value: string }>(),
     [tray, setTray] = useState<string | null>(null);
   const [create, setCreate] = useState<{
@@ -71,6 +80,15 @@ export function FileWorkspace({
   }>();
   const isFiles = pathname === port.destinationHref('files'),
     isTransfers = pathname === port.destinationHref('transfers');
+  const collapsed = sidebarSettings.collapsed;
+  const directoryParent =
+    isFiles && query.trash !== 'true' && !query.category ? (query.parent ?? '') : undefined;
+  const directoryTree = useDirectoryTree(
+    port,
+    revision + ':' + snapshot.completedRevision,
+    directoryParent,
+    sidebarSettings.autoExpandTree,
+  );
   const errorText = useCallback(
     (error: unknown) =>
       t('files.errors.' + (error instanceof FilesError ? error.code : 'unavailable')),
@@ -156,10 +174,12 @@ export function FileWorkspace({
     page: '',
   });
   function toggleSidebar() {
-    const next = !collapsed;
-    setCollapsed(next);
+    saveSidebar({ ...sidebarSettings, collapsed: !collapsed });
+  }
+  function saveSidebar(next: FileSidebarPreferences) {
     try {
-      port.saveSidebarCollapsed(next);
+      port.saveSidebarPreferences(next);
+      setSidebarSettings(next);
     } catch {
       setNotice(t('files.workspace.readFailed'));
     }
@@ -195,10 +215,20 @@ export function FileWorkspace({
           </Action>
         ) : null}
       </div>
-      <nav aria-label={t('files.nav')} className="mt-2 flex shrink-0 flex-col">
+      <nav
+        aria-label={t('files.nav')}
+        className={
+          'mt-2 flex flex-col ' +
+          (!rail && directoryTree.snapshot.rootOpen ? 'min-h-0 flex-1 overflow-y-auto' : 'shrink-0')
+        }
+      >
         {categoryItems.map((item) => {
-          const active = isFiles && query.trash !== 'true' && (query.category ?? '') === item.key;
-          return (
+          const active =
+            isFiles &&
+            query.trash !== 'true' &&
+            (query.category ?? '') === item.key &&
+            (item.key !== '' || !query.parent);
+          const link = (
             <FileLink
               key={item.key}
               target="files"
@@ -217,6 +247,48 @@ export function FileWorkspace({
               </span>
               <span className={rail ? 'sr-only' : ''}>{t(item.label)}</span>
             </FileLink>
+          );
+          return item.key === '' && !rail ? (
+            <Fragment key={item.key}>
+              <div className="flex min-w-0 items-center gap-1">
+                <IconAction
+                  size="sm"
+                  expanded={directoryTree.snapshot.rootOpen}
+                  disabled={!directoryTree.snapshot.ready}
+                  label={t(
+                    directoryTree.snapshot.rootOpen
+                      ? 'files.tree.collapseRoot'
+                      : 'files.tree.expandRoot',
+                  )}
+                  onPress={directoryTree.controller.toggleRoot}
+                >
+                  <span aria-hidden="true">{directoryTree.snapshot.rootOpen ? '▾' : '▸'}</span>
+                </IconAction>
+                {link}
+              </div>
+              {directoryTree.snapshot.rootOpen ? (
+                <Suspense
+                  fallback={
+                    <p role="status" className="text-xs text-ink-muted">
+                      {t('files.tree.loading')}
+                    </p>
+                  }
+                >
+                  <DirectoryTree
+                    snapshot={directoryTree.snapshot}
+                    controller={directoryTree.controller}
+                    currentParent={directoryParent}
+                    automatic={sidebarSettings.autoExpandTree}
+                    onAutomaticChange={(autoExpandTree) =>
+                      saveSidebar({ ...sidebarSettings, autoExpandTree })
+                    }
+                    onNavigate={close}
+                  />
+                </Suspense>
+              ) : null}
+            </Fragment>
+          ) : (
+            link
           );
         })}
         <FileLink
@@ -261,7 +333,14 @@ export function FileWorkspace({
       </nav>
       {!rail ? (
         <>
-          <div data-file-pins-region className="min-h-0 flex-1 overflow-y-auto">
+          <div
+            data-file-pins-region
+            className={
+              directoryTree.snapshot.rootOpen
+                ? 'max-h-24 shrink-0 overflow-y-auto'
+                : 'min-h-0 flex-1 overflow-y-auto'
+            }
+          >
             <PinnedLinks refreshKey={revision} onNavigate={close} />
           </div>
           <section

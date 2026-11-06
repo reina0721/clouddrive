@@ -22,19 +22,51 @@ describe('文件工作区Host边界', () => {
   it('折叠偏好按账号隔离，旧运行域在账号改变后拒绝读写', () => {
     let owner = 'workspace-one';
     const first = fixture(() => owner);
-    first.port.saveSidebarCollapsed(true);
+    first.port.saveSidebarPreferences({ collapsed: true, autoExpandTree: false });
     const second = fixture(() => 'workspace-two');
-    expect(second.port.loadSidebarCollapsed()).toBe(false);
-    expect(first.port.loadSidebarCollapsed()).toBe(true);
+    expect(second.port.loadSidebarPreferences()).toEqual({
+      collapsed: false,
+      autoExpandTree: true,
+    });
+    expect(first.port.loadSidebarPreferences()).toEqual({ collapsed: true, autoExpandTree: false });
     owner = 'workspace-two';
-    expect(() => first.port.saveSidebarCollapsed(false)).toThrow();
-    expect(() => first.port.loadSidebarCollapsed()).toThrow();
+    expect(() =>
+      first.port.saveSidebarPreferences({ collapsed: false, autoExpandTree: true }),
+    ).toThrow();
+    expect(() => first.port.loadSidebarPreferences()).toThrow();
   });
   it('损坏的侧栏记录不会静默覆盖文件视图偏好', () => {
     const runtime = fixture();
     localStorage.setItem('clouddrive.files.sidebar.v1.workspace-one', '{"collapsed":true}');
-    expect(() => runtime.port.loadSidebarCollapsed()).toThrow();
+    expect(() => runtime.port.loadSidebarPreferences()).toThrow();
     expect(localStorage.getItem('clouddrive.files.view.v1.workspace-one')).toBe(null);
+  });
+  it('目录树拥有自己的按键，不把删除、改名或全选转给主文件列表', async () => {
+    const runtime = fixture();
+    const listener = vi.fn();
+    runtime.port.subscribeShortcuts(listener);
+    const collection = document.createElement('div');
+    collection.setAttribute('role', 'treegrid');
+    const focused = document.createElement('div');
+    focused.setAttribute('role', 'row');
+    collection.append(focused);
+    document.body.append(collection);
+    try {
+      for (const key of ['Delete', 'F2', 'Enter', 'a']) {
+        const event = new KeyboardEvent('keydown', {
+          key,
+          ctrlKey: key === 'a',
+          bubbles: true,
+          cancelable: true,
+        });
+        focused.dispatchEvent(event);
+        expect(event.defaultPrevented).toBe(false);
+      }
+      expect(listener).not.toHaveBeenCalled();
+    } finally {
+      collection.remove();
+      await runtime.dispose();
+    }
   });
   it('限定搜索订阅不吞F5、表单或输入法按键，销毁后不保留监听', async () => {
     const runtime = fixture(),

@@ -28,10 +28,10 @@ import { createTransferRuntime } from './transfer-runtime';
 import { createVersionsPort } from './versions';
 import { createFilePreferences } from './preferences';
 import { withFileIOAdmissionRetry } from './file-io-retry';
+import { createFileSidebarPreferences } from './sidebar-preferences';
 export { fileDestinationHrefs } from './destinations';
 
 const transferTimeoutMs = 120_000;
-const sidebarPreferencesKey = 'clouddrive.files.sidebar.v1';
 
 /** createFilesRuntime 将文件句柄、网络、下载及拖拽生命周期留在浏览器 Host。 */
 export function createFilesRuntime(
@@ -398,7 +398,7 @@ export function createFilesRuntime(
         const target = event.target;
         if (
           target instanceof Element &&
-          target.closest('input,textarea,select,[contenteditable="true"]')
+          target.closest('input,textarea,select,[contenteditable="true"],[role="treegrid"]')
         )
           return;
         let shortcut: FileShortcut | undefined;
@@ -484,18 +484,7 @@ export function createFilesRuntime(
         throw new FilesError('unsupported', { cause: error });
       }
     },
-    loadSidebarCollapsed: () => {
-      assertCurrent();
-      const raw = localStorage.getItem(sidebarPreferencesKey + '.' + account);
-      if (raw === null) return false;
-      const value: unknown = JSON.parse(raw);
-      if (typeof value !== 'boolean') throw new FilesError('invalid');
-      return value;
-    },
-    saveSidebarCollapsed: (collapsed) => {
-      assertCurrent();
-      localStorage.setItem(sidebarPreferencesKey + '.' + account, JSON.stringify(collapsed));
-    },
+    ...createFileSidebarPreferences(account, assertCurrent),
     ...createFilePreferences(call, account, assertCurrent),
   };
   return {

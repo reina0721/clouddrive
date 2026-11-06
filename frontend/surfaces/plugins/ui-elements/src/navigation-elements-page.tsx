@@ -331,9 +331,9 @@ export function NavigationElementsPage() {
                 ]}
               >
                 <Tree
-                  collapseLabel={(label) => t('uiElements.catalog.treeCollapse', { label })}
+                  collapseLabel={t('uiElements.catalog.treeCollapse')}
                   defaultExpandedIds={new Set(['foundation'])}
-                  expandLabel={(label) => t('uiElements.catalog.treeExpand', { label })}
+                  expandLabel={t('uiElements.catalog.treeExpand')}
                   label={t('uiElements.additional.treeLabel')}
                   nodes={[
                     {

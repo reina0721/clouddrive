@@ -1,0 +1,37 @@
+schema_version: 1
+id: R138-001
+title: 私有目录树的按需加载与工作区所有权
+question: 如何复用现有目录读取和成熟Tree组件补齐真实侧栏树，并保持有界读取、账号隔离和路由队列？
+research_type: current-project-and-official-source
+status: active
+topics: [files, directory-tree, workspace, accessibility]
+keywords: [按需加载, 树视图, 目录跟随, React-Aria]
+summary: 保留私有list、现有Tree和Host边界；Surface拥有有界树快照，Host拥有按账号的设备侧栏偏好。
+applicable_scenarios: [本人文件工作区, 六页共用导航, 单机浏览器偏好]
+non_applicable_scenarios: [公开分享树, 文件树拖拽移动, 远程节点, 时区和版本保留]
+evidence:
+  types: [source-code, official-documentation, browser-observation]
+  primary_sources:
+    - title: 当前工作区与目录查询
+      locator: frontend/surfaces/plugins/files/src/file-workspace.tsx
+      snapshot: e2b376423c47650fd62ea30e39961c88b518fcbb
+    - title: 当前查询与祖先链
+      locator: internal/module/files/service/query.go
+      snapshot: e2b376423c47650fd62ea30e39961c88b518fcbb
+    - title: Tree官方文档
+      locator: https://react-aria.adobe.com/Tree
+      snapshot: 2026-11-06读取；同时复核已安装react-aria-components1.20.0类型
+    - title: 参考站树及自动展开设置
+      locator: .data/138-reference-preferences.png
+      snapshot: 2026-11-06 CUA只读观察
+researched_at: 2026-11-06
+verified_at: 2026-11-06
+validity:
+  mode: snapshot
+  refresh_triggers: [私有list过滤分页或breadcrumbs契约变化, FilesPort和账号边界变化, Tree受控展开API变化, workspace生命周期变化]
+relations:
+  extends: []
+  related: [R131-001, R137-001]
+  supersedes: []
+  superseded_by: []
+report: report.md
