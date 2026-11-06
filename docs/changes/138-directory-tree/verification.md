@@ -32,3 +32,7 @@ r5为5/7：一项遗漏管理员测试配置，另一项Enter在toggle已选模�
 ## 范围限制
 
 树开关只按账号保存在当前设备，不与137服务器视图同步混淆。缓存1000目录、自动补全20层分支、每页50项，达到预算明确失败。没有树拖拽移动或公开分享树；时区、可配置历史保留、BT/magnet、远程节点、Office等仍待后续批次。用户批准的上一张组件展示基线已经在137交付，本批没有新增或更新视觉golden。
+
+## 交付
+
+功能提交`48947fa8c66acdadc12442c881f9279224528b42`：`feat(files): add shared directory tree navigation`。已推送origin/main，远端refs/heads/main完整提交号核验一致。主预览CUA读取原真实目录并保存`.data/138-primary-tree.png`，服务保持运行；访问说明及凭据在`.data/138-preview-guide.txt`，最新入口指针`.data/latest-preview.txt`。总体goal保持active，本批交付不表示剩余功能已经完成。
