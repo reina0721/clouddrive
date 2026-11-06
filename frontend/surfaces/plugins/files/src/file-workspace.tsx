@@ -16,6 +16,7 @@ import {
   Home,
   Menu,
   Settings,
+  Search,
   Trash2,
   Upload,
 } from '../../../src/files/icons';
@@ -164,20 +165,22 @@ export function FileWorkspace({
     }
   }
   const renderNavigation = (close: () => void, rail: boolean, mobile: boolean) => (
-    <>
+    <div className="flex h-full min-h-0 flex-col">
       <div
         className={
-          rail ? 'flex flex-col items-center gap-2' : 'flex items-center justify-between gap-2'
+          rail
+            ? 'flex shrink-0 flex-col items-center gap-1'
+            : 'flex shrink-0 items-center justify-between gap-2'
         }
       >
         <FileLink
           target="files"
           title={t('files.brand')}
           onNavigate={close}
-          className="flex min-w-0 items-center gap-2 px-1 py-3 text-lg font-bold"
+          className="flex min-w-0 items-center gap-2 px-1 py-2 text-base font-semibold"
         >
-          <Cloud className="size-8 shrink-0 text-brand" />
-          <span className={rail ? 'sr-only' : 'truncate'}>{t('files.brand')}</span>
+          <Cloud className="size-7 shrink-0 text-brand" />
+          <span className={rail ? 'sr-only' : 'whitespace-nowrap'}>{t('files.brand')}</span>
         </FileLink>
         {!mobile ? (
           <Action
@@ -192,7 +195,7 @@ export function FileWorkspace({
           </Action>
         ) : null}
       </div>
-      <nav aria-label={t('files.nav')} className="mt-3 flex flex-col gap-1">
+      <nav aria-label={t('files.nav')} className="mt-2 flex shrink-0 flex-col">
         {categoryItems.map((item) => {
           const active = isFiles && query.trash !== 'true' && (query.category ?? '') === item.key;
           return (
@@ -204,7 +207,8 @@ export function FileWorkspace({
               onNavigate={close}
               {...(active ? { 'aria-current': 'page' as const } : {})}
               className={
-                'flex items-center gap-3 rounded-control px-4 py-2.5 text-sm hover:bg-surface-muted ' +
+                'flex items-center gap-2 rounded-control py-1.5 text-sm hover:bg-surface-muted ' +
+                (rail ? 'justify-center px-2 ' : 'px-3 ') +
                 (active ? 'bg-brand-soft text-brand font-semibold' : 'text-ink-muted')
               }
             >
@@ -222,7 +226,8 @@ export function FileWorkspace({
           onNavigate={close}
           {...(isFiles && query.trash === 'true' ? { 'aria-current': 'page' as const } : {})}
           className={
-            'flex items-center gap-3 rounded-control px-4 py-2.5 text-sm hover:bg-surface-muted ' +
+            'flex items-center gap-2 rounded-control py-1.5 text-sm hover:bg-surface-muted ' +
+            (rail ? 'justify-center px-2 ' : 'px-3 ') +
             (isFiles && query.trash === 'true'
               ? 'bg-brand-soft text-brand font-semibold'
               : 'text-ink-muted')
@@ -241,7 +246,8 @@ export function FileWorkspace({
               onNavigate={close}
               {...(active ? { 'aria-current': 'page' as const } : {})}
               className={
-                'flex items-center gap-3 rounded-control px-4 py-2.5 text-sm hover:bg-surface-muted ' +
+                'flex items-center gap-2 rounded-control py-1.5 text-sm hover:bg-surface-muted ' +
+                (rail ? 'justify-center px-2 ' : 'px-3 ') +
                 (active ? 'bg-brand-soft text-brand font-semibold' : 'text-ink-muted')
               }
             >
@@ -255,9 +261,11 @@ export function FileWorkspace({
       </nav>
       {!rail ? (
         <>
-          <PinnedLinks refreshKey={revision} onNavigate={close} />
+          <div data-file-pins-region className="min-h-0 flex-1 overflow-y-auto">
+            <PinnedLinks refreshKey={revision} onNavigate={close} />
+          </div>
           <section
-            className="mt-8 space-y-3 px-3 text-xs text-ink-muted"
+            className="mt-3 shrink-0 space-y-2 rounded-panel border border-border bg-surface p-3 text-xs text-ink-muted"
             aria-label={t('files.storage')}
           >
             <h2 className="flex items-center gap-2 font-semibold">
@@ -284,22 +292,27 @@ export function FileWorkspace({
           </section>
         </>
       ) : null}
-    </>
+    </div>
   );
   return (
     <div
       data-accent-preview="blue"
       style={filesAccentStyle}
-      className="min-h-screen bg-canvas font-sans text-ink"
+      data-file-workspace
+      className="flex h-dvh flex-col overflow-hidden bg-canvas font-sans text-ink"
     >
-      <div className="min-h-screen md:flex">
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         <ExplorerNavigation collapsed={collapsed} onFocusFiles={port.focusFiles}>
           {(close, mobile) => renderNavigation(close, collapsed && !mobile, mobile)}
         </ExplorerNavigation>
-        <div className="min-w-0 md:flex-1">
-          <header className="flex flex-wrap items-center gap-3 border-b border-border bg-canvas p-3 md:p-4">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <header
+            data-file-workspace-header
+            className="flex shrink-0 flex-wrap items-center gap-2 bg-canvas px-3 py-2"
+          >
             <MenuButton
               ariaLabel={t('files.new')}
+              triggerSize="sm"
               label={
                 <span className="flex items-center gap-2">
                   <FolderPlus className="size-5" />
@@ -327,7 +340,7 @@ export function FileWorkspace({
             />
             <form
               data-file-workspace-search
-              className="flex w-full min-w-0 items-center gap-2 md:w-auto md:flex-1"
+              className="order-last flex w-full min-w-0 items-center gap-1 md:order-none md:w-auto max-w-md md:flex-1"
               onKeyDownCapture={(event) => {
                 if (event.key === 'Escape') {
                   event.preventDefault();
@@ -346,8 +359,13 @@ export function FileWorkspace({
                 value={search}
                 onValueChange={setSearch}
               />
-              <Action type="submit" variant="secondary">
-                {t('files.search')}
+              <Action
+                type="submit"
+                size="sm"
+                variant="quiet"
+                leadingIcon={<Search className="size-4" />}
+              >
+                <span className="sr-only">{t('files.search')}</span>
               </Action>
               {search ? (
                 <Action
@@ -362,31 +380,41 @@ export function FileWorkspace({
                 </Action>
               ) : null}
             </form>
-            <Action
-              size="sm"
-              variant="quiet"
-              onPress={() => {
-                if (isTransfers) port.focusFiles();
-                else setTray(pathname);
-              }}
-              leadingIcon={<Upload className="size-5" />}
-            >
-              <span>
-                {t('files.workspace.queue')}
-                <span aria-hidden="true"> · {activeCount}</span>
-                <span className="sr-only">
-                  {t('files.workspace.queueCount', { count: activeCount })}
+            <div className="ml-auto flex shrink-0 items-center gap-1">
+              <Action
+                size="sm"
+                variant="quiet"
+                onPress={() => {
+                  if (isTransfers) port.focusFiles();
+                  else setTray(pathname);
+                }}
+                leadingIcon={<Upload className="size-5" />}
+              >
+                <span>
+                  <span className="sr-only">{t('files.workspace.queue')}</span>
+                  <span aria-hidden="true" className="hidden sm:inline">
+                    {t('files.workspace.queue')}
+                  </span>
+                  <span aria-hidden="true"> · {activeCount}</span>
+                  <span className="sr-only">
+                    {t('files.workspace.queueCount', { count: activeCount })}
+                  </span>
                 </span>
-              </span>
-            </Action>
-            <FileAccountTools />
+              </Action>
+              <FileAccountTools />
+            </div>
           </header>
           {notice || sidebarPreference.failed ? (
             <p role="status" className="px-4 py-2 text-sm">
               {notice || t('files.workspace.readFailed')}
             </p>
           ) : null}
-          <main id="main-content" tabIndex={-1} className="min-w-0 p-3 md:p-4">
+          <main
+            id="main-content"
+            tabIndex={-1}
+            data-file-scroll-region
+            className="min-h-0 min-w-0 flex-1 overflow-auto px-3 pb-3 pt-1"
+          >
             <WorkspaceCreateContext value={(action) => setCreate({ action })}>
               {children}
             </WorkspaceCreateContext>

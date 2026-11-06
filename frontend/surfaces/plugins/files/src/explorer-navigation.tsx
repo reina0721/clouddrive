@@ -25,13 +25,13 @@ export function ExplorerNavigation({
     <>
       <aside
         className={
-          'hidden h-screen overflow-y-auto border-r border-border py-3 md:sticky md:top-0 md:block md:shrink-0 ' +
-          (collapsed ? 'md:w-20' : 'md:w-60 px-4')
+          'hidden h-full overflow-y-auto py-2 md:block md:shrink-0 ' +
+          (collapsed ? 'px-1 md:w-20' : 'px-3 md:w-60')
         }
       >
         {children(() => {}, false)}
       </aside>
-      <div className="flex items-center gap-3 border-b border-border px-4 py-2 md:hidden">
+      <div className="flex shrink-0 items-center gap-2 px-3 py-1 md:hidden">
         <Action size="sm" variant="quiet" onPress={() => setOpen(true)} leadingIcon={<Menu />}>
           {t('files.explorer.navigation')}
         </Action>
@@ -49,7 +49,9 @@ export function ExplorerNavigation({
           isOpen
           onOpenChange={setOpen}
         >
-          <div className="px-4 py-3">{children(() => setOpen(false), true)}</div>
+          <div className="flex h-full flex-col px-3 py-2">
+            {children(() => setOpen(false), true)}
+          </div>
         </DrawerSurface>
       ) : null}
     </>

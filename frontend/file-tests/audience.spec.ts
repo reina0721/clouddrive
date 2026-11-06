@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { test, expect, type Page, type Locator } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 test.use({ actionTimeout: 15_000 });
@@ -34,7 +35,15 @@ async function login(page: Page, credentials?: { username: string; password: str
   const access =
     credentials ??
     (JSON.parse(
-      (await readFile(process.env.CLOUDDRIVE_FILE_TEST_ACCESS!, 'utf8')).replace(/^\uFEFF/, ''),
+      (
+        await readFile(
+          resolve(
+            __dirname,
+            process.env.CLOUDDRIVE_FILE_TEST_ACCESS ?? '../../.data/preview-access.json',
+          ),
+          'utf8',
+        )
+      ).replace(/^\uFEFF/, ''),
     ) as { username: string; password: string });
   await page.goto('/login?returnTo=%2Fhome');
   await page.getByLabel('邮箱', { exact: true }).fill(access.username);
@@ -140,7 +149,9 @@ async function save(dialog: Locator, label: string) {
 
 test('F281–289：UI创建禁止匿名、精确账号能力和真实登录返回', async ({ page, browser }, info) => {
   const f = await fixture(page);
-  await page.reload();
+  // 根目录有分页，通过真实搜索定位本次目录，避免依赖第一页的排序位置。
+  await page.getByRole('searchbox', { name: '搜索文件', exact: true }).fill(String(f.root.name));
+  await page.getByRole('button', { name: '搜索文件', exact: true }).click();
   await page.getByRole('button', { name: String(f.root.name) + ' 的操作', exact: true }).click();
   await page.getByRole('menuitem', { name: '分享', exact: true }).click();
   const create = page.getByRole('dialog', { name: '分享', exact: true });

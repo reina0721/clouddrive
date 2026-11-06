@@ -106,7 +106,8 @@ export function FileItem({
       data-file-entry={entry.id}
       tabIndex={tabStop ? 0 : -1}
       onFocus={onFocus}
-      className="block max-w-full truncate text-left text-sm font-semibold outline-offset-4 hover:text-brand"
+      title={entry.name}
+      className={`${isList ? 'block truncate' : 'line-clamp-2 break-all'} max-w-full text-left text-sm font-medium outline-offset-4 hover:text-brand`}
       onClick={(event) => {
         if (event.shiftKey || event.ctrlKey || event.metaKey)
           onSelect({ extend: event.shiftKey, toggle: event.ctrlKey || event.metaKey });
@@ -155,7 +156,7 @@ export function FileItem({
         onContext();
       }}
       data-file-cut={cut || undefined}
-      className={`${isList ? 'flex min-w-0 items-center gap-3 border-b border-border py-3' : 'min-w-0 rounded-panel border border-border p-4'} ${selected ? 'bg-brand-soft' : 'hover:bg-surface-muted'} ${cut ? 'opacity-50' : ''}`}
+      className={`${isList ? 'flex min-w-0 items-center gap-2 border-b border-border py-2' : 'min-w-0 rounded-control border border-border p-2'} ${selected ? 'bg-brand-soft' : 'hover:bg-surface-muted'} ${cut ? 'opacity-50' : ''}`}
     >
       {isList ? (
         <>
@@ -191,23 +192,26 @@ export function FileItem({
         </>
       ) : (
         <>
-          <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="mb-1 flex items-center justify-between gap-2">
             {selection}
             {cut ? (
               <span className="text-xs text-ink-muted">{t('files.explorer.cutMark')}</span>
             ) : null}
             {actions}
           </div>
-          <div className="flex min-w-0 flex-col items-center gap-3 py-3">
+          <div className="flex min-w-0 flex-col items-center gap-2 py-1">
             {icon}
-            <div className="min-w-0 max-w-full">
+            <div className="min-w-0 max-w-full w-full">
               {title}
               {tags}
               <p className="mt-1 text-xs text-ink-muted">
                 {entry.kind === 'file' ? formatFileBytes(entry.sizeBytes) : kind}
               </p>
-              <p className="mt-1 text-xs text-ink-muted">
-                {new Date(entry.trashedAt ?? entry.updatedAt).toLocaleString()}
+              <p
+                className="mt-1 truncate text-xs text-ink-muted"
+                title={new Date(entry.trashedAt ?? entry.updatedAt).toLocaleString()}
+              >
+                {new Date(entry.trashedAt ?? entry.updatedAt).toLocaleDateString()}
               </p>
             </div>
           </div>

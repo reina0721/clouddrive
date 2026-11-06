@@ -59,7 +59,7 @@ export function PinnedLinks({
     }
   }
   return (
-    <section className="mt-5 space-y-2 px-3 text-sm" aria-label={t('files.navigation.pins')}>
+    <section className="mt-1 space-y-1 px-2 text-sm" aria-label={t('files.navigation.pins')}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-semibold text-ink-muted">{t('files.navigation.pins')}</h2>
         <Action size="sm" variant="quiet" onPress={() => setManaging(true)}>
@@ -82,7 +82,7 @@ export function PinnedLinks({
           <li key={pin.id}>
             {pin.available ? (
               <a
-                className="block break-words rounded-control px-2 py-2 hover:bg-surface-muted"
+                className="block break-words rounded-control px-2 py-1.5 hover:bg-surface-muted"
                 href={nav.pinHref(pin)}
                 target={pin.targetKind === 'shortcut' ? '_blank' : undefined}
                 rel={pin.targetKind === 'shortcut' ? 'noopener noreferrer' : undefined}

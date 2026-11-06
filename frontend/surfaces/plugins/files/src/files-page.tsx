@@ -1,6 +1,6 @@
 'use client';
 import { useFrontendTranslation } from '@clouddrive/i18n';
-import { Page, Toolbar } from '@clouddrive/surface-foundation/layout';
+import { Toolbar } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { CheckboxField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
@@ -22,6 +22,7 @@ import { formatFileBytes as bytes } from '../../../src/files/format';
 import {
   ArrowUpDown,
   Cloud,
+  Home,
   LayoutGrid,
   MoreHorizontal,
   RefreshCw,
@@ -680,21 +681,26 @@ export function FilesPage({
       : (listing?.breadcrumbs.at(-1)?.name ?? t('files.nav'));
   return (
     <>
-      <Page>
+      <div className="flex min-h-full min-w-0 flex-col gap-3">
         <h1 className="sr-only">{title}</h1>
         <Toolbar
           label={title}
           primary={
             <>
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <Action
-                  size="sm"
-                  variant="quiet"
-                  disabled={!parent || trash || !!category || loading || navigating}
-                  onPress={() => navigate({ parent: listing?.breadcrumbs.at(-2)?.id ?? '' })}
-                >
-                  {t('files.explorer.parent')}
-                </Action>
+              <div
+                data-file-breadcrumbs
+                className="flex w-full min-w-0 items-center gap-2 overflow-x-auto md:w-auto md:flex-1"
+              >
+                {parent && !trash && !category ? (
+                  <Action
+                    size="sm"
+                    variant="quiet"
+                    disabled={loading || navigating}
+                    onPress={() => navigate({ parent: listing?.breadcrumbs.at(-2)?.id ?? '' })}
+                  >
+                    {t('files.explorer.parent')}
+                  </Action>
+                ) : null}
                 <MenuButton
                   ariaLabel={t('files.explorer.ancestors')}
                   label={<MoreHorizontal className="size-4" />}
@@ -711,12 +717,13 @@ export function FilesPage({
                 <button
                   type="button"
                   onClick={() => navigate({})}
-                  className="text-sm font-semibold text-brand"
+                  className="flex shrink-0 items-center gap-2 whitespace-nowrap text-sm font-medium text-ink"
                 >
+                  <Home className="size-4 shrink-0" aria-hidden="true" />
                   {t('files.nav')}
                 </button>
                 {listing?.breadcrumbs.map((entry) => (
-                  <span key={entry.id} className="flex min-w-0 items-center gap-2 text-sm">
+                  <span key={entry.id} className="flex shrink-0 items-center gap-2 text-sm">
                     <span aria-hidden="true">/</span>
                     <button
                       type="button"
@@ -1097,7 +1104,8 @@ export function FilesPage({
         <section
           aria-label={title}
           aria-busy={loading || navigating}
-          className="min-h-96 rounded-panel border border-border bg-surface p-4"
+          data-file-content
+          className={`min-h-96 min-w-0 flex-1 rounded-panel border border-border bg-surface p-3 ${!loading && !navigating && !failure && !listing?.items.length ? 'flex flex-col' : ''}`}
         >
           <h1 className="sr-only">{title}</h1>
           {loading || navigating ? (
@@ -1117,38 +1125,40 @@ export function FilesPage({
               onAction={reload}
             />
           ) : !listing?.items.length ? (
-            <StateSurface
-              state="empty"
-              icon={trash ? <Trash2 /> : <Upload />}
-              title={t(
-                trash
-                  ? 'files.emptyTrash'
-                  : search || category
-                    ? 'files.emptySearch'
-                    : 'files.empty',
-              )}
-              description={t(
-                search || category ? 'files.emptySearchDescription' : 'files.emptyDescription',
-              )}
-              {...(!trash && !search && !category && !filterKey
-                ? {
-                    actionLabel: t('files.upload'),
-                    onAction: () => {
-                      void port
-                        .chooseFiles()
-                        .then(enqueue)
-                        .catch((error: unknown) => setNotice(errorText(error)));
-                    },
-                  }
-                : {})}
-            />
+            <div data-file-empty className="grid min-h-80 flex-1 place-items-center">
+              <StateSurface
+                state="empty"
+                icon={trash ? <Trash2 /> : <Upload />}
+                title={t(
+                  trash
+                    ? 'files.emptyTrash'
+                    : search || category
+                      ? 'files.emptySearch'
+                      : 'files.empty',
+                )}
+                description={t(
+                  search || category ? 'files.emptySearchDescription' : 'files.emptyDescription',
+                )}
+                {...(!trash && !search && !category && !filterKey
+                  ? {
+                      actionLabel: t('files.upload'),
+                      onAction: () => {
+                        void port
+                          .chooseFiles()
+                          .then(enqueue)
+                          .catch((error: unknown) => setNotice(errorText(error)));
+                      },
+                    }
+                  : {})}
+              />
+            </div>
           ) : (
             <div
               role={preferences.view === 'list' ? 'table' : undefined}
               aria-label={preferences.view === 'list' ? title : undefined}
               className={
                 preferences.view === 'grid'
-                  ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                  ? 'grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6'
                   : 'flex flex-col divide-y divide-border'
               }
             >
@@ -1434,7 +1444,7 @@ export function FilesPage({
             })}
           </p>
         ) : null}
-      </Page>
+      </div>
       {dialog ? (
         <DialogSurface
           triggerLabel={t(`files.${dialog.mode}`)}
