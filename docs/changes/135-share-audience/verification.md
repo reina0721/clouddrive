@@ -1,6 +1,6 @@
 # 验证记录
 
-状态：V135完成，D135待提交与推送核验。第十五批F281–F300全部接通后才集中生成和测试；累计验收300项，不表示完整Cloudreve对齐。
+状态：V135、D135完成。第十五批F281–F300全部接通后才集中生成和测试；累计验收300项，不表示完整Cloudreve对齐。
 
 ## 功能、失败路径与既有回归
 
@@ -19,3 +19,5 @@
 独立QA后端的额外更新此前被自动审批拒绝，保留135-final候选；最终受限会话的证据为Go回归及主/开发135-delivery运行版本。旧构建删除被自动审批拒绝后未绕过；NTFS无损压缩保留所有文件。最终构建使用恢复的临时空间完成，磁盘余量仍应关注。
 
 本地地址、账号、口令、Token和访问回执保存在忽略的.data/135-preview-guide.txt、preview-access.json及135-demo-access.json；不提交或公开trace。未验证外部MySQL/PostgreSQL/S3，未重跑全站423例。范围不含Office、OCR、外部组、无链接账号挂载共享、BT/magnet和远程节点。
+
+交付：功能提交a23b31b9866b1c0dfd3ccf9efd752df1dd37d57f（feat(files): add share audiences and inherited entry permissions）已推送至origin/main，ls-remote与本地HEAD一致。最终浏览器类型检查、定向lint、范围格式、docs结构及git diff --check通过。
