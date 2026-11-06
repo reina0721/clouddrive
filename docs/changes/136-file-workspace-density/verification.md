@@ -1,6 +1,6 @@
 # 验证记录
 
-状态：V136完成，D136待提交推送。原功能累计仍为300项，本批另交付20项视觉与交互修正，不把布局调整计作新后端能力。
+状态：V136、D136完成。原功能累计仍为300项，本批另交付20项视觉与交互修正，不把布局调整计作新后端能力。
 
 ## 顺序与范围
 
@@ -27,3 +27,5 @@
 主4181与隔离4194前端已更新，开发4173已重启；Go后端源码未变，保留现有运行版本。136-runtime-receipt.json的16项认证接口/页面/代理目标/PDF安全头检查通过。135-preserved-data-after.json再次核验两库旧四表全部原列摘要，120原条目、7分享、6grant不变；没有在原库创建测试账号或夹具。
 
 最新地址、账号、密码和Token位置见忽略的.data/136-preview-guide.txt；截图见.data/136-main-preview.png。未验证外部MySQL/PostgreSQL/S3，也未重跑全站423例；不声明完整Cloudreve兼容。
+
+交付提交：ea72cc1fc170844b0b5725020424916f90216e11（fix(files): align workspace density and scrolling with reference）已推送origin/main，远端提交号核验一致；工作区只包含本任务变更，凭据与截图均未提交。
