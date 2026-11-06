@@ -7,7 +7,7 @@ import type { FileClipboardPort } from './clipboard';
 import type { FileFilters } from './search';
 import type { FileShare, ShareCreate, ShareListing, ShareQuery, ShareUpdate } from './sharing';
 import type { VersionsPort } from './versions';
-import type { FileViewPreferences } from './view-options';
+import type { FilePreferenceSnapshot } from './preferences';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
@@ -187,6 +187,9 @@ export type FilesPort = Readonly<{
   preview(entry: FileEntry, signal?: AbortSignal): Promise<string>;
   loadSidebarCollapsed(): boolean;
   saveSidebarCollapsed(collapsed: boolean): void;
-  loadPreferences(): FileViewPreferences;
-  savePreferences(value: FileViewPreferences): void;
+  loadPreferences(
+    signal?: AbortSignal,
+    source?: 'current' | 'server',
+  ): Promise<FilePreferenceSnapshot>;
+  savePreferences(value: FilePreferenceSnapshot): Promise<FilePreferenceSnapshot>;
 }>;

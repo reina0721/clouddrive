@@ -16,11 +16,12 @@ import {
 } from '@clouddrive/surface/files';
 import type { createJsonClient } from '../api/json-client';
 import { hashFile } from './file-hash';
+import { fileIORetryDelaysMs, withFileIOAdmissionRetry } from './file-io-retry';
 
 const pendingStoragePrefix = 'clouddrive.files.pending-transfers.v1';
-const retryDelaysMs = [0, 1000, 3000] as const;
 const chunkRequestTimeoutMs = 120_000;
 const terminalRetentionCount = 100;
+
 const pendingSchema = z
   .array(
     z.object({
@@ -327,7 +328,7 @@ export function createTransferRuntime(deps: Dependencies) {
         chunkSize: chunkBytes,
         parallelUploads: 1,
         storeFingerprintForResuming: false,
-        retryDelays: [...retryDelaysMs],
+        retryDelays: [...fileIORetryDelaysMs],
         onBeforeRequest: async (request) => {
           assertOwner();
           if (signal.aborted || epoch !== startedEpoch) throw new FilesError('canceled');
@@ -456,9 +457,18 @@ export function createTransferRuntime(deps: Dependencies) {
       remainingSeconds: null,
     });
     try {
-      await control(item, 'commit', signal);
+      // 分块响应完成后仍可能遇到有界锁等待；幂等commit只重试临时busy，不重复创建会话。
+      await withFileIOAdmissionRetry(
+        () => control(item, 'commit', signal),
+        signal,
+        () => {
+          assertOwner();
+          if (epoch !== startedEpoch) throw new FilesError('canceled');
+        },
+      );
     } catch (error) {
       if (!signal.aborted && epoch === startedEpoch) {
+        assertOwner();
         const server = transferSchema.parse(
           await deps.call(`/transfers/${encodeURIComponent(item.server.id)}`),
         );

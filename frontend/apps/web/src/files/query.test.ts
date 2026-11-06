@@ -87,7 +87,7 @@ describe('文件条件、偏好和选择契约', () => {
     expect(nextFileFocus(ids, 'old', 'first')).toBe('a');
     expect(nextFileFocus([], 'old', 'last')).toBeUndefined();
   });
-  it('偏好扩展使用集中默认，损坏数据和跨账号旧Host不会悄悄覆盖', () => {
+  it('偏好扩展使用集中默认，损坏数据和跨账号旧Host不会悄悄覆盖', async () => {
     const preference = fileViewPreferencesSchema.parse({ view: 'list', sort: 'name', desc: false });
     expect(preference.columns).toEqual(defaultFileViewPreferences.columns);
     expect(fileViewPreferencesSchema.safeParse({ ...preference, pageSize: 5000 }).success).toBe(
@@ -99,10 +99,11 @@ describe('文件条件、偏好和选择契约', () => {
     let account: string | null = 'owner';
     const runtime = createFilesRuntime('/api', () => account, vi.fn(), vi.fn());
     localStorage.setItem('clouddrive.files.view.v1.owner', 'broken');
-    expect(() => runtime.port.loadPreferences()).toThrow(FilesError);
+    await expect(runtime.port.loadPreferences()).rejects.toThrow(FilesError);
     localStorage.removeItem('clouddrive.files.view.v1.owner');
-    expect(runtime.port.loadPreferences().pageSize).toBe(defaultFileViewPreferences.pageSize);
+    const snapshot = await runtime.port.loadPreferences();
+    expect(snapshot.configuration.defaults.pageSize).toBe(defaultFileViewPreferences.pageSize);
     account = 'other';
-    expect(() => runtime.port.savePreferences(preference)).toThrow(FilesError);
+    await expect(runtime.port.savePreferences(snapshot)).rejects.toThrow(FilesError);
   });
 });

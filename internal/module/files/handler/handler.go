@@ -35,6 +35,7 @@ type Handler struct {
 	Connections          *service.Connections
 	ConnectionOrigin     string
 	Navigation           *service.Navigation
+	Preferences          *service.Preferences
 	WebDAV               http.Handler
 	Transfers            *service.Transfers
 	TransferProtocol     TransferProtocol

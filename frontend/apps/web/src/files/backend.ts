@@ -2,13 +2,11 @@ import { createFileAccessPort } from './access';
 import { createDocumentReader } from './document-reader';
 import { createArchivesRuntime } from './archives';
 import {
-  defaultFileViewPreferences,
   fileDetailSchema,
   fileEntrySchema,
   fileListingSchema,
   FilesError,
   fileShareSchema,
-  fileViewPreferencesSchema,
   shareListingSchema,
   type FileListing,
   type FilesErrorCode,
@@ -28,10 +26,11 @@ import { fileListParameters } from './query';
 import { fileShareAddress } from './share-address';
 import { createTransferRuntime } from './transfer-runtime';
 import { createVersionsPort } from './versions';
+import { createFilePreferences } from './preferences';
+import { withFileIOAdmissionRetry } from './file-io-retry';
 export { fileDestinationHrefs } from './destinations';
 
 const transferTimeoutMs = 120_000;
-const preferencesKey = 'clouddrive.files.view.v1';
 const sidebarPreferencesKey = 'clouddrive.files.sidebar.v1';
 
 /** createFilesRuntime 将文件句柄、网络、下载及拖拽生命周期留在浏览器 Host。 */
@@ -497,23 +496,7 @@ export function createFilesRuntime(
       assertCurrent();
       localStorage.setItem(sidebarPreferencesKey + '.' + account, JSON.stringify(collapsed));
     },
-    loadPreferences: () => {
-      assertCurrent();
-      const saved = localStorage.getItem(preferencesKey + '.' + account);
-      if (saved === null) return fileViewPreferencesSchema.parse(defaultFileViewPreferences);
-      try {
-        return fileViewPreferencesSchema.parse(JSON.parse(saved));
-      } catch (error) {
-        throw new FilesError('invalid', { cause: error });
-      }
-    },
-    savePreferences: (value) => {
-      assertCurrent();
-      localStorage.setItem(
-        preferencesKey + '.' + account,
-        JSON.stringify(fileViewPreferencesSchema.parse(value)),
-      );
-    },
+    ...createFilePreferences(call, account, assertCurrent),
   };
   return {
     archives: archives.port,
@@ -538,13 +521,17 @@ export function createFilesRuntime(
       mediaTail = new Promise<void>((resolve) => {
         release = resolve;
       });
+      const requestSignal = AbortSignal.any([signal, lifecycle.signal]);
       await previous;
       try {
-        if (signal.aborted || disposed) throw new FilesError('canceled');
-        const blob =
-          version === undefined
-            ? await content(id, signal)
-            : await versions.readContent(id, version, signal);
+        const blob = await withFileIOAdmissionRetry(
+          () =>
+            version === undefined
+              ? content(id, requestSignal)
+              : versions.readContent(id, version, requestSignal),
+          requestSignal,
+          assertCurrent,
+        );
         if (blob.size !== expectedSizeBytes) throw new FilesError('conflict');
         return blob;
       } finally {

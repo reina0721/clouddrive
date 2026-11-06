@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
-import { FilesError } from '@clouddrive/surface/files';
+import { FilesError, type FilesErrorCode } from '@clouddrive/surface/files';
 import type { FileMediaProps } from '@clouddrive/surface/files/runtime';
 
 import { rasterType } from './media-signatures';
@@ -37,9 +37,27 @@ export function FileMediaView({
     ) => Promise<Blob>;
   }>) {
   const { t } = useFrontendTranslation();
-  const [url, setURL] = useState('');
-  const [failure, setFailure] = useState('');
+  const [result, setResult] = useState<
+    Readonly<{
+      key: string;
+      reader: typeof readContent;
+      url: string;
+      failure: FilesErrorCode | '';
+    }>
+  >();
   const [attempt, setAttempt] = useState(0);
+  const requestKey = JSON.stringify([
+    entry.id,
+    entry.contentRevision,
+    entry.sizeBytes,
+    entry.mediaType,
+    mode,
+    maxBytes,
+    version,
+    attempt,
+  ]);
+  const current = result?.key === requestKey && result.reader === readContent ? result : undefined;
+  const url = current?.url ?? '';
   const media = useRef<HTMLMediaElement | null>(null);
   // ref 可能先解绑，StrictMode 也会模拟解绑；保留最后的自有节点，交给 effect 真正释放。
   const attachMedia = useCallback((node: HTMLMediaElement | null) => {
@@ -67,14 +85,15 @@ export function FileMediaView({
         if (!safeType) throw new FilesError('unsupported');
         if (controller.signal.aborted) return;
         ownedURL = URL.createObjectURL(new Blob([blob], { type: safeType }));
-        setURL(ownedURL);
+        setResult({ key: requestKey, reader: readContent, url: ownedURL, failure: '' });
       } catch (error) {
         if (!controller.signal.aborted)
-          setFailure(
-            error instanceof FilesError && error.code === 'large'
-              ? (labels?.tooLarge ?? t('files.mediaTooLarge'))
-              : (labels?.unsupported ?? t('files.mediaUnsupported')),
-          );
+          setResult({
+            key: requestKey,
+            reader: readContent,
+            url: '',
+            failure: error instanceof FilesError ? error.code : 'unavailable',
+          });
       }
     })();
     return () => {
@@ -97,30 +116,30 @@ export function FileMediaView({
     maxBytes,
     mode,
     readContent,
-    labels?.tooLarge,
-    labels?.unsupported,
-    attempt,
-    t,
+    requestKey,
   ]);
-  if (failure)
+  if (current?.failure) {
+    const failure =
+      current.failure === 'large'
+        ? (labels?.tooLarge ?? t('files.mediaTooLarge'))
+        : current.failure === 'unsupported'
+          ? (labels?.unsupported ?? t('files.mediaUnsupported'))
+          : t('files.errors.' + current.failure);
     return (
       <div className="space-y-2 text-xs text-ink-muted">
         <p role="status">{failure}</p>
-        {mode === 'preview' ? (
-          <Action
-            size="sm"
-            variant="quiet"
-            onPress={() => {
-              setFailure('');
-              setURL('');
-              setAttempt((value) => value + 1);
-            }}
-          >
-            {labels?.retry ?? t('files.retry')}
-          </Action>
-        ) : null}
+        <Action
+          size="sm"
+          variant="quiet"
+          onPress={() => {
+            setAttempt((value) => value + 1);
+          }}
+        >
+          {labels?.retry ?? t('files.retry')}
+        </Action>
       </div>
     );
+  }
   if (!url)
     return (
       <p role="status" className="text-xs text-ink-muted">
@@ -137,7 +156,9 @@ export function FileMediaView({
             ? 'h-40 w-full rounded-control object-contain'
             : 'max-h-screen w-full object-contain'
         }
-        onError={() => setFailure(labels?.unsupported ?? t('files.mediaUnsupported'))}
+        onError={() =>
+          setResult({ key: requestKey, reader: readContent, url: '', failure: 'unsupported' })
+        }
       />
     );
   if (entry.mediaType.startsWith('video/'))
@@ -150,7 +171,9 @@ export function FileMediaView({
         src={url}
         aria-label={entry.name}
         className="max-h-screen w-full"
-        onError={() => setFailure(t('files.mediaUnsupported'))}
+        onError={() =>
+          setResult({ key: requestKey, reader: readContent, url: '', failure: 'unsupported' })
+        }
       />
     );
   return (
@@ -162,7 +185,9 @@ export function FileMediaView({
       src={url}
       aria-label={entry.name}
       className="w-full"
-      onError={() => setFailure(t('files.mediaUnsupported'))}
+      onError={() =>
+        setResult({ key: requestKey, reader: readContent, url: '', failure: 'unsupported' })
+      }
     />
   );
 }

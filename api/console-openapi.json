@@ -3250,6 +3250,84 @@
         ]
       }
     },
+    "/api/console/v1/native/files/preferences": {
+      "get": {
+        "operationId": "files.preferences.read",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilePreferences"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "put": {
+        "operationId": "files.preferences.save",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FilePreferences"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilePreferences"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
     "/api/console/v1/native/files/shares": {
       "get": {
         "operationId": "files.shares.list",
@@ -30357,6 +30435,46 @@
         ],
         "type": "object"
       },
+      "FilePreferences": {
+        "additionalProperties": false,
+        "properties": {
+          "defaults": {
+            "$ref": "#/components/schemas/FileViewPreferences"
+          },
+          "folderClick": {
+            "enum": [
+              "open",
+              "select"
+            ],
+            "type": "string"
+          },
+          "folders": {
+            "items": {
+              "$ref": "#/components/schemas/FolderViewPreferences"
+            },
+            "maxItems": 200,
+            "nullable": true,
+            "type": "array"
+          },
+          "rememberFolders": {
+            "type": "boolean"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "rememberFolders",
+          "folderClick",
+          "defaults",
+          "folders"
+        ],
+        "type": "object"
+      },
       "FileVersion": {
         "additionalProperties": false,
         "properties": {
@@ -30392,6 +30510,64 @@
         ],
         "type": "object"
       },
+      "FileViewPreferences": {
+        "additionalProperties": false,
+        "properties": {
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 4,
+            "nullable": true,
+            "type": "array"
+          },
+          "desc": {
+            "type": "boolean"
+          },
+          "foldersFirst": {
+            "type": "boolean"
+          },
+          "pageSize": {
+            "enum": [
+              50,
+              100,
+              200
+            ],
+            "format": "int64",
+            "type": "integer"
+          },
+          "sort": {
+            "enum": [
+              "name",
+              "size",
+              "updated",
+              "created"
+            ],
+            "type": "string"
+          },
+          "thumbnails": {
+            "type": "boolean"
+          },
+          "view": {
+            "enum": [
+              "grid",
+              "list",
+              "gallery"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "view",
+          "sort",
+          "desc",
+          "foldersFirst",
+          "thumbnails",
+          "pageSize",
+          "columns"
+        ],
+        "type": "object"
+      },
       "FolderInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -30407,6 +30583,23 @@
         "required": [
           "name",
           "parentId"
+        ],
+        "type": "object"
+      },
+      "FolderViewPreferences": {
+        "additionalProperties": false,
+        "properties": {
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "view": {
+            "$ref": "#/components/schemas/FileViewPreferences"
+          }
+        },
+        "required": [
+          "parentId",
+          "view"
         ],
         "type": "object"
       },

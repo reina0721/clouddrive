@@ -73,6 +73,7 @@ export function FileItem({
   onContext,
   annotation,
   onTag,
+  folderClick = 'open',
 }: {
   entry: FileEntry;
   view: FileViewPreferences['view'];
@@ -89,6 +90,7 @@ export function FileItem({
   onContext: () => void;
   annotation?: FileAnnotationSummary | undefined;
   onTag: (name: string) => void;
+  folderClick?: 'open' | 'select' | undefined;
 }) {
   const { t } = useFrontendTranslation(),
     isList = view === 'list';
@@ -111,7 +113,12 @@ export function FileItem({
       onClick={(event) => {
         if (event.shiftKey || event.ctrlKey || event.metaKey)
           onSelect({ extend: event.shiftKey, toggle: event.ctrlKey || event.metaKey });
+        else if (entry.kind === 'folder' && folderClick === 'select' && event.detail !== 0)
+          onSelect({ extend: false, toggle: false });
         else onOpen();
+      }}
+      onDoubleClick={() => {
+        if (entry.kind === 'folder' && folderClick === 'select') onOpen();
       }}
     >
       {entry.name}

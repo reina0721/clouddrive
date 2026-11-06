@@ -1,7 +1,9 @@
 import { zhConnections, enConnections } from './connections-i18n';
 import { zhNavigation, enNavigation } from './navigation-i18n';
 import { zhDiscovery, enDiscovery } from './discovery-i18n';
+import { zhPreferences, enPreferences } from './preference-i18n';
 const zh = {
+  preferences: zhPreferences,
   discovery: zhDiscovery,
   navigation: zhNavigation,
   create: '创建',
@@ -201,6 +203,7 @@ const zh = {
   },
 };
 const en: typeof zh = {
+  preferences: enPreferences,
   discovery: enDiscovery,
   navigation: enNavigation,
   create: 'Create',

@@ -38,7 +38,7 @@ export const zhDiscovery = {
   invalidLink: '链接中的搜索条件或页码无效。请清除条件后重新搜索。',
   apply: '搜索',
   viewOptions: '视图选项',
-  viewHint: '显示偏好按当前账号保存在此浏览器中。画廊继续使用服务器的每屏预算。',
+  viewHint: '可保存在本机或同步到服务器，并记住各目录视图。画廊使用服务器的每屏预算。',
   thumbnails: '显示缩略图',
   foldersFirst: '目录优先',
   columns: '列表显示列',
@@ -100,7 +100,7 @@ export const enDiscovery = {
   apply: 'Search',
   viewOptions: 'View options',
   viewHint:
-    'Preferences are saved for this account in this browser. Gallery uses the server-provided screen budget.',
+    'Save on this device or sync to the server, with separate folder views. Gallery uses the server-provided screen budget.',
   thumbnails: 'Show thumbnails',
   foldersFirst: 'Folders first',
   columns: 'Visible list columns',

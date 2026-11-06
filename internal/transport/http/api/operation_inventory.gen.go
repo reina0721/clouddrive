@@ -56,6 +56,8 @@ const (
 	OperationFilesPinsList                  OperationID = "files.pins.list"
 	OperationFilesPinsOrder                 OperationID = "files.pins.order"
 	OperationFilesPinsRemove                OperationID = "files.pins.remove"
+	OperationFilesPreferencesRead           OperationID = "files.preferences.read"
+	OperationFilesPreferencesSave           OperationID = "files.preferences.save"
 	OperationFilesPublicArchive             OperationID = "files.public.archive"
 	OperationFilesPublicContent             OperationID = "files.public.content"
 	OperationFilesPublicContentHead         OperationID = "files.public.content.head"
@@ -217,6 +219,8 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesPinsList, Method: "GET", Path: "/api/v1/files/pins", Policy: "protected", Scope: "files:read", Action: "files.pins.list"},
 	{ID: OperationFilesPinsOrder, Method: "PUT", Path: "/api/v1/files/pins/order", Policy: "protected", Scope: "files:write", Action: "files.pins.order"},
 	{ID: OperationFilesPinsRemove, Method: "DELETE", Path: "/api/v1/files/pins/{pinId}", Policy: "protected", Scope: "files:write", Action: "files.pins.remove"},
+	{ID: OperationFilesPreferencesRead, Method: "GET", Path: "/api/v1/files/preferences", Policy: "protected", Scope: "files:read", Action: "files.preferences.read"},
+	{ID: OperationFilesPreferencesSave, Method: "PUT", Path: "/api/v1/files/preferences", Policy: "protected", Scope: "files:write", Action: "files.preferences.save"},
 	{ID: OperationFilesPublicArchive, Method: "POST", Path: "/api/v1/file-shares/{token}/archive", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicContent, Method: "GET", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicContentHead, Method: "HEAD", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},

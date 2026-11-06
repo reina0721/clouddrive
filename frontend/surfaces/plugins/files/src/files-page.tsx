@@ -37,6 +37,11 @@ import {
   type UploadCandidate,
 } from '../../../src/files/model';
 import { isPDFDocument } from '../../../src/files/pdf-contract';
+import {
+  changeFileView,
+  resolveFileView,
+  type FilePreferenceSnapshot,
+} from '../../../src/files/preferences';
 import type { PinTarget } from '../../../src/files/navigation';
 import {
   FileMedia,
@@ -137,6 +142,14 @@ export function FilesPage({
   const [preferences, setPreferences] = useState(() =>
     fileViewPreferencesSchema.parse(defaultFileViewPreferences),
   );
+  const preferenceParent = !category && !trash && !search && !filterKey ? parent : undefined;
+  const preferenceScope = preferenceParent === undefined ? 'global' : 'folder:' + preferenceParent;
+  const preferenceScopeRef = useRef(preferenceScope);
+  preferenceScopeRef.current = preferenceScope;
+  const [preferenceSnapshot, setPreferenceSnapshot] = useState<FilePreferenceSnapshot>(),
+    [preferenceFailure, setPreferenceFailure] = useState(''),
+    [preferenceBusy, setPreferenceBusy] = useState(false),
+    [preferenceReload, setPreferenceReload] = useState(0);
   const [advancedOpen, setAdvancedOpen] = useState(false),
     [viewOptionsOpen, setViewOptionsOpen] = useState(false);
   const [focusedEntry, setFocusedEntry] = useState(''),
@@ -177,12 +190,23 @@ export function FilesPage({
   const reload = useCallback(() => setRevision((value) => value + 1), [setRevision]);
 
   useEffect(() => {
-    try {
-      setPreferences(port.loadPreferences());
-    } catch {
-      setNotice(t('files.preferencesFailure'));
-    }
-  }, [port, t]);
+    const controller = new AbortController();
+    setPreferenceSnapshot(undefined);
+    setPreferenceFailure('');
+    void port
+      .loadPreferences(controller.signal)
+      .then((snapshot) => {
+        if (!controller.signal.aborted) {
+          setPreferenceSnapshot(snapshot);
+          setPreferences(resolveFileView(snapshot.configuration, preferenceParent));
+        }
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted)
+          setPreferenceFailure(t('files.preferences.failure', { reason: errorText(error) }));
+      });
+    return () => controller.abort();
+  }, [port, t, errorText, preferenceParent, preferenceReload]);
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -339,7 +363,38 @@ export function FilesPage({
     }
   }, [transferState.completedRevision, reload]);
 
+  async function persistPreferences(input: FilePreferenceSnapshot): Promise<boolean> {
+    if (preferenceBusy || !preferenceSnapshot) return false;
+    const scope = preferenceScope;
+    setPreferenceBusy(true);
+    setPreferenceFailure('');
+    try {
+      const snapshot = await port.savePreferences(input);
+      if (preferenceScopeRef.current !== scope) return true;
+      setPreferenceSnapshot(snapshot);
+      applyPreferences(resolveFileView(snapshot.configuration, preferenceParent));
+      setNotice(t('files.preferences.saved'));
+      return true;
+    } catch (error) {
+      if (preferenceScopeRef.current === scope)
+        setPreferenceFailure(t('files.preferences.failure', { reason: errorText(error) }));
+      return false;
+    } finally {
+      setPreferenceBusy(false);
+    }
+  }
   function savePreferences(next: FileViewPreferences) {
+    if (!preferenceSnapshot || preferenceBusy) return;
+    try {
+      void persistPreferences({
+        ...preferenceSnapshot,
+        configuration: changeFileView(preferenceSnapshot.configuration, next, preferenceParent),
+      });
+    } catch (error) {
+      setPreferenceFailure(t('files.preferences.failure', { reason: errorText(error) }));
+    }
+  }
+  function applyPreferences(next: FileViewPreferences) {
     const affectsQuery =
       next.sort !== preferences.sort ||
       next.desc !== preferences.desc ||
@@ -349,11 +404,6 @@ export function FilesPage({
     setPreferences(fileViewPreferencesSchema.parse(next));
     if (affectsQuery && page !== 1)
       navigate({ parent, category, trash: trash ? 'true' : '', search, filter: filterKey });
-    try {
-      port.savePreferences(next);
-    } catch {
-      setNotice(t('files.preferencesFailure'));
-    }
   }
   const openDialog = useCallback(
     (mode: Dialog['mode'] | 'folder', targets: FileEntry[] = []) => {
@@ -813,7 +863,8 @@ export function FilesPage({
                         label: t('files.discovery.viewOptions'),
                         description: '',
                       },
-                    ])}
+                    ])
+                    .map((item) => ({ ...item, disabled: preferenceBusy || !preferenceSnapshot }))}
                   onAction={(view) =>
                     view === 'options'
                       ? setViewOptionsOpen(true)
@@ -848,7 +899,7 @@ export function FilesPage({
                       label: t('files.explorer.descending'),
                       description: preferences.desc ? '✓' : '',
                     },
-                  ]}
+                  ].map((item) => ({ ...item, disabled: preferenceBusy || !preferenceSnapshot }))}
                   onAction={(sort) =>
                     savePreferences({
                       ...preferences,
@@ -959,6 +1010,32 @@ export function FilesPage({
           >
             {t('files.discovery.clear')}
           </Action>
+        ) : null}
+        {!preferenceSnapshot && !preferenceFailure ? (
+          <p role="status" className="text-sm text-ink-muted">
+            {t('files.preferences.loading')}
+          </p>
+        ) : null}
+        {preferenceBusy ? (
+          <p role="status" className="text-sm text-ink-muted">
+            {t('files.preferences.saving')}
+          </p>
+        ) : null}
+        {preferenceFailure ? (
+          <div role="alert" className="flex flex-wrap items-center gap-2 text-sm text-danger">
+            <p>{preferenceFailure}</p>
+            <Action
+              size="sm"
+              variant="quiet"
+              disabled={preferenceBusy}
+              onPress={() => {
+                setViewOptionsOpen(false);
+                setPreferenceReload((value) => value + 1);
+              }}
+            >
+              {t('files.preferences.reload')}
+            </Action>
+          </div>
         ) : null}
         {notice ? (
           <p role="status" className="rounded-control border border-border bg-surface p-3 text-sm">
@@ -1188,6 +1265,7 @@ export function FilesPage({
                     })
                   }
                   view={preferences.view}
+                  folderClick={preferenceSnapshot?.configuration.folderClick}
                   columns={preferences.columns}
                   selected={selected.includes(entry.id)}
                   cut={
@@ -1538,14 +1616,33 @@ export function FilesPage({
           }}
         />
       ) : null}
-      {viewOptionsOpen ? (
+      {viewOptionsOpen && preferenceSnapshot ? (
         <ViewOptionsDialog
           preferences={preferences}
-          onClose={() => setViewOptionsOpen(false)}
-          onSave={(next) => {
-            savePreferences(next);
-            setViewOptionsOpen(false);
+          snapshot={preferenceSnapshot}
+          parentId={preferenceParent}
+          busy={preferenceBusy}
+          failure={preferenceFailure}
+          onLoadServer={async () => {
+            if (preferenceBusy) return;
+            setPreferenceBusy(true);
+            setPreferenceFailure('');
+            const scope = preferenceScope;
+            try {
+              const snapshot = await port.loadPreferences(undefined, 'server');
+              if (preferenceScopeRef.current !== scope) return;
+              setPreferenceSnapshot(snapshot);
+              applyPreferences(resolveFileView(snapshot.configuration, preferenceParent));
+              setViewOptionsOpen(false);
+            } catch (error) {
+              if (preferenceScopeRef.current === scope)
+                setPreferenceFailure(t('files.preferences.failure', { reason: errorText(error) }));
+            } finally {
+              setPreferenceBusy(false);
+            }
           }}
+          onClose={() => setViewOptionsOpen(false)}
+          onSave={persistPreferences}
         />
       ) : null}
       {accessTarget ? (

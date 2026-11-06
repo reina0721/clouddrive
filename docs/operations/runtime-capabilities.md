@@ -49,3 +49,5 @@ WebDAV 连接当前提供 `/home/connections` 与独立 `/dav/{connectionId}/...
 高级文件查询复用现有 GORM 租约和 Go 字符串/时间处理，无独立连接、索引或 worker。账号元数据扫描明确受 `files.search.treeEntries` 限制，超预算返回失败，不截断为成功；查询只读，不变更既有迁移或内容。
 
 私有PDF阅读为浏览器Host内的有界文档应用，复用files/IAM及现有内容接口；本地frame/Worker资源不成为Go Kernel后台服务。使用与限制统一见[文件管理](file-management.md#本人-pdf-阅读与临时批注)。
+
+文件偏好在files模块内复用现有数据库租约、owner事务锁和会话授权，以整个文档revision执行CAS；无新增连接、worker或Kernel资源。Host拥有按账号的本机存储、同步模式与旧偏好迁移，Surface不访问浏览器API。目录覆盖有界且不授予内容访问权，使用与失败语义见[文件管理](file-management.md)。

@@ -1,0 +1,34 @@
+schema_version: 1
+id: R137-001
+title: 文件偏好同步的所有权与并发边界
+question: 如何保留已有本机设置并增加按目录的服务器同步和文件夹点击行为？
+research_type: current-project-and-browser
+topics: [files, preferences, persistence, transfers, media]
+keywords: [目录视图, Cloudreve, CAS, 文件夹单击, 有界繁忙恢复]
+status: active
+summary: 文件专有偏好归files；复用数据库租约、GORM、JSON、现有会话和CSRF；Host拥有本地存储和账号隔离。
+applicable_scenarios: [本人文件目录, 同账号多浏览器, 本机离线偏好]
+non_applicable_scenarios: [公开分享, IAM通用偏好扩展, 文件树, 历史版本清理]
+evidence:
+  types: [source-code, browser-observation, screenshots]
+  primary_sources:
+    - title: 文件视图及其Host持久化
+      locator: frontend/apps/web/src/files/backend.ts
+      snapshot: 66ffa3d281dfcd02adc032f16ada48494406a064
+    - title: 文件模块组合与数据库边界
+      locator: internal/module/files/module.go
+      snapshot: 66ffa3d281dfcd02adc032f16ada48494406a064
+    - title: 参考站偏好视觉观察
+      locator: .data/137-reference-preferences.png
+      snapshot: 2026-11-06 CUA 1280x720
+researched_at: 2026-11-06
+verified_at: 2026-11-06
+validity:
+  mode: snapshot
+  refresh_triggers: [FilesPort偏好契约变化, files存储或会话边界变化, 视图选项枚举变化, files_busy或commit幂等语义变化, 媒体读取生命周期变化]
+relations:
+  extends: []
+  related: [R125-001, R136-001]
+  supersedes: []
+  superseded_by: []
+report: report.md
