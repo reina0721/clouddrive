@@ -42,4 +42,6 @@ SQLite获得真实迁移和事务证据；MySQL/PostgreSQL只有脚本及摘要�
 
 ## 交付状态
 
-最终校验、提交和推送状态以[tasks](tasks.md)为准；凭据、运行数据、截图、二进制和测试产物不提交。
+82个明确路径已审阅并提交，96份Git index中的SQL精确LF字节均与set声明摘要一致，已知运行凭据和运行目录已排除。功能提交`523223ee1a6253ac663f4c3684aee04b2ee3bc0b`，完整信息为`feat(files): enforce persistent WebDAV write locks`，已推送并核对远端main一致。
+
+最终三套后端均为`.tools/clouddrive-141-final.exe`，进程ID、启动时间和路径已核对；主/QA前端为本记录已验证的两个生产目录，开发4173持续运行。原两库v16原列数据再次校验一致，21项运行检查再次通过。凭据、运行数据、截图、二进制和测试产物均不提交；总体目标仍active，继续补齐其余真实差距。
