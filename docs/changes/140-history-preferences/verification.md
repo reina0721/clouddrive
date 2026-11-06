@@ -33,3 +33,7 @@ CUA进一步复核非法规则发现真实视觉缺陷：错误位于可滚动�
 最终主4181/QA4194分别运行`.next/140-primary-r2`和`.next/140-qa-r2`；三套后端为同一最终140构建，开发4173也已重启并持续运行。18项运行检查验证真实策略默认、原文件、既有文件/分享/受众/PDF与代理目标。CUA主预览实际打开默认规则并截图，没有保存原账号策略或修改文件；访问资料仅位于`.data/140-preview-guide.txt`。
 
 0仅是无账号额外数量限制，单文件20、账号1000及配置调低的服务器预算仍有效；不承诺无限历史或物理GC。关闭和排除扩展名不清理已有旧版，恢复仍保留恢复前内容。SQLite真实验证；MySQL/PostgreSQL仅脚本与摘要，没有实例验收。当前Windows工具链CGO_ENABLED=0且无gcc，未执行race检查，不宣称其通过。本批不更新视觉golden，不称全站423例已重跑。BT/magnet、远程节点、Office等仍待后续。
+
+## 提交交付
+
+66个明确路径完整diff与私有凭据审查完成；90份migration在Git index中的精确字节与set声明SHA一致，不修改已应用SQL。功能提交`1550470f7509702d2585f7f5a05ddb413f2e5f4f`（`feat(files): add account version retention rules`）已推送，并用ls-remote核对origin/main一致。凭据、数据库、运行目录、二进制及浏览器产物均未提交。
