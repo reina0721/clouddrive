@@ -17,7 +17,7 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 文件复制为 `POST /api/v1/files/{id}/copy`；文本替换为 `PUT /{id}/text`，必须带 `expectedRevision`；ZIP 为 `POST /api/v1/files/archive`。分享管理使用 `/api/v1/files/shares` 的创建/检索、`/{shareId}` 的读取/CAS设置、`/{shareId}/state` 的CAS暂停/恢复和 `/{shareId}/revoke`，仍要求 IAM 会话、文件权限和写请求 CSRF。
 
-访客入口 `/api/v1/file-shares/{token}` 的 metadata、entries、unlock、content、text、folders、entries/change、entries/batch、archive及transfers（create/read/data/commit/cancel）operation 显式声明 public，不放宽任何私有 files operation。所有公开写入需要可信Origin，文件操作额外检查当前分享能力、策略版本和范围。解锁POST需要可信Origin，票据通过 `X-Share-Grant` header 传递，不能用 IAM 会话代替。原生浏览器下载经 `POST /file-shares/{token}/content/{id}/download` 授权，随后以短期限定文件句柄访问 `GET/HEAD /file-downloads/{ticket}`。私有和公开下载提供 Range/条件请求，每次检查撤销、到期和范围；完整 code-first 结果为当前 160 个原生 operation。
+访客入口 `/api/v1/file-shares/{token}` 的 metadata、entries、unlock、content、text、folders、entries/change、entries/batch、archive及transfers（create/read/data/commit/cancel）operation 显式声明 public，不放宽任何私有 files operation。所有公开写入需要可信Origin，文件操作额外检查当前分享能力、策略版本和范围。解锁POST需要可信Origin，票据通过 `X-Share-Grant` header 传递，不能用 IAM 会话代替。原生浏览器下载经 `POST /file-shares/{token}/content/{id}/download` 授权，随后以短期限定文件句柄访问 `GET/HEAD /file-downloads/{ticket}`。私有和公开下载提供 Range/条件请求，每次检查撤销、到期和范围；完整 code-first 结果为当前 162 个原生 operation。
 
 文件权限维护新增 `GET/PUT /api/v1/files/{id}/access`（PUT携带独立revision，policy为null明确恢复继承）、`POST /api/v1/files/audience/lookup`（精确账号/角色查找）及 `POST /api/v1/files/{id}/access/effective`（实际分享及匿名/账号的已保存权限）。均使用原IAM、文件scope与写请求CSRF边界。分享管理投影增加audience，公开metadata增加denied/signInRequired，目录和条目返回实际permissions。公开路由保留public profile，同时可选解析同源Session获取受众事实；存在但无效的会话不会静默降级匿名。详见[文件管理](../docs/operations/file-management.md)。
 
@@ -40,3 +40,5 @@ WebDAV 管理使用 `/api/v1/files/connections`（列表/创建）和 `/{connect
 本人PDF阅读复用当前私有内容operation；普通文件列表与版本页新增`pdfReader` typed预算投影，字节、像素和毫秒单位明确。未新增operation或迁移，PDF本身未新增operation，完整清单见上文。生成来源与使用限制见[文件管理](../docs/operations/file-management.md#本人-pdf-阅读与临时批注)。
 
 本人文件偏好为 `GET/PUT /api/v1/files/preferences`，使用当前会话owner及files:read/write，PUT仍要求CSRF。整体typed文档携带revision CAS，目录覆盖最多200项，控制JSON限128KiB；未知字段或结构预算在代理/协议边界拒绝，业务非法值422、冲突409。没有公开分享偏好入口，不接受客户端owner。详见[文件管理](../docs/operations/file-management.md)。
+
+账号版本保留规则为 `GET/PUT /api/v1/files/preferences/history`，独立revision CAS且服务器唯一保存；使用当前owner、files:read/write与CSRF，不接收owner参数。扩展名为规范小写集合，最多32项、每项32字节；maxVersions为0–20个旧版本，0不取消服务器硬预算。未知字段在OpenAPI边界拒绝，非法业务规则422、CAS冲突409。策略写入不扫描或清理文件，内容覆盖在同一owner事务读取规则并核算实际关联空间。

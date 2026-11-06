@@ -2632,6 +2632,41 @@
         ],
         "type": "object"
       },
+      "HistoryPreferences": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "extensions": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32,
+            "nullable": true,
+            "type": "array"
+          },
+          "maxVersions": {
+            "format": "int64",
+            "maximum": 20,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "enabled",
+          "extensions",
+          "maxVersions"
+        ],
+        "type": "object"
+      },
       "IdentityResponse": {
         "additionalProperties": false,
         "properties": {
@@ -5641,8 +5676,14 @@
             "format": "int64",
             "type": "integer"
           },
+          "historyApplies": {
+            "type": "boolean"
+          },
           "historyEnabled": {
             "type": "boolean"
+          },
+          "historyPreferences": {
+            "$ref": "#/components/schemas/HistoryPreferences"
           },
           "historyRevision": {
             "format": "int64",
@@ -5700,6 +5741,8 @@
           }
         },
         "required": [
+          "historyPreferences",
+          "historyApplies",
           "pdfReader",
           "entry",
           "items",
@@ -9053,6 +9096,84 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FilePreferences"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/preferences/history": {
+      "get": {
+        "operationId": "files.preferences.history.read",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryPreferences"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "put": {
+        "operationId": "files.preferences.history.save",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HistoryPreferences"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryPreferences"
                 }
               }
             },

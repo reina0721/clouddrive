@@ -84,6 +84,8 @@ describe('历史内容客户端边界', () => {
       contentRevision: 2,
       historyRevision: 1,
       historyEnabled: true,
+      historyPreferences: { revision: 0, enabled: true, extensions: [], maxVersions: 0 },
+      historyApplies: true,
       perFile: 20,
       perOwner: 1000,
       fileHistoryBytes: 3,

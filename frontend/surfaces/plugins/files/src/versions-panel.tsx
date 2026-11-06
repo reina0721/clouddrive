@@ -149,8 +149,15 @@ function VersionPanelContent({
               <div className="space-y-2 rounded-control border border-border p-3 text-xs text-ink-muted">
                 <p>
                   {t(
-                    snapshot.historyEnabled ? 'files.versions.enabled' : 'files.versions.disabled',
+                    snapshot.historyApplies
+                      ? 'files.retention.applies'
+                      : 'files.retention.excluded',
                   )}
+                </p>
+                <p>
+                  {snapshot.historyPreferences.maxVersions > 0
+                    ? t('files.retention.count', { count: snapshot.historyPreferences.maxVersions })
+                    : t('files.retention.unlimited')}
                 </p>
                 <p>
                   {t('files.versions.storage', {

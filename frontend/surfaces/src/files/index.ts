@@ -17,3 +17,5 @@ export * from './pdf-contract';
 
 export * from './access';
 export * from './sidebar-preferences';
+
+export * from './history-preferences';

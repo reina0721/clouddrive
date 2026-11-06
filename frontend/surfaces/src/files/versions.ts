@@ -1,3 +1,4 @@
+import { historyPreferencesSchema } from './history-preferences';
 import { pdfReaderLimitsSchema } from './pdf-contract';
 import { z } from 'zod';
 import { fileEntrySchema, type FileEntry } from './model';
@@ -33,6 +34,8 @@ export const fileVersionPageSchema = z
     contentRevision: revision,
     historyRevision: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
     historyEnabled: z.boolean(),
+    historyPreferences: historyPreferencesSchema,
+    historyApplies: z.boolean(),
     perFile: z.number().int().positive().max(fileHistoryMaxVersions),
     perOwner: z.number().int().positive().max(1000),
     fileHistoryBytes: z.number().int().nonnegative(),

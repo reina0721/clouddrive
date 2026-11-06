@@ -27,6 +27,7 @@ import { fileShareAddress } from './share-address';
 import { createTransferRuntime } from './transfer-runtime';
 import { createVersionsPort } from './versions';
 import { createFilePreferences } from './preferences';
+import { createHistoryPreferences } from './history-preferences';
 import { withFileIOAdmissionRetry } from './file-io-retry';
 import { createFileSidebarPreferences } from './sidebar-preferences';
 export { fileDestinationHrefs } from './destinations';
@@ -486,6 +487,7 @@ export function createFilesRuntime(
     },
     ...createFileSidebarPreferences(account, assertCurrent),
     ...createFilePreferences(call, account, assertCurrent),
+    ...createHistoryPreferences(call, assertCurrent),
   };
   return {
     archives: archives.port,

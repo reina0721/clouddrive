@@ -15,9 +15,33 @@ import (
 )
 
 type memoryRepository struct {
-	mu      sync.Mutex
-	entries []model.Entry
-	fail    error
+	historyPreferences map[string]model.HistoryPreferences
+	mu                 sync.Mutex
+	entries            []model.Entry
+	fail               error
+}
+
+func (r *memoryRepository) historyFor(owner string) model.HistoryPreferences {
+	if value, ok := r.historyPreferences[owner]; ok {
+		return value
+	}
+	return model.DefaultHistoryPreferences()
+}
+func (r *memoryRepository) ReadHistoryPreferences(ctx context.Context, owner string) (model.HistoryPreferences, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if err := ctx.Err(); err != nil {
+		return model.HistoryPreferences{}, err
+	}
+	if r.fail != nil {
+		return model.HistoryPreferences{}, r.fail
+	}
+	return r.historyFor(owner), nil
+}
+func (r *memoryRepository) ChangeContent(ctx context.Context, owner string, change func(ContentSnapshot) (model.Entry, error)) (model.Entry, error) {
+	return r.Change(ctx, owner, func(entries []model.Entry) (model.Entry, error) {
+		return change(ContentSnapshot{Entries: entries, HistoryPreferences: r.historyFor(owner)})
+	})
 }
 
 func (r *memoryRepository) RecordCleanup(context.Context, string, string) error { return nil }

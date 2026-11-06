@@ -294,6 +294,9 @@ func (r *shareScopedRepository) ChangeMany(ctx context.Context, owner string, ch
 	return r.ChangeManyBounded(ctx, owner, r.treeLimit, change)
 }
 func (r *shareScopedRepository) ChangeManyBounded(ctx context.Context, owner string, limit int, change func([]model.Entry) ([]model.Entry, error)) ([]model.Entry, error) {
+	return r.changeFiles(ctx, owner, limit, func(snapshot ShareSnapshot) ([]model.Entry, error) { return change(snapshot.Entries) })
+}
+func (r *shareScopedRepository) changeFiles(ctx context.Context, owner string, limit int, change func(ShareSnapshot) ([]model.Entry, error)) ([]model.Entry, error) {
 	if owner != r.owner || limit < 1 || limit > r.treeLimit || change == nil || r.access.Action.accountAccess() != ShareAccountWrite {
 		return nil, model.ErrShareForbidden
 	}
@@ -307,7 +310,7 @@ func (r *shareScopedRepository) ChangeManyBounded(ctx context.Context, owner str
 		if err := r.sharing.validateAccess(ctx, snapshot, r.access); err != nil {
 			return nil, err
 		}
-		changed, err := change(snapshot.Entries)
+		changed, err := change(snapshot)
 		if err != nil {
 			return nil, err
 		}
@@ -380,4 +383,27 @@ func (c *shareScopedContent) WithReader(ctx context.Context, key string, use fun
 		return err
 	}
 	return c.base.WithReader(ctx, key, func(reader io.ReadSeeker, size int64) error { return errors.Join(use(reader, size), c.check(ctx, key)) })
+}
+
+func (r *shareScopedRepository) ReadHistoryPreferences(ctx context.Context, owner string) (model.HistoryPreferences, error) {
+	if owner != r.owner {
+		return model.HistoryPreferences{}, model.ErrMissing
+	}
+	return r.base.ReadHistoryPreferences(ctx, owner)
+}
+func (r *shareScopedRepository) ChangeContent(ctx context.Context, owner string, change func(ContentSnapshot) (model.Entry, error)) (model.Entry, error) {
+	changed, err := r.changeFiles(ctx, owner, r.treeLimit, func(snapshot ShareSnapshot) ([]model.Entry, error) {
+		entry, err := change(ContentSnapshot{Entries: snapshot.Entries, HistoryPreferences: snapshot.HistoryPreferences})
+		if err != nil {
+			return nil, err
+		}
+		return []model.Entry{entry}, nil
+	})
+	if err != nil {
+		return model.Entry{}, err
+	}
+	if len(changed) != 1 {
+		return model.Entry{}, model.ErrInvalid
+	}
+	return changed[0], nil
 }

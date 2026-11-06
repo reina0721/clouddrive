@@ -54,9 +54,10 @@ type PasscodeHasher interface {
 	Verify(string, string) (bool, error)
 }
 type ShareSnapshot struct {
-	Share   model.Share
-	Entries []model.Entry
-	Grant   *model.ShareGrant
+	HistoryPreferences model.HistoryPreferences
+	Share              model.Share
+	Entries            []model.Entry
+	Grant              *model.ShareGrant
 }
 type ShareRepository interface {
 	ShareManagementRepository

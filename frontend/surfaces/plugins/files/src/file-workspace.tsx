@@ -48,6 +48,11 @@ const Transfers = lazy(() =>
 const DirectoryTree = lazy(() =>
   import('./directory-tree').then((module) => ({ default: module.DirectoryTree })),
 );
+const HistorySettings = lazy(() =>
+  import('./history-preferences-dialog').then((module) => ({
+    default: module.HistoryPreferencesDialog,
+  })),
+);
 export function FileWorkspace({
   pathname,
   query,
@@ -61,6 +66,7 @@ export function FileWorkspace({
     snapshot = useTransferSnapshot(),
     { t } = useFrontendTranslation();
   const [revision, setRevision] = useWorkspaceRevision();
+  const [historySettings, setHistorySettings] = useState(false);
   const [storage, setStorage] = useState<FileListing>(),
     [storageFailure, setStorageFailure] = useState(''),
     [notice, setNotice] = useState(''),
@@ -480,6 +486,14 @@ export function FileWorkspace({
                   </span>
                 </span>
               </Action>
+              <Action
+                size="sm"
+                variant="quiet"
+                onPress={() => setHistorySettings(true)}
+                leadingIcon={<Settings className="size-5" />}
+              >
+                <span className="sr-only">{t('files.retention.title')}</span>
+              </Action>
               <FileAccountTools />
             </div>
           </header>
@@ -500,6 +514,11 @@ export function FileWorkspace({
           </main>
         </div>
       </div>
+      {historySettings ? (
+        <Suspense fallback={<p role="status">{t('files.retention.loading')}</p>}>
+          <HistorySettings onClose={() => setHistorySettings(false)} />
+        </Suspense>
+      ) : null}
       {create ? (
         <Suspense fallback={<p role="status">{t('files.previewLoading')}</p>}>
           <Create

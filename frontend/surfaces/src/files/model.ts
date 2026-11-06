@@ -1,3 +1,4 @@
+import type { HistoryPreferences } from './history-preferences';
 import type { FileAccessPort } from './access';
 import { pdfReaderLimitsSchema } from './pdf-contract';
 import { z } from 'zod';
@@ -193,4 +194,9 @@ export type FilesPort = Readonly<{
     source?: 'current' | 'server',
   ): Promise<FilePreferenceSnapshot>;
   savePreferences(value: FilePreferenceSnapshot): Promise<FilePreferenceSnapshot>;
+  loadHistoryPreferences(signal?: AbortSignal): Promise<HistoryPreferences>;
+  saveHistoryPreferences(
+    value: HistoryPreferences,
+    signal?: AbortSignal,
+  ): Promise<HistoryPreferences>;
 }>;

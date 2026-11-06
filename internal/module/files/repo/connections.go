@@ -198,7 +198,11 @@ func (r *Connections) ChangeConnectionFiles(ctx context.Context, id string, revi
 			if err != nil {
 				return err
 			}
-			changed, err := change(service.ConnectionFileSnapshot{Connection: model.Connection(record), Entries: entries})
+			preferences, err := loadHistoryPreferences(db, record.OwnerID)
+			if err != nil {
+				return err
+			}
+			changed, err := change(service.ConnectionFileSnapshot{Connection: model.Connection(record), Entries: entries, HistoryPreferences: preferences})
 			if err != nil {
 				return err
 			}

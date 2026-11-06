@@ -4,7 +4,9 @@ import { zhDiscovery, enDiscovery } from './discovery-i18n';
 import { zhPreferences, enPreferences } from './preference-i18n';
 import { zhTree, enTree } from './tree-i18n';
 import { zhTime, enTime } from './time-i18n';
+import { zhRetention, enRetention } from './retention-i18n';
 const zh = {
+  retention: zhRetention,
   time: zhTime,
   tree: zhTree,
   preferences: zhPreferences,
@@ -207,6 +209,7 @@ const zh = {
   },
 };
 const en: typeof zh = {
+  retention: enRetention,
   time: enTime,
   tree: enTree,
   preferences: enPreferences,

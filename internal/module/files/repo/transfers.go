@@ -256,6 +256,10 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 				return err
 			}
 			snapshot.Entries = entries
+			snapshot.HistoryPreferences, err = loadHistoryPreferences(db, owner)
+			if err != nil {
+				return err
+			}
 			type reservation struct {
 				OwnerID    string
 				Bytes      int64

@@ -73,7 +73,11 @@ func (r *Repository) ChangeSharedFiles(ctx context.Context, digest, grantDigest 
 			if err != nil {
 				return err
 			}
-			snapshot := service.ShareSnapshot{Share: decoded, Entries: entries}
+			preferences, err := loadHistoryPreferences(db, current.OwnerID)
+			if err != nil {
+				return err
+			}
+			snapshot := service.ShareSnapshot{Share: decoded, Entries: entries, HistoryPreferences: preferences}
 			if grantDigest != "" {
 				var grant grantRecord
 				err := db.First(&grant, "digest = ? AND share_id = ?", grantDigest, current.ID).Error

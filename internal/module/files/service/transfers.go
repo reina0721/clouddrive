@@ -216,12 +216,11 @@ func (s *Transfers) createAuthorized(ctx context.Context, owner string, input Tr
 			if !exists || !model.Visible(snapshot.Entries, original) || original.Kind != model.File || original.ContentRevision != input.ExpectedContentRevision || original.ParentID != input.ParentID || original.NormalizedName != normalized {
 				return model.Transfer{}, nil, model.ErrConflict
 			}
-			if s.files.policy.HistoryEnabled {
-				if _, err := s.files.retainCurrent(snapshot.Entries, original); err != nil {
-					return model.Transfer{}, nil, err
-				}
+			prepared, err := s.files.prepareReplacement(snapshot.Entries, original, snapshot.HistoryPreferences)
+			if err != nil {
+				return model.Transfer{}, nil, err
 			}
-			reserved = s.files.replacementGrowth(original, input.SizeBytes)
+			reserved = s.files.replacementGrowth(original, prepared, input.SizeBytes)
 		}
 		if used > s.files.policy.QuotaBytes || snapshot.OwnerReservedBytes > s.files.policy.QuotaBytes-used || reserved > s.files.policy.QuotaBytes-used-snapshot.OwnerReservedBytes {
 			return model.Transfer{}, nil, model.ErrQuota
@@ -780,10 +779,12 @@ func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sour
 				if entry.SizeBytes < 0 || entry.SizeBytes > used {
 					return model.Transfer{}, nil, fmt.Errorf("file replacement quota invariant")
 				}
-				if !s.files.policy.HistoryEnabled {
-					used -= entry.SizeBytes
+				prepared, err := s.files.prepareReplacement(snapshot.Entries, entry, snapshot.HistoryPreferences)
+				if err != nil {
+					return model.Transfer{}, nil, err
 				}
-				original = &entry
+				used = s.files.replacementUsed(snapshot.Entries, entry, prepared)
+				original = &prepared
 			}
 			if used > s.files.policy.QuotaBytes || current.SizeBytes > s.files.policy.QuotaBytes-used {
 				return model.Transfer{}, nil, model.ErrQuota
@@ -794,13 +795,7 @@ func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sour
 				if original.ContentRevision >= model.MaxContentRevision {
 					return model.Transfer{}, nil, model.ErrConflict
 				}
-				if s.files.policy.HistoryEnabled {
-					retained, err := s.files.retainCurrent(snapshot.Entries, *original)
-					if err != nil {
-						return model.Transfer{}, nil, err
-					}
-					original = &retained
-				}
+
 				entry.CreatedAt = original.CreatedAt
 				entry.ContentRevision = original.ContentRevision + 1
 				entry.UploadKey = original.UploadKey

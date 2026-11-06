@@ -98,7 +98,8 @@ func (s *Service) ReplaceText(ctx context.Context, owner, id string, revision in
 		return model.Entry{}, s.compensate(ctx, owner, key, fmt.Errorf("write text candidate: %w", err))
 	}
 	digest := sha256.Sum256([]byte(text))
-	entry, err := s.repo.Change(ctx, owner, func(entries []model.Entry) (model.Entry, error) {
+	entry, err := s.repo.ChangeContent(ctx, owner, func(snapshot ContentSnapshot) (model.Entry, error) {
+		entries := snapshot.Entries
 		current, ok := model.Find(entries, id)
 		if !ok || !model.Visible(entries, current) {
 			return model.Entry{}, model.ErrMissing
@@ -106,20 +107,18 @@ func (s *Service) ReplaceText(ctx context.Context, owner, id string, revision in
 		if current.ContentRevision != revision || current.ObjectKey != detail.Entry.ObjectKey {
 			return model.Entry{}, model.ErrConflict
 		}
-		used := s.replacementUsed(entries, current)
+		prepared, err := s.prepareReplacement(entries, current, snapshot.HistoryPreferences)
+		if err != nil {
+			return model.Entry{}, err
+		}
+		used := s.replacementUsed(entries, current, prepared)
 		if used > s.policy.QuotaBytes || int64(len(text)) > s.policy.QuotaBytes-used {
 			return model.Entry{}, model.ErrQuota
 		}
 		if current.ContentRevision >= model.MaxContentRevision {
 			return model.Entry{}, model.ErrConflict
 		}
-		if s.policy.HistoryEnabled {
-			retained, err := s.retainCurrent(entries, current)
-			if err != nil {
-				return model.Entry{}, err
-			}
-			current = retained
-		}
+		current = prepared
 		current.ObjectKey, current.ContentSHA, current.SizeBytes = key, hex.EncodeToString(digest[:]), int64(len(text))
 		current.MediaType = mediaType
 		current.ContentRevision++

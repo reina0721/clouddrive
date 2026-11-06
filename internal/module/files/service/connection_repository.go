@@ -18,8 +18,9 @@ type ConnectionPage struct {
 }
 
 type ConnectionFileSnapshot struct {
-	Connection model.Connection
-	Entries    []model.Entry
+	HistoryPreferences model.HistoryPreferences
+	Connection         model.Connection
+	Entries            []model.Entry
 }
 
 type ConnectionRepository interface {

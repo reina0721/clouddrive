@@ -82,7 +82,14 @@ func (p Policy) Validate() error {
 	return nil
 }
 
+type ContentSnapshot struct {
+	Entries            []model.Entry
+	HistoryPreferences model.HistoryPreferences
+}
+
 type Repository interface {
+	ReadHistoryPreferences(context.Context, string) (model.HistoryPreferences, error)
+	ChangeContent(context.Context, string, func(ContentSnapshot) (model.Entry, error)) (model.Entry, error)
 	Read(context.Context, string) ([]model.Entry, error)
 	ReadBounded(context.Context, string, int) ([]model.Entry, error)
 	Change(context.Context, string, func([]model.Entry) (model.Entry, error)) (model.Entry, error)

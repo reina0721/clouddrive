@@ -3,11 +3,32 @@ package service
 import (
 	"encoding/json"
 	"github.com/reina0721/clouddrive/internal/module/files/model"
+	"slices"
 )
 
-// retainCurrent 将当前内容加入独立历史slice；调用方仍负责在同一owner事务内发布新当前。
-func (s *Service) retainCurrent(entries []model.Entry, entry model.Entry) (model.Entry, error) {
-	if len(entry.History) >= s.policy.HistoryPerFile || model.HistoryCount(entries) >= s.policy.HistoryPerOwner {
+// prepareReplacement 在副本上计算新历史；调用方只在同一owner事务成功发布时保存。
+func (s *Service) prepareReplacement(entries []model.Entry, entry model.Entry, preferences model.HistoryPreferences) (model.Entry, error) {
+	if err := preferences.Validate(); err != nil {
+		return model.Entry{}, err
+	}
+	if !s.historyMatches(preferences, entry.Name) {
+		return entry, nil
+	}
+	originalCount := len(entry.History)
+	entry.History = model.CloneHistory(entry.History)
+	if preferences.MaxVersions > 0 && len(entry.History) >= preferences.MaxVersions {
+		slices.SortFunc(entry.History, func(a, b model.VersionSnapshot) int {
+			if a.Revision < b.Revision {
+				return -1
+			}
+			if a.Revision > b.Revision {
+				return 1
+			}
+			return 0
+		})
+		entry.History = entry.History[len(entry.History)-(preferences.MaxVersions-1):]
+	}
+	if len(entry.History) >= s.policy.HistoryPerFile || model.HistoryCount(entries)-originalCount+len(entry.History) >= s.policy.HistoryPerOwner {
 		return model.Entry{}, model.ErrHistoryFull
 	}
 	return appendCurrentSnapshot(entry)
@@ -35,17 +56,19 @@ func appendCurrentSnapshot(entry model.Entry) (model.Entry, error) {
 	return entry, nil
 }
 
-func (s *Service) replacementGrowth(original model.Entry, size int64) int64 {
-	if s.policy.HistoryEnabled {
-		return size
-	}
-	return max(int64(0), size-original.SizeBytes)
+func (s *Service) historyMatches(preferences model.HistoryPreferences, name string) bool {
+	return s.policy.HistoryEnabled && preferences.Matches(name)
 }
 
-func (s *Service) replacementUsed(entries []model.Entry, original model.Entry) int64 {
-	used := model.Used(entries)
-	if !s.policy.HistoryEnabled {
-		used -= original.SizeBytes
-	}
-	return used
+// replacementCreditBytes 只抵扣同一目标在当前规则下释放的关联；发布仍以内容CAS和最新配额复核。
+func replacementCreditBytes(original, prepared model.Entry) int64 {
+	return original.SizeBytes + model.HistoryBytes(original) - model.HistoryBytes(prepared)
+}
+
+func (s *Service) replacementGrowth(original, prepared model.Entry, size int64) int64 {
+	return max(int64(0), size-replacementCreditBytes(original, prepared))
+}
+
+func (s *Service) replacementUsed(entries []model.Entry, original, prepared model.Entry) int64 {
+	return model.Used(entries) - original.SizeBytes - model.HistoryBytes(original) + model.HistoryBytes(prepared)
 }

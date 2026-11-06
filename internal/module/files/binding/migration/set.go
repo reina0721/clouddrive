@@ -10,17 +10,23 @@ import (
 //go:embed sqlite/*.sql postgres/*.sql mysql/*.sql
 var sqlFiles embed.FS
 
-const CurrentVersion uint = 14
+const CurrentVersion uint = 15
 const TableName = "files_schema_migrations"
 
 func Set() dbmigrate.Set {
 	return dbmigrate.Set{Name: "files", FS: sqlFiles, CurrentVersion: CurrentVersion, MigrationsTable: TableName, DriverPaths: map[database.Driver]string{database.DriverSQLite: "sqlite", database.DriverPostgres: "postgres", database.DriverMySQL: "mysql"}, SHA256ByFile: map[string]string{
-		"sqlite/000014_preferences.up.sql":     "2bdaeb8a93524ffd00f08ccb0f2044c941b03924fd054f1cb9d6b1415e87d3e0",
-		"sqlite/000014_preferences.down.sql":   "0a0c307dd71fd32f8f259d503147d5af5a86b8ef0465fa7a6020dfec6f76febd",
-		"postgres/000014_preferences.up.sql":   "2bdaeb8a93524ffd00f08ccb0f2044c941b03924fd054f1cb9d6b1415e87d3e0",
-		"postgres/000014_preferences.down.sql": "0a0c307dd71fd32f8f259d503147d5af5a86b8ef0465fa7a6020dfec6f76febd",
-		"mysql/000014_preferences.up.sql":      "2bdaeb8a93524ffd00f08ccb0f2044c941b03924fd054f1cb9d6b1415e87d3e0",
-		"mysql/000014_preferences.down.sql":    "0a0c307dd71fd32f8f259d503147d5af5a86b8ef0465fa7a6020dfec6f76febd",
+		"sqlite/000015_history_preferences.up.sql":     "f9ca21601fdfdd19b1499d560f90b293fd618f7fbd02627dd90feccd40c4b749",
+		"sqlite/000015_history_preferences.down.sql":   "04bac8d66a93be17f5e9dd6e1083b9a51c493865212f7ba01bbf6adcf128260b",
+		"postgres/000015_history_preferences.up.sql":   "f9ca21601fdfdd19b1499d560f90b293fd618f7fbd02627dd90feccd40c4b749",
+		"postgres/000015_history_preferences.down.sql": "04bac8d66a93be17f5e9dd6e1083b9a51c493865212f7ba01bbf6adcf128260b",
+		"mysql/000015_history_preferences.up.sql":      "f9ca21601fdfdd19b1499d560f90b293fd618f7fbd02627dd90feccd40c4b749",
+		"mysql/000015_history_preferences.down.sql":    "04bac8d66a93be17f5e9dd6e1083b9a51c493865212f7ba01bbf6adcf128260b",
+		"sqlite/000014_preferences.up.sql":             "2bdaeb8a93524ffd00f08ccb0f2044c941b03924fd054f1cb9d6b1415e87d3e0",
+		"sqlite/000014_preferences.down.sql":           "0a0c307dd71fd32f8f259d503147d5af5a86b8ef0465fa7a6020dfec6f76febd",
+		"postgres/000014_preferences.up.sql":           "2bdaeb8a93524ffd00f08ccb0f2044c941b03924fd054f1cb9d6b1415e87d3e0",
+		"postgres/000014_preferences.down.sql":         "0a0c307dd71fd32f8f259d503147d5af5a86b8ef0465fa7a6020dfec6f76febd",
+		"mysql/000014_preferences.up.sql":              "2bdaeb8a93524ffd00f08ccb0f2044c941b03924fd054f1cb9d6b1415e87d3e0",
+		"mysql/000014_preferences.down.sql":            "0a0c307dd71fd32f8f259d503147d5af5a86b8ef0465fa7a6020dfec6f76febd",
 
 		"sqlite/000013_share_audience.up.sql":        "89b62c08caced97df75b5f127bc87edb84aae971885e50014269554a46d2a039",
 		"sqlite/000013_share_audience.down.sql":      "4a096cfeccb5b6075f2682f2026789e7b206aad5b1f18da6c389aa59e6e00a23",
