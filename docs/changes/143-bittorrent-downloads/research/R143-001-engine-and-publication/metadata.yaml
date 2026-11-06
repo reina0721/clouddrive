@@ -1,0 +1,47 @@
+schema_version: 1
+id: R143-001
+title: BitTorrent引擎、账号隔离和多文件发布
+question: 如何真实支持磁力及种子、多文件选择和节点，同时保留当前配额、写锁、恢复和账号隔离？
+research_type: current-project-and-external-primary-source
+topics: [bittorrent, offline-download, multi-file-publication, download-node]
+keywords: [Transmission, aria2, anacrolix, rain, magnet, torrent, fencing]
+applicable_scenarios: [当前files模块扩展离线下载, 成熟下载器接入评估]
+non_applicable_scenarios: [宣称已实现BT, 仅修改输入框, 未配置网络边界的任意RPC节点]
+status: partial
+summary: 已证实HTTP单文件约束需要调整；候选各有明确接入约束，尚未证明完整生产接入路径，不提前选型或实施。
+evidence:
+  types: [source-code, browser-observation, official-documentation, official-source, official-release, security-advisory]
+  primary_sources:
+    - title: 当前单文件下载及发布
+      locator: internal/module/files/service/download_runner.go
+      snapshot: b370d466c3b3eb1ce74a4dd97ab6a35d83bc56c3
+    - title: 当前任务与传输基数
+      locator: internal/module/files/repo/downloads.go
+      snapshot: b370d466c3b3eb1ce74a4dd97ab6a35d83bc56c3
+    - title: Cloudreve下载器与节点说明
+      locator: https://docs.cloudreve.org/zh/usage/remote-download
+      snapshot: 2026-11-06在线复核
+    - title: Transmission稳定发行
+      locator: https://github.com/transmission/transmission/releases/tag/4.1.4
+      snapshot: 4.1.4，2026-10-24发行，2026-11-06通过官方API复核
+    - title: Transmission RPC协议
+      locator: https://github.com/transmission/transmission/blob/4.1.4/docs/rpc-spec.md
+      snapshot: 4.1.4
+    - title: anacrolix源码
+      locator: https://github.com/anacrolix/torrent/tree/7d22f0ea40bd0206c8b1777e367ea13d4f140b2e
+      snapshot: 2026-11-06官方master及官方安全公告复核
+    - title: Rain稳定源码
+      locator: https://github.com/cenkalti/rain/tree/v2.4.5
+      snapshot: v2.4.5，2026-11-01发行，2026-11-06复核
+researched_at: '2026-11-06'
+verified_at: '2026-11-06'
+validity:
+  mode: snapshot
+  review_after: '2026-11-13'
+  refresh_triggers: [候选发布或安全修复, RPC协议或共享目录改变, 当前Transfer事务或预算变化, 新节点及网络隔离方案]
+relations:
+  extends: [R129-001]
+  related: [R123-001, R141-001]
+  supersedes: []
+  superseded_by: []
+report: report.md
