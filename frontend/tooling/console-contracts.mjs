@@ -127,6 +127,12 @@ add('POST', '/auth/login', login, auth);
 add('POST', '/auth/register', z.object({ name: str, email: str, password: str }).strict(), session);
 add('POST', '/auth/logout', z.object({ logout: z.boolean().optional() }).strict(), null, '', 204);
 add('GET', '/auth/session', null, session);
+add(
+  'POST',
+  '/auth/password/verify',
+  z.object({ password: str.min(1).max(128) }).strict(),
+  z.object({ verified: z.literal(true) }),
+);
 add('GET', '/auth/access', null, identity.accessSchema);
 add(
   'POST',

@@ -13,11 +13,13 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 身份使用 HttpOnly Cookie。所有控制台写请求必须携带受信任 Origin、控制台 CSRF Cookie 和 X-CSRF-Token；GET /api/console/v1/auth/csrf 返回双提交令牌。原生转发还会执行原生权限和 CSRF 检查。
 
+锁屏本人密码复核使用 `POST /api/console/v1/auth/password/verify`；原生为 `POST /api/v1/iam/self/password/verify`（`iam:account:self:read`、WebUI Cookie和CSRF）。只接受`password`，成功返回`{verified:true}`且不写会话Cookie；不是登录或高风险操作授权票据。错误尝试共享登录的持久预算，语义见[文件管理手册](../docs/operations/file-management.md)。
+
 私有文件接口位于 `/api/v1/files`，WebUI 通过 `/api/console/v1/native/files` 访问同一实现，使用 IAM Cookie 会话。`POST /transfers` 用稳定 key、目标、长度与完整 SHA-256 建立会话，`HEAD/PATCH /transfers/{id}/data` 使用 tus 核心协议接续，PATCH 为 `application/offset+octet-stream`；暂停、继续、取消、摘要校验、修正目标与提交发布分别有明确控制端点。旧 `/files/upload` 已移除，文本创建使用 `POST /files/text`。列表响应同时提供空间统计和传输预算，回收站用 `trash=true` 查询。详见[文件管理](../docs/operations/file-management.md)。
 
 文件复制为 `POST /api/v1/files/{id}/copy`；文本替换为 `PUT /{id}/text`，必须带 `expectedRevision`；ZIP 为 `POST /api/v1/files/archive`。分享管理使用 `/api/v1/files/shares` 的创建/检索、`/{shareId}` 的读取/CAS设置、`/{shareId}/state` 的CAS暂停/恢复和 `/{shareId}/revoke`，仍要求 IAM 会话、文件权限和写请求 CSRF。
 
-访客入口 `/api/v1/file-shares/{token}` 的 metadata、entries、unlock、content、text、folders、entries/change、entries/batch、archive及transfers（create/read/data/commit/cancel）operation 显式声明 public，不放宽任何私有 files operation。所有公开写入需要可信Origin，文件操作额外检查当前分享能力、策略版本和范围。解锁POST需要可信Origin，票据通过 `X-Share-Grant` header 传递，不能用 IAM 会话代替。原生浏览器下载经 `POST /file-shares/{token}/content/{id}/download` 授权，随后以短期限定文件句柄访问 `GET/HEAD /file-downloads/{ticket}`。私有和公开下载提供 Range/条件请求，每次检查撤销、到期和范围；完整 code-first 结果为当前 162 个原生 operation。
+访客入口 `/api/v1/file-shares/{token}` 的 metadata、entries、unlock、content、text、folders、entries/change、entries/batch、archive及transfers（create/read/data/commit/cancel）operation 显式声明 public，不放宽任何私有 files operation。所有公开写入需要可信Origin，文件操作额外检查当前分享能力、策略版本和范围。解锁POST需要可信Origin，票据通过 `X-Share-Grant` header 传递，不能用 IAM 会话代替。原生浏览器下载经 `POST /file-shares/{token}/content/{id}/download` 授权，随后以短期限定文件句柄访问 `GET/HEAD /file-downloads/{ticket}`。私有和公开下载提供 Range/条件请求，每次检查撤销、到期和范围；完整 code-first 结果为当前 165 个原生 operation。
 
 文件权限维护新增 `GET/PUT /api/v1/files/{id}/access`（PUT携带独立revision，policy为null明确恢复继承）、`POST /api/v1/files/audience/lookup`（精确账号/角色查找）及 `POST /api/v1/files/{id}/access/effective`（实际分享及匿名/账号的已保存权限）。均使用原IAM、文件scope与写请求CSRF边界。分享管理投影增加audience，公开metadata增加denied/signInRequired，目录和条目返回实际permissions。公开路由保留public profile，同时可选解析同源Session获取受众事实；存在但无效的会话不会静默降级匿名。详见[文件管理](../docs/operations/file-management.md)。
 

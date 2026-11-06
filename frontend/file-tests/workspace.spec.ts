@@ -309,11 +309,14 @@ test('F236–238：文件页账户菜单、主题语言及客户端锁屏', asyn
   await background.getByRole('link', { name: '我的文件', exact: true }).focus();
   await expect(lock.getByLabel('账号密码', { exact: true })).toBeFocused();
   await page.screenshot({ path: info.outputPath('workspace-lock.png'), fullPage: true });
-  await lock.getByLabel('账号密码', { exact: true }).fill('unsupported-check');
+  await lock.getByLabel('账号密码', { exact: true }).fill('incorrect');
   await lock.getByRole('button', { name: '解锁', exact: true }).click();
-  await expect(
-    lock.getByRole('alert', { name: '该部署不支持本地解锁', exact: true }),
-  ).toBeVisible();
+  await expect(lock.getByRole('alert')).toBeVisible();
+  await lock.getByLabel('账号密码', { exact: true }).fill((await access()).password);
+  await lock.getByRole('button', { name: '解锁', exact: true }).click();
+  await expect(lock).toHaveCount(0);
+  await page.getByRole('button', { name: '当前用户', exact: true }).click();
+  await page.getByRole('menuitem', { name: /锁定屏幕/ }).click();
   await lock.getByRole('button', { name: '退出登录', exact: true }).click();
   await expect(page).toHaveURL(/\/login/);
   await login(page);

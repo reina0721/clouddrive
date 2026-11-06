@@ -3302,6 +3302,18 @@
         ],
         "type": "object"
       },
+      "PasswordVerifiedResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "verified": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "verified"
+        ],
+        "type": "object"
+      },
       "PermissionKeysInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -5586,6 +5598,20 @@
           "nickname",
           "bio",
           "birthDate"
+        ],
+        "type": "object"
+      },
+      "VerifyPasswordInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "password": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
         ],
         "type": "object"
       },
@@ -14316,6 +14342,76 @@
         "responses": {
           "204": {
             "description": "No Content"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "IAM"
+        ]
+      }
+    },
+    "/api/v1/iam/self/password/verify": {
+      "post": {
+        "operationId": "iam.self.password.verify",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyPasswordInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordVerifiedResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "default": {
             "content": {

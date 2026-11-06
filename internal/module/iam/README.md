@@ -22,6 +22,8 @@ IAM 提供只读影响分析查询：角色→持有账号（`GET /api/v1/iam/ro
 
 ## 口令治理与会话治理（077）
 
+142新增`VerifySessionPassword`：只复核当前有效Cookie会话的本人密码，事务重读撤销、期限、账号安全revision与凭据；不创建会话或提高MFA等级。失败共享账号登录预算，成功清理已有失败；不写会话期限。用于客户端锁屏，不代表服务端文件锁或可用于高风险操作的再认证票据，使用边界见[文件管理](../../../docs/operations/file-management.md)。
+
 `passwordPolicy.historySize`（默认 0）启用后禁止复用最近 N 次口令（历史只存 Argon2id 哈希，逐条验证并裁剪）；`passwordPolicy.maxPasswordAge`（默认 0）启用后口令过期登录/会话解析复用既有受限改密语义（MustChangePassword，不新增会话类型）；`iam.local.maxSessionsPerAccount`（默认 0=不限）启用后新登录在 active 会话达到上限时主动吊销最旧会话（`iam.session.evict` 低敏审计），会话总数保持上限。新增行为的操作/授权留痕纳入既有 `auth_audit_events` 低敏审计面；登录/初始化端点的 IP 维度限流由 `http.rateLimit.routes` 提供（077，transport 层），与账号级锁定构成双维度。
 
 ## 机器访问与 MFA（078/080）

@@ -21,6 +21,7 @@ const (
 	opSession              = "iam.session.read"
 	opLogout               = "iam.logout"
 	opChangePassword       = "iam.self.password.change"
+	opVerifyPassword       = "iam.self.password.verify"
 	opSelfProfileUpdate    = "iam.self.profile.update"
 	opSelfPreferences      = "iam.self.preferences.read"
 	opSelfPreferencesWrite = "iam.self.preferences.write"
@@ -415,6 +416,8 @@ func serviceError(err error) error {
 		return statusError(http.StatusBadRequest, "invalid_request", err)
 	case errors.Is(err, service.ErrInvalidCredentials), errors.Is(err, service.ErrMFAInvalidCode), errors.Is(err, service.ErrMFAChallengeInvalid):
 		return statusError(http.StatusUnauthorized, "invalid_credentials", err)
+	case errors.Is(err, service.ErrSessionInvalid):
+		return statusError(http.StatusUnauthorized, "unauthenticated", err)
 	case errors.Is(err, service.ErrAccountLocked):
 		return statusError(http.StatusTooManyRequests, "account_locked", err)
 	case errors.Is(err, service.ErrAccountDisabled):

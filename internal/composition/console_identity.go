@@ -55,6 +55,9 @@ func (port consoleIAMPort) Login(ctx context.Context, username, password string)
 	value, err := port.service.Login(ctx, username, password)
 	return consoleSession(value), consoleError(err)
 }
+func (port consoleIAMPort) VerifySessionPassword(ctx context.Context, sessionID, password string) error {
+	return consoleError(port.service.VerifySessionPassword(ctx, sessionID, password))
+}
 func (port consoleIAMPort) VerifyMFAChallenge(ctx context.Context, id, code string) (console.Session, error) {
 	value, err := port.service.VerifyMFAChallenge(ctx, id, code)
 	return consoleSession(value), consoleError(err)

@@ -168,6 +168,18 @@ type changePasswordInput struct {
 		NewPassword     string `json:"newPassword" minLength:"1" maxLength:"128"`
 	}
 }
+
+type verifyPasswordInput struct {
+	Origin    string `header:"Origin" required:"true"`
+	CSRFToken string `header:"X-CSRF-Token" required:"true"`
+	Body      struct {
+		Password string `json:"password" minLength:"1" maxLength:"128"`
+	}
+}
+
+type passwordVerifiedResponse struct {
+	Verified bool `json:"verified"`
+}
 type updateSelfProfileInput struct {
 	Origin    string `header:"Origin" required:"true"`
 	CSRFToken string `header:"X-CSRF-Token" required:"true"`
@@ -346,6 +358,16 @@ func RegisterHuma(api huma.API, handler *Handler) {
 			return nil, httpx.NewProtocolProblemError(ctx, statusError(http.StatusInternalServerError, "internal_server_error", err))
 		}
 		return &logoutOutput{SetCookie: expiredCookie()}, nil
+	})
+	verify := protected(opVerifyPassword, http.MethodPost, "/api/v1/iam/self/password/verify", string(iampermission.SelfRead), "execute")
+	verify.MaxBodyBytes = 2048
+	verify.Middlewares = huma.Middlewares{handler.requireMutation}
+	huma.Register(api, verify, func(ctx context.Context, in *verifyPasswordInput) (*jsonOutput[passwordVerifiedResponse], error) {
+		id, _, _ := service.SessionFromContext(ctx)
+		if err := handler.service.VerifySessionPassword(ctx, id, in.Body.Password); err != nil {
+			return nil, problem(ctx, err)
+		}
+		return jsonEnvelope(passwordVerifiedResponse{Verified: true}), nil
 	})
 	change := protected(opChangePassword, http.MethodPost, "/api/v1/iam/self/password", string(iampermission.SelfPasswordWrite), "execute")
 	change.DefaultStatus = http.StatusNoContent

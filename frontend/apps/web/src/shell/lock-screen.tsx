@@ -24,41 +24,60 @@ export function LockScreen() {
   const auth = useAuth();
   const locked = useLockStore((state) => state.locked);
   const reason = useLockStore((state) => state.reason);
+  const lockedAt = useLockStore((state) => state.lockedAt);
   const unlock = useLockStore((state) => state.unlock);
   const [password, setPassword] = useState('');
   const [error, setError] = useState<
-    'empty' | 'credentials' | 'unsupported' | 'unavailable' | null
+    'empty' | 'credentials' | 'locked' | 'expired' | 'forbidden' | 'unavailable' | null
   >(null);
   const [submitting, setSubmitting] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
   const user = auth.session?.user ?? null;
 
   // 打开锁屏时把焦点移入卡片（不依赖 autoFocus，避免可访问性告警）。
   useEffect(() => {
     cardRef.current?.querySelector<HTMLInputElement>('input')?.focus();
-  }, [locked]);
+    return () => {
+      requestRef.current?.abort();
+      requestRef.current = null;
+    };
+  }, [locked, lockedAt, user?.id]);
 
   if (!locked || !user) return null;
 
   const submit = async () => {
-    if (submitting) return;
+    if (requestRef.current) return;
     if (!password) {
       setError('empty');
       return;
     }
     setSubmitting(true);
     setError(null);
+    const request = new AbortController();
+    requestRef.current = request;
+    const snapshot = useLockStore.getState();
+    const current = () =>
+      !request.signal.aborted &&
+      useLockStore.getState().locked &&
+      useLockStore.getState().userId === user.id &&
+      useLockStore.getState().lockedAt === snapshot.lockedAt;
     try {
-      // 只读复核，不走 auth.login（登录失败会按认证语义清空会话，不能当解锁用）。
-      const result = await verifyAccountPassword(user.email, password);
+      // 专用复核共享服务端失败预算，不走会创建会话的 auth.login。
+      const result = await verifyAccountPassword(user.email, password, request.signal);
+      if (!current()) return;
       if (result.ok) {
         setPassword('');
         unlock();
       } else {
-        setError(result.code === 'unavailable' ? 'unavailable' : result.code);
+        setError(result.code);
       }
     } finally {
-      setSubmitting(false);
+      if (!request.signal.aborted) {
+        setPassword('');
+        setSubmitting(false);
+      }
+      if (requestRef.current === request) requestRef.current = null;
     }
   };
 
@@ -88,20 +107,19 @@ export function LockScreen() {
           <AlertBanner
             announcement="urgent"
             description={t(
-              error === 'unsupported' ? 'shell.lock.unsupported' : 'shell.lock.errorDescription',
+              error === 'locked'
+                ? 'shell.lock.lockedDescription'
+                : error === 'expired' || error === 'forbidden'
+                  ? 'shell.lock.signInDescription'
+                  : 'shell.lock.errorDescription',
             )}
             icon={<AlertTriangle aria-hidden="true" className="size-4" />}
-            title={t(
-              error === 'empty'
-                ? 'shell.lock.passwordRequired'
-                : error === 'unsupported'
-                  ? 'shell.lock.unsupportedTitle'
-                  : `auth.errors.${error}`,
-            )}
+            title={t(error === 'empty' ? 'shell.lock.passwordRequired' : `auth.errors.${error}`)}
             tone="danger"
           />
         ) : null}
         <form
+          aria-busy={submitting || undefined}
           className="space-y-3"
           onSubmit={(event) => {
             event.preventDefault();
@@ -123,9 +141,12 @@ export function LockScreen() {
               setError(null);
             }}
           />
-          <Action fullWidth loading={submitting} type="submit">
-            {t('shell.lock.unlock')}
+          <Action fullWidth disabled={submitting} type="submit">
+            {t(submitting ? 'shell.lock.checking' : 'shell.lock.unlock')}
           </Action>
+          <span className="sr-only" role="status">
+            {submitting ? t('shell.lock.checking') : ''}
+          </span>
         </form>
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs leading-5 text-ink-muted">{t('shell.lock.clientOnly')}</p>

@@ -196,9 +196,10 @@ export const resources = {
           password: '账号密码',
           passwordRequired: '请输入密码。',
           unlock: '解锁',
+          checking: '正在验证…',
           errorDescription: '密码复核未通过，内容保持锁定。',
-          unsupportedTitle: '该部署不支持本地解锁',
-          unsupported: '后端模式下没有安全的"仅校验密码"接口。请退出后重新登录，或清除本站数据。',
+          lockedDescription: '错误次数已达到账号限制，请等待锁定时间结束后重试，或退出登录。',
+          signInDescription: '当前会话已失效或账号需要处理，请退出后重新登录。',
           clientOnly: '客户端锁定：清除本站数据或新开标签页即可绕过，不构成安全边界。',
           action: '锁定屏幕',
         },
@@ -439,10 +440,12 @@ export const resources = {
           password: 'Account password',
           passwordRequired: 'Enter your password.',
           unlock: 'Unlock',
+          checking: 'Checking…',
           errorDescription: 'The password check failed; content stays locked.',
-          unsupportedTitle: 'Local unlock is unavailable in this deployment',
-          unsupported:
-            'Backend mode has no safe password-only endpoint. Sign out and sign in again, or clear this site’s data.',
+          lockedDescription:
+            'The account attempt limit was reached. Wait for the lockout to expire, or sign out.',
+          signInDescription:
+            'The session expired or the account needs attention. Sign out and sign in again.',
           clientOnly:
             'Client-side lock: clearing site data or opening a new tab bypasses it. Not a security boundary.',
           action: 'Lock screen',

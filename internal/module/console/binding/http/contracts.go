@@ -15,6 +15,7 @@ type IdentityAccess interface {
 	VerifyMFAChallenge(context.Context, string, string) (Session, error)
 	Logout(context.Context, string) error
 	ChangePassword(context.Context, string, string, string) error
+	VerifySessionPassword(context.Context, string, string) error
 	Registration(context.Context) (RegistrationSettings, error)
 	UpdateRegistration(context.Context, RegistrationSettings) error
 	CreateConsoleAccount(context.Context, string, string, string, []string, string, bool) (Account, error)

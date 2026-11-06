@@ -32,7 +32,7 @@ export function useIdleLock(
     };
     const schedule = () => {
       clear();
-      if (idleLockMinutes <= 0) return;
+      if (idleLockMinutes <= 0 || useLockStore.getState().locked) return;
       timer = window.setTimeout(
         () => useLockStore.getState().lock(userId, 'idle'),
         idleLockMinutes * 60_000,
@@ -45,15 +45,21 @@ export function useIdleLock(
       if (lockOnHidden && document.visibilityState === 'hidden')
         useLockStore.getState().lock(userId, 'hidden');
     };
-    const onExplicitLock = () => useLockStore.getState().lock(userId, 'manual');
+    const onExplicitLock = () => {
+      if (!useLockStore.getState().locked) useLockStore.getState().lock(userId, 'manual');
+    };
 
     schedule();
+    const unsubscribe = useLockStore.subscribe((next, previous) => {
+      if (next.locked !== previous.locked) schedule();
+    });
     for (const event of ACTIVITY_EVENTS)
       window.addEventListener(event, onActivity, { passive: true });
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('clouddrive:lock', onExplicitLock);
     return () => {
       clear();
+      unsubscribe();
       for (const event of ACTIVITY_EVENTS) window.removeEventListener(event, onActivity);
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('clouddrive:lock', onExplicitLock);

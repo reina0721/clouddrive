@@ -39,16 +39,16 @@ func (c *consoleTestClient) request(t *testing.T, method, path string, body any,
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, values := range headers {
-		for key, value := range values {
-			request.Header.Set(key, value)
-		}
-	}
 	request.Header.Set("Origin", c.base)
 	if method != http.MethodGet && method != http.MethodHead {
 		request.Header.Set("Content-Type", "application/json")
 	}
 	request.Header.Set("X-CSRF-Token", c.csrf)
+	for _, values := range headers {
+		for key, value := range values {
+			request.Header.Set(key, value)
+		}
+	}
 	for name, value := range c.cookies {
 		request.AddCookie(&http.Cookie{Name: name, Value: value})
 	}
@@ -110,6 +110,22 @@ func TestConsoleSQLiteDataIsolationAndRestart(t *testing.T) {
 	owner.request(t, "GET", "/auth/csrf", nil, 200)
 	session := owner.request(t, "POST", "/auth/setup", map[string]any{"setupToken": "console-setup-secret", "email": "owner@clouddrive.test", "name": "Owner", "password": "owner-password-long"}, 200)
 	ownerID := session["user"].(map[string]any)["id"].(string)
+	// 142：真实HTTP复核不创建/撤销Cookie会话；错误一次后可重试。
+	beforeVerify := owner.request(t, "GET", "/auth/session", nil, 200)
+	owner.request(t, "POST", "/auth/password/verify", map[string]any{"password": "incorrect"}, 401)
+	verified := owner.request(t, "POST", "/auth/password/verify", map[string]any{"password": "owner-password-long"}, 200)
+	if verified["verified"] != true {
+		t.Fatal("缺少密码验证成功回执")
+	}
+	afterVerify := owner.request(t, "GET", "/auth/session", nil, 200)
+	if beforeVerify["sessionId"] != afterVerify["sessionId"] || beforeVerify["expiresAt"] != afterVerify["expiresAt"] {
+		t.Fatal("密码复核更换或延长会话")
+	}
+	owner.request(t, "POST", "/auth/password/verify", map[string]any{"password": ""}, 422)
+	owner.request(t, "POST", "/auth/password/verify", map[string]any{"password": "owner-password-long", "accountId": ownerID}, 422)
+	owner.request(t, "POST", "/auth/password/verify", map[string]any{"password": "owner-password-long"}, 403, map[string]string{"Origin": "https://untrusted.example"})
+	owner.request(t, "POST", "/auth/password/verify", map[string]any{"password": "owner-password-long"}, 403, map[string]string{"X-CSRF-Token": "incorrect"})
+	owner.request(t, "POST", "/native/iam/self/password/verify", map[string]any{"password": "owner-password-long"}, 200)
 	owner.request(t, "GET", "/auth/access", nil, 200)
 	for _, path := range []string{"/native/iam/self/mfa", "/native/iam/api-tokens", "/native/organization/departments", "/native/navigation/menus", "/native/auth/audit"} {
 		owner.request(t, "GET", path, nil, 200)
@@ -131,8 +147,9 @@ func TestConsoleSQLiteDataIsolationAndRestart(t *testing.T) {
 	}
 
 	// Last administrator protection is enforced by IAM, also through the projection.
-	owner.request(t, "PATCH", "/users/"+ownerID+"/status", map[string]any{"version": 1, "status": "disabled"}, 409)
-	owner.request(t, "PATCH", "/native/iam/self/profile", map[string]any{"expectedVersion": 1, "nickname": "Owner nickname", "bio": "Verified profile", "birthDate": "2000-01-02"}, 200)
+	ownerVersion := owner.request(t, "GET", "/users/"+ownerID, nil, 200)["user"].(map[string]any)["version"]
+	owner.request(t, "PATCH", "/users/"+ownerID+"/status", map[string]any{"version": ownerVersion, "status": "disabled"}, 409)
+	owner.request(t, "PATCH", "/native/iam/self/profile", map[string]any{"expectedVersion": ownerVersion, "nickname": "Owner nickname", "bio": "Verified profile", "birthDate": "2000-01-02"}, 200)
 
 	role := owner.request(t, "POST", "/roles", map[string]any{"name": "Registered member", "permissions": []string{"account.update"}}, 200)["role"].(map[string]any)
 	roleID := role["id"].(string)

@@ -155,6 +155,7 @@ const (
 	OperationIamSelfMfaDisable              OperationID = "iam.self.mfa.disable"
 	OperationIamSelfMfaStatus               OperationID = "iam.self.mfa.status"
 	OperationIamSelfPasswordChange          OperationID = "iam.self.password.change"
+	OperationIamSelfPasswordVerify          OperationID = "iam.self.password.verify"
 	OperationIamSelfPreferencesRead         OperationID = "iam.self.preferences.read"
 	OperationIamSelfPreferencesWrite        OperationID = "iam.self.preferences.write"
 	OperationIamSelfProfileUpdate           OperationID = "iam.self.profile.update"
@@ -322,6 +323,7 @@ var operationInventory = [...]Operation{
 	{ID: OperationIamSelfMfaDisable, Method: "POST", Path: "/api/v1/iam/self/mfa/disable", Policy: "protected", Scope: "iam:account:self:password:write", Action: "iam.self.mfa.disable"},
 	{ID: OperationIamSelfMfaStatus, Method: "GET", Path: "/api/v1/iam/self/mfa", Policy: "protected", Scope: "iam:account:self:read", Action: "iam.self.mfa.status"},
 	{ID: OperationIamSelfPasswordChange, Method: "POST", Path: "/api/v1/iam/self/password", Policy: "protected", Scope: "iam:account:self:password:write", Action: "iam.self.password.change"},
+	{ID: OperationIamSelfPasswordVerify, Method: "POST", Path: "/api/v1/iam/self/password/verify", Policy: "protected", Scope: "iam:account:self:read", Action: "iam.self.password.verify"},
 	{ID: OperationIamSelfPreferencesRead, Method: "GET", Path: "/api/v1/iam/self/preferences", Policy: "protected", Scope: "iam:account:self:preferences:read", Action: "iam.self.preferences.read"},
 	{ID: OperationIamSelfPreferencesWrite, Method: "PATCH", Path: "/api/v1/iam/self/preferences", Policy: "protected", Scope: "iam:account:self:preferences:write", Action: "iam.self.preferences.write"},
 	{ID: OperationIamSelfProfileUpdate, Method: "PATCH", Path: "/api/v1/iam/self/profile", Policy: "protected", Scope: "iam:account:self:profile:write", Action: "iam.self.profile.update"},

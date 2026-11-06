@@ -278,6 +278,7 @@ func (h *Handler) routes() {
 	})
 	h.mux.HandleFunc("POST "+Prefix+"/auth/{action}", h.authenticate)
 	h.mux.HandleFunc("GET "+Prefix+"/auth/session", func(w http.ResponseWriter, r *http.Request) { h.session(w, current(r)) })
+	h.mux.HandleFunc("POST "+Prefix+"/auth/password/verify", h.verifySessionPassword)
 	h.mux.HandleFunc("GET "+Prefix+"/system/runtime", h.runtimeMetadata)
 	h.mux.HandleFunc("GET "+Prefix+"/auth/access", func(w http.ResponseWriter, r *http.Request) {
 		u, err := h.user(r, current(r).Identity.AccountID)

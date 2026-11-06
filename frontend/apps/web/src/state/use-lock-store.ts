@@ -6,7 +6,7 @@ import { createPersistStore, createSessionStorage } from '@clouddrive/state-foun
  * - `locked` 只影响当前浏览器标签页的会话（sessionStorage）：刷新仍需解锁，
  *   新标签页不会继承锁定，避免把"演示锁屏"伪装成账号安全策略；
  * - `userId` 用于账号切换后丢弃上一账号的锁定状态；
- * - 业务状态与数据不因此改变，解锁只做本地凭据复核。
+ * - 业务状态与数据不因此改变；真实部署由当前会话复核密码，共享服务端失败预算。
  */
 export type LockReason = 'manual' | 'idle' | 'hidden';
 

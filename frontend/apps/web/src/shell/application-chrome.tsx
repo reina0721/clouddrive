@@ -38,10 +38,11 @@ export function ApplicationChrome({ children }: Readonly<{ children: ReactNode }
   const lockOnHidden = useShellStore((state) => state.preferences.security.lockOnHidden);
   useIdleLock(account, { idleLockMinutes, lockOnHidden });
   const locked = useLockStore((state) => state.locked);
+  const lockedAt = useLockStore((state) => state.lockedAt);
   const fileWorkspace = pathname === '/home' || pathname.startsWith('/home/');
   return (
     <FilesRuntime fileWorkspace={fileWorkspace}>
-      <LockScreen />
+      <LockScreen key={`${account}:${lockedAt}`} />
       <div inert={locked}>
         {fileWorkspace ? (
           <RouteTransition>{children}</RouteTransition>
