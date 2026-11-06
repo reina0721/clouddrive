@@ -69,6 +69,8 @@ Form Foundation 在异步校验与提交期间只接受一次提交，校验失�
 
 ### 按需语言资源
 
+`@clouddrive/i18n/format`提供无React的瞬间格式化、有效时区和运行环境候选；文件瞬间先按所选时区求日期再按用户格式显示，纯日历日期继续保持原语义。`@clouddrive/i18n/temporal`独立封装现有Adobe日期库的壁钟时间转换，第三方对象不出边界；跳过时间拒绝，重复时间显式选择早/晚。转换模块不从主入口重导出，分享等惰性消费者按需加载；不得在Feature复制偏移计算或Intl格式器。
+
 `FrontendI18nRuntime.addResources(TranslationResources)` 通过 i18n 内部公开的资源
 注册能力深合并文案，保持单一运行时、原资源与当前语言，不向 Host/Feature 暴露
 i18next 实例。所有语言在写入前按 supportedLocales 校验，非法资源不部分写入。

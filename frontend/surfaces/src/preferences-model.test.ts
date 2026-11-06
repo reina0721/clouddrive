@@ -11,6 +11,14 @@ import {
 } from './preferences-model';
 
 describe('preferences-model 默认值（新用户无记录）', () => {
+  it('区域偏好拒绝无效时区与数字偏移，允许系统、UTC和有效IANA别名', () => {
+    for (const timeZone of ['not/a-zone', '+05:30']) {
+      const result = validateCategory('localeRegion', { timeZone });
+      expect(result.ok).toBe(false);
+    }
+    for (const timeZone of ['auto', 'UTC', 'Asia/Calcutta'])
+      expect(validateCategory('localeRegion', { timeZone }).ok).toBe(true);
+  });
   it('九分类齐全且各分类非空默认', () => {
     expect(PREFERENCE_CATEGORIES).toHaveLength(9);
     const pref = defaultPreferences;

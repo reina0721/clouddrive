@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { formatDate, useFrontendTranslation } from '@clouddrive/i18n';
+import { useFrontendTranslation } from '@clouddrive/i18n';
+import { useFileTime } from './use-file-time';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { TextField } from '@clouddrive/ui-adapter/form-field';
 import { DrawerSurface } from '@clouddrive/ui-adapter/overlays';
@@ -50,7 +51,8 @@ function AnnotationPanelContent({
   onVersions,
 }: AnnotationPanelProps & { onReload: () => void }) {
   const port = useFiles().annotations,
-    { t, locale } = useFrontendTranslation();
+    { t } = useFrontendTranslation();
+  const time = useFileTime();
   const [detail, setDetail] = useState<FileAnnotationDetail>(),
     [draft, setDraft] = useState<FileAnnotationValues>(),
     [failure, setFailure] = useState<unknown>(),
@@ -172,20 +174,8 @@ function AnnotationPanelContent({
                       : detail.entry.sizeBytes,
                   ) + ' B',
                 ],
-                [
-                  t('files.created'),
-                  formatDate(locale, detail.entry.createdAt, {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                  }),
-                ],
-                [
-                  t('files.updated'),
-                  formatDate(locale, detail.entry.updatedAt, {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                  }),
-                ],
+                [t('files.created'), time.full(detail.entry.createdAt)],
+                [t('files.updated'), time.full(detail.entry.updatedAt)],
               ].map(([label, value]) => (
                 <div key={label}>
                   <dt className="text-ink-muted">{label}</dt>

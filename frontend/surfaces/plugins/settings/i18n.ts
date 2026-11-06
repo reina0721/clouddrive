@@ -243,7 +243,7 @@ export const pluginI18nResources = {
           timeZone: '时区',
           timeZoneHint: '自动 = 跟随系统时区；其余为指定 IANA 时区。',
           previewTitle: '日期与时间示例',
-          previewHint: '固定示例时刻随时区、小时制与秒显示更新；纯日期按所选顺序排列。',
+          previewHint: '固定示例时刻随时区、小时制与秒显示更新；显示日期按所选顺序排列。',
           previewTime: '时刻',
           timeZoneAuto: '自动（跟随系统）',
           hourCycle: '时间格式',

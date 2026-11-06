@@ -1,6 +1,7 @@
 'use client';
 import { lazy, Suspense, useState } from 'react';
-import { formatDate, useFrontendTranslation } from '@clouddrive/i18n';
+import { useFrontendTranslation } from '@clouddrive/i18n';
+import { useFileTime } from './use-file-time';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { TextField, PasswordField, SelectField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface, DrawerSurface } from '@clouddrive/ui-adapter/overlays';
@@ -12,7 +13,7 @@ import {
   type SharePermissions,
 } from '../../../src/files/sharing';
 import { ShareExpiryFields, SharePermissionFields } from './share-settings-fields';
-import { initialShareExpiry, shareExpiryValue } from './share-expiry';
+import { initialShareExpiry, resolveShareExpiry } from './share-expiry';
 
 const ShareAudienceFields = lazy(() =>
   import('./audience-fields').then((module) => ({ default: module.ShareAudienceFields })),
@@ -24,11 +25,12 @@ export function ShareSettingsDialog({
 }: Readonly<{ share: FileShare; onClose(): void; onSaved(): void }>) {
   const port = useFiles(),
     { t } = useFrontendTranslation();
+  const time = useFileTime();
   const [audience, setAudience] = useState(share.audience);
   const [current, setCurrent] = useState(share),
     [title, setTitle] = useState(share.title),
     [permissions, setPermissions] = useState<SharePermissions>(share.permissions),
-    [expiry, setExpiry] = useState(() => initialShareExpiry(share.expiresAt));
+    [expiry, setExpiry] = useState(() => initialShareExpiry(time.region.timeZone, share.expiresAt));
   const [passwordAction, setPasswordAction] = useState<'keep' | 'set' | 'remove'>('keep'),
     [password, setPassword] = useState(''),
     [failure, setFailure] = useState(''),
@@ -50,8 +52,13 @@ export function ShareSettingsDialog({
       }
       failureMessage={failure}
       onConfirm={async () => {
+        const resolved = resolveShareExpiry(expiry, current.expiresAt);
+        if (!resolved.ok) {
+          setFailure(t('files.time.' + resolved.code));
+          throw new FilesError('invalid');
+        }
         try {
-          const expiresAt = shareExpiryValue(expiry, current.expiresAt);
+          const expiresAt = resolved.value;
           if (!expiresAt) throw new FilesError('invalid');
           await port.updateShare(current, {
             audience,
@@ -150,7 +157,8 @@ export function ShareDetailDrawer({
   onClose,
 }: Readonly<{ share: FileShare; onClose(): void }>) {
   const port = useFiles(),
-    { t, locale } = useFrontendTranslation();
+    { t } = useFrontendTranslation();
+  const time = useFileTime();
   return (
     <DrawerSurface
       triggerLabel={t('files.collaboration.details')}
@@ -173,11 +181,11 @@ export function ShareDetailDrawer({
         </div>
         <div>
           <dt className="text-ink-muted">{t('files.collaboration.created')}</dt>
-          <dd>{formatDate(locale, share.createdAt)}</dd>
+          <dd>{time.full(share.createdAt)}</dd>
         </div>
         <div>
           <dt className="text-ink-muted">{t('files.shareExpires')}</dt>
-          <dd>{formatDate(locale, share.expiresAt)}</dd>
+          <dd>{time.full(share.expiresAt)}</dd>
         </div>
         <div>
           <dt className="text-ink-muted">{t('files.collaboration.permissions')}</dt>

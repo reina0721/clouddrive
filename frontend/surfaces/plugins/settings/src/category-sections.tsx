@@ -1,19 +1,20 @@
 'use client';
 
 import { useFrontendTranslation } from '@clouddrive/i18n';
+import { supportedTimeZones } from '@clouddrive/i18n/format';
 import type { PreferencesPort } from '@clouddrive/plugin-framework/preferences';
 import type { Preferences } from '@clouddrive/surface/preferences-model';
 import {
   validatePreferences,
   IDLE_LOCK_MINUTES,
   PAGE_TRANSITIONS,
-  TIME_ZONE_OPTIONS,
 } from '@clouddrive/surface/preferences-model';
 import {
   RadioGroupField,
   SelectField,
   SwitchField,
   TextField,
+  ComboField,
 } from '@clouddrive/ui-adapter/form-field';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { route, RouteLink } from '@clouddrive/plugin-framework/plugin';
@@ -634,10 +635,11 @@ export function LocaleRegionSection({ ctx }: Readonly<{ ctx: Ctx }>) {
           value={region.dateFormat}
           onValueChange={(value) => updateSetting(ctx, 'localeRegion', { dateFormat: value })}
         />
-        <SelectField
+        <ComboField
           hint={t('settings.localeRegion.timeZoneHint')}
           label={t('settings.localeRegion.timeZone')}
-          options={TIME_ZONE_OPTIONS.map((zone) => ({
+          placeholder={t('settings.localeRegion.timeZoneHint')}
+          options={supportedTimeZones(region.timeZone).map((zone) => ({
             label: zone === 'auto' ? t('settings.localeRegion.timeZoneAuto') : zone,
             value: zone,
           }))}

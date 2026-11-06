@@ -1,6 +1,7 @@
 'use client';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { formatDate, useFrontendTranslation } from '@clouddrive/i18n';
+import { useFrontendTranslation } from '@clouddrive/i18n';
+import { useFileTime } from './use-file-time';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { CheckboxField, SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { DrawerSurface, DialogSurface } from '@clouddrive/ui-adapter/overlays';
@@ -43,7 +44,8 @@ function VersionPanelContent({
   onRefresh,
 }: Props & { onRefresh: () => void }) {
   const port = useFiles().versions,
-    { t, locale } = useFrontendTranslation();
+    { t } = useFrontendTranslation();
+  const time = useFileTime();
   const [snapshot, setSnapshot] = useState<FileVersionPage>(),
     [page, setPage] = useState(1),
     [order, setOrder] = useState<VersionOrder>('newest'),
@@ -264,11 +266,7 @@ function VersionPanelContent({
                       })}
                     </p>
                     <p className="text-xs text-ink-muted">
-                      {t('files.versions.time')}：
-                      {formatDate(locale, version.updatedAt, {
-                        dateStyle: 'medium',
-                        timeStyle: 'short',
-                      })}
+                      {t('files.versions.time')}：{time.full(version.updatedAt)}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <Action

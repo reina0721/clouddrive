@@ -50,9 +50,14 @@
       "layer": "universal",
       "owner": "locale runtime and formatting",
       "maturity": "stable",
-      "exports": ["."],
+      "exports": [".", "./format", "./temporal"],
       "authorityRoutes": ["/foundations"],
-      "evidence": ["packages/i18n/src/index.test.tsx", "apps/web/e2e/authentication.spec.ts"]
+      "evidence": [
+        "packages/i18n/src/index.test.tsx",
+        "packages/i18n/src/temporal.test.ts",
+        "file-tests/time-zones.spec.ts",
+        "apps/web/e2e/authentication.spec.ts"
+      ]
     },
     "@clouddrive/schemas": {
       "layer": "universal",

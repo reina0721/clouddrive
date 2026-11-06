@@ -3,7 +3,9 @@ import { zhNavigation, enNavigation } from './navigation-i18n';
 import { zhDiscovery, enDiscovery } from './discovery-i18n';
 import { zhPreferences, enPreferences } from './preference-i18n';
 import { zhTree, enTree } from './tree-i18n';
+import { zhTime, enTime } from './time-i18n';
 const zh = {
+  time: zhTime,
   tree: zhTree,
   preferences: zhPreferences,
   discovery: zhDiscovery,
@@ -205,6 +207,7 @@ const zh = {
   },
 };
 const en: typeof zh = {
+  time: enTime,
   tree: enTree,
   preferences: enPreferences,
   discovery: enDiscovery,

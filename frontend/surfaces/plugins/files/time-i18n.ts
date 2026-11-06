@@ -1,0 +1,28 @@
+export const zhTime = {
+  unavailable: '时间不可用，请检查区域设置。',
+  inputZone: '输入时区：{{zone}}。更改显示设置不会重新解释此草稿。',
+  invalid: '日期或时间无效，请检查后重试。',
+  zone: '当前环境不支持该时区，请重新打开窗口并检查区域设置。',
+  gap: '该时刻因夏令时跳转而不存在，请选择其他时间。',
+  overlap: '该时刻出现两次，请明确选择第一次或第二次。',
+  occurrence: '重复时刻',
+  chooseOccurrence: '请选择发生次数',
+  earlier: '第一次（{{value}}）',
+  later: '第二次（{{value}}）',
+  preview: '到期预览：{{value}}；绝对时刻：{{instant}}',
+  transferExpires: '传输会话到期：{{value}}',
+};
+export const enTime: typeof zhTime = {
+  unavailable: 'Time unavailable. Check your regional settings.',
+  inputZone: 'Input time zone: {{zone}}. Display changes do not reinterpret this draft.',
+  invalid: 'The date or time is invalid. Check it and try again.',
+  zone: 'This environment does not support the time zone. Check regional settings and reopen this dialog.',
+  gap: 'This time does not exist because of a daylight saving transition. Choose another time.',
+  overlap: 'This time occurs twice. Choose the first or second occurrence.',
+  occurrence: 'Repeated time',
+  chooseOccurrence: 'Choose an occurrence',
+  earlier: 'First occurrence ({{value}})',
+  later: 'Second occurrence ({{value}})',
+  preview: 'Expiry preview: {{value}}; absolute instant: {{instant}}',
+  transferExpires: 'Transfer session expires: {{value}}',
+};

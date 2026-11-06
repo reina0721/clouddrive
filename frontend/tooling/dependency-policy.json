@@ -148,8 +148,8 @@
       "category": "ui"
     },
     "@internationalized/date": {
-      "owner": "UI Adapter calendar value parsing for HeroUI date controls",
-      "allowed": ["packages/ui-adapter"]
+      "owner": "UI Adapter日历值解析及i18n独立temporal边界的时区/DST转换，第三方日期对象不穿越公开契约",
+      "allowed": ["packages/ui-adapter", "packages/i18n"]
     },
     "pdfjs-dist": {
       "owner": "Host PDF应用：固定本地SDK资源与独立frame/Worker生命周期；SDK对象不得穿越Surface契约",

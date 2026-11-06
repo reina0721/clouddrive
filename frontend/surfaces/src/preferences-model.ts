@@ -17,6 +17,8 @@
  * 保真映射进本模型（显式值不套新默认）；无记录（首次）用 `defaultPreferences`。
  */
 
+import { isSupportedTimeZone } from '@clouddrive/i18n/format';
+
 /* ------------------------------------------------------------------ */
 /* 版本与分类                                                           */
 /* ------------------------------------------------------------------ */
@@ -742,6 +744,8 @@ export function validateCategory(
       else if (raw.language !== undefined) value.language = raw.language;
       if (raw.timeZone !== undefined && typeof raw.timeZone !== 'string')
         issues.push({ path: `${category}.timeZone`, message: 'timeZone 必须是字符串' });
+      else if (raw.timeZone && !isSupportedTimeZone(raw.timeZone))
+        issues.push({ path: `${category}.timeZone`, message: '当前环境不支持该时区' });
       else if (raw.timeZone !== undefined && raw.timeZone !== '') value.timeZone = raw.timeZone;
       if (raw.dateFormat !== undefined && !isOneOf(raw.dateFormat, DATE_FORMATS))
         issues.push({ path: `${category}.dateFormat`, message: '非法 dateFormat' });
@@ -898,11 +902,3 @@ export function formatDateOnly(dateFormat: DateFormat, value: Date | number | st
       return `${day}/${month}/${year}`;
   }
 }
-
-/** IANA 时区候选（SelectField 有限集合；'auto' = 系统时区）。 */
-export const TIME_ZONE_OPTIONS = [
-  'auto',
-  'Asia/Shanghai',
-  'Europe/London',
-  'America/New_York',
-] as const;

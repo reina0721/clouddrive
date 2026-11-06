@@ -1,6 +1,7 @@
 'use client';
 import { Cloud } from '../../../src/files/icons';
 import { useFrontendTranslation } from '@clouddrive/i18n';
+import { useFileTime } from './use-file-time';
 import { Page, Toolbar } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
@@ -20,6 +21,7 @@ import {
 } from './connection-dialogs';
 
 export function ConnectionsPage() {
+  const time = useFileTime();
   const port = useConnections(),
     { t } = useFrontendTranslation();
   const [page, setPage] = useState<ConnectionListing>(),
@@ -139,12 +141,10 @@ export function ConnectionsPage() {
                           )}
                         </p>
                         <p className="mt-1 text-sm text-ink-muted">
-                          {t('files.connections.expires')}:{' '}
-                          {new Date(connection.expiresAt).toLocaleString()}
+                          {t('files.connections.expires')}: {time.full(connection.expiresAt)}
                         </p>
                         <p className="mt-1 text-sm text-ink-muted">
-                          {t('files.connections.created')}:{' '}
-                          {new Date(connection.createdAt).toLocaleString()}
+                          {t('files.connections.created')}: {time.full(connection.createdAt)}
                         </p>
                       </div>
                       <div className="flex max-w-full flex-wrap gap-2">

@@ -2,12 +2,9 @@ import { useState } from 'react';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { ContentSwapTransition } from '@clouddrive/ui-adapter/content-swap-transition';
 import { formatTimeOfDay, useFrontendTranslation } from '@clouddrive/i18n';
+import { formatInstantDate } from '@clouddrive/i18n/format';
 import { useFeedback } from '@clouddrive/ui-adapter/feedback-context';
-import {
-  formatDateOnly,
-  TOAST_DURATION_MS,
-  type Preferences,
-} from '@clouddrive/surface/preferences-model';
+import { TOAST_DURATION_MS, type Preferences } from '@clouddrive/surface/preferences-model';
 
 /** Static comparison sketches. Actual preferences still apply through the existing Host. */
 export function DensityPreview({
@@ -114,7 +111,7 @@ export function LocaleFeedback({ region }: Readonly<{ region: Preferences['local
       <dl className="grid gap-2 text-sm text-ink">
         <div className="flex flex-wrap justify-between gap-2">
           <dt className="text-ink-muted">{t('settings.localeRegion.dateFormat')}</dt>
-          <dd>{formatDateOnly(region.dateFormat, sample)}</dd>
+          <dd>{formatInstantDate(region, sample)}</dd>
         </div>
         <div className="flex flex-wrap justify-between gap-2">
           <dt className="text-ink-muted">{t('settings.localeRegion.previewTime')}</dt>

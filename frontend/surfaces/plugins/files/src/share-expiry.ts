@@ -1,25 +1,40 @@
+import {
+  instantWallTime,
+  wallTimeInstant,
+  type TimeOccurrence,
+  type WallTimeResult,
+} from '@clouddrive/i18n/temporal';
+
 export type ShareExpiryDraft = Readonly<{
   mode: 'default' | 'keep' | '1' | '24' | '168' | '720' | 'custom';
   day: string;
   clock: string;
+  timeZone: string;
+  occurrence: TimeOccurrence;
 }>;
 const millisecondsPerHour = 60 * 60 * 1000;
-export function initialShareExpiry(current?: string): ShareExpiryDraft {
-  const value = current ?? new Date(Date.now() + 24 * millisecondsPerHour).toISOString();
+const defaultExpiryHours = 24;
+export function initialShareExpiry(timeZone: string, current?: string): ShareExpiryDraft {
+  const value =
+    current ?? new Date(Date.now() + defaultExpiryHours * millisecondsPerHour).toISOString();
   return {
     mode: current ? 'keep' : 'default',
-    day: value.slice(0, 10),
-    clock: value.slice(11, 16),
+    ...instantWallTime(value, timeZone),
+    occurrence: 'reject',
   };
 }
-export function shareExpiryValue(draft: ShareExpiryDraft, current?: string): string | undefined {
-  if (draft.mode === 'default') return undefined;
-  if (draft.mode === 'keep') return current;
+export type ShareExpiryResult =
+  Readonly<{ ok: true; value: string | undefined }> | Exclude<WallTimeResult, { ok: true }>;
+export function resolveShareExpiry(draft: ShareExpiryDraft, current?: string): ShareExpiryResult {
+  if (draft.mode === 'default') return { ok: true, value: undefined };
+  if (draft.mode === 'keep')
+    return current ? { ok: true, value: current } : { ok: false, code: 'invalid' };
   if (draft.mode === 'custom') {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.day) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(draft.clock))
-      return '';
-    const value = new Date(draft.day + 'T' + draft.clock + ':00.000Z');
-    return Number.isFinite(value.getTime()) ? value.toISOString() : '';
+    const result = wallTimeInstant(draft, draft.occurrence);
+    return result.ok ? { ok: true, value: result.instant } : result;
   }
-  return new Date(Date.now() + Number(draft.mode) * millisecondsPerHour).toISOString();
+  return {
+    ok: true,
+    value: new Date(Date.now() + Number(draft.mode) * millisecondsPerHour).toISOString(),
+  };
 }

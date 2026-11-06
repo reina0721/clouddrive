@@ -1,8 +1,9 @@
 'use client';
 import { useCallback, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
+import { isSupportedTimeZone, supportedTimeZones } from '@clouddrive/i18n/format';
 import { Section } from '@clouddrive/surface-foundation/layout';
-import { TextField, SelectField, CheckboxField } from '@clouddrive/ui-adapter/form-field';
+import { ComboField, SelectField, CheckboxField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { useRequiredAdministration } from '../../../src/administration/context';
 import type { AccountPreferences } from '../../../src/administration/model';
@@ -25,6 +26,10 @@ function PreferenceEditor({
       confirmLabel={t('administration.save')}
       {...(failure ? { failureMessage: failure } : {})}
       onConfirm={async () => {
+        if (!isSupportedTimeZone(draft.timeZone || 'auto')) {
+          setFailure(t('administration.invalidTimeZone'));
+          throw new RangeError('Unsupported account time zone');
+        }
         try {
           await port.savePreferences(draft);
           onSaved();
@@ -45,10 +50,17 @@ function PreferenceEditor({
           { value: 'en-US', label: 'English' },
         ]}
       />
-      <TextField
+      <ComboField
         label={t('administration.timeZone')}
-        value={draft.timeZone}
-        onChange={(event) => setDraft((prior) => ({ ...prior, timeZone: event.target.value }))}
+        placeholder={t('administration.timeZone')}
+        options={supportedTimeZones(draft.timeZone).map((zone) => ({
+          value: zone,
+          label: zone === 'auto' ? t('administration.timeZoneAuto') : zone,
+        }))}
+        value={draft.timeZone || 'auto'}
+        onValueChange={(timeZone) =>
+          setDraft((prior) => ({ ...prior, timeZone: timeZone === 'auto' ? '' : timeZone }))
+        }
       />
       <SelectField
         label={t('administration.themeMode')}

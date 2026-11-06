@@ -1,5 +1,7 @@
 'use client';
-import type { ShareExpiryDraft } from './share-expiry';
+import { resolveShareExpiry, type ShareExpiryDraft } from './share-expiry';
+import { wallTimeInstant } from '@clouddrive/i18n/temporal';
+import { useFileTime } from './use-file-time';
 import { useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { CheckboxField, SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
@@ -103,6 +105,9 @@ export function ShareExpiryFields({
   current?: string;
 }>) {
   const { t } = useFrontendTranslation();
+  const time = useFileTime();
+  const resolved = resolveShareExpiry(value, current);
+  const ambiguity = value.mode === 'custom' ? wallTimeInstant(value, 'reject') : undefined;
   return (
     <section className="space-y-3">
       <SelectField
@@ -126,15 +131,51 @@ export function ShareExpiryFields({
             label={t('files.collaboration.expiryDay')}
             calendarLabel={t('files.collaboration.expiryCalendar')}
             value={value.day || null}
-            onValueChange={(day) => onChange({ ...value, day: day ?? '' })}
+            onValueChange={(day) => onChange({ ...value, day: day ?? '', occurrence: 'reject' })}
           />
           <TextField
             label={t('files.collaboration.expiryClock')}
             hint={t('files.collaboration.expiryClockHint')}
             value={value.clock}
-            onChange={(event) => onChange({ ...value, clock: event.target.value })}
+            onChange={(event) =>
+              onChange({ ...value, clock: event.target.value, occurrence: 'reject' })
+            }
           />
         </div>
+      ) : null}
+      {value.mode === 'custom' ? (
+        <>
+          <p className="text-xs text-ink-muted">
+            {t('files.time.inputZone', { zone: value.timeZone })}
+          </p>
+          {ambiguity && !ambiguity.ok && ambiguity.code === 'overlap' ? (
+            <SelectField
+              label={t('files.time.occurrence')}
+              value={value.occurrence}
+              options={[
+                { value: 'reject', label: t('files.time.chooseOccurrence') },
+                { value: 'earlier', label: t('files.time.earlier', { value: ambiguity.earlier }) },
+                { value: 'later', label: t('files.time.later', { value: ambiguity.later }) },
+              ]}
+              onValueChange={(occurrence) => {
+                if (occurrence === 'reject' || occurrence === 'earlier' || occurrence === 'later')
+                  onChange({ ...value, occurrence });
+              }}
+            />
+          ) : null}
+          {!resolved.ok ? (
+            <p role="alert" className="text-sm text-danger">
+              {t('files.time.' + resolved.code)}
+            </p>
+          ) : resolved.value ? (
+            <p role="status" className="break-words text-xs text-ink-muted">
+              {t('files.time.preview', {
+                value: time.full(resolved.value),
+                instant: resolved.value,
+              })}
+            </p>
+          ) : null}
+        </>
       ) : null}
     </section>
   );

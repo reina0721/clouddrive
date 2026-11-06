@@ -15,6 +15,7 @@ import {
 import { useFiles, useTransfers, useTransferSnapshot } from '../../../src/files/runtime';
 import { Cloud } from '../../../src/files/icons';
 import { FileLink } from './file-link';
+import { useFileTime } from './use-file-time';
 
 function bytes(value: number) {
   if (value < 1024) return `${value} B`;
@@ -25,6 +26,7 @@ function bytes(value: number) {
 const compactItemCount = 8;
 
 export function TransferPanel({ compact = false }: Readonly<{ compact?: boolean }>) {
+  const time = useFileTime();
   const port = useTransfers(),
     files = useFiles(),
     snapshot = useTransferSnapshot();
@@ -216,6 +218,11 @@ export function TransferPanel({ compact = false }: Readonly<{ compact?: boolean 
                   {t(`files.transferPhase.${item.phase}`)}
                 </span>
               </div>
+              {item.expiresAt && !finished ? (
+                <p className="break-words text-xs text-ink-muted">
+                  {t('files.time.transferExpires', { value: time.full(item.expiresAt) })}
+                </p>
+              ) : null}
               {item.sizeKnown ? (
                 <ProgressMeter
                   value={percent}

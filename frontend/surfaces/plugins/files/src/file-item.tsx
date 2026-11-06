@@ -9,6 +9,7 @@ import { FileGlyph } from '../../../src/files/icons';
 import { formatFileBytes } from '../../../src/files/format';
 import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
 import { TagBadges } from './tag-badges';
+import { useFileTime } from './use-file-time';
 
 export type FileSelectionGesture = Readonly<{ extend: boolean; toggle: boolean }>;
 export function FileListHeader({
@@ -92,6 +93,7 @@ export function FileItem({
   onTag: (name: string) => void;
   folderClick?: 'open' | 'select' | undefined;
 }) {
+  const time = useFileTime();
   const { t } = useFrontendTranslation(),
     isList = view === 'list';
   const kind = t(
@@ -150,10 +152,7 @@ export function FileItem({
         ? entry.kind === 'file'
           ? formatFileBytes(entry.sizeBytes)
           : '—'
-        : new Date(column === 'created' ? entry.createdAt : entry.updatedAt).toLocaleDateString(
-            undefined,
-            { timeZone: 'UTC' },
-          );
+        : time.date(column === 'created' ? entry.createdAt : entry.updatedAt);
   return (
     <article
       role={isList ? 'row' : undefined}
@@ -216,9 +215,9 @@ export function FileItem({
               </p>
               <p
                 className="mt-1 truncate text-xs text-ink-muted"
-                title={new Date(entry.trashedAt ?? entry.updatedAt).toLocaleString()}
+                title={time.full(entry.trashedAt ?? entry.updatedAt)}
               >
-                {new Date(entry.trashedAt ?? entry.updatedAt).toLocaleDateString()}
+                {time.date(entry.trashedAt ?? entry.updatedAt)}
               </p>
             </div>
           </div>

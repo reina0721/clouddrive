@@ -8,7 +8,8 @@ import { useFiles } from '../../../src/files/runtime';
 import { FilesError, type FileEntry, type FileShare } from '../../../src/files/model';
 
 import { SharePermissionFields, ShareExpiryFields } from './share-settings-fields';
-import { initialShareExpiry, shareExpiryValue } from './share-expiry';
+import { initialShareExpiry, resolveShareExpiry } from './share-expiry';
+import { useFileTime } from './use-file-time';
 import {
   readOnlySharePermissions,
   initialShareAudience,
@@ -24,10 +25,11 @@ export function ShareDialog({
   onClose,
 }: Readonly<{ entry: FileEntry; onClose: () => void }>) {
   const port = useFiles();
+  const time = useFileTime();
   const { t } = useFrontendTranslation();
   const [audience, setAudience] = useState(initialShareAudience);
   const [password, setPassword] = useState('');
-  const [expiry, setExpiry] = useState(() => initialShareExpiry());
+  const [expiry, setExpiry] = useState(() => initialShareExpiry(time.region.timeZone));
   const [title, setTitle] = useState('');
   const [permissions, setPermissions] = useState<SharePermissions>({ ...readOnlySharePermissions });
   const [created, setCreated] = useState<FileShare>();
@@ -36,6 +38,11 @@ export function ShareDialog({
   const [copied, setCopied] = useState(false);
   const errorText = (error: unknown) =>
     t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`);
+  const failureNotice = failure ? (
+    <p role="alert" className="text-sm text-danger">
+      {failure}
+    </p>
+  ) : null;
   return (
     <DialogSurface
       triggerLabel={t('files.share')}
@@ -46,7 +53,6 @@ export function ShareDialog({
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
-      {...(failure ? { failureMessage: failure } : {})}
     >
       {created ? (
         <div className="space-y-4">
@@ -60,8 +66,9 @@ export function ShareDialog({
             {port.shareLink(created.token)}
           </a>
           <p className="text-sm text-ink-muted">
-            {t('files.shareExpires')}: {new Date(created.expiresAt).toLocaleString()}
+            {t('files.shareExpires')}: {time.full(created.expiresAt)}
           </p>
+          {failureNotice}
           <Action
             variant="secondary"
             onPress={() => {
@@ -82,12 +89,13 @@ export function ShareDialog({
             event.preventDefault();
             setBusy(true);
             setFailure('');
-            const expiresAt = shareExpiryValue(expiry);
-            if (expiresAt === '') {
-              setFailure(t('files.errors.invalid'));
+            const resolved = resolveShareExpiry(expiry);
+            if (!resolved.ok) {
+              setFailure(t('files.time.' + resolved.code));
               setBusy(false);
               return;
             }
+            const expiresAt = resolved.value;
             void port
               .createShare({
                 rootId: entry.id,
@@ -123,7 +131,13 @@ export function ShareDialog({
               rootKind={entry.kind === 'file' ? 'file' : 'folder'}
             />
           </Suspense>
-          <ShareExpiryFields value={expiry} onChange={setExpiry} />
+          <ShareExpiryFields
+            value={expiry}
+            onChange={(value) => {
+              setExpiry(value);
+              setFailure('');
+            }}
+          />
           <PasswordField
             label={t('files.sharePassword')}
             hint={t('files.sharePasswordHint')}
@@ -134,6 +148,7 @@ export function ShareDialog({
             onChange={(event) => setPassword(event.target.value)}
           />
           <p className="text-sm text-ink-muted">{t('files.shareHint')}</p>
+          {failureNotice}
           <Action
             type="submit"
             loading={busy}

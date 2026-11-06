@@ -1,5 +1,6 @@
 'use client';
-import { formatDate, useFrontendTranslation } from '@clouddrive/i18n';
+import { useFrontendTranslation } from '@clouddrive/i18n';
+import { useFileTime } from './use-file-time';
 import { Page, PageHeader, Section } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
 import {
@@ -47,7 +48,8 @@ const statusValues = [
 export function DownloadsPage() {
   const port = useDownloads(),
     files = useFiles(),
-    { t, locale } = useFrontendTranslation();
+    { t } = useFrontendTranslation();
+  const time = useFileTime();
   const [query, setQuery] = useState<DownloadFilter>({
     section: 'all',
     state: '',
@@ -640,11 +642,7 @@ export function DownloadsPage() {
               ).map(([label, value]) => (
                 <div key={label}>
                   <dt className="text-xs text-ink-muted">{t(`files.downloads.${label}`)}</dt>
-                  <dd>
-                    {value
-                      ? formatDate(locale, value, { dateStyle: 'medium', timeStyle: 'medium' })
-                      : '—'}
-                  </dd>
+                  <dd>{value ? time.full(value) : '—'}</dd>
                 </div>
               ))}
               <div>

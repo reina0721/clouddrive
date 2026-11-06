@@ -1,6 +1,7 @@
 'use client';
 import { Cloud } from '../../../src/files/icons';
-import { formatDate, useFrontendTranslation } from '@clouddrive/i18n';
+import { useFrontendTranslation } from '@clouddrive/i18n';
+import { useFileTime } from './use-file-time';
 import { Page, PageHeader, Section } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
@@ -19,7 +20,8 @@ import { ShareDetailDrawer, ShareSettingsDialog } from './share-settings-dialog'
 
 export function MySharesPage() {
   const port = useFiles(),
-    { t, locale } = useFrontendTranslation();
+    { t } = useFrontendTranslation();
+  const time = useFileTime();
   const [query, setQuery] = useState<ShareQuery>({
       search: '',
       state: '',
@@ -178,11 +180,7 @@ export function MySharesPage() {
                     {share.hasPassword ? ` · ${t('files.shareProtected')}` : ''}
                   </p>
                   <p className="mt-2 text-sm text-ink-muted">
-                    {t('files.shareExpires')}:{' '}
-                    {formatDate(locale, share.expiresAt, {
-                      dateStyle: 'short',
-                      timeStyle: 'short',
-                    })}
+                    {t('files.shareExpires')}: {time.full(share.expiresAt)}
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Action variant="quiet" size="sm" onPress={() => setDetail(share)}>
