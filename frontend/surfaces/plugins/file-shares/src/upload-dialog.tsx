@@ -46,7 +46,7 @@ export function PublicUploadDialog({
   const choose = async () => {
     setChoosing(true);
     try {
-      const chosen = await port.chooseUploads();
+      const chosen = await port.chooseUploads(parent);
       if (!mounted.current) {
         chosen.forEach((source) => port.releaseUpload(source.id));
         return;

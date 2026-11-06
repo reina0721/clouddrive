@@ -17,29 +17,33 @@ export function SharePermissionFields({
   value,
   onChange,
   rootKind = 'folder',
+  policyScope = 'share-root',
 }: Readonly<{
   value: SharePermissions;
   onChange(value: SharePermissions): void;
   rootKind?: 'file' | 'folder' | 'shortcut' | 'unavailable';
+  policyScope?: 'share-root' | 'entry';
 }>) {
   const { t } = useFrontendTranslation();
   const [custom, setCustom] = useState(false);
   const preset = custom ? 'custom' : sharePermissionPreset(value);
   const names: readonly (keyof SharePermissions)[] =
-    rootKind !== 'folder'
-      ? ['preview', 'download', 'modify']
-      : [
-          'browse',
-          'preview',
-          'download',
-          'create',
-          'upload',
-          'modify',
-          'rename',
-          'move',
-          'copy',
-          'delete',
-        ];
+    rootKind === 'file' && policyScope === 'entry'
+      ? ['browse', 'preview', 'download', 'modify', 'rename', 'move', 'copy', 'delete']
+      : rootKind !== 'folder'
+        ? ['preview', 'download', 'modify']
+        : [
+            'browse',
+            'preview',
+            'download',
+            'create',
+            'upload',
+            'modify',
+            'rename',
+            'move',
+            'copy',
+            'delete',
+          ];
   return (
     <section className="space-y-3" aria-label={t('files.collaboration.permissions')}>
       <SelectField
@@ -60,7 +64,9 @@ export function SharePermissionFields({
           else if (next === 'editor')
             onChange(
               rootKind === 'file'
-                ? { ...readOnlySharePermissions, modify: true }
+                ? policyScope === 'entry'
+                  ? { ...editorSharePermissions, create: false, upload: false }
+                  : { ...readOnlySharePermissions, modify: true }
                 : { ...editorSharePermissions },
             );
           else if (preset !== 'custom') onChange({ ...value });

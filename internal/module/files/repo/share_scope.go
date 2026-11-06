@@ -26,7 +26,11 @@ func (r *Repository) ReadShareBinding(ctx context.Context, digest string) (model
 				}
 				return err
 			}
-			result = model.Share(record)
+			decoded, decodeErr := record.model()
+			if decodeErr != nil {
+				return decodeErr
+			}
+			result = decoded
 			if !validShareRecord(result) {
 				return fmt.Errorf("share policy invariant")
 			}
@@ -58,14 +62,18 @@ func (r *Repository) ChangeSharedFiles(ctx context.Context, digest, grantDigest 
 			if err := db.First(&current, "id = ? AND token_digest = ? AND owner_id = ?", initial.ID, digest, initial.OwnerID).Error; err != nil {
 				return err
 			}
-			if !validShareRecord(model.Share(current)) {
+			decoded, decodeErr := current.model()
+			if decodeErr != nil {
+				return decodeErr
+			}
+			if !validShareRecord(decoded) {
 				return fmt.Errorf("share policy invariant")
 			}
 			entries, err := loadBoundedEntries(db, current.OwnerID, limit)
 			if err != nil {
 				return err
 			}
-			snapshot := service.ShareSnapshot{Share: model.Share(current), Entries: entries}
+			snapshot := service.ShareSnapshot{Share: decoded, Entries: entries}
 			if grantDigest != "" {
 				var grant grantRecord
 				err := db.First(&grant, "digest = ? AND share_id = ?", grantDigest, current.ID).Error

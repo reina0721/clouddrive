@@ -10,6 +10,7 @@ export async function loadFileAnnotationMessages(): Promise<TranslationResources
   const workspace = await import('../../plugins/files/workspace-i18n');
   const archives = await import('../../plugins/files/archive-i18n');
   const pdf = await import('../../plugins/files/pdf-i18n');
+  const access = await import('../../plugins/files/access-i18n');
   return {
     'zh-CN': {
       translation: {
@@ -22,6 +23,7 @@ export async function loadFileAnnotationMessages(): Promise<TranslationResources
           workspace: workspace.zhWorkspace,
           archives: archives.zhArchives,
           pdf: pdf.zhPDF,
+          access: access.zhAccess,
           shareStatuses: { paused: '已暂停', limited: '目录信息受限' },
           shareHint: '访客仅能使用授予此链接的能力，密码和有效期始终生效。',
           errors: {
@@ -46,6 +48,7 @@ export async function loadFileAnnotationMessages(): Promise<TranslationResources
           workspace: workspace.enWorkspace,
           archives: archives.enArchives,
           pdf: pdf.enPDF,
+          access: access.enAccess,
           shareStatuses: { paused: 'Paused', limited: 'Folder information limited' },
           shareHint:
             'Visitors can use only the capabilities granted to this link. Password and expiration still apply.',
@@ -66,12 +69,17 @@ export async function loadFileAnnotationMessages(): Promise<TranslationResources
 /** loadPublicFileMessages 仅在访客运行域补齐协作文案。 */
 export async function loadPublicFileMessages(): Promise<TranslationResources> {
   const messages = await import('../../plugins/file-shares/collaboration-i18n');
+  const access = await import('../../plugins/files/access-i18n');
   return {
     'zh-CN': {
       translation: {
         publicFiles: {
           collaboration: messages.zhPublicCollaboration,
-          errors: messages.zhPublicErrors,
+          access: access.zhPublicAccess,
+          errors: {
+            ...messages.zhPublicErrors,
+            unauthenticated: access.zhPublicAccess.unauthenticated,
+          },
         },
       },
     },
@@ -79,7 +87,11 @@ export async function loadPublicFileMessages(): Promise<TranslationResources> {
       translation: {
         publicFiles: {
           collaboration: messages.enPublicCollaboration,
-          errors: messages.enPublicErrors,
+          access: access.enPublicAccess,
+          errors: {
+            ...messages.enPublicErrors,
+            unauthenticated: access.enPublicAccess.unauthenticated,
+          },
         },
       },
     },

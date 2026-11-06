@@ -89,6 +89,9 @@ type Dialog = {
   mode: 'rename' | 'move' | 'copy' | 'remove' | 'restore';
   targets: FileEntry[];
 };
+const FileAccessDialog = lazy(() =>
+  import('./access-dialog').then((module) => ({ default: module.FileAccessDialog })),
+);
 export function FilesPage({
   parent,
   category,
@@ -140,6 +143,7 @@ export function FilesPage({
   const [selected, setSelected] = useState<string[]>([]);
   const [dialog, setDialog] = useState<Dialog>();
   const [shareTarget, setShareTarget] = useState<FileEntry>();
+  const [accessTarget, setAccessTarget] = useState<FileEntry>();
   const [textRequest, setTextRequest] = useState<TextRequest>();
   const [pdfEntry, setPdfEntry] = useState<FileEntry>();
   const [mediaEntry, setMediaEntry] = useState<FileEntry>();
@@ -1266,7 +1270,10 @@ export function FilesPage({
                                 : []),
                               ...(entry.kind === 'shortcut'
                                 ? []
-                                : [{ id: 'share', label: t('files.share') }]),
+                                : [
+                                    { id: 'share', label: t('files.share') },
+                                    { id: 'access', label: t('files.access.title') },
+                                  ]),
                               ...(entry.kind === 'folder' || entry.kind === 'shortcut'
                                 ? [{ id: 'pin', label: t('files.navigation.pin') }]
                                 : []),
@@ -1292,6 +1299,7 @@ export function FilesPage({
                           setPinTarget({ targetKind: entry.kind, targetId: entry.id });
                         else if (action === 'download') void download(entry);
                         else if (action === 'share') setShareTarget(entry);
+                        else if (action === 'access') setAccessTarget(entry);
                         else if (action === 'edit') setTextRequest({ mode: 'edit', entry });
                         else if (
                           action === 'rename' ||
@@ -1529,6 +1537,19 @@ export function FilesPage({
             setViewOptionsOpen(false);
           }}
         />
+      ) : null}
+      {accessTarget ? (
+        <Suspense fallback={<p role="status">{t('files.access.loading')}</p>}>
+          <FileAccessDialog
+            entry={accessTarget}
+            onClose={() => setAccessTarget(undefined)}
+            onSaved={() => {
+              setAccessTarget(undefined);
+              setNotice(t('files.access.saved'));
+              reload();
+            }}
+          />
+        </Suspense>
       ) : null}
       {shareTarget ? (
         <ShareDialog entry={shareTarget} onClose={() => setShareTarget(undefined)} />

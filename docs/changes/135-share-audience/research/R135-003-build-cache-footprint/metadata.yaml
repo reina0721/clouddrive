@@ -1,0 +1,35 @@
+schema_version: 1
+id: R135-003
+title: 隔离生产构建的持久缓存占用
+question: 如何在不删除被审批拒绝的旧构建目录、不改变运行能力的前提下完成当前构建？
+research_type: installed-official-source-and-runtime
+topics: [Next, production-build, persistent-cache]
+keywords: [turbopackFileSystemCacheForBuild, 磁盘预算, 缓存压缩]
+status: active
+summary: 在现有Next配置中关闭生产编译的持久缓存，保留相同编译器和运行产物；不更改开发缓存或删除既有目录。
+applicable_scenarios: [当前Next16.4.5, 多个隔离生产构建目录, 磁盘临时空间不足]
+non_applicable_scenarios: [清理旧构建目录, 数据库或用户文件回收, 放宽页面体积预算]
+evidence:
+  types: [installed-official-source, build-output]
+  primary_sources:
+    - title: Next默认配置
+      locator: frontend/apps/web/node_modules/next/dist/server/config-shared.js
+      snapshot: 16.4.5，第294行默认turbopackFileSystemCacheForBuild为true
+    - title: Next构建实现
+      locator: frontend/apps/web/node_modules/next/dist/build/turbopack-build/impl.js
+      snapshot: 16.4.5，第59行以该受支持选项控制persistentCaching
+    - title: 主构建记录
+      locator: .data/135-delivery-build-primary-r2.log
+      snapshot: 退出0但报告Failed to compact database；源码与页面已编译，最终仍须重新构建验证
+researched_at: 2026-11-04
+verified_at: 2026-11-04
+validity:
+  mode: snapshot
+  review_after: 2026-12-04
+  refresh_triggers: [Next升级, 生产构建方式改变, 需要评估共享构建缓存]
+relations:
+  extends: [R135-001]
+  related: [R134-001]
+  supersedes: []
+  superseded_by: []
+report: report.md

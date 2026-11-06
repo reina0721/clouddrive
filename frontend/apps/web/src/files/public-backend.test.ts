@@ -11,6 +11,7 @@ import { readPublicBlob } from './public-content';
 
 const token = 's'.repeat(43),
   entry = {
+    permissions: editorSharePermissions,
     id: 'd25f5cc7-8a0d-4483-9764-7b70580a39fc',
     name: 'source.txt',
     kind: 'file' as const,
@@ -21,6 +22,8 @@ const token = 's'.repeat(43),
   };
 const metadata = {
   locked: false,
+  denied: false,
+  signInRequired: false,
   root: { ...entry, kind: 'folder' },
   title: '公开链接',
   revision: 2,
@@ -53,7 +56,7 @@ afterEach(() => {
 });
 
 async function choose(runtime: ReturnType<typeof createPublicFilesRuntime>) {
-  const pending = runtime.port.chooseUploads();
+  const pending = runtime.port.chooseUploads(entry.id);
   const picker = document.querySelector<HTMLInputElement>('input[type=file]');
   if (!picker) throw new Error('缺少Host文件选择器');
   Object.defineProperty(picker, 'files', { value: [new NativeFile(['abc'], entry.name)] });
@@ -64,27 +67,114 @@ async function choose(runtime: ReturnType<typeof createPublicFilesRuntime>) {
   return candidate;
 }
 describe('分享Host的独立凭据、版本与上传生命周期', () => {
+  it('子目录独立上传权限覆盖只读根，并在离开目录后失效', async () => {
+    const child = { ...entry, id: 'd25f5cc7-8a0d-4483-9764-7b70580a39fd', kind: 'folder' };
+    const query = {
+      parent: child.id,
+      search: '',
+      sort: 'name' as const,
+      desc: false,
+      scope: 'folder' as const,
+      page: 1,
+    };
+    const fetcher = vi.fn((url: string) =>
+      Promise.resolve(
+        json(
+          url.includes('/entries?')
+            ? {
+                items: [],
+                breadcrumbs: [metadata.root, child],
+                total: 0,
+                page: 1,
+                pageSize: 20,
+                permissions: editorSharePermissions,
+              }
+            : { ...metadata, permissions: readOnlySharePermissions },
+        ),
+      ),
+    );
+    vi.stubGlobal('fetch', fetcher);
+    const runtime = createPublicFilesRuntime(token, { subject: null, current: () => null });
+    await runtime.port.metadata();
+    await runtime.port.entries(query);
+    const pending = runtime.port.chooseUploads(child.id);
+    const picker = document.querySelector<HTMLInputElement>('input[type=file]')!;
+    picker.dispatchEvent(new Event('cancel'));
+    await expect(pending).resolves.toEqual([]);
+    await expect(runtime.port.chooseUploads(entry.id)).rejects.toMatchObject({ code: 'forbidden' });
+    await runtime.port.metadata();
+    await expect(runtime.port.chooseUploads(child.id)).rejects.toMatchObject({ code: 'forbidden' });
+    runtime.dispose();
+  });
+  it('账号切换立即中止旧请求和选择器，旧响应不得交给新账号', async () => {
+    let subject: string | null = 'original';
+    let finish: ((response: Response) => void) | undefined;
+    let signal: AbortSignal | undefined;
+    const fetcher = vi.fn((_url: string, options?: RequestInit) => {
+      signal = options?.signal ?? undefined;
+      return new Promise<Response>((resolve) => {
+        finish = resolve;
+      });
+    });
+    vi.stubGlobal('fetch', fetcher);
+    const runtime = createPublicFilesRuntime(token, { subject, current: () => subject });
+    const pending = runtime.port.metadata();
+    subject = 'replacement';
+    expect(() => runtime.port.chooseUploads(entry.id)).toThrow(FilesError);
+    expect(signal?.aborted).toBe(true);
+    finish!(json(metadata));
+    await expect(pending).rejects.toMatchObject({ code: 'canceled' });
+    expect(fetcher).toHaveBeenCalledOnce();
+    runtime.dispose();
+  });
+  it('会话过期与受众拒绝分开呈现，登录返回地址把分享凭据保留在片段', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.resolve(new Response('', { status: 401 }))),
+    );
+    const runtime = createPublicFilesRuntime(token, { subject: null, current: () => null });
+    await expect(runtime.port.metadata()).rejects.toMatchObject({ code: 'unauthenticated' });
+    const href = runtime.port.signInHref();
+    expect(new URLSearchParams(href.split('#')[1]).get('returnFragment')).toBe('token=' + token);
+    expect(href.split('#')[0]).not.toContain(token);
+    runtime.dispose();
+  });
   it('锁定响应不得假装零预算，也不能夹带能力或根数据', () => {
     expect(
-      publicShareSchema.safeParse({ locked: true, expiresAt: metadata.expiresAt }).success,
+      publicShareSchema.safeParse({
+        locked: true,
+        denied: false,
+        signInRequired: false,
+        expiresAt: metadata.expiresAt,
+      }).success,
     ).toBe(true);
     expect(
-      publicShareSchema.safeParse({ locked: true, root: entry, expiresAt: metadata.expiresAt })
-        .success,
+      publicShareSchema.safeParse({
+        locked: true,
+        denied: false,
+        signInRequired: false,
+        root: entry,
+        expiresAt: metadata.expiresAt,
+      }).success,
     ).toBe(false);
     expect(
-      publicShareSchema.safeParse({ locked: false, root: entry, expiresAt: metadata.expiresAt })
-        .success,
+      publicShareSchema.safeParse({
+        locked: false,
+        denied: false,
+        signInRequired: false,
+        root: entry,
+        expiresAt: metadata.expiresAt,
+      }).success,
     ).toBe(false);
   });
-  it('所有公开请求省略IAM凭据，并原样传递CAS而非自动重试', async () => {
+  it('公开请求携带同源Session判断受众，并原样传递CAS而非自动重试', async () => {
     const fetcher = vi.fn<typeof fetch>(() => Promise.resolve(json(entry)));
     vi.stubGlobal('fetch', fetcher);
-    const runtime = createPublicFilesRuntime(token);
+    const runtime = createPublicFilesRuntime(token, { subject: null, current: () => null });
     await runtime.port.replaceText(entry, '新草稿');
     expect(fetcher).toHaveBeenCalledOnce();
     const options = fetcher.mock.calls[0]?.[1];
-    expect(options?.credentials).toBe('omit');
+    expect(options?.credentials).toBe('include');
     expect(options?.referrerPolicy).toBe('no-referrer');
     expect(JSON.parse(typeof options?.body === 'string' ? options.body : '')).toEqual({
       revision: 4,
@@ -97,9 +187,9 @@ describe('分享Host的独立凭据、版本与上传生命周期', () => {
       'fetch',
       vi.fn(() => Promise.resolve(json({ ...metadata, permissions: readOnlySharePermissions }))),
     );
-    const runtime = createPublicFilesRuntime(token);
+    const runtime = createPublicFilesRuntime(token, { subject: null, current: () => null });
     await runtime.port.metadata();
-    await expect(runtime.port.chooseUploads()).rejects.toMatchObject({ code: 'forbidden' });
+    await expect(runtime.port.chooseUploads(entry.id)).rejects.toMatchObject({ code: 'forbidden' });
     expect(document.querySelector('input[type=file]')).toBeNull();
     runtime.dispose();
   });
@@ -124,7 +214,7 @@ describe('分享Host的独立凭据、版本与上传生命周期', () => {
       return Promise.resolve(json(metadata));
     });
     vi.stubGlobal('fetch', fetcher);
-    const runtime = createPublicFilesRuntime(token);
+    const runtime = createPublicFilesRuntime(token, { subject: null, current: () => null });
     await runtime.port.metadata();
     const candidate = await choose(runtime),
       progress = vi.fn();
@@ -183,7 +273,7 @@ describe('分享Host的独立凭据、版本与上传生命周期', () => {
         return Promise.resolve(json(metadata));
       }),
     );
-    const runtime = createPublicFilesRuntime(token);
+    const runtime = createPublicFilesRuntime(token, { subject: null, current: () => null });
     await runtime.port.metadata();
     const candidate = await choose(runtime);
     await expect(
@@ -209,7 +299,7 @@ describe('分享Host的独立凭据、版本与上传生命周期', () => {
         return Promise.resolve(json(metadata));
       }),
     );
-    const runtime = createPublicFilesRuntime(token);
+    const runtime = createPublicFilesRuntime(token, { subject: null, current: () => null });
     await runtime.port.metadata();
     const candidate = await choose(runtime),
       progress = vi.fn();
@@ -226,9 +316,9 @@ describe('分享Host的独立凭据、版本与上传生命周期', () => {
       'fetch',
       vi.fn(() => Promise.resolve(json(metadata))),
     );
-    const runtime = createPublicFilesRuntime(token);
+    const runtime = createPublicFilesRuntime(token, { subject: null, current: () => null });
     await runtime.port.metadata();
-    const choosing = runtime.port.chooseUploads();
+    const choosing = runtime.port.chooseUploads(entry.id);
     runtime.dispose();
     await expect(choosing).rejects.toMatchObject({ code: 'canceled' });
     await expect(runtime.port.metadata()).rejects.toMatchObject({ code: 'canceled' });

@@ -1,3 +1,4 @@
+import type { FileAccessPort } from './access';
 import { pdfReaderLimitsSchema } from './pdf-contract';
 import { z } from 'zod';
 import { annotationLimitsSchema, annotationSummarySchema } from './annotation-values';
@@ -142,6 +143,7 @@ export type FilesDestination =
   | 'workspace'
   | 'account';
 export type FilesPort = Readonly<{
+  access: FileAccessPort;
   clipboard: FileClipboardPort;
   versions: VersionsPort;
   annotations: AnnotationsPort;

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 )
 
 func validShareRecord(share model.Share) bool {
-	return share.ID != "" && share.OwnerID != "" && share.RootID != "" && share.Permissions.Valid() && share.Revision >= 1 && share.Revision <= model.MaxContentRevision && (share.State == model.ShareEnabled || share.State == model.SharePaused)
+	return share.ID != "" && share.OwnerID != "" && share.RootID != "" && share.Permissions.Valid() && share.Audience.Validate() == nil && share.Revision >= 1 && share.Revision <= model.MaxContentRevision && (share.State == model.ShareEnabled || share.State == model.SharePaused)
 }
 
 func (r *Repository) CreateShare(ctx context.Context, owner string, activeLimit, treeLimit int, now time.Time, create func([]model.Entry) (model.Share, error)) (model.Share, error) {
@@ -45,7 +46,10 @@ func (r *Repository) CreateShare(ctx context.Context, owner string, activeLimit,
 			if !validShareRecord(created) || created.OwnerID != owner || created.Revision != 1 {
 				return fmt.Errorf("share creation invariant")
 			}
-			record := shareRecord(created)
+			record, encodeErr := shareRecordFromModel(created)
+			if encodeErr != nil {
+				return encodeErr
+			}
 			if err := db.Create(&record).Error; err != nil {
 				return err
 			}
@@ -74,7 +78,11 @@ func (r *Repository) ReadOwnedShare(ctx context.Context, owner, id string) (mode
 				}
 				return err
 			}
-			share = model.Share(record)
+			decodedShare, decodeErr := record.model()
+			if decodeErr != nil {
+				return decodeErr
+			}
+			share = decodedShare
 			if !validShareRecord(share) {
 				return fmt.Errorf("share policy invariant")
 			}
@@ -110,7 +118,10 @@ func (r *Repository) ChangeSharePolicy(ctx context.Context, owner, id string, ac
 				}
 				return err
 			}
-			previous := model.Share(record)
+			previous, decodeErr := record.model()
+			if decodeErr != nil {
+				return decodeErr
+			}
 			if !validShareRecord(previous) {
 				return fmt.Errorf("share policy invariant")
 			}
@@ -124,7 +135,7 @@ func (r *Repository) ChangeSharePolicy(ctx context.Context, owner, id string, ac
 			if previous.RevokedAt != nil && (changed.RevokedAt == nil || !changed.RevokedAt.Equal(*previous.RevokedAt)) {
 				return fmt.Errorf("share revocation invariant")
 			}
-			modified := changed.Title != previous.Title || changed.State != previous.State || changed.Permissions != previous.Permissions || changed.PasswordHash != previous.PasswordHash || !changed.ExpiresAt.Equal(previous.ExpiresAt) || (changed.RevokedAt != nil) != (previous.RevokedAt != nil)
+			modified := !reflect.DeepEqual(model.CloneAudience(changed.Audience), model.CloneAudience(previous.Audience)) || changed.Title != previous.Title || changed.State != previous.State || changed.Permissions != previous.Permissions || changed.PasswordHash != previous.PasswordHash || !changed.ExpiresAt.Equal(previous.ExpiresAt) || (changed.RevokedAt != nil) != (previous.RevokedAt != nil)
 			if modified && changed.Revision != previous.Revision+1 {
 				return fmt.Errorf("share revision invariant")
 			}
@@ -137,8 +148,11 @@ func (r *Repository) ChangeSharePolicy(ctx context.Context, owner, id string, ac
 					return model.ErrBusy
 				}
 			}
-			updated := shareRecord(changed)
-			if err := db.Model(&shareRecord{}).Where("id = ? AND owner_id = ? AND revision = ?", id, owner, previous.Revision).Select("title", "state", "permissions", "revision", "password_hash", "expires_at", "revoked_at").Updates(&updated).Error; err != nil {
+			updated, encodeErr := shareRecordFromModel(changed)
+			if encodeErr != nil {
+				return encodeErr
+			}
+			if err := db.Model(&shareRecord{}).Where("id = ? AND owner_id = ? AND revision = ?", id, owner, previous.Revision).Select("audience_json", "title", "state", "permissions", "revision", "password_hash", "expires_at", "revoked_at").Updates(&updated).Error; err != nil {
 				return err
 			}
 			result = changed
@@ -195,7 +209,10 @@ func (r *Repository) QueryShares(ctx context.Context, owner string, query servic
 			}
 			ids := []string{}
 			for _, record := range records {
-				share := model.Share(record)
+				share, decodeErr := record.model()
+				if decodeErr != nil {
+					return decodeErr
+				}
 				if !validShareRecord(share) {
 					return fmt.Errorf("share policy invariant")
 				}

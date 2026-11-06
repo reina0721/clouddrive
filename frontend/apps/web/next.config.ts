@@ -10,7 +10,11 @@ export default function nextConfig(phase: string): NextConfig {
   return {
     // 允许通过 127.0.0.1、localhost 访问 0.0.0.0 监听的开发服务器
     allowedDevOrigins: ['127.0.0.1', 'localhost'],
-    experimental: { proxyClientMaxBodySize: '32mb' },
+    experimental: {
+      proxyClientMaxBodySize: '32mb',
+      // 多个隔离生产目录不保留编译数据库；避免缓存压缩额外占用构建磁盘。
+      turbopackFileSystemCacheForBuild: false,
+    },
     // Playwright 的 dev server 使用独立目录，避免 production build 覆盖正在运行的开发缓存。
     distDir: config.distDir ?? (phase === PHASE_DEVELOPMENT_SERVER ? '.next' : 'dist'),
     // server Mode 不设 output（真实 Next Runtime Server）；static / static-enumerated 用静态导出。

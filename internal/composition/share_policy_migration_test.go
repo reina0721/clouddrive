@@ -14,6 +14,18 @@ import (
 	"gorm.io/gorm"
 )
 
+// sharePolicyV12Record 固定历史表的标量投影，避免新业务模型字段改变旧迁移证据。
+type sharePolicyV12Record struct {
+	Title                                                 string
+	State                                                 model.ShareState
+	Permissions                                           model.SharePermission
+	Revision                                              int64
+	ID, OwnerID, RootID, Token, TokenDigest, PasswordHash string
+	CreatedAt, ExpiresAt                                  time.Time
+	RevokedAt, AttemptWindow                              *time.Time
+	UnlockAttempts                                        int
+}
+
 func TestSharePolicyV12PreservesReadOnlyLinksAndGuardsRollback(t *testing.T) {
 	config := database.DefaultConfig()
 	config.Driver, config.DSN = database.DriverSQLite, filepath.Join(t.TempDir(), "v11-to-v12.db")
@@ -45,15 +57,15 @@ func TestSharePolicyV12PreservesReadOnlyLinksAndGuardsRollback(t *testing.T) {
 			}
 		}
 		now := time.Now().UTC()
-		link := model.Share{ID: "d25f5cc7-8a0d-4483-9764-7b70580a39fc", OwnerID: "owner", RootID: "root", Token: strings.Repeat("q", 43), TokenDigest: strings.Repeat("a", 64), CreatedAt: now, ExpiresAt: now.Add(time.Hour), UnlockAttempts: 2}
+		link := sharePolicyV12Record{ID: "d25f5cc7-8a0d-4483-9764-7b70580a39fc", OwnerID: "owner", RootID: "root", Token: strings.Repeat("q", 43), TokenDigest: strings.Repeat("a", 64), CreatedAt: now, ExpiresAt: now.Add(time.Hour), UnlockAttempts: 2}
 		if err := db.Table("files_shares").Omit("Title", "State", "Permissions", "Revision").Create(&link).Error; err != nil {
 			return err
 		}
 		grant := model.ShareGrant{Digest: strings.Repeat("b", 64), ShareID: link.ID, ExpiresAt: link.ExpiresAt}
-		if err := db.Table("files_share_grants").Omit("ShareRevision").Create(&grant).Error; err != nil {
+		if err := db.Table("files_share_grants").Omit("ShareRevision", "AudienceSubject").Create(&grant).Error; err != nil {
 			return err
 		}
-		var before model.Share
+		var before sharePolicyV12Record
 		if err := db.Table("files_shares").Take(&before).Error; err != nil {
 			return err
 		}
@@ -64,7 +76,7 @@ func TestSharePolicyV12PreservesReadOnlyLinksAndGuardsRollback(t *testing.T) {
 		if err := db.Exec(string(up)).Error; err != nil {
 			return err
 		}
-		var after model.Share
+		var after sharePolicyV12Record
 		if err := db.Table("files_shares").Take(&after).Error; err != nil {
 			return err
 		}
@@ -103,7 +115,7 @@ func TestSharePolicyV12PreservesReadOnlyLinksAndGuardsRollback(t *testing.T) {
 		if err := db.Transaction(func(tx *gorm.DB) error { return tx.Exec(string(down)).Error }); err != nil {
 			return err
 		}
-		var restored model.Share
+		var restored sharePolicyV12Record
 		if err := db.Table("files_shares").Take(&restored).Error; err != nil {
 			return err
 		}

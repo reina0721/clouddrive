@@ -318,6 +318,8 @@ func (s *Service) copyTree(entries []model.Entry, id, parent, name, normalized s
 		originalID := entry.ID
 		entry.ID, entry.CreatedAt, entry.UpdatedAt = ids[originalID], now, now
 		entry.UploadKey, entry.TrashedAt = "", nil
+		entry.AccessPolicy = model.CloneAccessPolicy(entry.AccessPolicy)
+		entry.AccessPolicyRevision = 0
 		entry.History = model.CloneHistory(entry.History)
 		if len(entry.History) == 0 {
 			entry.ContentRevision = 1

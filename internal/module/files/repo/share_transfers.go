@@ -15,7 +15,10 @@ func loadTransferShare(db *gorm.DB, snapshot *service.TransferSnapshot, owner, i
 	if err := db.First(&record, "id = ? AND owner_id = ?", id, owner).Error; err != nil {
 		return err
 	}
-	share := model.Share(record)
+	share, decodeErr := record.model()
+	if decodeErr != nil {
+		return decodeErr
+	}
 	if !validShareRecord(share) {
 		return fmt.Errorf("share policy invariant")
 	}

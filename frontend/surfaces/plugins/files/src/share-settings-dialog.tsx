@@ -1,15 +1,22 @@
 'use client';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { formatDate, useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { TextField, PasswordField, SelectField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface, DrawerSurface } from '@clouddrive/ui-adapter/overlays';
 import { useFiles } from '../../../src/files/runtime';
 import { FilesError, type FileShare } from '../../../src/files/model';
-import { sharePermissionsValid, type SharePermissions } from '../../../src/files/sharing';
+import {
+  sharePermissionsValid,
+  shareAudienceValid,
+  type SharePermissions,
+} from '../../../src/files/sharing';
 import { ShareExpiryFields, SharePermissionFields } from './share-settings-fields';
 import { initialShareExpiry, shareExpiryValue } from './share-expiry';
 
+const ShareAudienceFields = lazy(() =>
+  import('./audience-fields').then((module) => ({ default: module.ShareAudienceFields })),
+);
 export function ShareSettingsDialog({
   share,
   onClose,
@@ -17,6 +24,7 @@ export function ShareSettingsDialog({
 }: Readonly<{ share: FileShare; onClose(): void; onSaved(): void }>) {
   const port = useFiles(),
     { t } = useFrontendTranslation();
+  const [audience, setAudience] = useState(share.audience);
   const [current, setCurrent] = useState(share),
     [title, setTitle] = useState(share.title),
     [permissions, setPermissions] = useState<SharePermissions>(share.permissions),
@@ -37,13 +45,16 @@ export function ShareSettingsDialog({
       }}
       cancelLabel={t('files.cancel')}
       confirmLabel={t('files.collaboration.save')}
-      confirmDisabled={reading || !sharePermissionsValid(permissions)}
+      confirmDisabled={
+        reading || !sharePermissionsValid(permissions) || !shareAudienceValid(audience)
+      }
       failureMessage={failure}
       onConfirm={async () => {
         try {
           const expiresAt = shareExpiryValue(expiry, current.expiresAt);
           if (!expiresAt) throw new FilesError('invalid');
           await port.updateShare(current, {
+            audience,
             title,
             permissions,
             expiresAt,
@@ -70,6 +81,13 @@ export function ShareSettingsDialog({
           onChange={setPermissions}
           rootKind={share.kind ?? 'unavailable'}
         />
+        <Suspense fallback={<p role="status">{t('files.access.loading')}</p>}>
+          <ShareAudienceFields
+            value={audience}
+            onChange={setAudience}
+            rootKind={share.kind === 'file' ? 'file' : 'folder'}
+          />
+        </Suspense>
         <ShareExpiryFields value={expiry} onChange={setExpiry} current={current.expiresAt} />
         <SelectField
           label={t('files.collaboration.passwordAction')}

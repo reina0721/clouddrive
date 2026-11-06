@@ -74,7 +74,61 @@ export function sharePermissionsValid(value: SharePermissions): boolean {
     (!(value.rename || value.move || value.copy || value.delete) || value.browse)
   );
 }
+export const maxShareAudienceRules = 32;
+export const deniedSharePermissions: SharePermissions = Object.freeze({
+  browse: false,
+  preview: false,
+  download: false,
+  create: false,
+  upload: false,
+  modify: false,
+  rename: false,
+  move: false,
+  copy: false,
+  delete: false,
+});
+export const audienceRuleSchema = z.object({
+  subjectId: z.string().uuid(),
+  permissions: sharePermissionsSchema,
+  label: z.string().max(255).optional(),
+});
+export const shareAudienceSchema = z
+  .object({
+    anonymous: sharePermissionsSchema.nullable(),
+    authenticated: sharePermissionsSchema.nullable(),
+    accounts: z.array(audienceRuleSchema).max(maxShareAudienceRules),
+    roles: z.array(audienceRuleSchema).max(maxShareAudienceRules),
+  })
+  .superRefine((value, ctx) => {
+    if (value.accounts.length + value.roles.length > maxShareAudienceRules)
+      ctx.addIssue({ code: 'custom', message: 'Too many audience rules' });
+    for (const rules of [value.accounts, value.roles])
+      if (new Set(rules.map((rule) => rule.subjectId)).size !== rules.length)
+        ctx.addIssue({ code: 'custom', message: 'Duplicate audience subject' });
+    for (const permission of [
+      value.anonymous,
+      value.authenticated,
+      ...value.accounts.map((rule) => rule.permissions),
+      ...value.roles.map((rule) => rule.permissions),
+    ])
+      if (
+        permission &&
+        Object.values(permission).some(Boolean) &&
+        !sharePermissionsValid(permission)
+      )
+        ctx.addIssue({ code: 'custom', message: 'Invalid audience permissions' });
+  });
+export type ShareAudience = z.infer<typeof shareAudienceSchema>;
+export const initialShareAudience = (): ShareAudience => ({
+  anonymous: null,
+  authenticated: null,
+  accounts: [],
+  roles: [],
+});
+export const shareAudienceValid = (value: ShareAudience) =>
+  shareAudienceSchema.safeParse(value).success;
 export const fileShareSchema = z.object({
+  audience: shareAudienceSchema,
   id: z.string().uuid(),
   token: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
   rootId: z.string().uuid(),
@@ -92,6 +146,7 @@ export const fileShareSchema = z.object({
 });
 export type FileShare = z.infer<typeof fileShareSchema>;
 export type ShareCreate = Readonly<{
+  audience?: ShareAudience;
   rootId: string;
   password: string;
   expiresAt?: string;
@@ -99,6 +154,7 @@ export type ShareCreate = Readonly<{
   permissions: SharePermissions;
 }>;
 export type ShareUpdate = Readonly<{
+  audience: ShareAudience;
   title: string;
   expiresAt: string;
   permissions: SharePermissions;
@@ -125,6 +181,7 @@ export const shareDownloadGrantSchema = z.object({
   expiresAt: z.string(),
 });
 export const publicFileEntrySchema = z.object({
+  permissions: sharePermissionsSchema,
   id: z.string().uuid(),
   name: z.string(),
   kind: z.enum(['file', 'folder', 'shortcut']),
@@ -143,6 +200,8 @@ export const publicShareLimitsSchema = z.object({
 export const publicShareSchema = z
   .object({
     locked: z.boolean(),
+    denied: z.boolean(),
+    signInRequired: z.boolean(),
     root: publicFileEntrySchema.optional(),
     title: z.string().optional(),
     revision: z.number().int().positive().safe().optional(),
@@ -151,13 +210,21 @@ export const publicShareSchema = z
     expiresAt: z.string(),
   })
   .superRefine((value, ctx) => {
-    if (!value.locked && (!value.root || !value.permissions || !value.revision || !value.limits))
+    if (
+      !value.locked &&
+      !value.denied &&
+      (!value.root || !value.permissions || !value.revision || !value.limits)
+    )
       ctx.addIssue({ code: 'custom', message: 'Unlocked share capabilities missing' });
-    if (value.locked && (value.root || value.permissions || value.limits || value.revision))
+    if (
+      (value.locked || value.denied) &&
+      (value.root || value.permissions || value.limits || value.revision)
+    )
       ctx.addIssue({ code: 'custom', message: 'Locked share disclosed capabilities' });
   });
 export type PublicShare = z.infer<typeof publicShareSchema>;
 export const publicFileListingSchema = z.object({
+  permissions: sharePermissionsSchema,
   items: z.array(publicFileEntrySchema).max(20),
   breadcrumbs: z.array(publicFileEntrySchema),
   total: z.number().int().nonnegative(),
@@ -233,6 +300,7 @@ export const sharedTransferSchema = z.object({
   cleanupPending: z.boolean(),
 });
 export type PublicFilesPort = Readonly<{
+  signInHref(): string;
   saveShortcutHref(): string;
   newClientKey(): string;
   metadata(signal?: AbortSignal): Promise<PublicShare>;
@@ -255,7 +323,7 @@ export type PublicFilesPort = Readonly<{
     parentId: string,
   ): Promise<SharedBatchResult>;
   archive(entries: readonly PublicFileEntry[], signal?: AbortSignal): Promise<void>;
-  chooseUploads(): Promise<readonly PublicUploadCandidate[]>;
+  chooseUploads(parent: string): Promise<readonly PublicUploadCandidate[]>;
   releaseUpload(id: string): void;
   upload(
     candidate: PublicUploadCandidate,

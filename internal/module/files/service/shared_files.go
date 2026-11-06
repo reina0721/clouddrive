@@ -51,21 +51,82 @@ func (s *Sharing) Entries(ctx context.Context, token, ticket string, query Publi
 	if query.Scope != ScopeFolder && query.Scope != ScopeTree {
 		return PublicListing{}, model.ErrInvalid
 	}
-	files, access, owner, err := s.scope(ctx, token, ticket, ShareActionBrowse, SharedSelection{Destination: &query.Parent})
+	files, access, _, err := s.scope(ctx, token, ticket, ShareActionBrowse, SharedSelection{Destination: &query.Parent})
 	if err != nil {
 		return PublicListing{}, err
 	}
-	listing, err := files.List(ctx, owner, Query{ParentID: *access.Destination, Search: query.Search, Sort: query.Sort, Desc: query.Desc, Scope: query.Scope, Page: query.Page, PageSize: SharePageSize, FoldersFirst: true})
+	snapshot, err := s.inspect(ctx, token, ticket)
 	if err != nil {
 		return PublicListing{}, err
 	}
-	result := PublicListing{Items: []PublicEntry{}, Breadcrumbs: []PublicEntry{}, Total: listing.Total, Page: listing.Page, PageSize: listing.PageSize}
+	if err := s.validateAccess(ctx, snapshot, access); err != nil {
+		return PublicListing{}, err
+	}
+	viewer, err := s.accounts.ShareViewer(ctx)
+	if err != nil {
+		return PublicListing{}, err
+	}
+	resolver, err := model.NewShareAccessResolver(snapshot.Entries, snapshot.Share, viewer)
+	if err != nil {
+		return PublicListing{}, err
+	}
+	filtered := []model.Entry{}
+	for _, entry := range snapshot.Entries {
+		if err := ctx.Err(); err != nil {
+			return PublicListing{}, err
+		}
+		allowed, err := resolver.Discoverable(entry.ID)
+		if errors.Is(err, model.ErrMissing) {
+			continue
+		}
+		if err != nil {
+			return PublicListing{}, err
+		}
+		if !allowed {
+			continue
+		}
+		if entry.ID == snapshot.Share.RootID {
+			entry.ParentID = ""
+		}
+		filtered = append(filtered, entry)
+	}
+	prepared, err := files.prepareQuery(Query{ParentID: *access.Destination, Search: query.Search, Sort: query.Sort, Desc: query.Desc, Scope: query.Scope, Page: query.Page, PageSize: SharePageSize, FoldersFirst: true})
+	if err != nil {
+		return PublicListing{}, err
+	}
+	listing, err := files.listEntries(ctx, filtered, prepared)
+	if err != nil {
+		return PublicListing{}, err
+	}
+	directory, err := resolver.Decision(*access.Destination)
+	if err != nil {
+		return PublicListing{}, err
+	}
+	result := PublicListing{Permissions: sharePermissions(directory.Permissions), Items: []PublicEntry{}, Breadcrumbs: []PublicEntry{}, Total: listing.Total, Page: listing.Page, PageSize: listing.PageSize}
+	project := func(entry model.Entry) (PublicEntry, error) {
+		decision, err := resolver.Decision(entry.ID)
+		if err != nil {
+			return PublicEntry{}, err
+		}
+		result := publicEntry(entry)
+		result.Permissions = sharePermissions(decision.Permissions)
+		return result, nil
+	}
 	for _, entry := range listing.Items {
-		result.Items = append(result.Items, publicEntry(entry))
+		item, err := project(entry)
+		if err != nil {
+			return PublicListing{}, err
+		}
+		result.Items = append(result.Items, item)
 	}
 	for _, entry := range listing.Breadcrumbs {
-		result.Breadcrumbs = append(result.Breadcrumbs, publicEntry(entry))
+		item, err := project(entry)
+		if err != nil {
+			return PublicListing{}, err
+		}
+		result.Breadcrumbs = append(result.Breadcrumbs, item)
 	}
+
 	return result, nil
 }
 func (s *Sharing) ReadText(ctx context.Context, token, ticket, id string) (PublicText, error) {
@@ -80,7 +141,11 @@ func (s *Sharing) ReadText(ctx context.Context, token, ticket, id string) (Publi
 	if !editableText(entry) || !utf8.Valid(payload) || strings.IndexByte(string(payload), 0) >= 0 {
 		return PublicText{}, model.ErrUnsupported
 	}
-	return PublicText{Entry: publicEntry(entry), Text: string(payload)}, nil
+	presented, presentErr := s.describePublicEntry(ctx, token, ticket, entry)
+	if presentErr != nil {
+		return PublicText{}, presentErr
+	}
+	return PublicText{Entry: presented, Text: string(payload)}, nil
 }
 
 // ContentTo 按实际读取能力授权；下载许可可读取原始文件，仅预览许可执行安全类型与字节预算。
@@ -90,7 +155,11 @@ func (s *Sharing) ContentTo(ctx context.Context, token, ticket, id string, use f
 		return err
 	}
 	action := ShareActionPreview
-	if snapshot.Share.Permissions.Allows(model.ShareDownload) {
+	permissions, permissionErr := s.publicPermissions(ctx, snapshot, id)
+	if permissionErr != nil {
+		return permissionErr
+	}
+	if permissions.Download {
 		action = ShareActionDownload
 	}
 	files, _, owner, err := s.scope(ctx, token, ticket, action, SharedSelection{Targets: []string{id}})
@@ -130,7 +199,7 @@ func (s *Sharing) CreateFolder(ctx context.Context, token, ticket, parent, name 
 	if err != nil {
 		return PublicEntry{}, err
 	}
-	return publicEntry(entry), nil
+	return s.describePublicEntry(ctx, token, ticket, entry)
 }
 func (s *Sharing) CreateText(ctx context.Context, token, ticket string, input SharedTextCreate) (PublicEntry, error) {
 	files, access, owner, err := s.scope(ctx, token, ticket, ShareActionCreate, SharedSelection{Destination: &input.ParentID})
@@ -141,7 +210,7 @@ func (s *Sharing) CreateText(ctx context.Context, token, ticket string, input Sh
 	if err != nil {
 		return PublicEntry{}, err
 	}
-	return publicEntry(entry), nil
+	return s.describePublicEntry(ctx, token, ticket, entry)
 }
 func (s *Sharing) ReplaceText(ctx context.Context, token, ticket, id string, revision int64, text string) (PublicEntry, error) {
 	if revision < 1 {
@@ -155,7 +224,7 @@ func (s *Sharing) ReplaceText(ctx context.Context, token, ticket, id string, rev
 	if err != nil {
 		return PublicEntry{}, err
 	}
-	return publicEntry(entry), nil
+	return s.describePublicEntry(ctx, token, ticket, entry)
 }
 func (s *Sharing) ChangeItem(ctx context.Context, token, ticket string, input SharedItemChange) (PublicEntry, error) {
 	if input.Revision < 1 || input.UpdatedAt.IsZero() {
@@ -212,7 +281,10 @@ func (s *Sharing) ChangeItem(ctx context.Context, token, ticket string, input Sh
 	if err != nil {
 		return PublicEntry{}, err
 	}
-	return publicEntry(entry), nil
+	if input.Action == "trash" {
+		return publicEntry(entry), nil
+	}
+	return s.describePublicEntry(ctx, token, ticket, entry)
 }
 
 type SharedBatch struct {

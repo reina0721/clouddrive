@@ -193,12 +193,12 @@ func (s *Transfers) createAuthorized(ctx context.Context, owner string, input Tr
 	now := s.files.clock.Now().UTC()
 	transfer, err := changeTransfer(func(snapshot TransferSnapshot) (model.Transfer, *model.Entry, error) {
 		if share != nil {
-			if err := share.validateAdmission(snapshot); err != nil {
+			if err := share.validateAdmission(ctx, snapshot); err != nil {
 				return model.Transfer{}, nil, err
 			}
 		}
 		if previous := snapshot.Transfer; previous != nil {
-			if previous.Source != source || (share != nil && (previous.ShareID != share.access.ShareID || previous.ShareRevision != share.access.ShareRevision || previous.ShareGrantDigest != share.access.GrantDigest)) || previous.ParentID != input.ParentID || previous.NormalizedName != normalized || previous.ContentSHA256 != input.SHA256 || previous.SizeBytes != input.SizeBytes || previous.ExpectedEntryID != input.ExpectedEntryID || previous.ExpectedContentRevision != input.ExpectedContentRevision {
+			if previous.Source != source || (share != nil && (previous.ShareID != share.access.ShareID || previous.ShareRevision != share.access.ShareRevision || previous.ShareGrantDigest != share.access.GrantDigest || previous.ShareAudienceSubject != share.access.AudienceSubject)) || previous.ParentID != input.ParentID || previous.NormalizedName != normalized || previous.ContentSHA256 != input.SHA256 || previous.SizeBytes != input.SizeBytes || previous.ExpectedEntryID != input.ExpectedEntryID || previous.ExpectedContentRevision != input.ExpectedContentRevision {
 				return model.Transfer{}, nil, model.ErrConflict
 			}
 			return *previous, nil, nil
@@ -234,6 +234,7 @@ func (s *Transfers) createAuthorized(ctx context.Context, owner string, input Tr
 			current.ShareID = share.access.ShareID
 			current.ShareRevision = share.access.ShareRevision
 			current.ShareGrantDigest = share.access.GrantDigest
+			current.ShareAudienceSubject = share.access.AudienceSubject
 			if snapshot.Share.ExpiresAt.Before(current.ExpiresAt) {
 				current.ExpiresAt = snapshot.Share.ExpiresAt
 			}
@@ -685,7 +686,7 @@ func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sour
 					return model.Transfer{}, nil, model.ErrMissing
 				}
 				if publication != nil {
-					if err := publication.validate(snapshot, s.files.clock.Now()); err != nil {
+					if err := publication.validate(ctx, snapshot, s.files.clock.Now()); err != nil {
 						return model.Transfer{}, nil, err
 					}
 				}
@@ -744,7 +745,7 @@ func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sour
 			}
 			current := *snapshot.Transfer
 			if publication != nil {
-				if err := publication.validate(snapshot, s.files.clock.Now()); err != nil {
+				if err := publication.validate(ctx, snapshot, s.files.clock.Now()); err != nil {
 					return model.Transfer{}, nil, err
 				}
 			}

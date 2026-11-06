@@ -12,16 +12,18 @@ import (
 
 // entryRecord 将持久JSON和列映射留在数据库边界，不把ORM表示泄漏给Model。
 type entryRecord struct {
-	ID             string `gorm:"primaryKey"`
-	OwnerID        string
-	ParentID       string
-	Kind           model.Kind
-	Name           string
-	NormalizedName string
-	ObjectKey      string
-	SizeBytes      int64
-	MediaType      string
-	CreatedAt      time.Time
+	AccessPolicyJSON     string
+	AccessPolicyRevision int64
+	ID                   string `gorm:"primaryKey"`
+	OwnerID              string
+	ParentID             string
+	Kind                 model.Kind
+	Name                 string
+	NormalizedName       string
+	ObjectKey            string
+	SizeBytes            int64
+	MediaType            string
+	CreatedAt            time.Time
 	// 业务Clock拥有更新时间；ORM自动改写会使刚返回的CAS版本立刻失效。
 	UpdatedAt          time.Time `gorm:"autoUpdateTime:false"`
 	TrashedAt          *time.Time
@@ -38,6 +40,13 @@ type entryRecord struct {
 func (entryRecord) TableName() string { return "files_entries" }
 
 func entryRecordFromModel(entry model.Entry) (entryRecord, error) {
+	if entry.AccessPolicyRevision < 0 || entry.AccessPolicyRevision > model.MaxContentRevision {
+		return entryRecord{}, model.ErrInvalid
+	}
+	accessJSON, accessErr := encodeAccessPolicy(entry.AccessPolicy)
+	if accessErr != nil {
+		return entryRecord{}, accessErr
+	}
 	if err := model.ValidateHistory(entry); err != nil {
 		return entryRecord{}, err
 	}
@@ -61,10 +70,17 @@ func entryRecordFromModel(entry model.Entry) (entryRecord, error) {
 	if err != nil {
 		return entryRecord{}, fmt.Errorf("encode file annotations: %w", err)
 	}
-	return entryRecord{ID: entry.ID, OwnerID: entry.OwnerID, ParentID: entry.ParentID, Kind: entry.Kind, Name: entry.Name, NormalizedName: entry.NormalizedName, ObjectKey: entry.ObjectKey, SizeBytes: entry.SizeBytes, MediaType: entry.MediaType, CreatedAt: entry.CreatedAt, UpdatedAt: entry.UpdatedAt, TrashedAt: entry.TrashedAt, UploadKey: entry.UploadKey, ContentSHA: entry.ContentSHA, ContentRevision: entry.ContentRevision, ShareToken: entry.ShareToken, AnnotationJSON: string(encoded), AnnotationRevision: entry.AnnotationRevision, HistoryJSON: string(history), HistoryRevision: entry.HistoryRevision}, nil
+	return entryRecord{AccessPolicyJSON: accessJSON, AccessPolicyRevision: entry.AccessPolicyRevision, ID: entry.ID, OwnerID: entry.OwnerID, ParentID: entry.ParentID, Kind: entry.Kind, Name: entry.Name, NormalizedName: entry.NormalizedName, ObjectKey: entry.ObjectKey, SizeBytes: entry.SizeBytes, MediaType: entry.MediaType, CreatedAt: entry.CreatedAt, UpdatedAt: entry.UpdatedAt, TrashedAt: entry.TrashedAt, UploadKey: entry.UploadKey, ContentSHA: entry.ContentSHA, ContentRevision: entry.ContentRevision, ShareToken: entry.ShareToken, AnnotationJSON: string(encoded), AnnotationRevision: entry.AnnotationRevision, HistoryJSON: string(history), HistoryRevision: entry.HistoryRevision}, nil
 }
 
 func (record entryRecord) model() (model.Entry, error) {
+	if record.AccessPolicyRevision < 0 || record.AccessPolicyRevision > model.MaxContentRevision {
+		return model.Entry{}, model.ErrInvalid
+	}
+	accessPolicy, accessErr := decodeAccessPolicy(record.AccessPolicyJSON)
+	if accessErr != nil {
+		return model.Entry{}, accessErr
+	}
 	if !utf8.ValidString(record.HistoryJSON) || len(record.HistoryJSON) > model.MaxHistoryJSONBytes || !strings.HasPrefix(strings.TrimSpace(record.HistoryJSON), "[") {
 		return model.Entry{}, model.ErrInvalid
 	}
@@ -101,7 +117,7 @@ func (record entryRecord) model() (model.Entry, error) {
 	if record.Kind != model.Folder && annotations.FolderColor != "" {
 		return model.Entry{}, model.ErrInvalid
 	}
-	return model.Entry{ID: record.ID, OwnerID: record.OwnerID, ParentID: record.ParentID, Kind: record.Kind, Name: record.Name, NormalizedName: record.NormalizedName, ObjectKey: record.ObjectKey, SizeBytes: record.SizeBytes, MediaType: record.MediaType, CreatedAt: record.CreatedAt, UpdatedAt: record.UpdatedAt, TrashedAt: record.TrashedAt, UploadKey: record.UploadKey, ContentSHA: record.ContentSHA, ContentRevision: record.ContentRevision, ShareToken: record.ShareToken, Annotations: annotations, AnnotationRevision: record.AnnotationRevision, History: history, HistoryRevision: record.HistoryRevision}, nil
+	return model.Entry{AccessPolicy: accessPolicy, AccessPolicyRevision: record.AccessPolicyRevision, ID: record.ID, OwnerID: record.OwnerID, ParentID: record.ParentID, Kind: record.Kind, Name: record.Name, NormalizedName: record.NormalizedName, ObjectKey: record.ObjectKey, SizeBytes: record.SizeBytes, MediaType: record.MediaType, CreatedAt: record.CreatedAt, UpdatedAt: record.UpdatedAt, TrashedAt: record.TrashedAt, UploadKey: record.UploadKey, ContentSHA: record.ContentSHA, ContentRevision: record.ContentRevision, ShareToken: record.ShareToken, Annotations: annotations, AnnotationRevision: record.AnnotationRevision, History: history, HistoryRevision: record.HistoryRevision}, nil
 }
 
 func entryModels(records []entryRecord) ([]model.Entry, error) {

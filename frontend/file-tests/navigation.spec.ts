@@ -160,9 +160,28 @@ test('分享快捷方式、三类固定、CAS排序、回收恢复与引用移�
   await confirm(page, '固定到侧边栏');
   await page.getByRole('button', { name: '管理固定项', exact: true }).click();
   dialog = page.getByRole('dialog');
-  await dialog.getByRole('button', { name: '上移', exact: true }).last().click();
-  await expect(dialog.getByRole('button', { name: '上移', exact: true }).last()).toBeEnabled();
-  await dialog.getByRole('button', { name: '取消固定', exact: true }).last().click();
+  // 等待刚保存的目录进入当前快照，并按稳定名称定位，避免刷新重排期间绑定旧的last按钮。
+  const folderPin = dialog.getByText('整理-' + fixtureValue.suffix, { exact: true }).locator('..');
+  await expect(folderPin.getByRole('button', { name: '上移', exact: true })).toBeEnabled();
+  const beforeReorder = (await mutate(page, '/pins', 'GET')).items as {
+    id: string;
+    name: string;
+  }[];
+  const folderIndex = beforeReorder.findIndex((pin) => pin.name === '整理-' + fixtureValue.suffix);
+  expect(folderIndex).toBeGreaterThan(0);
+  const expectedOrder = beforeReorder.map((pin) => pin.id);
+  [expectedOrder[folderIndex - 1], expectedOrder[folderIndex]] = [
+    expectedOrder[folderIndex]!,
+    expectedOrder[folderIndex - 1]!,
+  ];
+  await folderPin.getByRole('button', { name: '上移', exact: true }).click();
+  await expect
+    .poll(async () =>
+      ((await mutate(page, '/pins', 'GET')).items as { id: string }[]).map((pin) => pin.id),
+    )
+    .toEqual(expectedOrder);
+  await expect(folderPin.getByRole('button', { name: '取消固定', exact: true })).toBeEnabled();
+  await folderPin.getByRole('button', { name: '取消固定', exact: true }).click();
   await confirm(page, '关闭');
   await rowAction(page, renamed, '移入回收站');
   await confirm(page, '确认');

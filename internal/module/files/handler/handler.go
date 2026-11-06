@@ -19,21 +19,28 @@ type ActorAccess interface {
 type TransferProtocol interface {
 	Handle(http.ResponseWriter, *http.Request, string)
 }
+
+// PublicAuthenticator 在公开分享路由显式复用可选Session，不改变全局公共路由语义。
+type PublicAuthenticator interface {
+	AuthenticateOptional(*http.Request) (*http.Request, error)
+}
+
 type Handler struct {
-	Archives         *service.Archives
-	Downloads        *service.OfflineDownloads
-	Service          *service.Service
-	Sharing          *service.Sharing
-	ShareTransfers   *service.ShareTransfers
-	Connections      *service.Connections
-	ConnectionOrigin string
-	Navigation       *service.Navigation
-	WebDAV           http.Handler
-	Transfers        *service.Transfers
-	TransferProtocol TransferProtocol
-	PublicOrigins    []string
-	Actors           ActorAccess
-	Logger           logger.Logger
+	PublicAuthentication PublicAuthenticator
+	Archives             *service.Archives
+	Downloads            *service.OfflineDownloads
+	Service              *service.Service
+	Sharing              *service.Sharing
+	ShareTransfers       *service.ShareTransfers
+	Connections          *service.Connections
+	ConnectionOrigin     string
+	Navigation           *service.Navigation
+	WebDAV               http.Handler
+	Transfers            *service.Transfers
+	TransferProtocol     TransferProtocol
+	PublicOrigins        []string
+	Actors               ActorAccess
+	Logger               logger.Logger
 }
 
 func (h *Handler) Owner(ctx context.Context) (string, error) {

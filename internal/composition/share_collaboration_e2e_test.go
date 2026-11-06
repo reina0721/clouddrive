@@ -217,7 +217,7 @@ func TestShareCollaborationScopeCASBatchPolicyAndUpload(t *testing.T) {
 	resumed := owner.request(t, "PUT", nativePath+"/state", map[string]any{"revision": paused["revision"], "enabled": true}, 200)
 	publicShareRequest(t, owner.base, "GET", path+"/entries", nil, first, 403)
 	first = unlock()
-	patch := map[string]any{"revision": resumed["revision"], "title": "已更新协作标题", "expiresAt": time.Now().UTC().Add(2 * time.Hour), "permissions": rights, "passwordAction": "remove", "password": ""}
+	patch := map[string]any{"revision": resumed["revision"], "title": "已更新协作标题", "expiresAt": time.Now().UTC().Add(2 * time.Hour), "permissions": rights, "audience": resumed["audience"], "passwordAction": "remove", "password": ""}
 	revised := owner.request(t, "PUT", nativePath, patch, 200)
 	owner.request(t, "PUT", nativePath, patch, 409)
 	meta := collaborationObject[service.PublicShare](t, publicShareRequest(t, owner.base, "GET", path, nil, "", 200))

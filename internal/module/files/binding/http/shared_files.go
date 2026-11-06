@@ -60,7 +60,7 @@ type publicTextOutput struct{ Body service.PublicText }
 type publicBatchOutput struct{ Body service.SharedBatchResult }
 
 func sharedMutation(h *handler.Handler, id, method, suffix string) huma.Operation {
-	op := publicShareOperation(id, method, suffix, true)
+	op := publicShareOperation(h, id, method, suffix, true)
 	op.MaxBodyBytes = maxShareUnlockBodyBytes
 	op.Middlewares = append(op.Middlewares, shareOrigin(h))
 	return op
@@ -73,7 +73,7 @@ func publicEntryResult(ctx context.Context, h *handler.Handler, value service.Pu
 	return &publicEntryOutput{Body: value}, nil
 }
 func registerSharedFiles(api huma.API, h *handler.Handler) {
-	huma.Register(api, publicShareOperation("files.public.text.read", http.MethodGet, "/{token}/text/{id}", false), func(ctx context.Context, input *publicContentInput) (*publicTextOutput, error) {
+	huma.Register(api, publicShareOperation(h, "files.public.text.read", http.MethodGet, "/{token}/text/{id}", false), func(ctx context.Context, input *publicContentInput) (*publicTextOutput, error) {
 		value, err := h.Sharing.ReadText(ctx, input.Token, input.Grant, input.ID)
 		if err != nil {
 			return nil, h.Present(ctx, err)

@@ -32,6 +32,7 @@ export function MySharesPage() {
     [failure, setFailure] = useState(''),
     [notice, setNotice] = useState(''),
     [revision, setRevision] = useState(0);
+  const [opening, setOpening] = useState(false);
   const [editing, setEditing] = useState<FileShare>(),
     [detail, setDetail] = useState<FileShare>(),
     [confirmation, setConfirmation] =
@@ -188,7 +189,21 @@ export function MySharesPage() {
                       {t('files.collaboration.details')}
                     </Action>
                     {share.status !== 'revoked' ? (
-                      <Action variant="quiet" size="sm" onPress={() => setEditing(share)}>
+                      <Action
+                        variant="quiet"
+                        size="sm"
+                        disabled={opening}
+                        onPress={() => {
+                          if (opening) return;
+                          setOpening(true);
+                          setFailure('');
+                          void port
+                            .readShare(share.id)
+                            .then(setEditing)
+                            .catch((error: unknown) => setFailure(errorText(error)))
+                            .finally(() => setOpening(false));
+                        }}
+                      >
                         {t('files.collaboration.settings')}
                       </Action>
                     ) : null}

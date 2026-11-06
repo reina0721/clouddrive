@@ -12,11 +12,10 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type shareRecord model.Share
-
 func (shareRecord) TableName() string { return "files_shares" }
 
 type grantRecord struct {
+	AudienceSubject string
 	ShareRevision   int64
 	Digest          string `gorm:"primaryKey"`
 	ShareID         string
@@ -55,7 +54,11 @@ func (r *Repository) ReadShare(ctx context.Context, digest, grantDigest string, 
 				}
 				return err
 			}
-			snapshot.Share = model.Share(record)
+			convertedShare, decodeErr := record.model()
+			if decodeErr != nil {
+				return decodeErr
+			}
+			snapshot.Share = convertedShare
 			entries, err := loadBoundedEntries(db, record.OwnerID, treeLimit)
 			if err != nil {
 				return err
@@ -96,7 +99,11 @@ func (r *Repository) ReadShareTarget(ctx context.Context, digest string, treeLim
 				}
 				return err
 			}
-			snapshot.Share = model.Share(record)
+			convertedShare, decodeErr := record.model()
+			if decodeErr != nil {
+				return decodeErr
+			}
+			snapshot.Share = convertedShare
 			entries, err := loadBoundedEntries(db, record.OwnerID, treeLimit)
 			if err != nil {
 				return err
@@ -208,7 +215,11 @@ func (r *Repository) ReadDownloadGrant(ctx context.Context, digest string, treeL
 				return err
 			}
 			converted := model.ShareGrant(grant)
-			snapshot = service.ShareSnapshot{Share: model.Share(share), Entries: entries, Grant: &converted}
+			convertedShare, decodeErr := share.model()
+			if decodeErr != nil {
+				return decodeErr
+			}
+			snapshot = service.ShareSnapshot{Share: convertedShare, Entries: entries, Grant: &converted}
 			return r.checkStorage(db)
 		})
 	})

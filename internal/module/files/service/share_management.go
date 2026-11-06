@@ -25,10 +25,12 @@ const (
 )
 
 type ShareAccountAuthority interface {
+	ShareAudienceAuthority
 	AuthorizeShare(context.Context, string, ShareAccountAccess) (bool, error)
 }
 
 type ShareCreate struct {
+	Audience    *ShareAudience    `json:"audience,omitempty"`
 	RootID      string            `json:"rootId" minLength:"36" maxLength:"36"`
 	Password    string            `json:"password,omitempty" maxLength:"128"`
 	ExpiresAt   *time.Time        `json:"expiresAt,omitempty"`
@@ -45,6 +47,7 @@ const (
 )
 
 type ShareUpdate struct {
+	Audience       ShareAudience       `json:"audience"`
 	Revision       int64               `json:"revision" minimum:"1" maximum:"9007199254740990"`
 	Title          string              `json:"title" maxLength:"255"`
 	ExpiresAt      time.Time           `json:"expiresAt"`
@@ -73,6 +76,7 @@ type ShareListing struct {
 
 // ShareManagementRepository 不读取整套历史链接来更新一个策略，也不让修改覆盖密码尝试窗口。
 type ShareManagementRepository interface {
+	RelatedSharePolicies(context.Context, string, []string, int, time.Time) ([]model.Share, error)
 	CreateShare(context.Context, string, int, int, time.Time, func([]model.Entry) (model.Share, error)) (model.Share, error)
 	ReadOwnedShare(context.Context, string, string) (model.Share, model.Entry, error)
 	ChangeSharePolicy(context.Context, string, string, int, time.Time, func(model.Share) (model.Share, error)) (model.Share, error)
@@ -117,6 +121,9 @@ func (s *Sharing) managedSummary(ctx context.Context, owner string, share model.
 		return ShareSummary{}, err
 	}
 	result := summary(share, entries, s.files.clock.Now().UTC())
+	if err := s.labelAudience(ctx, &result.Audience); err != nil {
+		return ShareSummary{}, err
+	}
 	result.Name = root.Name
 	if root.Kind == model.File || root.Kind == model.Folder {
 		kind := root.Kind
@@ -184,6 +191,9 @@ func (s *Sharing) Update(ctx context.Context, owner, id string, input ShareUpdat
 		return ShareSummary{}, model.ErrInvalid
 	}
 	now := s.files.clock.Now().UTC()
+	if err := input.Audience.model().Validate(); err != nil {
+		return ShareSummary{}, err
+	}
 	expiry := input.ExpiresAt.UTC()
 	var hash string
 	switch input.PasswordAction {
@@ -208,6 +218,11 @@ func (s *Sharing) Update(ctx context.Context, owner, id string, input ShareUpdat
 		if !expiry.Equal(share.ExpiresAt) && (!expiry.After(now) || expiry.After(now.Add(s.policy.MaxAge))) {
 			return share, model.ErrInvalid
 		}
+		audience := input.Audience.model()
+		if err := s.validateAudienceTargets(ctx, audience, share.Audience); err != nil {
+			return share, err
+		}
+		share.Audience = audience
 		share.Title, share.Permissions, share.ExpiresAt = input.Title, input.Permissions.permissionSet(), expiry
 		if input.PasswordAction != SharePasswordKeep {
 			share.PasswordHash = hash

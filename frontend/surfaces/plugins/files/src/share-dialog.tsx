@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { PasswordField, TextField } from '@clouddrive/ui-adapter/form-field';
@@ -11,15 +11,21 @@ import { SharePermissionFields, ShareExpiryFields } from './share-settings-field
 import { initialShareExpiry, shareExpiryValue } from './share-expiry';
 import {
   readOnlySharePermissions,
+  initialShareAudience,
+  shareAudienceValid,
   sharePermissionsValid,
   type SharePermissions,
 } from '../../../src/files/sharing';
+const ShareAudienceFields = lazy(() =>
+  import('./audience-fields').then((module) => ({ default: module.ShareAudienceFields })),
+);
 export function ShareDialog({
   entry,
   onClose,
 }: Readonly<{ entry: FileEntry; onClose: () => void }>) {
   const port = useFiles();
   const { t } = useFrontendTranslation();
+  const [audience, setAudience] = useState(initialShareAudience);
   const [password, setPassword] = useState('');
   const [expiry, setExpiry] = useState(() => initialShareExpiry());
   const [title, setTitle] = useState('');
@@ -85,6 +91,7 @@ export function ShareDialog({
             void port
               .createShare({
                 rootId: entry.id,
+                audience,
                 password,
                 title,
                 permissions,
@@ -109,6 +116,13 @@ export function ShareDialog({
             onChange={setPermissions}
             rootKind={entry.kind}
           />
+          <Suspense fallback={<p role="status">{t('files.access.loading')}</p>}>
+            <ShareAudienceFields
+              value={audience}
+              onChange={setAudience}
+              rootKind={entry.kind === 'file' ? 'file' : 'folder'}
+            />
+          </Suspense>
           <ShareExpiryFields value={expiry} onChange={setExpiry} />
           <PasswordField
             label={t('files.sharePassword')}
@@ -120,7 +134,11 @@ export function ShareDialog({
             onChange={(event) => setPassword(event.target.value)}
           />
           <p className="text-sm text-ink-muted">{t('files.shareHint')}</p>
-          <Action type="submit" loading={busy} disabled={!sharePermissionsValid(permissions)}>
+          <Action
+            type="submit"
+            loading={busy}
+            disabled={!sharePermissionsValid(permissions) || !shareAudienceValid(audience)}
+          >
             {t('files.createShare')}
           </Action>
         </form>

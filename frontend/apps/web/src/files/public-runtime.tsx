@@ -1,4 +1,7 @@
 'use client';
+import { useContext } from 'react';
+import { AuthContext, useAuth } from '../auth/context';
+import { AuthStatusSurface } from '../auth/status-surface';
 import { useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import { PublicFilesProvider, type FileMediaProps } from '@clouddrive/surface/files/runtime';
 import { useFrontendTranslation } from '@clouddrive/i18n';
@@ -12,6 +15,9 @@ import { initializePublicFileMessages } from './messages';
 
 export function PublicFilesRuntime({ children }: Readonly<{ children: ReactNode }>) {
   const { t } = useFrontendTranslation();
+  const auth = useAuth(),
+    controller = useContext(AuthContext);
+  const account = auth.session?.user.id ?? null;
   const [messagesReady, setMessagesReady] = useState(false),
     [messagesFailed, setMessagesFailed] = useState(false),
     [attempt, setAttempt] = useState(0);
@@ -36,7 +42,14 @@ export function PublicFilesRuntime({ children }: Readonly<{ children: ReactNode 
     window.addEventListener('hashchange', synchronize);
     return () => window.removeEventListener('hashchange', synchronize);
   }, []);
-  const runtime = useMemo(() => createPublicFilesRuntime(token ?? ''), [token]);
+  const runtime = useMemo(
+    () =>
+      createPublicFilesRuntime(token ?? '', {
+        subject: account,
+        current: () => controller?.getState().session?.user.id ?? null,
+      }),
+    [token, controller, account],
+  );
   const Media = useMemo(
     () =>
       function PublicMediaRenderer(props: FileMediaProps) {
@@ -48,6 +61,8 @@ export function PublicFilesRuntime({ children }: Readonly<{ children: ReactNode 
     runtime.activate();
     return () => runtime.dispose();
   }, [runtime]);
+  if (auth.status === 'idle' || auth.status === 'restoring' || auth.status === 'error')
+    return <AuthStatusSurface />;
   if (messagesFailed)
     return (
       <main id="main-content" className="p-5">
@@ -71,7 +86,11 @@ export function PublicFilesRuntime({ children }: Readonly<{ children: ReactNode 
   if (token === undefined || !messagesReady)
     return <AppLoadingSurface label="正在读取分享 / Loading share" />;
   return (
-    <PublicFilesProvider key={token} port={runtime.port} media={Media}>
+    <PublicFilesProvider
+      key={token + ':' + (account ?? 'anonymous')}
+      port={runtime.port}
+      media={Media}
+    >
       {children}
     </PublicFilesProvider>
   );

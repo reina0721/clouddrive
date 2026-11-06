@@ -6,7 +6,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/reina0721/clouddrive/internal/module/files/handler"
-	"github.com/reina0721/clouddrive/internal/module/files/service"
 )
 
 type shareListInput struct {
@@ -17,7 +16,7 @@ type shareListInput struct {
 }
 type shareUpdateInput struct {
 	ShareID string `path:"shareId" minLength:"36" maxLength:"36"`
-	Body    service.ShareUpdate
+	Body    shareUpdateBody
 }
 type shareStateInput struct {
 	ShareID string `path:"shareId" minLength:"36" maxLength:"36"`
@@ -37,21 +36,21 @@ func registerShareManagement(api huma.API, h *handler.Handler, operation func(st
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
-		return &shareOutput{Body: value}, nil
+		return &shareOutput{Body: shareBody(value)}, nil
 	})
 	update := operation("files.shares.update", http.MethodPut, "/shares/{shareId}", "files:write", true)
-	update.MaxBodyBytes = maxShareUnlockBodyBytes
+	update.MaxBodyBytes = maxAudienceBodyBytes
 	huma.Register(api, update, func(ctx context.Context, input *shareUpdateInput) (*shareOutput, error) {
 		owner, err := h.Owner(ctx)
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
-		value, err := h.Sharing.Update(ctx, owner, input.ShareID, input.Body)
+		value, err := h.Sharing.Update(ctx, owner, input.ShareID, input.Body.service())
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
 		h.Logger.Info("files.share.policy.updated")
-		return &shareOutput{Body: value}, nil
+		return &shareOutput{Body: shareBody(value)}, nil
 	})
 	state := operation("files.shares.state", http.MethodPut, "/shares/{shareId}/state", "files:write", true)
 	state.MaxBodyBytes = maxShareUnlockBodyBytes
@@ -65,6 +64,6 @@ func registerShareManagement(api huma.API, h *handler.Handler, operation func(st
 			return nil, h.Present(ctx, err)
 		}
 		h.Logger.Info("files.share.state.updated")
-		return &shareOutput{Body: value}, nil
+		return &shareOutput{Body: shareBody(value)}, nil
 	})
 }

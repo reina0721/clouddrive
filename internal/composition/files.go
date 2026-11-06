@@ -18,7 +18,10 @@ import (
 )
 
 // filesConnectionAuthority 将files的操作语义转换为IAM公开的当前账号授权。
-type filesConnectionAuthority struct{ access iam.AccountAuthorizer }
+type filesConnectionAuthority struct {
+	access   iam.AccountAuthorizer
+	audience iam.CollaborationDirectory
+}
 
 func (a filesConnectionAuthority) AuthorizeShare(ctx context.Context, owner string, access filesservice.ShareAccountAccess) (bool, error) {
 	if a.access == nil {

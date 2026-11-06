@@ -36,6 +36,7 @@ const (
 
 // Transfer 是归属于账号的上传及发布记录；暂存和永久对象位置不属于公开 DTO。
 type Transfer struct {
+	ShareAudienceSubject    string `json:"-"`
 	ShareID                 string `json:"-"`
 	ShareRevision           int64  `json:"-"`
 	ShareGrantDigest        string `json:"-"`

@@ -32,6 +32,7 @@ func ValidateStorage(ctx context.Context, access repo.Access, identity string) e
 }
 
 type Dependencies struct {
+	PublicAuthentication     handler.PublicAuthenticator
 	ArchiveProcessor         service.ArchiveProcessor
 	OfflinePolicy            service.DownloadPolicy
 	OfflineDispatcherEnabled bool
@@ -64,7 +65,7 @@ type Module struct {
 }
 
 func New(deps Dependencies) (Module, error) {
-	if deps.Actors == nil || deps.Logger == nil {
+	if deps.Actors == nil || deps.Logger == nil || deps.PublicAuthentication == nil {
 		return Module{}, fmt.Errorf("files boundary dependencies missing")
 	}
 	repository, err := repo.New(deps.Database, deps.StorageIdentity)
@@ -124,7 +125,7 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	boundary := &handler.Handler{Service: useCases, Sharing: sharing, ShareTransfers: shareTransfers, Navigation: navigation, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
+	boundary := &handler.Handler{PublicAuthentication: deps.PublicAuthentication, Service: useCases, Sharing: sharing, ShareTransfers: shareTransfers, Navigation: navigation, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
 	boundary.Archives = archives
 	boundary.WebDAV, err = webdavbinding.New(boundary, davFiles, deps.ConnectionPolicy, deps.Policy.MaxFileBytes)
 	if err != nil {

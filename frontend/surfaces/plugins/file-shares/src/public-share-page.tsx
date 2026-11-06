@@ -70,7 +70,7 @@ export function PublicSharePage() {
         setShare(value);
         setListing(undefined);
         setFailure('');
-        if (value.locked) return;
+        if (value.locked || value.denied) return;
         if (value.root?.kind === 'folder' && value.permissions?.browse) {
           const entries = await port.entries(query, controller.signal);
           if (!controller.signal.aborted) setListing(entries);
@@ -103,11 +103,11 @@ export function PublicSharePage() {
     setQuery(next);
   };
   const root = share?.root,
-    rights = share?.permissions,
+    rights = listing?.permissions ?? share?.permissions,
     limits = share?.limits;
   const items = root?.kind === 'folder' ? (listing?.items ?? []) : root ? [root] : [];
   const parent = query.parent || root?.id || '';
-  const currentSelected = selected.filter((entry) => items.some((item) => item.id === entry.id));
+  const currentSelected = items.filter((entry) => selected.some((item) => item.id === entry.id));
   const toggle = (entry: PublicFileEntry, checked: boolean) =>
     setSelected((value) =>
       checked
@@ -189,6 +189,11 @@ export function PublicSharePage() {
             {failure}
           </p>
         ) : null}
+        {failure === t('publicFiles.errors.unauthenticated') ? (
+          <a href={port.signInHref()} className="text-sm text-brand underline">
+            {t('publicFiles.access.signIn')}
+          </a>
+        ) : null}
         {notice ? <p role="status">{notice}</p> : null}
         {loading && share && !share.locked ? <p role="status">{t('publicFiles.loading')}</p> : null}
         {loading && !share ? (
@@ -198,6 +203,29 @@ export function PublicSharePage() {
             title={t('publicFiles.loading')}
             description={t('publicFiles.collaboration.subtitle')}
           />
+        ) : share?.denied ? (
+          <section className="space-y-4">
+            <StateSurface
+              state="error"
+              icon={<Cloud />}
+              title={t('publicFiles.access.denied')}
+              description={t(
+                share.signInRequired
+                  ? 'publicFiles.access.signInHint'
+                  : 'publicFiles.access.deniedHint',
+              )}
+            />
+            <a
+              href={share.signInRequired ? port.signInHref() : '/home'}
+              className="inline-block rounded-control border border-border px-4 py-2 text-sm"
+            >
+              {t(
+                share.signInRequired
+                  ? 'publicFiles.access.signIn'
+                  : 'publicFiles.access.switchAccount',
+              )}
+            </a>
+          </section>
         ) : share?.locked || (!share && failure === t('publicFiles.errors.locked')) ? (
           <Section title={t('publicFiles.password')} contentInset>
             <form
@@ -343,23 +371,29 @@ export function PublicSharePage() {
                         <span>
                           {t('publicFiles.collaboration.selected', { count: selected.length })}
                         </span>
-                        {rights.download ? (
+                        {currentSelected.length > 0 &&
+                        currentSelected.every((entry) => entry.permissions.download) ? (
                           <Action
                             variant="secondary"
                             disabled={busy}
-                            onPress={() => run(() => port.archive(selected))}
+                            onPress={() => run(() => port.archive(currentSelected))}
                           >
                             {t('publicFiles.collaboration.archive')}
                           </Action>
                         ) : null}
                         {(['move', 'copy', 'trash'] as const).map((action) =>
-                          rights[action === 'trash' ? 'delete' : action] &&
+                          currentSelected.length > 0 &&
+                          currentSelected.every(
+                            (entry) => entry.permissions[action === 'trash' ? 'delete' : action],
+                          ) &&
                           root.kind === 'folder' ? (
                             <Action
                               key={action}
                               variant="secondary"
                               disabled={busy}
-                              onPress={() => setChange({ action, entries: selected, batch: true })}
+                              onPress={() =>
+                                setChange({ action, entries: currentSelected, batch: true })
+                              }
                             >
                               {t(
                                 `publicFiles.collaboration.${action === 'trash' ? 'batchTrash' : action === 'move' ? 'batchMove' : 'batchCopy'}`,
@@ -392,6 +426,7 @@ export function PublicSharePage() {
                   ) : null}
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {items.map((entry) => {
+                      const entryRights = entry.permissions;
                       const protectedRoot = entry.id === root.id;
                       return (
                         <article
@@ -418,7 +453,7 @@ export function PublicSharePage() {
                             />
                           ) : null}
                           <div className="flex flex-wrap gap-2">
-                            {entry.kind === 'folder' && rights.browse ? (
+                            {entry.kind === 'folder' && entryRights.browse ? (
                               <Action
                                 variant="secondary"
                                 onPress={() =>
@@ -428,7 +463,7 @@ export function PublicSharePage() {
                                 {t('publicFiles.open')}
                               </Action>
                             ) : null}
-                            {rights.preview &&
+                            {entryRights.preview &&
                             (publicTextEntry(entry) || publicMediaEntry(entry)) ? (
                               <Action
                                 variant="secondary"
@@ -437,7 +472,7 @@ export function PublicSharePage() {
                                 {t('publicFiles.collaboration.preview')}
                               </Action>
                             ) : null}
-                            {rights.modify && publicTextEntry(entry) ? (
+                            {entryRights.modify && publicTextEntry(entry) ? (
                               <Action
                                 variant="secondary"
                                 onPress={() => setPreview({ entry, edit: true })}
@@ -445,7 +480,7 @@ export function PublicSharePage() {
                                 {t('publicFiles.collaboration.edit')}
                               </Action>
                             ) : null}
-                            {rights.download && entry.kind === 'file' ? (
+                            {entryRights.download && entry.kind === 'file' ? (
                               <Action
                                 variant="secondary"
                                 disabled={busy}
@@ -456,7 +491,7 @@ export function PublicSharePage() {
                             ) : null}
                             {!protectedRoot &&
                               (['rename', 'move', 'copy', 'trash'] as const).map((action) =>
-                                rights[action === 'trash' ? 'delete' : action] ? (
+                                entryRights[action === 'trash' ? 'delete' : action] ? (
                                   <Action
                                     key={action}
                                     variant="quiet"

@@ -1,3 +1,4 @@
+import { authPageHref } from '../auth/contract';
 import {
   FilesError,
   publicShareSchema,
@@ -34,15 +35,31 @@ type RequestOptions = Readonly<{
 }>;
 type UploadSource = { file: File; key: string; running: boolean };
 
-/** createPublicFilesRuntime 拥有访客文件、请求和散列，不携带IAM Cookie或持久化分享凭据。 */
-export function createPublicFilesRuntime(token: string) {
+/** createPublicFilesRuntime 拥有访问者文件、请求和散列；同源Session只用于受众身份，不持久化分享凭据。 */
+export function createPublicFilesRuntime(
+  token: string,
+  binding: Readonly<{ subject: string | null; current: () => string | null }>,
+) {
+  const subject = binding.subject;
+  const audience = binding.current;
+  let directory: Readonly<{ id: string; upload: boolean }> | undefined;
   let ticket = '';
   let disposed = false;
   let metadata: PublicShare | undefined;
   const controllers = new Set<AbortController>();
   const candidates = new Map<string, UploadSource>();
   const pickers = new Set<() => void>();
+  function disposeResources() {
+    disposed = true;
+    ticket = '';
+    metadata = undefined;
+    directory = undefined;
+    for (const controller of controllers) controller.abort();
+    for (const cancel of [...pickers]) cancel();
+    candidates.clear();
+  }
   const assertActive = () => {
+    if (audience() !== subject) disposeResources();
     if (disposed) throw new FilesError('canceled');
     if (!shareTokenPattern.test(token)) throw new FilesError('missing');
   };
@@ -61,7 +78,7 @@ export function createPublicFilesRuntime(token: string) {
       const grant = options.grant ?? ticket;
       const response = await fetch(`/api/v1/file-shares/${encodeURIComponent(token)}${suffix}`, {
         method: options.method ?? 'GET',
-        credentials: 'omit',
+        credentials: 'include',
         cache: 'no-store',
         referrerPolicy: 'no-referrer',
         signal,
@@ -76,25 +93,27 @@ export function createPublicFilesRuntime(token: string) {
       if (!response.ok) {
         const message = await response.text();
         const code =
-          response.status === 404
-            ? 'missing'
-            : response.status === 403
-              ? message.includes('files_share_locked')
-                ? 'locked'
-                : 'forbidden'
-              : response.status === 429 || response.status === 503
-                ? 'busy'
-                : response.status === 413
-                  ? 'large'
-                  : response.status === 409
-                    ? message.includes('files_quota')
-                      ? 'quota'
-                      : 'conflict'
-                    : response.status === 422
-                      ? message.includes('files_unsupported')
-                        ? 'unsupported'
-                        : 'invalid'
-                      : 'unavailable';
+          response.status === 401
+            ? 'unauthenticated'
+            : response.status === 404
+              ? 'missing'
+              : response.status === 403
+                ? message.includes('files_share_locked')
+                  ? 'locked'
+                  : 'forbidden'
+                : response.status === 429 || response.status === 503
+                  ? 'busy'
+                  : response.status === 413
+                    ? 'large'
+                    : response.status === 409
+                      ? message.includes('files_quota')
+                        ? 'quota'
+                        : 'conflict'
+                      : response.status === 422
+                        ? message.includes('files_unsupported')
+                          ? 'unsupported'
+                          : 'invalid'
+                        : 'unavailable';
         throw new FilesError(code);
       }
       if (options.response === 'headers') return response.headers;
@@ -119,12 +138,18 @@ export function createPublicFilesRuntime(token: string) {
   };
   async function readMetadata(signal?: AbortSignal) {
     metadata = publicShareSchema.parse(await call('', signal ? { signal } : {}));
+    directory = undefined;
     return metadata;
   }
-  function chooseUploads(): Promise<readonly PublicUploadCandidate[]> {
+  function chooseUploads(parent: string): Promise<readonly PublicUploadCandidate[]> {
     assertActive();
     const limit = metadata?.limits?.batchEntries;
-    if (!limit || !metadata?.permissions?.upload)
+    if (
+      !limit ||
+      !(directory?.id === parent
+        ? directory.upload
+        : metadata?.root?.id === parent && metadata.permissions?.upload)
+    )
       return Promise.reject(new FilesError('forbidden'));
     return new Promise((resolve, reject) => {
       const picker = document.createElement('input');
@@ -137,7 +162,8 @@ export function createPublicFilesRuntime(token: string) {
         finished = true;
         picker.remove();
         pickers.delete(cancel);
-        if (disposed) {
+        if (disposed || audience() !== subject) {
+          disposeResources();
           reject(new FilesError('canceled'));
           return;
         }
@@ -333,6 +359,7 @@ export function createPublicFilesRuntime(token: string) {
       assertActive();
       return crypto.randomUUID();
     },
+    signInHref: () => authPageHref('/login', '/share#' + new URLSearchParams({ token }).toString()),
     saveShortcutHref: () => saveShareIntentHref(token),
     metadata: readMetadata,
     unlock: async (password, signal) => {
@@ -345,9 +372,10 @@ export function createPublicFilesRuntime(token: string) {
       );
       ticket = result.ticket;
       metadata = undefined;
+      directory = undefined;
     },
-    entries: async (query, signal) =>
-      publicFileListingSchema.parse(
+    entries: async (query, signal) => {
+      const value = publicFileListingSchema.parse(
         await call(
           '/entries?' +
             new URLSearchParams({
@@ -360,7 +388,13 @@ export function createPublicFilesRuntime(token: string) {
             }).toString(),
           signal ? { signal } : {},
         ),
-      ),
+      );
+      const current = value.breadcrumbs.at(-1);
+      if (!current || (query.parent && current.id !== query.parent))
+        throw new FilesError('unavailable');
+      directory = { id: current.id, upload: value.permissions.upload };
+      return value;
+    },
     readText: async (entry, signal) =>
       publicTextSchema.parse(
         await call('/text/' + encodeURIComponent(entry.id), signal ? { signal } : {}),
@@ -440,13 +474,6 @@ export function createPublicFilesRuntime(token: string) {
     activate: () => {
       disposed = false;
     },
-    dispose: () => {
-      disposed = true;
-      ticket = '';
-      metadata = undefined;
-      for (const controller of controllers) controller.abort();
-      for (const cancel of [...pickers]) cancel();
-      candidates.clear();
-    },
+    dispose: disposeResources,
   };
 }

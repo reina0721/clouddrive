@@ -14,6 +14,9 @@ const (
 	OperationAuthAuditRead                  OperationID = "auth.audit.read"
 	OperationCompleteTodo                   OperationID = "completeTodo"
 	OperationCreateTodo                     OperationID = "createTodo"
+	OperationFilesAccessPreview             OperationID = "files.access.preview"
+	OperationFilesAccessRead                OperationID = "files.access.read"
+	OperationFilesAccessUpdate              OperationID = "files.access.update"
 	OperationFilesAnnotationsRead           OperationID = "files.annotations.read"
 	OperationFilesAnnotationsReplace        OperationID = "files.annotations.replace"
 	OperationFilesAnnotationsSummaries      OperationID = "files.annotations.summaries"
@@ -23,6 +26,7 @@ const (
 	OperationFilesArchiveExtract            OperationID = "files.archive.extract"
 	OperationFilesArchiveInspect            OperationID = "files.archive.inspect"
 	OperationFilesArchiveMember             OperationID = "files.archive.member"
+	OperationFilesAudienceLookup            OperationID = "files.audience.lookup"
 	OperationFilesConnectionsCreate         OperationID = "files.connections.create"
 	OperationFilesConnectionsList           OperationID = "files.connections.list"
 	OperationFilesConnectionsRead           OperationID = "files.connections.read"
@@ -171,6 +175,9 @@ var operationInventory = [...]Operation{
 	{ID: OperationAuthAuditRead, Method: "GET", Path: "/api/v1/auth/audit/{eventId}", Policy: "protected", Scope: "auth:audit:read", Action: "read"},
 	{ID: OperationCompleteTodo, Method: "PATCH", Path: "/api/v1/todos/{id}/complete", Policy: "protected", Scope: "todos:write", Action: "todo.complete"},
 	{ID: OperationCreateTodo, Method: "POST", Path: "/api/v1/todos", Policy: "protected", Scope: "todos:write", Action: "todo.create"},
+	{ID: OperationFilesAccessPreview, Method: "POST", Path: "/api/v1/files/{id}/access/effective", Policy: "protected", Scope: "files:read", Action: "files.access.preview"},
+	{ID: OperationFilesAccessRead, Method: "GET", Path: "/api/v1/files/{id}/access", Policy: "protected", Scope: "files:read", Action: "files.access.read"},
+	{ID: OperationFilesAccessUpdate, Method: "PUT", Path: "/api/v1/files/{id}/access", Policy: "protected", Scope: "files:write", Action: "files.access.update"},
 	{ID: OperationFilesAnnotationsRead, Method: "GET", Path: "/api/v1/files/{id}/annotations", Policy: "protected", Scope: "files:read", Action: "files.annotations.read"},
 	{ID: OperationFilesAnnotationsReplace, Method: "PUT", Path: "/api/v1/files/{id}/annotations", Policy: "protected", Scope: "files:write", Action: "files.annotations.replace"},
 	{ID: OperationFilesAnnotationsSummaries, Method: "GET", Path: "/api/v1/files/annotations/summaries", Policy: "protected", Scope: "files:read", Action: "files.annotations.summaries"},
@@ -180,6 +187,7 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesArchiveExtract, Method: "POST", Path: "/api/v1/files/{id}/archive/extract", Policy: "protected", Scope: "files:write", Action: "files.archive.extract"},
 	{ID: OperationFilesArchiveInspect, Method: "POST", Path: "/api/v1/files/{id}/archive/inspect", Policy: "protected", Scope: "files:read", Action: "files.archive.inspect"},
 	{ID: OperationFilesArchiveMember, Method: "POST", Path: "/api/v1/files/{id}/archive/member", Policy: "protected", Scope: "files:read", Action: "files.archive.member"},
+	{ID: OperationFilesAudienceLookup, Method: "POST", Path: "/api/v1/files/audience/lookup", Policy: "protected", Scope: "files:write", Action: "files.audience.lookup"},
 	{ID: OperationFilesConnectionsCreate, Method: "POST", Path: "/api/v1/files/connections", Policy: "protected", Scope: "files:write", Action: "files.connections.create"},
 	{ID: OperationFilesConnectionsList, Method: "GET", Path: "/api/v1/files/connections", Policy: "protected", Scope: "files:read", Action: "files.connections.list"},
 	{ID: OperationFilesConnectionsRead, Method: "GET", Path: "/api/v1/files/connections/{connectionId}", Policy: "protected", Scope: "files:read", Action: "files.connections.read"},

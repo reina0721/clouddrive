@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"reflect"
 	"time"
 
 	"github.com/reina0721/clouddrive/internal/module/files/model"
@@ -68,6 +69,7 @@ type SharedFileRepository interface {
 
 // ShareAccess 是明确绑定到本次读取策略版本的请求范围，不持有原始链接或密码。
 type ShareAccess struct {
+	AudienceSubject   string
 	ShareID           string
 	ShareRevision     int64
 	TokenDigest       string
@@ -85,7 +87,7 @@ type SharedSelection struct {
 	ExpectedUpdatedAt *time.Time
 }
 
-func (s *Sharing) validateAccess(snapshot ShareSnapshot, access ShareAccess) error {
+func (s *Sharing) validateAccess(ctx context.Context, snapshot ShareSnapshot, access ShareAccess) error {
 	share := snapshot.Share
 	if share.ID != access.ShareID || share.Revision != access.ShareRevision || shareStatus(share, snapshot.Entries, s.files.clock.Now().UTC()) != ShareActive {
 		return model.ErrMissing
@@ -94,13 +96,66 @@ func (s *Sharing) validateAccess(snapshot ShareSnapshot, access ShareAccess) err
 		return model.ErrShareLocked
 	}
 	permission := access.Action.permission()
-	if permission == 0 || !share.Permissions.Allows(permission) {
+	if permission == 0 {
 		return model.ErrShareForbidden
+	}
+	viewer, err := s.accounts.ShareViewer(ctx)
+	if err != nil {
+		return err
+	}
+	if viewer.AccountID != access.AudienceSubject {
+		return model.ErrShareForbidden
+	}
+	resolver, resolverErr := model.NewShareAccessResolver(snapshot.Entries, share, viewer)
+	if resolverErr != nil {
+		return resolverErr
+	}
+	check := func(id string, required model.SharePermission) error {
+		decision, err := resolver.Decision(id)
+		if err != nil {
+			return err
+		}
+		if !decision.Permissions.Allows(required) {
+			return model.ErrShareForbidden
+		}
+		return nil
+	}
+	if len(access.Targets) == 0 && access.Destination == nil {
+		if err := check(share.RootID, permission); err != nil {
+			return err
+		}
 	}
 	for _, id := range access.Targets {
 		entry, ok := model.Find(snapshot.Entries, id)
-		if !ok || !model.Visible(snapshot.Entries, entry) || !Within(snapshot.Entries, share.RootID, id) {
+		if !ok {
 			return model.ErrMissing
+		}
+		if err := check(id, permission); err != nil {
+			return err
+		}
+		if entry.Kind == model.Folder && (access.Action == ShareActionCopy || access.Action == ShareActionMove || access.Action == ShareActionTrash || access.Action == ShareActionDownload) {
+			tree, treeErr := newQueryTree(ctx, snapshot.Entries, id)
+			if treeErr != nil {
+				return treeErr
+			}
+			for _, child := range snapshot.Entries {
+				visible, err := tree.walk(ctx, child.ID, walkVisibility)
+				if err != nil {
+					return err
+				}
+				if !visible {
+					continue
+				}
+				inside, err := tree.walk(ctx, child.ID, walkDescendants)
+				if err != nil {
+					return err
+				}
+				if inside {
+					if err := check(child.ID, permission); err != nil {
+						return err
+					}
+				}
+			}
 		}
 		if id == share.RootID && (access.Action == ShareActionRename || access.Action == ShareActionMove || access.Action == ShareActionTrash) {
 			return model.ErrShareForbidden
@@ -114,8 +169,15 @@ func (s *Sharing) validateAccess(snapshot ShareSnapshot, access ShareAccess) err
 	}
 	if access.Destination != nil {
 		parent, ok := model.Find(snapshot.Entries, *access.Destination)
-		if !ok || parent.Kind != model.Folder || !model.Visible(snapshot.Entries, parent) || !Within(snapshot.Entries, share.RootID, parent.ID) {
+		if !ok || parent.Kind != model.Folder {
 			return model.ErrMissing
+		}
+		required := permission
+		if access.Action == ShareActionCopy || access.Action == ShareActionMove {
+			required = model.ShareCreate
+		}
+		if err := check(parent.ID, required); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -132,7 +194,11 @@ func (s *Sharing) scope(ctx context.Context, token, ticket string, action ShareF
 	if err := s.authorizeAccount(ctx, snapshot.Share.OwnerID, action.accountAccess()); err != nil {
 		return nil, ShareAccess{}, "", err
 	}
-	access := ShareAccess{ShareID: snapshot.Share.ID, ShareRevision: snapshot.Share.Revision, TokenDigest: credentialDigest("share", token), Action: action, Targets: append([]string(nil), selection.Targets...), ExpectedRevision: selection.ExpectedRevision, ExpectedUpdatedAt: selection.ExpectedUpdatedAt}
+	viewer, viewerErr := s.accounts.ShareViewer(ctx)
+	if viewerErr != nil {
+		return nil, ShareAccess{}, "", viewerErr
+	}
+	access := ShareAccess{AudienceSubject: viewer.AccountID, ShareID: snapshot.Share.ID, ShareRevision: snapshot.Share.Revision, TokenDigest: credentialDigest("share", token), Action: action, Targets: append([]string(nil), selection.Targets...), ExpectedRevision: selection.ExpectedRevision, ExpectedUpdatedAt: selection.ExpectedUpdatedAt}
 	if ticket != "" {
 		if !validSecret(ticket) {
 			return nil, ShareAccess{}, "", model.ErrShareLocked
@@ -146,7 +212,7 @@ func (s *Sharing) scope(ctx context.Context, token, ticket string, action ShareF
 		}
 		access.Destination = &destination
 	}
-	if err := s.validateAccess(snapshot, access); err != nil {
+	if err := s.validateAccess(ctx, snapshot, access); err != nil {
 		return nil, ShareAccess{}, "", err
 	}
 	return s.scopedService(snapshot.Share.OwnerID, access), access, snapshot.Share.OwnerID, nil
@@ -181,7 +247,7 @@ func (r *shareScopedRepository) snapshot(ctx context.Context, owner string, limi
 	if snapshot.Share.OwnerID != owner {
 		return ShareSnapshot{}, model.ErrMissing
 	}
-	if err := r.sharing.validateAccess(snapshot, r.access); err != nil {
+	if err := r.sharing.validateAccess(ctx, snapshot, r.access); err != nil {
 		return ShareSnapshot{}, err
 	}
 	return snapshot, nil
@@ -238,7 +304,7 @@ func (r *shareScopedRepository) ChangeManyBounded(ctx context.Context, owner str
 		if snapshot.Share.OwnerID != owner {
 			return nil, model.ErrMissing
 		}
-		if err := r.sharing.validateAccess(snapshot, r.access); err != nil {
+		if err := r.sharing.validateAccess(ctx, snapshot, r.access); err != nil {
 			return nil, err
 		}
 		changed, err := change(snapshot.Entries)
@@ -264,6 +330,9 @@ func (r *shareScopedRepository) ChangeManyBounded(ctx context.Context, owner str
 		}
 		for _, entry := range changed {
 			previous, exists := model.Find(snapshot.Entries, entry.ID)
+			if exists && (previous.AccessPolicyRevision != entry.AccessPolicyRevision || !reflect.DeepEqual(previous.AccessPolicy, entry.AccessPolicy)) {
+				return nil, model.ErrShareForbidden
+			}
 			if entry.OwnerID != owner || exists && !Within(snapshot.Entries, snapshot.Share.RootID, entry.ID) || !Within(merged, snapshot.Share.RootID, entry.ID) {
 				return nil, model.ErrShareForbidden
 			}

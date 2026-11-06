@@ -11,11 +11,11 @@ import (
 type transferPublication interface {
 	source() model.TransferSource
 	authorize(context.Context, time.Time) error
-	validate(TransferSnapshot, time.Time) error
+	validate(context.Context, TransferSnapshot, time.Time) error
 }
 
 func (p *downloadPublication) source() model.TransferSource { return model.TransferSourceOffline }
-func (p *downloadPublication) validate(snapshot TransferSnapshot, now time.Time) error {
+func (p *downloadPublication) validate(_ context.Context, snapshot TransferSnapshot, now time.Time) error {
 	return p.validateTask(snapshot.DownloadTask, now)
 }
 
@@ -40,23 +40,23 @@ func (p *sharePublication) authorize(ctx context.Context, _ time.Time) error {
 	if snapshot.Share.OwnerID != p.owner {
 		return model.ErrMissing
 	}
-	return p.sharing.validateAccess(snapshot, p.access)
+	return p.sharing.validateAccess(ctx, snapshot, p.access)
 }
-func (p *sharePublication) validateAdmission(snapshot TransferSnapshot) error {
+func (p *sharePublication) validateAdmission(ctx context.Context, snapshot TransferSnapshot) error {
 	if snapshot.MetadataLimited {
 		return model.ErrTooLarge
 	}
 	if snapshot.Share == nil || snapshot.Share.OwnerID != p.owner || snapshot.Share.TokenDigest != p.access.TokenDigest {
 		return model.ErrMissing
 	}
-	return p.sharing.validateAccess(ShareSnapshot{Share: *snapshot.Share, Grant: snapshot.ShareGrant, Entries: snapshot.Entries}, p.access)
+	return p.sharing.validateAccess(ctx, ShareSnapshot{Share: *snapshot.Share, Grant: snapshot.ShareGrant, Entries: snapshot.Entries}, p.access)
 }
-func (p *sharePublication) validate(snapshot TransferSnapshot, _ time.Time) error {
-	if err := p.validateAdmission(snapshot); err != nil {
+func (p *sharePublication) validate(ctx context.Context, snapshot TransferSnapshot, _ time.Time) error {
+	if err := p.validateAdmission(ctx, snapshot); err != nil {
 		return err
 	}
 	transfer := snapshot.Transfer
-	if transfer == nil || transfer.Source != model.TransferSourceShare || transfer.ShareID != p.access.ShareID || transfer.ShareRevision != p.access.ShareRevision || transfer.ShareGrantDigest != p.access.GrantDigest || p.access.Destination == nil || transfer.ParentID != *p.access.Destination || transfer.ExpectedEntryID != "" {
+	if transfer == nil || transfer.Source != model.TransferSourceShare || transfer.ShareID != p.access.ShareID || transfer.ShareRevision != p.access.ShareRevision || transfer.ShareGrantDigest != p.access.GrantDigest || transfer.ShareAudienceSubject != p.access.AudienceSubject || p.access.Destination == nil || transfer.ParentID != *p.access.Destination || transfer.ExpectedEntryID != "" {
 		return model.ErrShareForbidden
 	}
 	return nil

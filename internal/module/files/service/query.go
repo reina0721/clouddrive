@@ -369,6 +369,11 @@ func (s *Service) List(ctx context.Context, owner string, input Query) (Listing,
 	if err != nil {
 		return Listing{}, err
 	}
+	return s.listEntries(ctx, entries, q)
+}
+
+// listEntries 在已校验的同一快照上排序、筛选和分页，供私有与受控分享共同使用。
+func (s *Service) listEntries(ctx context.Context, entries []model.Entry, q Query) (Listing, error) {
 	tree, err := newQueryTree(ctx, entries, q.ParentID)
 	if err != nil {
 		return Listing{}, err

@@ -12,7 +12,7 @@ const (
 	SharePaused  ShareState = "paused"
 )
 
-// SharePermission 是链接拥有的有限文件能力集合，不代替IAM或继承权限引擎。
+// SharePermission 是分享内的有限文件能力集合；账号状态与角色事实仍由IAM拥有。
 type SharePermission uint16
 
 const (

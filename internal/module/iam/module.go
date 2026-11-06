@@ -36,6 +36,7 @@ type HTTPDependencies struct {
 
 // Module 是 IAM 局部装配后的完成品；根组合只通过窄 facet 使用 IAM。
 type Module struct {
+	Collaboration        CollaborationDirectory
 	Sessions             SessionResolver
 	Authorization        Authorization
 	Accounts             AccountDirectory
@@ -83,7 +84,7 @@ func newModule(dependencies Dependencies) (Module, *service.Service, error) {
 		return Module{}, nil, err
 	}
 	return Module{
-		Sessions: iamService, Authorization: runtime, Accounts: iamService, AccountAuthorization: accountAuthorizer{store: store, runtime: runtime},
+		Collaboration: collaborationDirectory{store: store, clock: dependencies.Clock}, Sessions: iamService, Authorization: runtime, Accounts: iamService, AccountAuthorization: accountAuthorizer{store: store, runtime: runtime},
 		Administration: iamService, Mutation: iamService, ApiTokens: iamService, Contribution: contribution,
 	}, iamService, nil
 }

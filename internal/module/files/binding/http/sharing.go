@@ -15,12 +15,12 @@ import (
 const publicSharePrefix = "/api/v1/file-shares"
 const maxShareUnlockBodyBytes = 4096
 
-type shareCreateInput struct{ Body service.ShareCreate }
+type shareCreateInput struct{ Body shareCreateBody }
 type sharePathInput struct {
 	ShareID string `path:"shareId" minLength:"1" maxLength:"36"`
 }
-type sharesOutput struct{ Body service.ShareListing }
-type shareOutput struct{ Body service.ShareSummary }
+type sharesOutput struct{ Body shareListingBody }
+type shareOutput struct{ Body shareSummaryBody }
 type publicShareInput struct {
 	Token string `path:"token" minLength:"43" maxLength:"43"`
 	Grant string `header:"X-Share-Grant" maxLength:"43"`
@@ -58,7 +58,7 @@ func sharingHeaders(ctx huma.Context, next func(huma.Context)) {
 	writer.Header().Set("X-Content-Type-Options", "nosniff")
 	next(ctx)
 }
-func publicShareOperation(id, method, suffix string, jsonBody bool) huma.Operation {
+func publicShareOperation(h *handler.Handler, id, method, suffix string, jsonBody bool) huma.Operation {
 	op := huma.Operation{OperationID: id, Method: method, Path: publicSharePrefix + suffix, Tags: []string{"File Shares"}, DefaultStatus: 200}
 	definition := humabinding.Definition{Security: humabinding.SecurityNone, Policy: humabinding.PolicyPublic}
 	if jsonBody {
@@ -66,7 +66,7 @@ func publicShareOperation(id, method, suffix string, jsonBody bool) huma.Operati
 	} else {
 		op = humabinding.Define(op, definition)
 	}
-	op.Middlewares = append(op.Middlewares, sharingHeaders)
+	op.Middlewares = append(op.Middlewares, sharingHeaders, optionalShareIdentity(h))
 	return op
 }
 func registerSharing(api huma.API, h *handler.Handler, operation func(string, string, string, string, bool) huma.Operation) {
@@ -76,6 +76,7 @@ func registerSharing(api huma.API, h *handler.Handler, operation func(string, st
 		op.Middlewares = append(op.Middlewares, sharingHeaders)
 		return op
 	}
+	registerAccessManagement(api, h, private)
 	registerShareManagement(api, h, private)
 	registerSharedFiles(api, h)
 	registerSharedTransfers(api, h)
@@ -88,19 +89,21 @@ func registerSharing(api huma.API, h *handler.Handler, operation func(string, st
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
-		return &sharesOutput{Body: shares}, nil
+		return &sharesOutput{Body: shareListBody(shares)}, nil
 	})
-	huma.Register(api, private("files.shares.create", http.MethodPost, "/shares", "files:write", true), func(ctx context.Context, input *shareCreateInput) (*shareOutput, error) {
+	create := private("files.shares.create", http.MethodPost, "/shares", "files:write", true)
+	create.MaxBodyBytes = maxAudienceBodyBytes
+	huma.Register(api, create, func(ctx context.Context, input *shareCreateInput) (*shareOutput, error) {
 		owner, err := h.Owner(ctx)
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
-		share, err := h.Sharing.Create(ctx, owner, input.Body)
+		share, err := h.Sharing.Create(ctx, owner, input.Body.service())
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
 		h.Logger.Info("files.share.created")
-		return &shareOutput{Body: share}, nil
+		return &shareOutput{Body: shareBody(share)}, nil
 	})
 	huma.Register(api, private("files.shares.revoke", http.MethodPost, "/shares/{shareId}/revoke", "files:write", false), func(ctx context.Context, input *sharePathInput) (*shareOutput, error) {
 		owner, err := h.Owner(ctx)
@@ -112,23 +115,23 @@ func registerSharing(api huma.API, h *handler.Handler, operation func(string, st
 			return nil, h.Present(ctx, err)
 		}
 		h.Logger.Info("files.share.revoked")
-		return &shareOutput{Body: share}, nil
+		return &shareOutput{Body: shareBody(share)}, nil
 	})
-	huma.Register(api, publicShareOperation("files.public.metadata", http.MethodGet, "/{token}", false), func(ctx context.Context, input *publicShareInput) (*publicShareOutput, error) {
+	huma.Register(api, publicShareOperation(h, "files.public.metadata", http.MethodGet, "/{token}", false), func(ctx context.Context, input *publicShareInput) (*publicShareOutput, error) {
 		share, err := h.Sharing.Metadata(ctx, input.Token, input.Grant)
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
 		return &publicShareOutput{Body: share}, nil
 	})
-	huma.Register(api, publicShareOperation("files.public.entries", http.MethodGet, "/{token}/entries", false), func(ctx context.Context, input *publicEntriesInput) (*publicEntriesOutput, error) {
+	huma.Register(api, publicShareOperation(h, "files.public.entries", http.MethodGet, "/{token}/entries", false), func(ctx context.Context, input *publicEntriesInput) (*publicEntriesOutput, error) {
 		listing, err := h.Sharing.Entries(ctx, input.Token, input.Grant, service.PublicFileQuery{Parent: input.Parent, Search: input.Search, Sort: input.Sort, Desc: input.Desc, Scope: input.Scope, Page: input.Page})
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
 		return &publicEntriesOutput{Body: listing}, nil
 	})
-	unlock := publicShareOperation("files.public.unlock", http.MethodPost, "/{token}/unlock", true)
+	unlock := publicShareOperation(h, "files.public.unlock", http.MethodPost, "/{token}/unlock", true)
 	unlock.MaxBodyBytes = maxShareUnlockBodyBytes
 	unlock.Middlewares = append(unlock.Middlewares, shareOrigin(h))
 	huma.Register(api, unlock, func(ctx context.Context, input *publicUnlockInput) (*publicUnlockOutput, error) {
@@ -145,7 +148,7 @@ func registerSharing(api huma.API, h *handler.Handler, operation func(string, st
 		if method == http.MethodHead {
 			id = "files.public.content.head"
 		}
-		download := transferBudget(publicShareOperation(id, method, "/{token}/content/{id}", false))
+		download := transferBudget(publicShareOperation(h, id, method, "/{token}/content/{id}", false))
 		download.Middlewares = append(download.Middlewares, transferAdmission(h))
 		download.Responses = map[string]*huma.Response{"200": {Description: "分享范围内的原始内容和字节范围", Content: map[string]*huma.MediaType{"application/octet-stream": {Schema: &huma.Schema{Type: "string", Format: "binary"}}}}}
 		huma.Register(api, download, func(ctx context.Context, input *publicContentInput) (*contentOutput, error) {

@@ -1,6 +1,72 @@
 {
   "components": {
     "schemas": {
+      "AccessShareContext": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rootName": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "rootName"
+        ],
+        "type": "object"
+      },
+      "AccessSource": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
+      "AccessUpdateBody": {
+        "additionalProperties": false,
+        "properties": {
+          "policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FileAccessPolicyBody"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "object"
+              }
+            ]
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "policy"
+        ],
+        "type": "object"
+      },
       "AccountDetailResponse": {
         "additionalProperties": false,
         "properties": {
@@ -917,6 +983,66 @@
           "authorizationRevision",
           "added",
           "removed"
+        ],
+        "type": "object"
+      },
+      "AudienceLookupInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "maxLength": 254,
+            "minLength": 1,
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "account",
+              "role"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "key"
+        ],
+        "type": "object"
+      },
+      "AudienceRule": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "permissions": {
+            "$ref": "#/components/schemas/SharePermissions"
+          },
+          "subjectId": {
+            "maxLength": 36,
+            "minLength": 36,
+            "type": "string"
+          }
+        },
+        "required": [
+          "subjectId",
+          "permissions"
+        ],
+        "type": "object"
+      },
+      "AudienceTarget": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label"
         ],
         "type": "object"
       },
@@ -2092,6 +2218,56 @@
         ],
         "type": "object"
       },
+      "EffectiveAccessBody": {
+        "additionalProperties": false,
+        "properties": {
+          "permissions": {
+            "$ref": "#/components/schemas/SharePermissions"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccessSource"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "required": [
+          "source",
+          "permissions",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "EffectiveAccessInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "accountId": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "shareId": {
+            "maxLength": 36,
+            "minLength": 36,
+            "type": "string"
+          }
+        },
+        "required": [
+          "shareId",
+          "accountId"
+        ],
+        "type": "object"
+      },
       "Entry": {
         "additionalProperties": false,
         "properties": {
@@ -2209,6 +2385,82 @@
           "title",
           "status",
           "code"
+        ],
+        "type": "object"
+      },
+      "FileAccessDetailBody": {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "$ref": "#/components/schemas/Entry"
+          },
+          "inheritedFrom": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccessSource"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "object"
+              }
+            ]
+          },
+          "maxRules": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FileAccessPolicyBody"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "object"
+              }
+            ]
+          },
+          "revision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "shares": {
+            "items": {
+              "$ref": "#/components/schemas/AccessShareContext"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "policy",
+          "inheritedFrom",
+          "entry",
+          "revision",
+          "shares",
+          "maxRules"
+        ],
+        "type": "object"
+      },
+      "FileAccessPolicyBody": {
+        "additionalProperties": false,
+        "properties": {
+          "audience": {
+            "$ref": "#/components/schemas/ShareAudienceBody"
+          },
+          "default": {
+            "$ref": "#/components/schemas/SharePermissions"
+          }
+        },
+        "required": [
+          "default",
+          "audience"
         ],
         "type": "object"
       },
@@ -3303,6 +3555,9 @@
           "name": {
             "type": "string"
           },
+          "permissions": {
+            "$ref": "#/components/schemas/SharePermissions"
+          },
           "sizeBytes": {
             "format": "int64",
             "type": "integer"
@@ -3313,6 +3568,7 @@
           }
         },
         "required": [
+          "permissions",
           "contentRevision",
           "id",
           "name",
@@ -3348,12 +3604,16 @@
             "format": "int64",
             "type": "integer"
           },
+          "permissions": {
+            "$ref": "#/components/schemas/SharePermissions"
+          },
           "total": {
             "format": "int64",
             "type": "integer"
           }
         },
         "required": [
+          "permissions",
           "total",
           "page",
           "pageSize",
@@ -3365,6 +3625,9 @@
       "PublicShare": {
         "additionalProperties": false,
         "properties": {
+          "denied": {
+            "type": "boolean"
+          },
           "expiresAt": {
             "format": "date-time",
             "type": "string"
@@ -3385,11 +3648,16 @@
           "root": {
             "$ref": "#/components/schemas/PublicEntry"
           },
+          "signInRequired": {
+            "type": "boolean"
+          },
           "title": {
             "type": "string"
           }
         },
         "required": [
+          "denied",
+          "signInRequired",
           "locked",
           "expiresAt"
         ],
@@ -3793,9 +4061,68 @@
         ],
         "type": "object"
       },
-      "ShareCreate": {
+      "ShareAudienceBody": {
         "additionalProperties": false,
         "properties": {
+          "accounts": {
+            "items": {
+              "$ref": "#/components/schemas/AudienceRule"
+            },
+            "maxItems": 32,
+            "nullable": true,
+            "type": "array"
+          },
+          "anonymous": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SharePermissions"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "object"
+              }
+            ]
+          },
+          "authenticated": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SharePermissions"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "object"
+              }
+            ]
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/AudienceRule"
+            },
+            "maxItems": 32,
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "anonymous",
+          "authenticated",
+          "accounts",
+          "roles"
+        ],
+        "type": "object"
+      },
+      "ShareCreateBody": {
+        "additionalProperties": false,
+        "properties": {
+          "audience": {
+            "$ref": "#/components/schemas/ShareAudienceBody"
+          },
           "expiresAt": {
             "format": "date-time",
             "type": "string"
@@ -3822,12 +4149,12 @@
         ],
         "type": "object"
       },
-      "ShareListing": {
+      "ShareListingBody": {
         "additionalProperties": false,
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/ShareSummary"
+              "$ref": "#/components/schemas/ShareSummaryBody"
             },
             "nullable": true,
             "type": "array"
@@ -3924,9 +4251,12 @@
         ],
         "type": "object"
       },
-      "ShareSummary": {
+      "ShareSummaryBody": {
         "additionalProperties": false,
         "properties": {
+          "audience": {
+            "$ref": "#/components/schemas/ShareAudienceBody"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -3975,6 +4305,7 @@
           }
         },
         "required": [
+          "audience",
           "kind",
           "title",
           "permissions",
@@ -3992,9 +4323,12 @@
         ],
         "type": "object"
       },
-      "ShareUpdate": {
+      "ShareUpdateBody": {
         "additionalProperties": false,
         "properties": {
+          "audience": {
+            "$ref": "#/components/schemas/ShareAudienceBody"
+          },
           "expiresAt": {
             "format": "date-time",
             "type": "string"
@@ -4030,6 +4364,7 @@
           "title",
           "expiresAt",
           "permissions",
+          "audience",
           "passwordAction",
           "password"
         ],
@@ -7242,6 +7577,51 @@
         ]
       }
     },
+    "/api/v1/files/audience/lookup": {
+      "post": {
+        "operationId": "files.audience.lookup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudienceLookupInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudienceTarget"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
     "/api/v1/files/connections": {
       "get": {
         "operationId": "files.connections.list",
@@ -8566,7 +8946,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ShareListing"
+                  "$ref": "#/components/schemas/ShareListingBody"
                 }
               }
             },
@@ -8598,7 +8978,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ShareCreate"
+                "$ref": "#/components/schemas/ShareCreateBody"
               }
             }
           },
@@ -8609,7 +8989,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ShareSummary"
+                  "$ref": "#/components/schemas/ShareSummaryBody"
                 }
               }
             },
@@ -8656,7 +9036,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ShareSummary"
+                  "$ref": "#/components/schemas/ShareSummaryBody"
                 }
               }
             },
@@ -8700,7 +9080,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ShareUpdate"
+                "$ref": "#/components/schemas/ShareUpdateBody"
               }
             }
           },
@@ -8711,7 +9091,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ShareSummary"
+                  "$ref": "#/components/schemas/ShareSummaryBody"
                 }
               }
             },
@@ -8758,7 +9138,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ShareSummary"
+                  "$ref": "#/components/schemas/ShareSummaryBody"
                 }
               }
             },
@@ -8815,7 +9195,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ShareSummary"
+                  "$ref": "#/components/schemas/ShareSummaryBody"
                 }
               }
             },
@@ -9712,6 +10092,165 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Entry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/{id}/access": {
+      "get": {
+        "operationId": "files.access.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileAccessDetailBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "put": {
+        "operationId": "files.access.update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccessUpdateBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileAccessDetailBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/{id}/access/effective": {
+      "post": {
+        "operationId": "files.access.preview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EffectiveAccessInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EffectiveAccessBody"
                 }
               }
             },

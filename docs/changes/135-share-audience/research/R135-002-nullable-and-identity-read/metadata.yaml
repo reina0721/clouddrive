@@ -1,0 +1,38 @@
+schema_version: 1
+id: R135-002
+title: 可空策略对象与发布事务中的身份读取
+question: 如何保持显式null的HTTP契约，并在上传最终事务中复核当前身份而不争用SQLite写锁？
+research_type: implementation-directed-verification
+topics: [nullable-policy, HTTP-schema, IAM-snapshot, transfer-publication]
+keywords: [Huma, SchemaProvider, null, SQLite, 单次读取]
+status: active
+summary: 使用Huma公开SchemaProvider表达严格可空对象；IAM通过单次只读JOIN投影当前账号与角色，避免嵌套写事务。
+applicable_scenarios: [Huma2.39.1可空对象, 当前IAM表结构, 文件最终发布身份复核]
+non_applicable_scenarios: [跨数据库原子身份撤销, 任意JSON策略, 可选字段自动默认]
+evidence:
+  types: [official-source, source-code, test]
+  primary_sources:
+    - title: Huma可空对象限制与SchemaProvider示例
+      locator: https://github.com/danielgtaylor/huma/blob/v2.39.1/schema.go
+      snapshot: 本机已安装v2.39.1源码；schema_test.go的自定义SchemaProvider示例同步复核
+    - title: 严格可空对象测试
+      locator: internal/transport/http/humabinding/nullable_test.go
+      snapshot: 135实施；对象/null通过，缺字段、额外字段与错误类型拒绝
+    - title: 当前IAM身份只读投影
+      locator: internal/module/iam/repo/collaboration.go
+      snapshot: 135实施；单次SELECT JOIN账号及有效角色，无WithinTx
+    - title: 真实上传与撤销用例
+      locator: internal/composition/share_audience_e2e_test.go
+      snapshot: .data/135-go-focused-green.log；真实tus创建/PATCH、重新登录后撤销发布、原主体取消通过
+researched_at: 2026-11-04
+verified_at: 2026-11-04
+validity:
+  mode: snapshot
+  review_after: 2026-12-04
+  refresh_triggers: [Huma升级, 可空对象契约改变, IAM关系结构或账号状态语义改变, 数据库事务模型改变]
+relations:
+  extends: [R135-001]
+  related: []
+  supersedes: []
+  superseded_by: []
+report: report.md

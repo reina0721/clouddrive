@@ -37,6 +37,7 @@ export function PublicChangeDialog({
     ),
     [destination, setDestination] = useState(parent || root.id),
     [failure, setFailure] = useState('');
+  const [destinationAllowed, setDestinationAllowed] = useState(false);
   const title = t(`publicFiles.collaboration.${change.action}`);
   return (
     <DialogSurface
@@ -53,7 +54,10 @@ export function PublicChangeDialog({
       }}
       cancelLabel={t('publicFiles.collaboration.cancel')}
       confirmLabel={t('publicFiles.collaboration.confirm')}
-      confirmDisabled={change.action === 'rename' && !name.trim()}
+      confirmDisabled={
+        (change.action === 'rename' && !name.trim()) ||
+        ((change.action === 'move' || change.action === 'copy') && !destinationAllowed)
+      }
       failureMessage={failure}
       onConfirm={async () => {
         try {
@@ -103,7 +107,12 @@ export function PublicChangeDialog({
           />
         ) : null}
         {change.action === 'move' || change.action === 'copy' ? (
-          <PublicFolderPicker root={root} value={destination} onChange={setDestination} />
+          <PublicFolderPicker
+            root={root}
+            value={destination}
+            onChange={setDestination}
+            onAllowedChange={setDestinationAllowed}
+          />
         ) : null}
       </div>
     </DialogSurface>

@@ -42,7 +42,7 @@ func shareOrigin(h *handler.Handler) func(huma.Context, func(huma.Context)) {
 }
 
 func registerShareDownloads(api huma.API, h *handler.Handler) {
-	create := publicShareOperation("files.public.download.create", http.MethodPost, "/{token}/content/{id}/download", false)
+	create := publicShareOperation(h, "files.public.download.create", http.MethodPost, "/{token}/content/{id}/download", false)
 	create.Middlewares = append(create.Middlewares, shareOrigin(h))
 	huma.Register(api, create, func(ctx context.Context, input *publicContentInput) (*downloadGrantOutput, error) {
 		grant, err := h.Sharing.CreateDownload(ctx, input.Token, input.Grant, input.ID)
@@ -56,7 +56,7 @@ func registerShareDownloads(api huma.API, h *handler.Handler) {
 		if method == http.MethodHead {
 			id = "files.public.download.head"
 		}
-		op := publicShareOperation(id, method, "", false)
+		op := publicShareOperation(h, id, method, "", false)
 		op.Path = fileDownloadsPrefix + "/{ticket}"
 		definition, _ := humabinding.DefinitionOf(&op)
 		definition.Budget = humabinding.BudgetTransfer

@@ -112,6 +112,7 @@ const (
 )
 
 type ShareSummary struct {
+	Audience        ShareAudience    `json:"audience"`
 	Kind            *model.Kind      `json:"kind"`
 	Title           string           `json:"title"`
 	Permissions     SharePermissions `json:"permissions"`
@@ -155,6 +156,15 @@ func (s *Sharing) InspectShortcutTarget(ctx context.Context, token string, treeL
 		return ShortcutTargetState{}, err
 	}
 	status := shareStatus(snapshot.Share, snapshot.Entries, s.files.clock.Now().UTC())
+	if status == ShareActive {
+		permissions, err := s.publicPermissions(ctx, snapshot, snapshot.Share.RootID)
+		if err != nil {
+			return ShortcutTargetState{}, err
+		}
+		if permissions.permissionSet() == 0 {
+			status = ShareUnavailable
+		}
+	}
 	return ShortcutTargetState{Status: status, Locked: status == ShareActive && snapshot.Share.PasswordHash != ""}, nil
 }
 func summary(share model.Share, entries []model.Entry, now time.Time) ShareSummary {
@@ -164,9 +174,16 @@ func summary(share model.Share, entries []model.Entry, now time.Time) ShareSumma
 		value := root.Kind
 		kind = &value
 	}
-	return ShareSummary{Kind: kind, Title: share.Title, Permissions: sharePermissions(share.Permissions), Revision: share.Revision, Enabled: share.State == model.ShareEnabled, ID: share.ID, Token: share.Token, RootID: share.RootID, Name: root.Name, HasPassword: share.PasswordHash != "", CreatedAt: share.CreatedAt, ExpiresAt: share.ExpiresAt, Status: shareStatus(share, entries, now)}
+	return ShareSummary{Audience: audienceFromModel(share.Audience), Kind: kind, Title: share.Title, Permissions: sharePermissions(share.Permissions), Revision: share.Revision, Enabled: share.State == model.ShareEnabled, ID: share.ID, Token: share.Token, RootID: share.RootID, Name: root.Name, HasPassword: share.PasswordHash != "", CreatedAt: share.CreatedAt, ExpiresAt: share.ExpiresAt, Status: shareStatus(share, entries, now)}
 }
 func (s *Sharing) Create(ctx context.Context, owner string, input ShareCreate) (ShareSummary, error) {
+	audience := model.AudiencePolicy{}
+	if input.Audience != nil {
+		audience = input.Audience.model()
+	}
+	if err := s.validateAudienceTargets(ctx, audience, model.AudiencePolicy{}); err != nil {
+		return ShareSummary{}, err
+	}
 	if owner == "" {
 		return ShareSummary{}, model.ErrMissing
 	}
@@ -215,7 +232,7 @@ func (s *Sharing) Create(ctx context.Context, owner string, input ShareCreate) (
 		if root.Kind == model.Shortcut {
 			return model.Share{}, model.ErrUnsupported
 		}
-		return model.Share{ID: id, OwnerID: owner, RootID: input.RootID, Token: token, TokenDigest: credentialDigest("share", token), PasswordHash: hash, CreatedAt: now, ExpiresAt: expiry, Title: input.Title, State: model.ShareEnabled, Permissions: permissions, Revision: 1}, nil
+		return model.Share{Audience: audience, ID: id, OwnerID: owner, RootID: input.RootID, Token: token, TokenDigest: credentialDigest("share", token), PasswordHash: hash, CreatedAt: now, ExpiresAt: expiry, Title: input.Title, State: model.ShareEnabled, Permissions: permissions, Revision: 1}, nil
 	})
 	if err != nil {
 		return ShareSummary{}, err
@@ -265,13 +282,14 @@ func (s *Sharing) authorized(snapshot ShareSnapshot) bool {
 }
 
 type PublicEntry struct {
-	ContentRevision int64      `json:"contentRevision"`
-	ID              string     `json:"id"`
-	Name            string     `json:"name"`
-	Kind            model.Kind `json:"kind"`
-	SizeBytes       int64      `json:"sizeBytes"`
-	MediaType       string     `json:"mediaType"`
-	UpdatedAt       time.Time  `json:"updatedAt"`
+	Permissions     SharePermissions `json:"permissions"`
+	ContentRevision int64            `json:"contentRevision"`
+	ID              string           `json:"id"`
+	Name            string           `json:"name"`
+	Kind            model.Kind       `json:"kind"`
+	SizeBytes       int64            `json:"sizeBytes"`
+	MediaType       string           `json:"mediaType"`
+	UpdatedAt       time.Time        `json:"updatedAt"`
 }
 
 func publicEntry(entry model.Entry) PublicEntry {
@@ -279,13 +297,15 @@ func publicEntry(entry model.Entry) PublicEntry {
 }
 
 type PublicShare struct {
-	Title       string             `json:"title,omitempty"`
-	Revision    *int64             `json:"revision,omitempty"`
-	Permissions *SharePermissions  `json:"permissions,omitempty"`
-	Limits      *PublicShareLimits `json:"limits,omitempty"`
-	Locked      bool               `json:"locked"`
-	Root        *PublicEntry       `json:"root,omitempty"`
-	ExpiresAt   time.Time          `json:"expiresAt"`
+	Denied         bool               `json:"denied"`
+	SignInRequired bool               `json:"signInRequired"`
+	Title          string             `json:"title,omitempty"`
+	Revision       *int64             `json:"revision,omitempty"`
+	Permissions    *SharePermissions  `json:"permissions,omitempty"`
+	Limits         *PublicShareLimits `json:"limits,omitempty"`
+	Locked         bool               `json:"locked"`
+	Root           *PublicEntry       `json:"root,omitempty"`
+	ExpiresAt      time.Time          `json:"expiresAt"`
 }
 type PublicShareLimits struct {
 	MaxFileBytes    int64 `json:"maxFileBytes"`
@@ -300,8 +320,18 @@ func (s *Sharing) Metadata(ctx context.Context, token, ticket string) (PublicSha
 		return PublicShare{}, err
 	}
 	result := PublicShare{Locked: !s.authorized(snapshot), ExpiresAt: snapshot.Share.ExpiresAt}
-	if !result.Locked {
-		permissions := sharePermissions(snapshot.Share.Permissions)
+	viewer, viewerErr := s.accounts.ShareViewer(ctx)
+	if viewerErr != nil {
+		return PublicShare{}, viewerErr
+	}
+	decision, decisionErr := model.EffectiveAccess(snapshot.Entries, snapshot.Share, snapshot.Share.RootID, viewer)
+	if decisionErr != nil {
+		return PublicShare{}, decisionErr
+	}
+	result.Denied = decision.Permissions == 0
+	result.SignInRequired = result.Denied && viewer.AccountID == ""
+	if !result.Locked && !result.Denied {
+		permissions := sharePermissions(decision.Permissions)
 		result.Title = snapshot.Share.Title
 		revision := snapshot.Share.Revision
 		result.Revision = &revision
@@ -309,6 +339,7 @@ func (s *Sharing) Metadata(ctx context.Context, token, ticket string) (PublicSha
 		result.Limits = &PublicShareLimits{MaxFileBytes: s.files.policy.MaxFileBytes, MaxTextBytes: s.files.policy.MaxTextBytes, MaxPreviewBytes: s.files.policy.MaxMediaBytes, BatchEntries: s.policy.BatchEntries}
 		root, _ := model.Find(snapshot.Entries, snapshot.Share.RootID)
 		entry := publicEntry(root)
+		entry.Permissions = permissions
 		result.Root = &entry
 	}
 	return result, nil
@@ -369,9 +400,10 @@ func (s *Sharing) Unlock(ctx context.Context, token, password string) (UnlockRes
 }
 
 type PublicListing struct {
-	Total       int           `json:"total"`
-	Page        int           `json:"page"`
-	PageSize    int           `json:"pageSize"`
-	Items       []PublicEntry `json:"items"`
-	Breadcrumbs []PublicEntry `json:"breadcrumbs"`
+	Permissions SharePermissions `json:"permissions"`
+	Total       int              `json:"total"`
+	Page        int              `json:"page"`
+	PageSize    int              `json:"pageSize"`
+	Items       []PublicEntry    `json:"items"`
+	Breadcrumbs []PublicEntry    `json:"breadcrumbs"`
 }

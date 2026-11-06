@@ -53,22 +53,26 @@ func (s *ShareTransfers) Create(ctx context.Context, token, ticket string, input
 		return SharedTransfer{}, err
 	}
 	publication := &sharePublication{sharing: s.sharing, owner: owner, access: access}
-	value, err := s.transfers.createAuthorized(ctx, owner, TransferRequest{ParentID: *access.Destination, Name: input.Name, SizeBytes: input.SizeBytes, SHA256: input.SHA256, Key: "share:" + access.ShareID + ":" + input.ClientKey}, publication)
+	value, err := s.transfers.createAuthorized(ctx, owner, TransferRequest{ParentID: *access.Destination, Name: input.Name, SizeBytes: input.SizeBytes, SHA256: input.SHA256, Key: "share:" + credentialDigest("share-upload", access.ShareID+":"+access.AudienceSubject+":"+input.ClientKey)}, publication)
 	if err != nil {
 		return SharedTransfer{}, err
 	}
 	return s.summary(value), nil
 }
 func (s *ShareTransfers) publication(ctx context.Context, token, ticket, id string) (*sharePublication, model.Transfer, error) {
-	_, access, owner, err := s.sharing.scope(ctx, token, ticket, ShareActionUpload, SharedSelection{})
+	snapshot, err := s.sharing.inspect(ctx, token, ticket)
 	if err != nil {
 		return nil, model.Transfer{}, err
 	}
-	transfer, err := s.transfers.repo.ReadTransfer(ctx, owner, id)
+	transfer, err := s.transfers.repo.ReadTransfer(ctx, snapshot.Share.OwnerID, id)
 	if err != nil {
 		return nil, transfer, err
 	}
-	if transfer.Source != model.TransferSourceShare || transfer.ShareID != access.ShareID || transfer.ShareRevision != access.ShareRevision || transfer.ShareGrantDigest != access.GrantDigest {
+	_, access, owner, err := s.sharing.scope(ctx, token, ticket, ShareActionUpload, SharedSelection{Destination: &transfer.ParentID})
+	if err != nil {
+		return nil, transfer, err
+	}
+	if transfer.Source != model.TransferSourceShare || transfer.ShareID != access.ShareID || transfer.ShareRevision != access.ShareRevision || transfer.ShareGrantDigest != access.GrantDigest || transfer.ShareAudienceSubject != access.AudienceSubject {
 		return nil, transfer, model.ErrMissing
 	}
 	access.Destination = &transfer.ParentID
@@ -133,7 +137,11 @@ func (s *ShareTransfers) Cancel(ctx context.Context, token, ticket, id string) (
 	if err != nil {
 		return SharedTransfer{}, err
 	}
-	if transfer.Source != model.TransferSourceShare || transfer.ShareID != share.ID || transfer.ShareGrantDigest != grant {
+	viewer, viewerErr := s.sharing.accounts.ShareViewer(ctx)
+	if viewerErr != nil {
+		return SharedTransfer{}, viewerErr
+	}
+	if transfer.Source != model.TransferSourceShare || transfer.ShareID != share.ID || transfer.ShareGrantDigest != grant || transfer.ShareAudienceSubject != viewer.AccountID {
 		return SharedTransfer{}, model.ErrMissing
 	}
 	if transfer.State == model.TransferCompleted {

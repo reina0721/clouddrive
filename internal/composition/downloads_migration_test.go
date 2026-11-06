@@ -46,7 +46,7 @@ func TestOfflineV11PreservesExistingTransfersAndGuardsRollback(t *testing.T) {
 		}
 		now := time.Now().UTC()
 		legacy := model.Transfer{ID: "d25f5cc7-8a0d-4483-9764-7b70580a39fc", OwnerID: "owner", Name: "existing.bin", NormalizedName: "existing.bin", SizeBytes: 3, SizeKnown: true, QuotaReservedBytes: 3, Source: model.TransferSourceTus, ContentSHA256: strings.Repeat("a", 64), IdempotencyKey: "preserved-key", State: model.TransferPaused, CreatedAt: now, UpdatedAt: now, ExpiresAt: now.Add(time.Hour), Revision: 7, ObjectKey: "preserved-object"}
-		if err := db.Table("files_transfers").Omit("DownloadID", "ShareID", "ShareRevision", "ShareGrantDigest").Create(&legacy).Error; err != nil {
+		if err := db.Table("files_transfers").Omit("DownloadID", "ShareID", "ShareRevision", "ShareGrantDigest", "ShareAudienceSubject").Create(&legacy).Error; err != nil {
 			return err
 		}
 		var before, after model.Transfer

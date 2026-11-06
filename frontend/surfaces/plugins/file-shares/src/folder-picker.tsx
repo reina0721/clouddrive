@@ -10,7 +10,13 @@ export function PublicFolderPicker({
   root,
   value,
   onChange,
-}: Readonly<{ root: PublicFileEntry; value: string; onChange(id: string): void }>) {
+  onAllowedChange,
+}: Readonly<{
+  root: PublicFileEntry;
+  value: string;
+  onChange(id: string): void;
+  onAllowedChange(allowed: boolean): void;
+}>) {
   const port = usePublicFiles(),
     { t } = useFrontendTranslation();
   const [listing, setListing] = useState<PublicFileListing>(),
@@ -19,11 +25,13 @@ export function PublicFolderPicker({
     [page, setPage] = useState(1);
   useEffect(() => {
     const controller = new AbortController();
+    onAllowedChange(false);
     void port
       .entries({ ...initialPublicQuery, parent: value, page }, controller.signal)
       .then((result) => {
         if (!controller.signal.aborted) {
           setListing(result);
+          onAllowedChange(result.permissions.create);
           setFailure('');
         }
       })
@@ -36,7 +44,7 @@ export function PublicFolderPicker({
         }
       });
     return () => controller.abort();
-  }, [port, value, page, revision, t]);
+  }, [port, value, page, revision, t, onAllowedChange]);
   const browse = (id: string) => {
     setListing(undefined);
     setPage(1);
@@ -64,6 +72,9 @@ export function PublicFolderPicker({
       ) : null}
       {!listing && !failure ? (
         <p role="status">{t('publicFiles.collaboration.folderLoading')}</p>
+      ) : null}
+      {listing && !listing.permissions.create ? (
+        <p className="text-sm text-ink-muted">{t('publicFiles.access.noCreate')}</p>
       ) : null}
       {listing?.items
         .filter((entry) => entry.kind === 'folder')

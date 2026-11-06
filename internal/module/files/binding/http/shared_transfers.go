@@ -34,7 +34,7 @@ func registerSharedTransfers(api huma.API, h *handler.Handler) {
 		}
 		return sharedTransferResult(ctx, h, value, err)
 	})
-	huma.Register(api, publicShareOperation("files.public.transfers.read", http.MethodGet, "/{token}/transfers/{id}", false), func(ctx context.Context, input *publicContentInput) (*sharedTransferOutput, error) {
+	huma.Register(api, publicShareOperation(h, "files.public.transfers.read", http.MethodGet, "/{token}/transfers/{id}", false), func(ctx context.Context, input *publicContentInput) (*sharedTransferOutput, error) {
 		value, err := h.ShareTransfers.Read(ctx, input.Token, input.Grant, input.ID)
 		return sharedTransferResult(ctx, h, value, err)
 	})
@@ -49,7 +49,7 @@ func registerSharedTransfers(api huma.API, h *handler.Handler) {
 			return h.ShareTransfers.Cancel(ctx, token, ticket, id)
 		}},
 	} {
-		op := publicShareOperation(action.id, http.MethodPost, "/{token}/transfers/{id}/"+action.path, false)
+		op := publicShareOperation(h, action.id, http.MethodPost, "/{token}/transfers/{id}/"+action.path, false)
 		op.Middlewares = append(op.Middlewares, shareOrigin(h))
 		if action.path == "commit" {
 			op = transferBudget(op)
@@ -68,7 +68,7 @@ func registerSharedTransfers(api huma.API, h *handler.Handler) {
 		if method == http.MethodPatch {
 			id = "files.public.transfers.chunk"
 		}
-		op := transferBudget(publicShareOperation(id, method, "/{token}/transfers/{id}/data", false))
+		op := transferBudget(publicShareOperation(h, id, method, "/{token}/transfers/{id}/data", false))
 		if method == http.MethodPatch {
 			op.DefaultStatus = http.StatusNoContent
 			op.Middlewares = append(op.Middlewares, shareOrigin(h), transferAdmission(h))

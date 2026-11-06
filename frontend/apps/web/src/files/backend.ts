@@ -1,3 +1,4 @@
+import { createFileAccessPort } from './access';
 import { createDocumentReader } from './document-reader';
 import { createArchivesRuntime } from './archives';
 import {
@@ -273,6 +274,7 @@ export function createFilesRuntime(
   });
   const archives = createArchivesRuntime(call, assertCurrent);
   const port: FilesPort = {
+    access: createFileAccessPort(call, assertCurrent),
     clipboard: clipboard.port,
     versions: versions.port,
     annotations: createAnnotationsPort(call, assertCurrent),

@@ -95,3 +95,9 @@ files模块工厂装配窄 `ArchiveProcessor`，composition只访问公开模块
 采用固定pdfjs-dist6.4.299的display/viewer组件，保留IAM/files/Storage及现有Host/Surface装配。成熟SDK负责分页、文字、查找、链接和标注；项目只实现受控内容、预算、关闭与frame消息契约。完整generic viewer、浏览器原生embed、第三方React包装及Go转换服务均未选用，原因及替换触发器见[134研究](../changes/134-pdf-reader/research/R134-001-pdf-runtime/report.md)和[ADR](../changes/134-pdf-reader/design/adr-001-local-pdf-components.md)。不是新增自研PDF算法或全局插件容器。
 
 集中验证发现原有前端依赖公告，按[定向复核](../changes/134-pdf-reader/research/R134-002-security-refresh/report.md)将Next统一到16.4.5、Zod统一到4.6.6，保留同一架构及公开契约。Ajv内部fast-uri、PostCSS内部source-map-js只使用父依赖限定的修复覆盖；上游解析下界已保证修复版本时移除覆盖，不保留旧版本兼容层。
+
+## 分享受众与构建资源（135）
+
+保留IAM固定Casbin Core RBAC、Sharing与Transfer；本实例身份事实经IAM窄facet和composition适配，文件层拥有有界受众及最近祖先规则。未引入通用授权语言或平行共享入口，候选比较与退出触发器见[135研究](../changes/135-share-audience/research/README.md)。Huma可空对象使用公开SchemaProvider的严格绑定，身份复核使用只读快照，不能以放宽校验或匿名降级掩盖失败。
+
+生产编译关闭Next的持久磁盘缓存，保留相同编译器与运行产物；独立生产目录避免额外保留编译数据库及压缩临时空间。该取舍及Next升级后的刷新要求见[R135-003](../changes/135-share-audience/research/R135-003-build-cache-footprint/report.md)，页面及PDF资源预算不放宽。

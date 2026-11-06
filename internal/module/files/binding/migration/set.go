@@ -10,11 +10,17 @@ import (
 //go:embed sqlite/*.sql postgres/*.sql mysql/*.sql
 var sqlFiles embed.FS
 
-const CurrentVersion uint = 12
+const CurrentVersion uint = 13
 const TableName = "files_schema_migrations"
 
 func Set() dbmigrate.Set {
 	return dbmigrate.Set{Name: "files", FS: sqlFiles, CurrentVersion: CurrentVersion, MigrationsTable: TableName, DriverPaths: map[database.Driver]string{database.DriverSQLite: "sqlite", database.DriverPostgres: "postgres", database.DriverMySQL: "mysql"}, SHA256ByFile: map[string]string{
+		"sqlite/000013_share_audience.up.sql":        "89b62c08caced97df75b5f127bc87edb84aae971885e50014269554a46d2a039",
+		"sqlite/000013_share_audience.down.sql":      "4a096cfeccb5b6075f2682f2026789e7b206aad5b1f18da6c389aa59e6e00a23",
+		"postgres/000013_share_audience.up.sql":      "89b62c08caced97df75b5f127bc87edb84aae971885e50014269554a46d2a039",
+		"postgres/000013_share_audience.down.sql":    "4a096cfeccb5b6075f2682f2026789e7b206aad5b1f18da6c389aa59e6e00a23",
+		"mysql/000013_share_audience.up.sql":         "d98237b89c00b58b58e7558185ea77836c0b247f2e522afb7aedacf0b66dadbe",
+		"mysql/000013_share_audience.down.sql":       "582cf7b3cbc1bb83f4902ac582c1a818ea136f6b0014765f273b3e32a2f3c571",
 		"sqlite/000012_share_policy.up.sql":          "25619e15badfe6c664aa5021917b3c88c88576653ea1e9f7314556c8d9be79fa",
 		"sqlite/000012_share_policy.down.sql":        "f66e9252f1638a0e0e2c2dee2a62bcd394ab2bd2d5c4488fa3bbe270e07778f5",
 		"postgres/000012_share_policy.up.sql":        "25619e15badfe6c664aa5021917b3c88c88576653ea1e9f7314556c8d9be79fa",
