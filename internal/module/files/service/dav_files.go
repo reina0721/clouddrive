@@ -9,8 +9,9 @@ import (
 	"github.com/reina0721/clouddrive/internal/module/files/model"
 )
 
-// DAVScope 只保留认证连接的ID和版本，每次业务调用重新核对当前事实。
+// DAVScope 保存认证连接与协议条件，每次业务调用重新核对当前事实。
 type DAVScope struct {
+	Condition    model.DAVCondition
 	ConnectionID string
 	Revision     int64
 }
@@ -24,17 +25,20 @@ type DAVFiles struct {
 	files       *Service
 	connections *Connections
 	transfers   *Transfers
+	locks       *WriteLocks
 }
 
-func NewDAVFiles(files *Service, connections *Connections, transfers *Transfers) (*DAVFiles, error) {
-	if files == nil || connections == nil || transfers == nil {
+func NewDAVFiles(files *Service, connections *Connections, transfers *Transfers, locks *WriteLocks) (*DAVFiles, error) {
+	if files == nil || connections == nil || transfers == nil || locks == nil {
 		return nil, model.ErrInvalid
 	}
-	return &DAVFiles{files: files, connections: connections, transfers: transfers}, nil
+	return &DAVFiles{files: files, connections: connections, transfers: transfers, locks: locks}, nil
 }
 
-func (s *DAVFiles) parts(relative string) ([]string, error) {
-	p := s.connections.policy
+func (s *DAVFiles) WriteLocks() *WriteLocks { return s.locks }
+
+func (s *Connections) parts(relative string) ([]string, error) {
+	p := s.policy
 	if !utf8.ValidString(relative) || len(relative) > p.PathBytes || !strings.HasPrefix(relative, "/") || strings.ContainsAny(relative, "\\\x00") {
 		return nil, model.ErrInvalid
 	}
@@ -56,7 +60,7 @@ func (s *DAVFiles) parts(relative string) ([]string, error) {
 	}
 	return parts, nil
 }
-func (s *DAVFiles) resolve(entries []model.Entry, connection model.Connection, parts []string) (model.Entry, error) {
+func (s *Connections) resolve(entries []model.Entry, connection model.Connection, parts []string) (model.Entry, error) {
 	current := model.Entry{ID: connection.RootID, OwnerID: connection.OwnerID, Kind: model.Folder}
 	if connection.RootID != "" {
 		var ok bool
@@ -95,7 +99,7 @@ func (s *DAVFiles) snapshot(ctx context.Context, scope DAVScope, access Connecti
 }
 
 func (s *DAVFiles) Stat(ctx context.Context, scope DAVScope, relative string) (DAVItem, error) {
-	parts, err := s.parts(relative)
+	parts, err := s.connections.parts(relative)
 	if err != nil {
 		return DAVItem{}, err
 	}
@@ -103,7 +107,7 @@ func (s *DAVFiles) Stat(ctx context.Context, scope DAVScope, relative string) (D
 	if err != nil {
 		return DAVItem{}, err
 	}
-	entry, err := s.resolve(entries, connection, parts)
+	entry, err := s.connections.resolve(entries, connection, parts)
 	if err != nil {
 		return DAVItem{}, err
 	}
@@ -112,7 +116,7 @@ func (s *DAVFiles) Stat(ctx context.Context, scope DAVScope, relative string) (D
 
 // ReadDir 包含目录本身，匹配成熟协议库的Depth查询契约；超限不返回截断目录。
 func (s *DAVFiles) ReadDir(ctx context.Context, scope DAVScope, relative string, recursive bool) ([]DAVItem, error) {
-	parts, err := s.parts(relative)
+	parts, err := s.connections.parts(relative)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +124,7 @@ func (s *DAVFiles) ReadDir(ctx context.Context, scope DAVScope, relative string,
 	if err != nil {
 		return nil, err
 	}
-	root, err := s.resolve(entries, connection, parts)
+	root, err := s.connections.resolve(entries, connection, parts)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +179,7 @@ func (s *DAVFiles) DownloadTo(ctx context.Context, scope DAVScope, relative stri
 	if use == nil {
 		return model.ErrInvalid
 	}
-	parts, err := s.parts(relative)
+	parts, err := s.connections.parts(relative)
 	if err != nil {
 		return err
 	}
@@ -183,7 +187,7 @@ func (s *DAVFiles) DownloadTo(ctx context.Context, scope DAVScope, relative stri
 	if err != nil {
 		return err
 	}
-	entry, err := s.resolve(entries, connection, parts)
+	entry, err := s.connections.resolve(entries, connection, parts)
 	if err != nil {
 		return err
 	}
@@ -198,7 +202,7 @@ func (s *DAVFiles) DownloadTo(ctx context.Context, scope DAVScope, relative stri
 		if err != nil {
 			return err
 		}
-		latest, err := s.resolve(latestEntries, latestConnection, parts)
+		latest, err := s.connections.resolve(latestEntries, latestConnection, parts)
 		if err != nil {
 			return err
 		}
@@ -210,7 +214,8 @@ func (s *DAVFiles) DownloadTo(ctx context.Context, scope DAVScope, relative stri
 }
 
 func (s *DAVFiles) Put(ctx context.Context, scope DAVScope, relative string, length int64, condition ContentCondition, source io.Reader) (DAVItem, bool, error) {
-	parts, err := s.parts(relative)
+	condition.DAV = scope.Condition
+	parts, err := s.connections.parts(relative)
 	if err != nil {
 		return DAVItem{}, false, err
 	}
@@ -221,7 +226,7 @@ func (s *DAVFiles) Put(ctx context.Context, scope DAVScope, relative string, len
 	if err != nil {
 		return DAVItem{}, false, err
 	}
-	parent, err := s.resolve(entries, connection, parts[:len(parts)-1])
+	parent, err := s.connections.resolve(entries, connection, parts[:len(parts)-1])
 	if err != nil {
 		return DAVItem{}, false, err
 	}

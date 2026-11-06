@@ -26,6 +26,9 @@ func davRequest(t *testing.T, owner *consoleTestClient, credential map[string]an
 		t.Fatal(err)
 	}
 	req.SetBasicAuth(credential["id"].(string), credential["password"].(string))
+	if body != nil && (method == "PROPFIND" || method == "PROPPATCH" || method == "LOCK") {
+		req.Header.Set("Content-Type", "application/xml; charset=utf-8")
+	}
 	for name, value := range headers {
 		req.Header.Set(name, value)
 	}
@@ -38,7 +41,7 @@ func davRequest(t *testing.T, owner *consoleTestClient, credential map[string]an
 		t.Fatal(err)
 	}
 	if response.StatusCode != expected {
-		t.Fatalf("%s DAV状态 %d，预期 %d；响应 %s", method, response.StatusCode, expected, result)
+		t.Fatalf("%s DAV状态 %d，预期 %d", method, response.StatusCode, expected)
 	}
 	return result, response.Header
 }
@@ -77,7 +80,7 @@ func TestWebDAVConnectionsFilesAndRevocation(t *testing.T) {
 	credential := create("真实协议连接", false)
 	connectionPath := "/native/files/connections/" + credential["id"].(string)
 	_, options := davRequest(t, owner, credential, "OPTIONS", "", nil, nil, 204)
-	if options.Get("DAV") != "1" || strings.Contains(options.Get("Allow"), "LOCK") {
+	if options.Get("DAV") != "1, 2" || !strings.Contains(options.Get("Allow"), "LOCK") {
 		t.Fatal("能力声明错误")
 	}
 	davRequest(t, owner, credential, "MKCOL", "folder", nil, nil, 201)

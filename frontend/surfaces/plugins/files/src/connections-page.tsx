@@ -5,7 +5,7 @@ import { useFileTime } from './use-file-time';
 import { Page, Toolbar } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import type {
   ConnectionIssued,
   ConnectionListing,
@@ -20,7 +20,10 @@ import {
   type ConnectionAction,
 } from './connection-dialogs';
 
+const WriteLocksDialog = lazy(() => import('./write-locks-dialog'));
+
 export function ConnectionsPage() {
+  const [showLocks, setShowLocks] = useState(false);
   const time = useFileTime();
   const port = useConnections(),
     { t } = useFrontendTranslation();
@@ -71,6 +74,9 @@ export function ConnectionsPage() {
           primary={<h1 className="text-2xl font-semibold">{t('files.connections.title')}</h1>}
           secondary={
             <div className="flex flex-wrap gap-2">
+              <Action variant="secondary" onPress={() => setShowLocks(true)}>
+                {t('files.locks.title')}
+              </Action>
               <Action variant="secondary" disabled={loading} onPress={refresh}>
                 {t('files.refresh')}
               </Action>
@@ -255,6 +261,11 @@ export function ConnectionsPage() {
         ) : null}
         {issued ? (
           <IssuedConnectionDialog value={issued} onClose={() => setIssued(undefined)} />
+        ) : null}
+        {showLocks ? (
+          <Suspense fallback={<p role="status">{t('files.loading')}</p>}>
+            <WriteLocksDialog connections={page?.items ?? []} onClose={() => setShowLocks(false)} />
+          </Suspense>
         ) : null}
       </Page>
     </>

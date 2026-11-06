@@ -14,27 +14,22 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type transferRecord model.Transfer
-
-func (transferRecord) TableName() string { return "files_transfers" }
-
 // Transfers 固定本代内容和暂存位置；旧代不能在换根后继续接收新会话。
 type Transfers struct {
 	*Repository
 	stagingIdentity string
 	metadataEntries int
-	clock           clock.Clock
 }
 
 func NewTransfers(access Access, storageIdentity, stagingIdentity string, metadataEntries int, currentClock clock.Clock) (*Transfers, error) {
 	if stagingIdentity == "" || metadataEntries < 1 || metadataEntries > service.DefaultSearchTreeEntries || currentClock == nil {
 		return nil, model.ErrInvalid
 	}
-	repository, err := New(access, storageIdentity)
+	repository, err := New(access, storageIdentity, currentClock)
 	if err != nil {
 		return nil, err
 	}
-	return &Transfers{Repository: repository, stagingIdentity: stagingIdentity, metadataEntries: metadataEntries, clock: currentClock}, nil
+	return &Transfers{Repository: repository, stagingIdentity: stagingIdentity, metadataEntries: metadataEntries}, nil
 }
 
 func (r *Transfers) checkStaging(db *gorm.DB) error {
@@ -106,7 +101,10 @@ func (r *Transfers) ReadTransfer(ctx context.Context, owner, id string) (model.T
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return model.Transfer{}, model.ErrMissing
 	}
-	return model.Transfer(transfer), err
+	if err != nil {
+		return model.Transfer{}, err
+	}
+	return transfer.model()
 }
 
 // CleanupTransfers 仅供内部请求驱动维护，返回有界的到期或清理未完成项。
@@ -131,7 +129,11 @@ func (r *Transfers) CleanupTransfers(ctx context.Context, now time.Time, limit i
 	}
 	transfers := make([]model.Transfer, len(records))
 	for index, record := range records {
-		transfers[index] = model.Transfer(record)
+		var err error
+		transfers[index], err = record.model()
+		if err != nil {
+			return nil, err
+		}
 	}
 	return transfers, nil
 }
@@ -177,7 +179,11 @@ func (r *Transfers) ListTransfers(ctx context.Context, owner, state, cursor stri
 				page.NextCursor = records[len(records)-1].ID
 			}
 			for _, record := range records {
-				page.Items = append(page.Items, model.Transfer(record))
+				transfer, err := record.model()
+				if err != nil {
+					return err
+				}
+				page.Items = append(page.Items, transfer)
 			}
 			return nil
 		})
@@ -214,7 +220,10 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 				}
 				err := query.First(&previous).Error
 				if err == nil {
-					owned := model.Transfer(previous)
+					owned, err := previous.model()
+					if err != nil {
+						return err
+					}
 					snapshot.Transfer = &owned
 					if owned.Source == model.TransferSourceOffline {
 						current, err := readDownloadTask(db, owner, owned.DownloadID)
@@ -296,6 +305,38 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 			if err != nil {
 				return err
 			}
+			if snapshot.Transfer == nil || entry != nil {
+				authority := model.FileWriteAuthority{}
+				if changed.Source == model.TransferSourceWebDAV {
+					locks, err := loadWriteLocks(db, owner, r.clock.Now().UTC())
+					if err != nil {
+						return err
+					}
+					var matched bool
+					authority, matched, err = model.EvaluateDAVCondition(entries, locks, changed.DAVCondition, changed.ConnectionID, changed.ConnectionRevision)
+					if err != nil {
+						return err
+					}
+					if !matched {
+						return service.ErrContentPrecondition
+					}
+				}
+				target := entry
+				if target == nil {
+					candidate := model.Entry{ID: changed.ID, OwnerID: owner, ParentID: changed.ParentID, Name: changed.Name, NormalizedName: changed.NormalizedName, Kind: model.File}
+					if changed.ExpectedEntryID != "" {
+						existing, ok := model.Find(entries, changed.ExpectedEntryID)
+						if !ok {
+							return model.ErrConflict
+						}
+						candidate = existing
+					}
+					target = &candidate
+				}
+				if err := r.guardWriteLocks(db, owner, entries, []model.Entry{*target}, authority); err != nil {
+					return err
+				}
+			}
 			if entry != nil && snapshot.MetadataLimited {
 				return model.ErrDownloadMetadataLimited
 			}
@@ -309,6 +350,9 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 				return fmt.Errorf("transfer share binding invariant")
 			}
 			if previous := snapshot.Transfer; previous != nil {
+				if !changed.DAVCondition.Equal(previous.DAVCondition) {
+					return fmt.Errorf("transfer DAV condition immutable invariant")
+				}
 				sealed := previous.Source == model.TransferSourceWebDAV && previous.ContentSHA256 == "" && changed.ContentSHA256 != "" && previous.State == model.TransferReceiving && changed.State == model.TransferReceiving && changed.SizeKnown && changed.SizeBytes <= previous.SizeBytes && changed.QuotaReservedBytes <= previous.QuotaReservedBytes
 				offlineMutable := false
 				if current := snapshot.DownloadTask; previous.Source == model.TransferSourceOffline && !previous.Terminal() && current != nil && entry == nil && current.LeaseValid(r.clock.Now().UTC()) {
@@ -320,7 +364,10 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 					return fmt.Errorf("transfer immutable identity invariant")
 				}
 				changed.Revision = previous.Revision + 1
-				record := transferRecord(changed)
+				record, err := transferRecordFromModel(changed)
+				if err != nil {
+					return err
+				}
 				if err := db.Model(&transferRecord{}).Where("owner_id = ? AND id = ?", owner, changed.ID).Select("*").Updates(&record).Error; err != nil {
 					return err
 				}
@@ -354,7 +401,10 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 						return service.ErrConnectionUnavailable
 					}
 				}
-				record := transferRecord(changed)
+				record, err := transferRecordFromModel(changed)
+				if err != nil {
+					return err
+				}
 				if err := db.Create(&record).Error; err != nil {
 					return err
 				}

@@ -34,6 +34,21 @@ func New(files *service.DAVFiles, policy service.ConnectionPolicy) (*Protocol, e
 
 // Handle 的request使用已校验相对路径；prefix仅用于协议中的同源href。
 func (p *Protocol) Handle(writer http.ResponseWriter, request *http.Request, scope service.DAVScope, prefix string) error {
+	if err := p.files.CheckIf(request.Context(), scope); err != nil {
+		return err
+	}
+	if request.Method == MethodLock || request.Method == MethodUnlock {
+		return p.handleLock(writer, request, scope, prefix)
+	}
+	var propertyBody []byte
+	if request.Method == MethodPropFind && request.Body != nil {
+		var err error
+		propertyBody, err = io.ReadAll(request.Body)
+		if err != nil {
+			return err
+		}
+		request.Body = io.NopCloser(bytes.NewReader(propertyBody))
+	}
 	fs := &filesystem{files: p.files, scope: scope, prefix: prefix, bodyBytes: request.ContentLength}
 	if request.Method == MethodCopy || request.Method == MethodMove {
 		expected, err := conditions(dav.ConditionalMatch(request.Header.Get("If-Match")), dav.ConditionalMatch(request.Header.Get("If-None-Match")))
@@ -65,6 +80,11 @@ func (p *Protocol) Handle(writer http.ResponseWriter, request *http.Request, sco
 			return fs.failure
 		}
 		return &ProtocolError{Status: response.status}
+	}
+	if request.Method == MethodPropFind {
+		if err := p.augmentLockProperties(request.Context(), scope, prefix, propertyBody, response); err != nil {
+			return err
+		}
 	}
 	for name, values := range response.header {
 		writer.Header()[name] = append([]string(nil), values...)

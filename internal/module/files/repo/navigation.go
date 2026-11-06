@@ -8,6 +8,7 @@ import (
 
 	"github.com/reina0721/clouddrive/internal/module/files/model"
 	"github.com/reina0721/clouddrive/internal/module/files/service"
+	"github.com/reina0721/clouddrive/pkg/clock"
 	"github.com/reina0721/clouddrive/pkg/database"
 	"github.com/reina0721/clouddrive/pkg/idgen"
 	"gorm.io/gorm"
@@ -30,11 +31,11 @@ type Navigation struct {
 	treeLimit int
 }
 
-func NewNavigation(access Access, identity string, treeLimit int) (*Navigation, error) {
+func NewNavigation(access Access, identity string, treeLimit int, currentClock clock.Clock) (*Navigation, error) {
 	if treeLimit < 1 || treeLimit > service.DefaultNavigationTreeEntries {
 		return nil, model.ErrInvalid
 	}
-	repository, err := New(access, identity)
+	repository, err := New(access, identity, currentClock)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +201,7 @@ func (r *Navigation) CreateShortcut(ctx context.Context, owner string, change fu
 			if entry.Kind != model.Shortcut || entry.ObjectKey != "" || entry.SizeBytes != 0 || entry.ShareToken == "" {
 				return fmt.Errorf("file shortcut content invariant")
 			}
-			if err := saveEntryChanges(db, owner, entries, []model.Entry{entry}); err != nil {
+			if err := r.saveEntryChanges(db, owner, entries, []model.Entry{entry}, model.FileWriteAuthority{}); err != nil {
 				return err
 			}
 			result = entry

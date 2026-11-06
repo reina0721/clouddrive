@@ -142,10 +142,10 @@ export function DialogSurface({
                 <HeroButton
                   className="inline-flex min-h-control items-center justify-center rounded-control bg-brand px-4 text-sm font-semibold text-on-brand hover:bg-brand-strong"
                   isDisabled={confirmDisabled || pending}
-                  isPending={pending}
+                  aria-busy={pending || undefined}
                   onPress={() => void confirm()}
                 >
-                  {confirmLabel}
+                  {pending ? <span role="status">{confirmLabel}…</span> : confirmLabel}
                 </HeroButton>
               ) : null}
             </Modal.Footer>

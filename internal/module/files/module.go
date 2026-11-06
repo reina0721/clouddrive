@@ -23,8 +23,8 @@ import (
 )
 
 // ValidateStorage 将存储身份校验放在候选准入，不混入纯内存构造器。
-func ValidateStorage(ctx context.Context, access repo.Access, identity string) error {
-	repository, err := repo.New(access, identity)
+func ValidateStorage(ctx context.Context, access repo.Access, identity string, currentClock clock.Clock) error {
+	repository, err := repo.New(access, identity, currentClock)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func New(deps Dependencies) (Module, error) {
 	if deps.Actors == nil || deps.Logger == nil || deps.PublicAuthentication == nil {
 		return Module{}, fmt.Errorf("files boundary dependencies missing")
 	}
-	repository, err := repo.New(deps.Database, deps.StorageIdentity)
+	repository, err := repo.New(deps.Database, deps.StorageIdentity, deps.Clock)
 	if err != nil {
 		return Module{}, err
 	}
@@ -88,7 +88,7 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	navigationRepository, err := repo.NewNavigation(deps.Database, deps.StorageIdentity, deps.NavigationPolicy.TreeEntries)
+	navigationRepository, err := repo.NewNavigation(deps.Database, deps.StorageIdentity, deps.NavigationPolicy.TreeEntries, deps.Clock)
 	if err != nil {
 		return Module{}, err
 	}
@@ -96,7 +96,7 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	connectionRepository, err := repo.NewConnections(deps.Database, deps.StorageIdentity, deps.ConnectionPolicy.TreeEntries)
+	connectionRepository, err := repo.NewConnections(deps.Database, deps.StorageIdentity, deps.ConnectionPolicy.TreeEntries, deps.Clock)
 	if err != nil {
 		return Module{}, err
 	}
@@ -125,12 +125,17 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	davFiles, err := service.NewDAVFiles(useCases, connections, transfers)
+	writeLocks, err := service.NewWriteLocks(useCases, connections, repository)
+	if err != nil {
+		return Module{}, err
+	}
+	davFiles, err := service.NewDAVFiles(useCases, connections, transfers, writeLocks)
 	if err != nil {
 		return Module{}, err
 	}
 	boundary := &handler.Handler{PublicAuthentication: deps.PublicAuthentication, Service: useCases, Sharing: sharing, ShareTransfers: shareTransfers, Navigation: navigation, Preferences: preferences, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
 	boundary.Archives = archives
+	boundary.WriteLocks = writeLocks
 	boundary.WebDAV, err = webdavbinding.New(boundary, davFiles, deps.ConnectionPolicy, deps.Policy.MaxFileBytes)
 	if err != nil {
 		return Module{}, err
@@ -176,12 +181,12 @@ func stagingIdentity(root string) (string, error) {
 }
 
 // PrepareTransfers 将暂存目录准入 I/O 与纯内存模块构造分开。
-func PrepareTransfers(ctx context.Context, access repo.Access, storageIdentity, root string) error {
+func PrepareTransfers(ctx context.Context, access repo.Access, storageIdentity, root string, currentClock clock.Clock) error {
 	identity, err := stagingIdentity(root)
 	if err != nil {
 		return err
 	}
-	repository, err := repo.New(access, storageIdentity)
+	repository, err := repo.New(access, storageIdentity, currentClock)
 	if err != nil {
 		return err
 	}

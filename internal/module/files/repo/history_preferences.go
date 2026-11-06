@@ -133,7 +133,7 @@ func (r *Repository) ChangeContent(ctx context.Context, owner string, change fun
 			if err != nil {
 				return err
 			}
-			if err := saveEntryChanges(db, owner, entries, []model.Entry{entry}); err != nil {
+			if err := r.saveEntryChanges(db, owner, entries, []model.Entry{entry}, model.FileWriteAuthority{}); err != nil {
 				return err
 			}
 			result = entry

@@ -13,11 +13,12 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 		t.Fatal(err)
 	}
 	definitions := blueprint.httpDefinitions
-	if len(definitions) != 162 {
+	if len(definitions) != 164 {
 		t.Fatalf("operation count = %d", len(definitions))
 	}
 	seen := make(map[string]struct{}, len(definitions))
 	downloads := map[string]string{
+		"files.write-locks.list": "files:read", "files.write-locks.release": "files:write",
 		"files.preferences.history.read": "files:read", "files.preferences.history.save": "files:write",
 		"files.preferences.read": "files:read", "files.preferences.save": "files:write",
 		"files.access.read": "files:read", "files.access.update": "files:write", "files.access.preview": "files:read", "files.audience.lookup": "files:write",

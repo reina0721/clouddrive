@@ -14,6 +14,35 @@ import (
 	"gorm.io/gorm"
 )
 
+// v10TransferFixture 固定历史表的扁平事实，不让当前业务模型的新结构字段改变旧迁移夹具。
+type v10TransferFixture struct {
+	ID                      string
+	OwnerID                 string
+	ParentID                string
+	Name                    string
+	NormalizedName          string
+	SizeBytes               int64
+	SizeKnown               bool
+	QuotaReservedBytes      int64
+	Source                  model.TransferSource
+	ExpectedEntryID         string
+	ExpectedContentRevision int64
+	ConnectionID            string
+	ConnectionRevision      int64
+	ContentSHA256           string
+	IdempotencyKey          string
+	State                   model.TransferState
+	CreatedAt               time.Time
+	UpdatedAt               time.Time
+	ExpiresAt               time.Time
+	Revision                int64
+	EntryID                 string
+	ObjectKey               string
+	FailureCode             string
+	CleanupPending          bool
+	DownloadID              string
+}
+
 func TestOfflineV11PreservesExistingTransfersAndGuardsRollback(t *testing.T) {
 	config := database.DefaultConfig()
 	config.Driver, config.DSN = database.DriverSQLite, filepath.Join(t.TempDir(), "v10-to-v11.db")
@@ -45,11 +74,11 @@ func TestOfflineV11PreservesExistingTransfersAndGuardsRollback(t *testing.T) {
 			}
 		}
 		now := time.Now().UTC()
-		legacy := model.Transfer{ID: "d25f5cc7-8a0d-4483-9764-7b70580a39fc", OwnerID: "owner", Name: "existing.bin", NormalizedName: "existing.bin", SizeBytes: 3, SizeKnown: true, QuotaReservedBytes: 3, Source: model.TransferSourceTus, ContentSHA256: strings.Repeat("a", 64), IdempotencyKey: "preserved-key", State: model.TransferPaused, CreatedAt: now, UpdatedAt: now, ExpiresAt: now.Add(time.Hour), Revision: 7, ObjectKey: "preserved-object"}
+		legacy := v10TransferFixture{ID: "d25f5cc7-8a0d-4483-9764-7b70580a39fc", OwnerID: "owner", Name: "existing.bin", NormalizedName: "existing.bin", SizeBytes: 3, SizeKnown: true, QuotaReservedBytes: 3, Source: model.TransferSourceTus, ContentSHA256: strings.Repeat("a", 64), IdempotencyKey: "preserved-key", State: model.TransferPaused, CreatedAt: now, UpdatedAt: now, ExpiresAt: now.Add(time.Hour), Revision: 7, ObjectKey: "preserved-object"}
 		if err := db.Table("files_transfers").Omit("DownloadID", "ShareID", "ShareRevision", "ShareGrantDigest", "ShareAudienceSubject").Create(&legacy).Error; err != nil {
 			return err
 		}
-		var before, after model.Transfer
+		var before, after v10TransferFixture
 		if err := db.Table("files_transfers").Where("id = ?", legacy.ID).Take(&before).Error; err != nil {
 			return err
 		}
@@ -91,7 +120,7 @@ func TestOfflineV11PreservesExistingTransfersAndGuardsRollback(t *testing.T) {
 		if db.Migrator().HasColumn("files_transfers", "download_id") || db.Migrator().HasTable("files_download_tasks") {
 			t.Fatal("空离线数据回滚未完成")
 		}
-		var restored model.Transfer
+		var restored v10TransferFixture
 		if err := db.Table("files_transfers").Where("id = ?", legacy.ID).Take(&restored).Error; err != nil {
 			return err
 		}

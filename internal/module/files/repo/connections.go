@@ -7,6 +7,7 @@ import (
 
 	"github.com/reina0721/clouddrive/internal/module/files/model"
 	"github.com/reina0721/clouddrive/internal/module/files/service"
+	"github.com/reina0721/clouddrive/pkg/clock"
 	"github.com/reina0721/clouddrive/pkg/database"
 	"gorm.io/gorm"
 )
@@ -21,11 +22,11 @@ type Connections struct {
 	treeLimit int
 }
 
-func NewConnections(access Access, identity string, treeLimit int) (*Connections, error) {
+func NewConnections(access Access, identity string, treeLimit int, currentClock clock.Clock) (*Connections, error) {
 	if treeLimit < 1 || treeLimit > service.DefaultConnectionTreeEntries {
 		return nil, model.ErrInvalid
 	}
-	repository, err := New(access, identity)
+	repository, err := New(access, identity, currentClock)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +174,7 @@ func (r *Connections) ChangeConnection(ctx context.Context, owner, id string, ch
 var _ service.ConnectionRepository = (*Connections)(nil)
 
 // ChangeConnectionFiles 在同一owner事务内重读连接，避免写操作绕过刚更新的scope策略。
-func (r *Connections) ChangeConnectionFiles(ctx context.Context, id string, revision int64, change func(service.ConnectionFileSnapshot) ([]model.Entry, error)) ([]model.Entry, error) {
+func (r *Connections) ChangeConnectionFiles(ctx context.Context, id string, revision int64, change func(service.ConnectionFileSnapshot) (service.ConnectionFileChanges, error)) ([]model.Entry, error) {
 	if change == nil {
 		return nil, model.ErrInvalid
 	}
@@ -202,14 +203,21 @@ func (r *Connections) ChangeConnectionFiles(ctx context.Context, id string, revi
 			if err != nil {
 				return err
 			}
-			changed, err := change(service.ConnectionFileSnapshot{Connection: model.Connection(record), Entries: entries, HistoryPreferences: preferences})
+			locks, err := loadWriteLocks(db, record.OwnerID, r.clock.Now().UTC())
 			if err != nil {
 				return err
 			}
-			if err := saveEntryChanges(db, record.OwnerID, entries, changed); err != nil {
+			changed, err := change(service.ConnectionFileSnapshot{Locks: locks, Connection: model.Connection(record), Entries: entries, HistoryPreferences: preferences})
+			if err != nil {
 				return err
 			}
-			result = changed
+			if changed.Authority.ConnectionID != id || changed.Authority.ConnectionRevision != revision {
+				return model.ErrInvalid
+			}
+			if err := r.saveEntryChanges(db, record.OwnerID, entries, changed.Entries, changed.Authority); err != nil {
+				return err
+			}
+			result = changed.Entries
 			return nil
 		})
 	})

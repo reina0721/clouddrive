@@ -482,10 +482,10 @@ func (f *applicationGenerationFactory) Prepare(
 	if err != nil {
 		return abort(err)
 	}
-	if err := files.ValidateStorage(ctx, databaseAccess, storageIdentity); err != nil {
+	if err := files.ValidateStorage(ctx, databaseAccess, storageIdentity, clock.System()); err != nil {
 		return abort(err)
 	}
-	if err := files.PrepareTransfers(ctx, databaseAccess, storageIdentity, filesPolicy.Transfers.StagingPath); err != nil {
+	if err := files.PrepareTransfers(ctx, databaseAccess, storageIdentity, filesPolicy.Transfers.StagingPath, clock.System()); err != nil {
 		return abort(err)
 	}
 	offlineEnabled, err := scheduleapp.TaskConfiguredEnabled(snapshot, filesservice.DownloadDispatchTaskID)

@@ -113,6 +113,8 @@ const (
 	OperationFilesVersionsDelete            OperationID = "files.versions.delete"
 	OperationFilesVersionsList              OperationID = "files.versions.list"
 	OperationFilesVersionsRestore           OperationID = "files.versions.restore"
+	OperationFilesWriteLocksList            OperationID = "files.write-locks.list"
+	OperationFilesWriteLocksRelease         OperationID = "files.write-locks.release"
 	OperationGetTodo                        OperationID = "getTodo"
 	OperationIamAccountsArchive             OperationID = "iam.accounts.archive"
 	OperationIamAccountsArchiveBatch        OperationID = "iam.accounts.archive.batch"
@@ -278,6 +280,8 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesVersionsDelete, Method: "DELETE", Path: "/api/v1/files/{id}/versions", Policy: "protected", Scope: "files:write", Action: "files.versions.delete"},
 	{ID: OperationFilesVersionsList, Method: "GET", Path: "/api/v1/files/{id}/versions", Policy: "protected", Scope: "files:read", Action: "files.versions.list"},
 	{ID: OperationFilesVersionsRestore, Method: "POST", Path: "/api/v1/files/{id}/versions/{revision}/restore", Policy: "protected", Scope: "files:write", Action: "files.versions.restore"},
+	{ID: OperationFilesWriteLocksList, Method: "GET", Path: "/api/v1/files/write-locks", Policy: "protected", Scope: "files:read", Action: "files.write-locks.list"},
+	{ID: OperationFilesWriteLocksRelease, Method: "POST", Path: "/api/v1/files/write-locks/{id}/release", Policy: "protected", Scope: "files:write", Action: "files.write-locks.release"},
 	{ID: OperationGetTodo, Method: "GET", Path: "/api/v1/todos/{id}", Policy: "protected", Scope: "todos:read", Action: "todo.read"},
 	{ID: OperationIamAccountsArchive, Method: "POST", Path: "/api/v1/iam/accounts/{id}/archive", Policy: "protected", Scope: "iam:account:write", Action: "iam.accounts.archive"},
 	{ID: OperationIamAccountsArchiveBatch, Method: "POST", Path: "/api/v1/iam/accounts/batch-archive", Policy: "protected", Scope: "iam:account:write", Action: "iam.accounts.archive.batch"},

@@ -25,6 +25,7 @@ type ContentMatch struct {
 	Tag  string
 }
 type ContentCondition struct {
+	DAV      model.DAVCondition
 	Match    *ContentMatch
 	NotMatch *ContentMatch
 }
@@ -171,6 +172,10 @@ func (s *Transfers) Ingest(ctx context.Context, connection model.Connection, par
 			return model.Transfer{}, nil, model.ErrBusy
 		}
 		current := model.Transfer{ID: id, OwnerID: connection.OwnerID, ParentID: parent, Name: name, NormalizedName: normalized, SizeBytes: capacity, SizeKnown: declaredBytes >= 0, QuotaReservedBytes: incremental, Source: model.TransferSourceWebDAV, IdempotencyKey: string(model.TransferSourceWebDAV) + ":" + id, State: model.TransferPreparing, CreatedAt: now, UpdatedAt: now, ExpiresAt: expires, ObjectKey: "files/" + id, ConnectionID: connection.ID, ConnectionRevision: connection.Revision}
+		current.DAVCondition, err = canonicalDAVCondition(s.files, snapshot.Entries, connection, condition.DAV)
+		if err != nil {
+			return model.Transfer{}, nil, err
+		}
 		if original != nil {
 			current.ExpectedEntryID = original.ID
 			current.ExpectedContentRevision = original.ContentRevision

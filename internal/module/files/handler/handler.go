@@ -26,6 +26,7 @@ type PublicAuthenticator interface {
 }
 
 type Handler struct {
+	WriteLocks           *service.WriteLocks
 	PublicAuthentication PublicAuthenticator
 	Archives             *service.Archives
 	Downloads            *service.OfflineDownloads
@@ -79,6 +80,8 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 		status, code = 409, "files_offline_lease_lost"
 	case errors.Is(err, model.ErrHistoryFull):
 		status, code = 409, "files_history_full"
+	case errors.Is(err, model.ErrWriteLocked):
+		status, code = http.StatusLocked, "files_write_locked"
 	case errors.Is(err, model.ErrUnsupported):
 		status, code = http.StatusUnprocessableEntity, "files_unsupported"
 	case errors.Is(err, service.ErrArchivePassword):

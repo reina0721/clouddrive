@@ -78,6 +78,7 @@ export async function loadPublicFileMessages(): Promise<TranslationResources> {
           access: access.zhPublicAccess,
           errors: {
             ...messages.zhPublicErrors,
+            'write-locked': '文件正被编辑占用，请稍后重试或联系文件所有者解除占用。',
             unauthenticated: access.zhPublicAccess.unauthenticated,
           },
         },
@@ -90,6 +91,8 @@ export async function loadPublicFileMessages(): Promise<TranslationResources> {
           access: access.enPublicAccess,
           errors: {
             ...messages.enPublicErrors,
+            'write-locked':
+              'This file is locked for editing. Retry later or ask its owner to release the lock.',
             unauthenticated: access.enPublicAccess.unauthenticated,
           },
         },

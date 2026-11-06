@@ -42,7 +42,21 @@ export type ConnectionChange = Readonly<{
 }>;
 export type ConnectionState = 'active' | 'disabled' | 'revoked';
 
+export const writeLockSchema = z.object({
+  id: z.string().uuid(),
+  path: z.string().startsWith('/'),
+  connectionId: z.string().uuid(),
+  depth: z.enum(['0', 'infinity']),
+  expiresAt: z.string().datetime(),
+  revision: z.number().int().positive(),
+});
+export const writeLockListingSchema = z.object({ items: z.array(writeLockSchema).max(100) });
+export const writeLockReleaseSchema = z.object({ released: z.literal(true) });
+export type FileWriteLock = z.infer<typeof writeLockSchema>;
+
 export type ConnectionsPort = Readonly<{
+  listWriteLocks(signal?: AbortSignal): Promise<readonly FileWriteLock[]>;
+  releaseWriteLock(lock: FileWriteLock, signal?: AbortSignal): Promise<void>;
   list(cursor?: string, signal?: AbortSignal): Promise<ConnectionListing>;
   read(connection: FileConnection): Promise<FileConnection>;
   create(input: ConnectionInput): Promise<ConnectionIssued>;

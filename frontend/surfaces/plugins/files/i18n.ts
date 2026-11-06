@@ -5,7 +5,9 @@ import { zhPreferences, enPreferences } from './preference-i18n';
 import { zhTree, enTree } from './tree-i18n';
 import { zhTime, enTime } from './time-i18n';
 import { zhRetention, enRetention } from './retention-i18n';
+import { zhLocks, enLocks } from './locks-i18n';
 const zh = {
+  locks: zhLocks,
   retention: zhRetention,
   time: zhTime,
   tree: zhTree,
@@ -192,6 +194,7 @@ const zh = {
   browse: '浏览文件夹',
   root: '根目录',
   errors: {
+    'write-locked': '文件正被外部客户端占用，请等待到期或到连接与挂载中解除文件锁。',
     locked: '分享访问凭据无效。',
     checksum: '源文件内容不一致，请重新选择正确的文件。',
     expired: '暂存已到期，请重新上传。',
@@ -209,6 +212,7 @@ const zh = {
   },
 };
 const en: typeof zh = {
+  locks: enLocks,
   retention: enRetention,
   time: enTime,
   tree: enTree,
@@ -404,6 +408,8 @@ const en: typeof zh = {
   browse: 'Browse folders',
   root: 'Root',
   errors: {
+    'write-locked':
+      'This file is locked by an external client. Wait for expiry or release it in Connections and mounts.',
     locked: 'The share access grant is invalid.',
     checksum: 'The source content does not match. Select the correct file.',
     expired: 'The staged upload expired. Start a new upload.',

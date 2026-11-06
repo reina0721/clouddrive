@@ -2,6 +2,8 @@ import {
   connectionSchema,
   connectionIssuedSchema,
   connectionListingSchema,
+  writeLockListingSchema,
+  writeLockReleaseSchema,
   FilesError,
   type ConnectionsPort,
   type FileConnection,
@@ -37,6 +39,17 @@ export function createConnectionsPort(
     }
   };
   return {
+    listWriteLocks: async (signal) =>
+      writeLockListingSchema.parse(await call('/write-locks', signal ? { signal } : {})).items,
+    releaseWriteLock: async (lock, signal) => {
+      writeLockReleaseSchema.parse(
+        await call('/write-locks/' + encodeURIComponent(lock.id) + '/release', {
+          method: 'POST',
+          body: { revision: lock.revision },
+          ...(signal ? { signal } : {}),
+        }),
+      );
+    },
     read: async (connection) => connectionSchema.parse(await call(path(connection))),
     list: async (cursor = '', signal) =>
       connectionListingSchema.parse(

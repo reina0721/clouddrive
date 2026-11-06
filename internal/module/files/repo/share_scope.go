@@ -93,7 +93,7 @@ func (r *Repository) ChangeSharedFiles(ctx context.Context, digest, grantDigest 
 			if err != nil {
 				return err
 			}
-			if err := saveEntryChanges(db, current.OwnerID, entries, changed); err != nil {
+			if err := r.saveEntryChanges(db, current.OwnerID, entries, changed, model.FileWriteAuthority{}); err != nil {
 				return err
 			}
 			// 返回同一事务内的持久表示，避免数据库时间精度与Go回执不一致。

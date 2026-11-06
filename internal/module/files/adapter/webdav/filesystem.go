@@ -55,6 +55,8 @@ func Status(err error) int {
 		return http.StatusInternalServerError
 	case errors.Is(err, service.ErrContentPrecondition):
 		return http.StatusPreconditionFailed
+	case errors.Is(err, model.ErrWriteLocked):
+		return http.StatusLocked
 	case errors.Is(err, service.ErrConnectionReadOnly), errors.Is(err, service.ErrConnectionUnavailable), errors.Is(err, service.ErrConnectionSystemFile):
 		return http.StatusForbidden
 	case errors.Is(err, model.ErrMissing):

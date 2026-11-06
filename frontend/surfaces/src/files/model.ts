@@ -14,6 +14,7 @@ export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
 export type FilesErrorCode =
+  | 'write-locked'
   | 'archive-password'
   | 'archive-checksum'
   | 'archive-worker'

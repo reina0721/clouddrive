@@ -39,6 +39,8 @@ func Metadata() Definition {
 		{Name: protocol.MethodCopy, Access: service.ConnectionWrite},
 		{Name: protocol.MethodMove, Access: service.ConnectionWrite},
 		{Name: http.MethodDelete, Access: service.ConnectionWrite},
+		{Name: protocol.MethodLock, Access: service.ConnectionWrite, Transfer: true},
+		{Name: protocol.MethodUnlock, Access: service.ConnectionWrite},
 	}}
 }
 func (d Definition) Method(name string) (Method, bool) {

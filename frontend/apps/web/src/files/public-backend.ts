@@ -93,27 +93,29 @@ export function createPublicFilesRuntime(
       if (!response.ok) {
         const message = await response.text();
         const code =
-          response.status === 401
-            ? 'unauthenticated'
-            : response.status === 404
-              ? 'missing'
-              : response.status === 403
-                ? message.includes('files_share_locked')
-                  ? 'locked'
-                  : 'forbidden'
-                : response.status === 429 || response.status === 503
-                  ? 'busy'
-                  : response.status === 413
-                    ? 'large'
-                    : response.status === 409
-                      ? message.includes('files_quota')
-                        ? 'quota'
-                        : 'conflict'
-                      : response.status === 422
-                        ? message.includes('files_unsupported')
-                          ? 'unsupported'
-                          : 'invalid'
-                        : 'unavailable';
+          response.status === 423
+            ? 'write-locked'
+            : response.status === 401
+              ? 'unauthenticated'
+              : response.status === 404
+                ? 'missing'
+                : response.status === 403
+                  ? message.includes('files_share_locked')
+                    ? 'locked'
+                    : 'forbidden'
+                  : response.status === 429 || response.status === 503
+                    ? 'busy'
+                    : response.status === 413
+                      ? 'large'
+                      : response.status === 409
+                        ? message.includes('files_quota')
+                          ? 'quota'
+                          : 'conflict'
+                        : response.status === 422
+                          ? message.includes('files_unsupported')
+                            ? 'unsupported'
+                            : 'invalid'
+                          : 'unavailable';
         throw new FilesError(code);
       }
       if (options.response === 'headers') return response.headers;

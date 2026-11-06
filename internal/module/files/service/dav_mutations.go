@@ -35,18 +35,33 @@ func (s *DAVFiles) change(ctx context.Context, scope DAVScope, action func(Conne
 	if _, _, err := s.snapshot(ctx, scope, ConnectionWrite); err != nil {
 		return nil, err
 	}
-	return s.connections.store.ChangeConnectionFiles(ctx, scope.ConnectionID, scope.Revision, func(snapshot ConnectionFileSnapshot) ([]model.Entry, error) {
+	return s.connections.store.ChangeConnectionFiles(ctx, scope.ConnectionID, scope.Revision, func(snapshot ConnectionFileSnapshot) (ConnectionFileChanges, error) {
 		if s.connections.status(snapshot.Connection, snapshot.Entries) != ConnectionStatusActive {
-			return nil, ErrConnectionUnavailable
+			return ConnectionFileChanges{}, ErrConnectionUnavailable
 		}
 		if snapshot.Connection.ReadOnly {
-			return nil, ErrConnectionReadOnly
+			return ConnectionFileChanges{}, ErrConnectionReadOnly
 		}
-		return action(snapshot)
+		condition, err := canonicalDAVCondition(s.files, snapshot.Entries, snapshot.Connection, scope.Condition)
+		if err != nil {
+			return ConnectionFileChanges{}, err
+		}
+		authority, matched, err := model.EvaluateDAVCondition(snapshot.Entries, snapshot.Locks, condition, scope.ConnectionID, scope.Revision)
+		if err != nil {
+			return ConnectionFileChanges{}, err
+		}
+		if !matched {
+			return ConnectionFileChanges{}, ErrContentPrecondition
+		}
+		entries, err := action(snapshot)
+		if err != nil {
+			return ConnectionFileChanges{}, err
+		}
+		return ConnectionFileChanges{Entries: entries, Authority: authority}, nil
 	})
 }
 func (s *DAVFiles) Mkdir(ctx context.Context, scope DAVScope, relative string) error {
-	parts, err := s.parts(relative)
+	parts, err := s.connections.parts(relative)
 	if err != nil {
 		return err
 	}
@@ -54,7 +69,7 @@ func (s *DAVFiles) Mkdir(ctx context.Context, scope DAVScope, relative string) e
 		return model.ErrConflict
 	}
 	_, err = s.change(ctx, scope, func(snapshot ConnectionFileSnapshot) ([]model.Entry, error) {
-		parent, err := s.resolve(snapshot.Entries, snapshot.Connection, parts[:len(parts)-1])
+		parent, err := s.connections.resolve(snapshot.Entries, snapshot.Connection, parts[:len(parts)-1])
 		if err != nil {
 			return nil, err
 		}
@@ -82,7 +97,7 @@ func (s *DAVFiles) Mkdir(ctx context.Context, scope DAVScope, relative string) e
 	return err
 }
 func (s *DAVFiles) Remove(ctx context.Context, scope DAVScope, relative string, condition ContentCondition) error {
-	parts, err := s.parts(relative)
+	parts, err := s.connections.parts(relative)
 	if err != nil {
 		return err
 	}
@@ -90,7 +105,7 @@ func (s *DAVFiles) Remove(ctx context.Context, scope DAVScope, relative string, 
 		return model.ErrConflict
 	}
 	_, err = s.change(ctx, scope, func(snapshot ConnectionFileSnapshot) ([]model.Entry, error) {
-		entry, err := s.resolve(snapshot.Entries, snapshot.Connection, parts)
+		entry, err := s.connections.resolve(snapshot.Entries, snapshot.Connection, parts)
 		if err != nil {
 			return nil, err
 		}
@@ -112,7 +127,7 @@ func (s *DAVFiles) destination(snapshot ConnectionFileSnapshot, parts []string) 
 	if len(parts) == 0 {
 		return model.Entry{}, nil, "", model.ErrConflict
 	}
-	parent, err := s.resolve(snapshot.Entries, snapshot.Connection, parts[:len(parts)-1])
+	parent, err := s.connections.resolve(snapshot.Entries, snapshot.Connection, parts[:len(parts)-1])
 	if err != nil {
 		return model.Entry{}, nil, "", err
 	}
@@ -141,11 +156,11 @@ func (s *DAVFiles) destination(snapshot ConnectionFileSnapshot, parts []string) 
 }
 
 func (s *DAVFiles) Move(ctx context.Context, scope DAVScope, relative, destination string, options DAVMoveOptions) (bool, error) {
-	sourceParts, err := s.parts(relative)
+	sourceParts, err := s.connections.parts(relative)
 	if err != nil {
 		return false, err
 	}
-	destinationParts, err := s.parts(destination)
+	destinationParts, err := s.connections.parts(destination)
 	if err != nil {
 		return false, err
 	}
@@ -154,7 +169,7 @@ func (s *DAVFiles) Move(ctx context.Context, scope DAVScope, relative, destinati
 	}
 	created := false
 	_, err = s.change(ctx, scope, func(snapshot ConnectionFileSnapshot) ([]model.Entry, error) {
-		source, err := s.resolve(snapshot.Entries, snapshot.Connection, sourceParts)
+		source, err := s.connections.resolve(snapshot.Entries, snapshot.Connection, sourceParts)
 		if err != nil {
 			return nil, err
 		}
@@ -196,11 +211,11 @@ func (s *DAVFiles) Move(ctx context.Context, scope DAVScope, relative, destinati
 }
 
 func (s *DAVFiles) Copy(ctx context.Context, scope DAVScope, relative, destination string, options DAVCopyOptions) (bool, error) {
-	sourceParts, err := s.parts(relative)
+	sourceParts, err := s.connections.parts(relative)
 	if err != nil {
 		return false, err
 	}
-	destinationParts, err := s.parts(destination)
+	destinationParts, err := s.connections.parts(destination)
 	if err != nil {
 		return false, err
 	}
@@ -209,7 +224,7 @@ func (s *DAVFiles) Copy(ctx context.Context, scope DAVScope, relative, destinati
 	}
 	created := false
 	_, err = s.change(ctx, scope, func(snapshot ConnectionFileSnapshot) ([]model.Entry, error) {
-		source, err := s.resolve(snapshot.Entries, snapshot.Connection, sourceParts)
+		source, err := s.connections.resolve(snapshot.Entries, snapshot.Connection, sourceParts)
 		if err != nil {
 			return nil, err
 		}

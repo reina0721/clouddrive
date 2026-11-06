@@ -56,7 +56,7 @@ export const zhConnections = {
   },
   guideTitle: '如何连接',
   guideLimits:
-    '支持 WebDAV 基础文件操作、范围下载和条件写入。暂不支持 LOCK/UNLOCK；依赖远程锁或额外属性的客户端可能受限。系统挂载行为尚未逐一验证。',
+    '支持 WebDAV 基础操作、范围下载、条件写入和持久独占写锁；可在文件锁中查看及解除占用。不支持共享锁，系统挂载行为尚未逐一验证。',
   guides: {
     generic: {
       title: 'WebDAV 客户端',
@@ -137,7 +137,7 @@ export const enConnections: typeof zhConnections = {
   },
   guideTitle: 'How to connect',
   guideLimits:
-    'Supports basic WebDAV file operations, range downloads and conditional writes. LOCK/UNLOCK are unavailable; clients requiring remote locks or extra properties may be limited. Individual operating system mounts have not been verified.',
+    'Supports basic WebDAV operations, range downloads, conditional writes and persistent exclusive write locks. View and release editing locks in File locks. Shared locks are unsupported. Individual operating system mounts have not been verified.',
   guides: {
     generic: {
       title: 'WebDAV clients',

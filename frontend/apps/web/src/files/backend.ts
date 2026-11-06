@@ -132,6 +132,7 @@ export function createFilesRuntime(
               : 'conflict';
         else if (error.status === 413)
           code = payload?.includes('files_offline_metadata_limited') ? 'metadata-limited' : 'large';
+        else if (error.status === 423) code = 'write-locked';
         else if (error.status === 429) code = 'busy';
         else if (error.status === 400 || error.status === 422) code = 'invalid';
       }

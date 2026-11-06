@@ -18,9 +18,15 @@ type ConnectionPage struct {
 }
 
 type ConnectionFileSnapshot struct {
+	Locks              []model.WriteLock
 	HistoryPreferences model.HistoryPreferences
 	Connection         model.Connection
 	Entries            []model.Entry
+}
+
+type ConnectionFileChanges struct {
+	Entries   []model.Entry
+	Authority model.FileWriteAuthority
 }
 
 type ConnectionRepository interface {
@@ -28,7 +34,7 @@ type ConnectionRepository interface {
 	ConnectionEntries(context.Context, string) ([]model.Entry, error)
 	ListConnections(context.Context, string, string, int) (ConnectionPage, error)
 	ChangeConnection(context.Context, string, string, func(ConnectionSnapshot) (model.Connection, error)) (model.Connection, error)
-	ChangeConnectionFiles(context.Context, string, int64, func(ConnectionFileSnapshot) ([]model.Entry, error)) ([]model.Entry, error)
+	ChangeConnectionFiles(context.Context, string, int64, func(ConnectionFileSnapshot) (ConnectionFileChanges, error)) ([]model.Entry, error)
 }
 
 // ConnectionAccess 只区分当前操作所需的精确权限，不表示连接配置状态。

@@ -110,7 +110,11 @@ func downloadChildren(db *gorm.DB, owner, taskID string) ([]model.Transfer, erro
 	if len(records) != 1 || records[0].Source != model.TransferSourceOffline {
 		return nil, fmt.Errorf("download child ownership invariant")
 	}
-	return []model.Transfer{model.Transfer(records[0])}, nil
+	child, err := records[0].model()
+	if err != nil {
+		return nil, err
+	}
+	return []model.Transfer{child}, nil
 }
 
 func downloadEntrySnapshot(db *gorm.DB, owner string, limit int) ([]model.Entry, bool, error) {
@@ -297,7 +301,10 @@ func (r *Downloads) RetargetDownload(ctx context.Context, owner, id string, revi
 		}
 		child.ParentID, child.Name, child.NormalizedName = parent, name, normalized
 		child.Revision++
-		record := transferRecord(child)
+		record, err := transferRecordFromModel(child)
+		if err != nil {
+			return err
+		}
 		if err := db.Model(&transferRecord{}).Where("owner_id = ? AND id = ?", owner, child.ID).Select("parent_id", "name", "normalized_name", "revision").Updates(&record).Error; err != nil {
 			return err
 		}

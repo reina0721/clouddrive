@@ -89,13 +89,19 @@ Storage 通过租约内的可寻址流读写内容，local/S3-compatible 都有�
 
 私有和公开下载使用原生浏览器保存，不先缓存完整大文件。公开下载经POST签发限定单文件、内容版本、策略版本的短期句柄；`downloadTTL=1m`、`downloadLimit=100`，到期不晚于分享或原解锁票据。GET/HEAD支持Range及条件请求并重新检查授权。原始内容有download许可时可读任意文件；只有preview时限制安全类型和字节预算。Host媒体预览始终有界并核验格式，文字默认1MiB、媒体32MiB、ZIP64MiB；关闭释放读取与Blob URL。
 
-files当前迁移v12：v12增加分享策略、Grant策略版本与Transfer分享绑定；已有链接显式迁移为启用、只读、revision=1，原票据同版本。v1–v11已应用SQL不变，不重置账号、文件或数据库。新策略或分享候选存在时down guard拒绝有损回滚；只在合成SQLite库验证回滚，绝不在用户库清理数据以通过guard。MySQL/PostgreSQL脚本已提供，实际迁移验收限于SQLite。
+分享协作使用v12增量结构，增加分享策略、Grant策略版本与Transfer分享绑定；已有链接显式迁移为启用、只读、revision=1，原票据同版本。v1–v11已应用SQL不变，不重置账号、文件或数据库。新策略或分享候选存在时down guard拒绝有损回滚；只在合成SQLite库验证回滚，绝不在用户库清理数据以通过guard。MySQL/PostgreSQL脚本已提供，实际迁移验收限于SQLite。
 
 ## WebDAV 连接与挂载
 
 `/home/connections` 可创建具名独立凭据，选择自己的有效目录作为根，设置只读和阻止点文件写入，并管理备注、策略、停用/启用、撤销及密码轮换。修改有版本冲突保护，失败保留输入。密码只在创建或轮换成功时显示一次，普通读取不能取回；连接用户名为独立ID，不使用网页登录密码。撤销不可恢复，停用可重新启用。到期、根目录回收、账号禁用或IAM文件权限撤回后，旧凭据不能继续访问。
 
-协议提供 PROPFIND 目录属性、GET/HEAD 范围及条件下载、MKCOL、流式PUT、事务COPY/MOVE和进入同一回收站的DELETE。PUT最大512MiB，遵守现有空间与暂存预算，未知长度流超过上限即失败；覆盖保存原条目ID并递增内容版本，条件或最终CAS不符不破坏旧内容。复制按副本目录项计费。目录复制/移动也受点文件策略约束。暂不支持LOCK/UNLOCK及任意扩展属性；PROPPATCH对受保护属性返回失败明细，不能用于Office锁协作。Windows/iOS指南不等同于实际系统驱动验收。
+协议提供 PROPFIND 目录属性、GET/HEAD 范围及条件下载、MKCOL、流式PUT、事务COPY/MOVE和进入同一回收站的DELETE。PUT最大512MiB，遵守现有空间与暂存预算，未知长度流超过上限即失败；覆盖保存原条目ID并递增内容版本，条件或最终CAS不符不破坏旧内容。复制按副本目录项计费。目录复制/移动也受点文件策略约束。LOCK/UNLOCK提供持久独占写锁，PROPFIND可读取supportedlock与lockdiscovery；快捷方式不提供写锁且supportedlock为空；共享锁、任意扩展属性及Office服务仍不支持。PROPPATCH对受保护属性返回失败明细。Windows/iOS指南不等同于实际系统驱动验收。
+
+“文件锁”位于连接页，显示本人当前有效占用的规范路径、来源连接、范围及到期时间；可刷新并确认解除，操作使用记录版本避免误解续期后的锁。时间跟随账号区域偏好。解除不会修改内容，但应先停止编辑器保存，避免未保存的修改冲突。网页、分享、版本恢复/清理及上传最终发布在同一文件事务内检查占用，缺少有效授权返回423；If条件不成立返回412。普通上传接收完成不代表能绕过后来取得的锁。
+
+客户端使用连接认证及If令牌写入，令牌本身不授予权限。支持Depth0与Infinity；Depth0文件夹保护自身及直接成员名称，Infinity覆盖后代。COPY不复制源锁，MOVE不搬走源URL锁，目标已有锁仍有效。未映射文件LOCK原子创建真实空文件；解锁后该文件保留。刷新使用空请求体和单个If状态令牌；锁随服务重启保留，到期及连接停用/撤销/轮换/只读后失效。连接根外的继承锁发现属性返回403，不泄漏外部路径。
+
+`files.connections.writeLockAge`默认5m、`writeLockMaxAge`最大1h，期限不超过连接到期；`writeLockOwnerLimit`默认及硬上限100、`writeLockGlobalLimit`默认及硬上限5000，可调小。If头、规范化条件和持久文档各受8KiB预算，最多32列表/64条件，owner XML最多8KiB/32层/512节点，仍受原64KiB XML和1MiB响应预算约束。锁按需读取和清理，没有新的后台循环。v16仅新增锁表及传输条件列，旧列数据保留；有锁或持久条件记录时down guard拒绝有损回滚，不在用户库删除记录以通过guard。验收与客户端适用边界见[141记录](../changes/141-webdav-write-locks/README.md)。
 
 `files.connections` 默认每账号最多20个未撤销连接、有效期720h/最大8760h、元数据树10000项、目录查询500项、XML64KiB、响应1MiB、相对路径4096字节/64层。预算可调小，不允许超出默认硬上界。超出元数据扫描预算会拒绝文件访问，仍允许停用/撤销。`publicOrigin` 默认空：地址采用当前API请求看到的scheme/Host；HTTPS反向代理应显式配置可达的HTTP(S) origin，不含路径、凭据或query。不会信任任意Forwarded头推测公网地址。
 

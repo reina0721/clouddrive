@@ -55,7 +55,11 @@ func escapedPathValid(path string) bool {
 }
 
 func (h *Handler) destination(request *http.Request, id string) (string, error) {
-	target, err := url.Parse(request.Header.Get("Destination"))
+	return h.resource(request, id, request.Header.Get("Destination"))
+}
+
+func (h *Handler) resource(request *http.Request, id, value string) (string, error) {
+	target, err := url.Parse(value)
 	if err != nil || target.User != nil || target.RawQuery != "" || target.Fragment != "" || !escapedPathValid(target.EscapedPath()) {
 		return "", model.ErrInvalid
 	}
@@ -117,8 +121,13 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 	}
-	if request.Header.Get("If") != "" || request.Header.Get("Lock-Token") != "" {
-		h.reject(writer, request, http.StatusPreconditionFailed, nil)
+	if len(request.Header.Values("If")) > 1 || len(request.Header.Values("Lock-Token")) > 1 || request.Header.Get("Lock-Token") != "" && request.Method != protocol.MethodUnlock {
+		h.reject(writer, request, http.StatusBadRequest, nil)
+		return
+	}
+	scope.Condition, err = protocol.ParseIfHeader(request.Header.Get("If"), relative, func(tag string) (string, error) { return h.resource(request, id, tag) })
+	if err != nil {
+		h.reject(writer, request, protocol.ErrorStatus(err), err)
 		return
 	}
 	clone := request.Clone(request.Context())
@@ -142,7 +151,7 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			}
 		}
 		writer.Header().Set("Allow", strings.Join(allowed, ", "))
-		writer.Header().Set("DAV", "1")
+		writer.Header().Set("DAV", "1, 2")
 		writer.Header().Set("MS-Author-Via", "DAV")
 		writer.WriteHeader(http.StatusNoContent)
 		return
@@ -174,6 +183,9 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	observed := &responseState{ResponseWriter: writer}
 	err = h.protocol.Handle(observed, clone, scope, Prefix+id)
 	if err == nil {
+		if (request.Method == protocol.MethodLock || request.Method == protocol.MethodUnlock) && observed.status != http.StatusMultiStatus {
+			h.boundary.Logger.Info("files.webdav.lock.changed", logger.String("phase", request.Method), logger.Int("status", observed.status))
+		}
 		return
 	}
 	status := protocol.ErrorStatus(err)
@@ -196,6 +208,7 @@ func (h *Handler) reject(writer http.ResponseWriter, request *http.Request, stat
 type responseState struct {
 	http.ResponseWriter
 	started bool
+	status  int
 }
 
 func (w *responseState) WriteHeader(status int) {
@@ -203,6 +216,7 @@ func (w *responseState) WriteHeader(status int) {
 		return
 	}
 	w.started = true
+	w.status = status
 	w.ResponseWriter.WriteHeader(status)
 }
 func (w *responseState) Write(body []byte) (int, error) {

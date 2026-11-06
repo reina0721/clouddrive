@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/reina0721/clouddrive/internal/module/files/model"
 	"github.com/reina0721/clouddrive/internal/module/files/service"
+	"github.com/reina0721/clouddrive/pkg/clock"
 	"github.com/reina0721/clouddrive/pkg/database"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -19,6 +20,7 @@ type Access interface {
 type Repository struct {
 	access   Access
 	identity string
+	clock    clock.Clock
 }
 
 const primaryStorageID = "primary"
@@ -106,11 +108,11 @@ func (r *Repository) RecordCleanup(ctx context.Context, owner, key string) error
 	})
 }
 
-func New(access Access, identity string) (*Repository, error) {
-	if access == nil || identity == "" {
+func New(access Access, identity string, currentClock clock.Clock) (*Repository, error) {
+	if access == nil || identity == "" || currentClock == nil {
 		return nil, fmt.Errorf("files database is required")
 	}
-	return &Repository{access: access, identity: identity}, nil
+	return &Repository{access: access, identity: identity, clock: currentClock}, nil
 }
 func (r *Repository) Read(ctx context.Context, owner string) ([]model.Entry, error) {
 	entries := []model.Entry{}
@@ -178,7 +180,7 @@ func (r *Repository) changeMany(ctx context.Context, owner string, load func(*go
 			if err != nil {
 				return err
 			}
-			if err := saveEntryChanges(db, owner, entries, changed); err != nil {
+			if err := r.saveEntryChanges(db, owner, entries, changed, model.FileWriteAuthority{}); err != nil {
 				return err
 			}
 			result = changed
@@ -189,7 +191,10 @@ func (r *Repository) changeMany(ctx context.Context, owner string, load func(*go
 }
 
 // saveEntryChanges 只在持有同一storage/owner事务时保存受控变化集合。
-func saveEntryChanges(db *gorm.DB, owner string, entries, changed []model.Entry) error {
+func (r *Repository) saveEntryChanges(db *gorm.DB, owner string, entries, changed []model.Entry, authority model.FileWriteAuthority) error {
+	if err := r.guardWriteLocks(db, owner, entries, changed, authority); err != nil {
+		return err
+	}
 	seen := make(map[string]bool, len(changed))
 	for _, entry := range changed {
 		if entry.OwnerID != owner || entry.ID == "" || seen[entry.ID] {
