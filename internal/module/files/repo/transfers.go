@@ -401,7 +401,7 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 				if err != nil {
 					return err
 				}
-				if _, exists := model.Find(entries, entry.ID); exists {
+				if previous, exists := model.Find(entries, entry.ID); exists {
 					if (changed.Source != model.TransferSourceWebDAV && changed.Source != model.TransferSourceTus) || changed.ExpectedEntryID != entry.ID || changed.ExpectedContentRevision < 1 {
 						return model.ErrConflict
 					}
@@ -411,6 +411,9 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 					}
 					if update.RowsAffected != 1 {
 						return model.ErrConflict
+					}
+					if err := queueDetachedBlobs(db, detachedBlobRecords(previous, *entry, r.clock.Now().UTC().Truncate(time.Second))); err != nil {
+						return err
 					}
 				} else if err := db.Create(&record).Error; err != nil {
 					return err

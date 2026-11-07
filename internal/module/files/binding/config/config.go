@@ -10,25 +10,26 @@ import (
 )
 
 type Config struct {
-	PDFReader         service.PDFReaderPolicy `mapstructure:"pdfReader"`
-	Archive           service.ArchivePolicy   `mapstructure:"archive"`
-	Offline           service.DownloadPolicy  `mapstructure:"offline"`
-	MaxFileBytes      int64                   `mapstructure:"maxFileBytes"`
-	QuotaBytes        int64                   `mapstructure:"quotaBytes"`
-	ConcurrentUploads int                     `mapstructure:"concurrentUploads"`
-	MaxTextBytes      int64                   `mapstructure:"maxTextBytes"`
-	MaxArchiveBytes   int64                   `mapstructure:"maxArchiveBytes"`
-	MaxBatchEntries   int                     `mapstructure:"maxBatchEntries"`
-	MaxMediaBytes     int64                   `mapstructure:"maxMediaBytes"`
-	MaxThumbnailBytes int64                   `mapstructure:"maxThumbnailBytes"`
-	MaxGalleryEntries int                     `mapstructure:"maxGalleryEntries"`
-	Sharing           ShareConfig             `mapstructure:"sharing"`
-	Transfers         TransferConfig          `mapstructure:"transfers"`
-	Connections       ConnectionConfig        `mapstructure:"connections"`
-	Navigation        NavigationConfig        `mapstructure:"navigation"`
-	Search            SearchConfig            `mapstructure:"search"`
-	Annotations       AnnotationConfig        `mapstructure:"annotations"`
-	History           HistoryConfig           `mapstructure:"history"`
+	PDFReader         service.PDFReaderPolicy       `mapstructure:"pdfReader"`
+	Archive           service.ArchivePolicy         `mapstructure:"archive"`
+	Offline           service.DownloadPolicy        `mapstructure:"offline"`
+	MaxFileBytes      int64                         `mapstructure:"maxFileBytes"`
+	QuotaBytes        int64                         `mapstructure:"quotaBytes"`
+	ConcurrentUploads int                           `mapstructure:"concurrentUploads"`
+	MaxTextBytes      int64                         `mapstructure:"maxTextBytes"`
+	MaxArchiveBytes   int64                         `mapstructure:"maxArchiveBytes"`
+	MaxBatchEntries   int                           `mapstructure:"maxBatchEntries"`
+	MaxMediaBytes     int64                         `mapstructure:"maxMediaBytes"`
+	MaxThumbnailBytes int64                         `mapstructure:"maxThumbnailBytes"`
+	MaxGalleryEntries int                           `mapstructure:"maxGalleryEntries"`
+	Sharing           ShareConfig                   `mapstructure:"sharing"`
+	Transfers         TransferConfig                `mapstructure:"transfers"`
+	Connections       ConnectionConfig              `mapstructure:"connections"`
+	Navigation        NavigationConfig              `mapstructure:"navigation"`
+	Search            SearchConfig                  `mapstructure:"search"`
+	Annotations       AnnotationConfig              `mapstructure:"annotations"`
+	History           HistoryConfig                 `mapstructure:"history"`
+	BlobReclamation   service.BlobReclamationPolicy `mapstructure:"blobReclamation"`
 }
 
 type ShareConfig struct {
@@ -65,6 +66,7 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 	c.Search = SearchConfig{TreeEntries: service.DefaultSearchTreeEntries}
 	c.Annotations = AnnotationConfig{MaxBytes: p.AnnotationMaxBytes, BatchEntries: p.AnnotationBatchEntries}
 	c.History = HistoryConfig{Enabled: p.HistoryEnabled, PerFile: p.HistoryPerFile, PerOwner: p.HistoryPerOwner}
+	c.BlobReclamation = service.DefaultBlobReclamationPolicy()
 	if err := snapshot.DecodeSection("files", &c); err != nil {
 		return Config{}, err
 	}
@@ -87,6 +89,9 @@ func Decode(snapshot config.Snapshot) (Config, error) {
 		return Config{}, err
 	}
 	if err := c.Archive.Validate(); err != nil {
+		return Config{}, err
+	}
+	if err := c.BlobReclamation.Validate(); err != nil {
 		return Config{}, err
 	}
 	return c, c.validateTransfers()
@@ -115,6 +120,11 @@ func (defaults) Defaults(ctx context.Context) (config.Object, config.Control, er
 		return nil, config.Continue, err
 	}
 	fields := config.Object{config.FieldOf("maxFileBytes", max), config.FieldOf("quotaBytes", quota), config.FieldOf("concurrentUploads", concurrent)}
+	blob := service.DefaultBlobReclamationPolicy()
+	fields = append(fields, config.FieldOf("blobReclamation", config.ObjectValue(config.Object{
+		config.FieldOf("automatic", config.Bool(blob.Automatic)),
+		config.FieldOf("interval", config.String(blob.Interval.String())),
+	})))
 	for _, budget := range []struct {
 		name  string
 		value int64

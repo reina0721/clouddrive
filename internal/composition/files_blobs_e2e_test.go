@@ -30,7 +30,9 @@ func verifyBlobCatalog(t *testing.T, owner, member *consoleTestClient, roleID, p
 	anonymous.request(t, "GET", blobs, nil, 401)
 	member.request(t, "GET", blobs, nil, 403)
 	member.request(t, "GET", blobs+"/"+source, nil, 403)
-	owner.request(t, "PUT", "/native/iam/roles/"+roleID+"/permissions", map[string]any{"expectedRoleVersion": 4, "permissionKeys": []string{"files:blob:read"}}, 200)
+	permissions := "/native/iam/roles/" + roleID + "/permissions"
+	version := owner.request(t, "GET", permissions, nil, 200)["roleVersion"]
+	owner.request(t, "PUT", permissions, map[string]any{"expectedRoleVersion": version, "permissionKeys": []string{"files:blob:read"}}, 200)
 	member.request(t, "GET", "/auth/csrf", nil, 200)
 	member.request(t, "POST", "/auth/login", map[string]string{"email": "files-other@clouddrive.test", "password": password}, 200)
 	member.request(t, "GET", files+"/inventory", nil, 403)
@@ -130,6 +132,30 @@ func verifyBlobCatalog(t *testing.T, owner, member *consoleTestClient, roleID, p
 	purge["snapshot"] = owner.request(t, "POST", files+"/trash/purge-preview", purge, 200)["snapshot"]
 	owner.request(t, "POST", files+"/trash/purge", purge, 200)
 	member.request(t, "GET", blobs+"/"+duplicate, nil, 404)
+	const reclamation = files + "/blob-reclamation"
+	anonymous.request(t, "GET", reclamation, nil, 401)
+	member.request(t, "POST", reclamation+"/"+duplicate, nil, 403)
+	owner.request(t, "POST", reclamation+"/"+duplicate, nil, 409)
+	owner.request(t, "POST", reclamation+"/"+source, nil, 404)
+	candidates := member.request(t, "GET", reclamation, nil, 200)
+	if candidates["canReclaim"] != false || candidates["automatic"] != false {
+		t.Fatal("只读账号可回收或自动回收默认开启")
+	}
+	foundCandidate := false
+	for _, value := range candidates["items"].([]any) {
+		item := value.(map[string]any)
+		if item["id"] == duplicate {
+			foundCandidate = item["ready"] == false && item["sizeBytes"] == float64(len(text)) &&
+				item["detachedAt"] != "" && item["readyAt"] != ""
+		}
+		if _, exposed := item["objectKey"]; exposed {
+			t.Fatal("候选披露了存储键")
+		}
+	}
+	if !foundCandidate || owner.request(t, "GET", reclamation, nil, 200)["canReclaim"] != true {
+		t.Fatal("未展示候选保护期或管理员权限")
+	}
+	member.request(t, "GET", reclamation+"?page=10001", nil, 400)
 
 	for index := range 20 {
 		create(fmt.Sprintf("paging-object-%02d", index))

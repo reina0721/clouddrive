@@ -34,6 +34,8 @@ const (
 	OperationFilesArchiveMember             OperationID = "files.archive.member"
 	OperationFilesAudienceLookup            OperationID = "files.audience.lookup"
 	OperationFilesBackgroundTasksList       OperationID = "files.background-tasks.list"
+	OperationFilesBlobReclamationList       OperationID = "files.blob-reclamation.list"
+	OperationFilesBlobReclamationRemove     OperationID = "files.blob-reclamation.remove"
 	OperationFilesBlobsDetail               OperationID = "files.blobs.detail"
 	OperationFilesBlobsList                 OperationID = "files.blobs.list"
 	OperationFilesConnectionsCreate         OperationID = "files.connections.create"
@@ -226,6 +228,8 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesArchiveMember, Method: "POST", Path: "/api/v1/files/{id}/archive/member", Policy: "protected", Scope: "files:read", Action: "files.archive.member"},
 	{ID: OperationFilesAudienceLookup, Method: "POST", Path: "/api/v1/files/audience/lookup", Policy: "protected", Scope: "files:write", Action: "files.audience.lookup"},
 	{ID: OperationFilesBackgroundTasksList, Method: "GET", Path: "/api/v1/files/background-tasks", Policy: "protected", Scope: "files:read", Action: "files.background-tasks.list"},
+	{ID: OperationFilesBlobReclamationList, Method: "GET", Path: "/api/v1/files/blob-reclamation", Policy: "protected", Scope: "files:blob:read", Action: "files.blob-reclamation.list"},
+	{ID: OperationFilesBlobReclamationRemove, Method: "POST", Path: "/api/v1/files/blob-reclamation/{id}", Policy: "protected", Scope: "files:blob:reclaim", Action: "files.blob-reclamation.remove"},
 	{ID: OperationFilesBlobsDetail, Method: "GET", Path: "/api/v1/files/blobs/{id}", Policy: "protected", Scope: "files:blob:read", Action: "files.blobs.detail"},
 	{ID: OperationFilesBlobsList, Method: "GET", Path: "/api/v1/files/blobs", Policy: "protected", Scope: "files:blob:read", Action: "files.blobs.list"},
 	{ID: OperationFilesConnectionsCreate, Method: "POST", Path: "/api/v1/files/connections", Policy: "protected", Scope: "files:write", Action: "files.connections.create"},

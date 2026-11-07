@@ -15,7 +15,7 @@ import type { TrashPurgePreview, TrashPurgeSelection } from './trash-purge';
 import type { TrashRetention } from './trash-retention';
 import type { DirectLinkDelivery, DirectLinkPage, DirectLinkResult } from './direct-links';
 import type { InventoryItem, InventoryPage, InventoryQuery } from './inventory';
-import type { BlobDetail, BlobPage, BlobQuery } from './blobs';
+import type { BlobCandidatePage, BlobDetail, BlobPage, BlobQuery } from './blobs';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
@@ -171,6 +171,8 @@ export type FilesPort = Readonly<{
   readInventory(id: string, signal: AbortSignal): Promise<InventoryItem>;
   listBlobs(query: BlobQuery, signal: AbortSignal): Promise<BlobPage>;
   readBlob(id: string, page: number, signal: AbortSignal): Promise<BlobDetail>;
+  listBlobCandidates(page: number, signal: AbortSignal): Promise<BlobCandidatePage>;
+  reclaimBlob(id: string): Promise<void>;
   folder(parentId: string, name: string): Promise<FileEntry>;
   update(
     id: string,

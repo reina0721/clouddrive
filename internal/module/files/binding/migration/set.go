@@ -10,11 +10,17 @@ import (
 //go:embed sqlite/*.sql postgres/*.sql mysql/*.sql
 var sqlFiles embed.FS
 
-const CurrentVersion uint = 21
+const CurrentVersion uint = 22
 const TableName = "files_schema_migrations"
 
 func Set() dbmigrate.Set {
 	return dbmigrate.Set{Name: "files", FS: sqlFiles, CurrentVersion: CurrentVersion, MigrationsTable: TableName, DriverPaths: map[database.Driver]string{database.DriverSQLite: "sqlite", database.DriverPostgres: "postgres", database.DriverMySQL: "mysql"}, SHA256ByFile: map[string]string{
+		"sqlite/000022_blob_reclamation.up.sql":        "cf699ca34519e67c2fe04ee95a26e43b6e446009e52c39141d4933c4cbf9b733",
+		"sqlite/000022_blob_reclamation.down.sql":      "e66c7804fd90eb9dfa280432ae6705c2095c41e7ec66b2a245e0998f595b99c3",
+		"postgres/000022_blob_reclamation.up.sql":      "cf699ca34519e67c2fe04ee95a26e43b6e446009e52c39141d4933c4cbf9b733",
+		"postgres/000022_blob_reclamation.down.sql":    "e66c7804fd90eb9dfa280432ae6705c2095c41e7ec66b2a245e0998f595b99c3",
+		"mysql/000022_blob_reclamation.up.sql":         "cf699ca34519e67c2fe04ee95a26e43b6e446009e52c39141d4933c4cbf9b733",
+		"mysql/000022_blob_reclamation.down.sql":       "e66c7804fd90eb9dfa280432ae6705c2095c41e7ec66b2a245e0998f595b99c3",
 		"sqlite/000021_direct_links.up.sql":            "8d304252c875f54139d036691dd134aab8239cde1c39b1738b3f4e0f795d1903",
 		"sqlite/000021_direct_links.down.sql":          "e7501158127ec52cc6f1e63f97804e69b3f6461dec883ea41a5102205b1b70a7",
 		"postgres/000021_direct_links.up.sql":          "8d304252c875f54139d036691dd134aab8239cde1c39b1738b3f4e0f795d1903",

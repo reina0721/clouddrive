@@ -23,6 +23,13 @@ type filesConnectionAuthority struct {
 	audience iam.CollaborationDirectory
 }
 
+func (a filesConnectionAuthority) AuthorizeBlobReclamation(ctx context.Context, owner string) (bool, error) {
+	if a.access == nil {
+		return false, fmt.Errorf("blob reclamation authorization unavailable")
+	}
+	return a.access.AuthorizeAccount(ctx, owner, filespermission.BlobReclaim)
+}
+
 func (a filesConnectionAuthority) AuthorizeShare(ctx context.Context, owner string, access filesservice.ShareAccountAccess) (bool, error) {
 	if a.access == nil {
 		return false, fmt.Errorf("file share authorization unavailable")

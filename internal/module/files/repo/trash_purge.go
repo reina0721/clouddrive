@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"slices"
+	"time"
 
 	"github.com/reina0721/clouddrive/internal/module/files/model"
 	"github.com/reina0721/clouddrive/internal/module/files/service"
@@ -15,7 +16,7 @@ import (
 // trashRemovalBatchSize 为所有支持的数据库保留绑定参数余量。
 const trashRemovalBatchSize = 200
 
-// RemoveTrash 在现有写入序列内移除已确认目录项，不取得物理内容的删除权。
+// RemoveTrash 在现有事务内移除目录项，并登记失去引用的候选。
 func (r *Repository) RemoveTrash(ctx context.Context, owner string, limit int, plan func([]model.Entry) ([]string, error)) error {
 	if limit < 1 || limit > service.DefaultSearchTreeEntries || plan == nil {
 		return model.ErrInvalid
@@ -31,6 +32,20 @@ func (r *Repository) RemoveTrash(ctx context.Context, owner string, limit int, p
 			}
 			ids, err := plan(entries)
 			if err != nil {
+				return err
+			}
+			removedIDs := make(map[string]bool, len(ids))
+			for _, id := range ids {
+				removedIDs[id] = true
+			}
+			now := r.clock.Now().UTC().Truncate(time.Second)
+			var detached []blobCandidateRecord
+			for _, entry := range entries {
+				if removedIDs[entry.ID] {
+					detached = append(detached, detachedBlobRecords(entry, model.Entry{}, now)...)
+				}
+			}
+			if err := queueDetachedBlobs(db, detached); err != nil {
 				return err
 			}
 			pinsRemoved := false

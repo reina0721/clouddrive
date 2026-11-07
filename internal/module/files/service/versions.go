@@ -310,7 +310,7 @@ func (s *Service) CopyVersion(ctx context.Context, owner, id string, revision in
 	return changed[0], nil
 }
 
-// DeleteVersions 只移除经明确选择的旧关联；当前内容、物理对象和其他文件的副本不受影响。
+// DeleteVersions 只移除选定的旧关联，物理回收由独立的引用检查和保护期控制。
 func (s *Service) DeleteVersions(ctx context.Context, owner, id string, input VersionDelete) (VersionMutationResult, error) {
 	if owner == "" {
 		return VersionMutationResult{}, model.ErrMissing

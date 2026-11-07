@@ -47,6 +47,8 @@ type Dependencies struct {
 	Database                 repo.Access
 	Content                  service.Content
 	BlobProbe                service.BlobObjectProbe
+	BlobReclamationPolicy    service.BlobReclamationPolicy
+	BlobReclamationAccess    handler.BlobReclamationAuthority
 	TransferContent          service.TransferContent
 	TransferPolicy           service.TransferPolicy
 	StagingPath              string
@@ -72,7 +74,7 @@ type Module struct {
 }
 
 func New(deps Dependencies) (Module, error) {
-	if deps.Actors == nil || deps.Logger == nil || deps.PublicAuthentication == nil {
+	if deps.Actors == nil || deps.Logger == nil || deps.PublicAuthentication == nil || deps.BlobReclamationAccess == nil {
 		return Module{}, fmt.Errorf("files boundary dependencies missing")
 	}
 	repository, err := repo.New(deps.Database, deps.StorageIdentity, deps.Clock)
@@ -167,6 +169,11 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
+	boundary.BlobReclamationAccess = deps.BlobReclamationAccess
+	boundary.BlobReclamation, err = service.NewBlobReclamation(repository, deps.Content, deps.Clock, deps.BlobReclamationPolicy)
+	if err != nil {
+		return Module{}, err
+	}
 	boundary.BackgroundTasks, err = service.NewBackgroundTasks(repository, archiveTasks)
 	if err != nil {
 		return Module{}, err
@@ -249,7 +256,15 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	return Module{Handler: boundary, Contribution: module.Contribution{ID: "files", Participants: participants, Schedules: []schedule.Binding{binding, torrentBinding, archiveBinding, trashBinding}}}, nil
+	blobTrigger, err := schedule.FixedDelay(deps.BlobReclamationPolicy.Interval, deps.BlobReclamationPolicy.Interval)
+	if err != nil {
+		return Module{}, err
+	}
+	blobBinding, err := schedule.Bind(schedule.Spec{ID: service.BlobReclamationTaskID, Trigger: blobTrigger, Concurrency: archiveConcurrency, Coordination: schedule.Local()}, boundary.BlobReclamation.Dispatch)
+	if err != nil {
+		return Module{}, err
+	}
+	return Module{Handler: boundary, Contribution: module.Contribution{ID: "files", Participants: participants, Schedules: []schedule.Binding{binding, torrentBinding, archiveBinding, trashBinding, blobBinding}}}, nil
 }
 
 func stagingIdentity(root string) (string, error) {

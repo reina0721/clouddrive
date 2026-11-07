@@ -48,3 +48,21 @@ export const blobDetailSchema = z.object({
 export type BlobItem = z.infer<typeof blobItemSchema>;
 export type BlobPage = z.infer<typeof blobPageSchema>;
 export type BlobDetail = z.infer<typeof blobDetailSchema>;
+
+export const blobCandidatePageSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      sizeBytes: z.number().int().nonnegative(),
+      detachedAt: z.string(),
+      readyAt: z.string(),
+      ready: z.boolean(),
+    }),
+  ),
+  total: z.number().int().nonnegative(),
+  automatic: z.boolean(),
+  canReclaim: z.boolean(),
+  ...blobPagination,
+});
+export type BlobCandidatePage = z.infer<typeof blobCandidatePageSchema>;
+export type BlobCandidate = BlobCandidatePage['items'][number];

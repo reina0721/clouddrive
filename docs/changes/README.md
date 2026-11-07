@@ -139,3 +139,4 @@
 - [150 文件直链](150-file-direct-links/README.md)：批量获取、免登录读取和本人撤销。
 - [151 管理端文件清单](151-admin-file-inventory/README.md)：跨账号过滤、排序、分页和只读详情。
 - [152 管理端文件 Blob](152-admin-blob-catalog/README.md)：已引用对象、版本归属与主存储存在性。
+- [153 文件 Blob 回收](153-blob-reclamation/README.md)：持久候选、保护期与实际主存储回收。

@@ -13,6 +13,7 @@ import {
   blobReferenceFilters,
   blobSorts,
   blobStorageFilters,
+  type BlobCandidate,
   type BlobItem,
   type BlobQuery,
 } from '../../../src/files/blobs';
@@ -63,6 +64,21 @@ const zh = {
   version: '版本',
   fileId: '文件 ID',
   noReferences: '本页没有引用',
+  reclamation: '待回收',
+  referencesTab: '已引用',
+  reclamationHint: '只有失去所有引用且超过保护期的 Blob 才能永久清理。',
+  noCandidates: '没有待回收的 Blob',
+  detached: '解除引用时间',
+  readyAt: '最早回收时间',
+  waiting: '保护期内',
+  ready: '可以回收',
+  status: '状态',
+  autoOn: '已开启自动回收',
+  autoOff: '自动回收已关闭',
+  reclaim: '永久清理',
+  reclaimHint: '确认后会删除主存储中的这个对象。此操作无法撤销。',
+  reclaimFailure: '未能清理该对象。请刷新并确认它仍可回收。',
+  reclaimed: '已清理 Blob',
   page: (current: number, pages: number, total: number) =>
     `第 ${current} / ${pages} 页，共 ${total} 项`,
 };
@@ -97,15 +113,50 @@ const en: typeof zh = {
   version: 'Revision',
   fileId: 'File ID',
   noReferences: 'No references on this page',
+  reclamation: 'Pending reclamation',
+  referencesTab: 'Referenced',
+  reclamationHint: 'Only blobs past the grace period with no remaining references can be removed.',
+  noCandidates: 'No blobs pending reclamation',
+  detached: 'Detached',
+  readyAt: 'Eligible after',
+  waiting: 'In grace period',
+  ready: 'Ready',
+  status: 'Status',
+  autoOn: 'Automatic reclamation is on',
+  autoOff: 'Automatic reclamation is off',
+  reclaim: 'Permanently remove',
+  reclaimHint: 'This deletes the selected object from primary storage and cannot be undone.',
+  reclaimFailure: 'Could not remove the object. Refresh to confirm it is still eligible.',
+  reclaimed: 'Blob removed',
   page: (current: number, pages: number, total: number) =>
     `Page ${current} of ${pages}, ${total} items`,
 };
 
 export function BlobCatalogPage() {
-  const files = useFiles();
   const { t, locale } = useFrontendTranslation();
   const labels = locale.startsWith('zh') ? zh : en;
   const title = t('systemTools.nav.blobs');
+  const [showCandidates, setShowCandidates] = useState(false);
+  return showCandidates ? (
+    <BlobReclamationPanel
+      title={title}
+      labels={labels}
+      switchView={() => setShowCandidates(false)}
+    />
+  ) : (
+    <ReferencedBlobCatalog
+      title={title}
+      labels={labels}
+      switchView={() => setShowCandidates(true)}
+    />
+  );
+}
+
+type BlobViewProps = { title: string; labels: typeof zh; switchView: () => void };
+
+function ReferencedBlobCatalog({ title, labels, switchView }: BlobViewProps) {
+  const files = useFiles();
+  const { t, locale } = useFrontendTranslation();
   const preferences = usePreferencesPort<Preferences>();
   const region = useSyncExternalStore(
     preferences.subscribe,
@@ -132,6 +183,9 @@ export function BlobCatalogPage() {
             </Action>
             <Action variant="secondary" onPress={() => setDraft(query)}>
               {labels.filter}
+            </Action>
+            <Action variant="secondary" onPress={switchView}>
+              {labels.reclamation}
             </Action>
           </>
         }
@@ -273,6 +327,132 @@ export function BlobCatalogPage() {
         </DialogSurface>
       ) : null}
       {id ? <BlobDetails id={id} labels={labels} onClose={() => setID(undefined)} /> : null}
+    </Page>
+  );
+}
+
+function BlobReclamationPanel({ title, labels, switchView }: BlobViewProps) {
+  const files = useFiles();
+  const { t, locale } = useFrontendTranslation();
+  const preferences = usePreferencesPort<Preferences>();
+  const region = useSyncExternalStore(
+    preferences.subscribe,
+    preferences.getSnapshot,
+    preferences.getSnapshot,
+  ).localeRegion;
+  const [pageNumber, setPageNumber] = useState(1);
+  const [candidate, setCandidate] = useState<BlobCandidate>();
+  const [removed, setRemoved] = useState(false);
+  const state = useCatalogRequest(
+    useCallback((signal) => files.listBlobCandidates(pageNumber, signal), [files, pageNumber]),
+  );
+  const page = state.result && 'value' in state.result ? state.result.value : undefined;
+  return (
+    <Page>
+      <PageHeader
+        title={`${title} · ${labels.reclamation}`}
+        description={labels.reclamationHint}
+        actions={
+          <>
+            <Action variant="secondary" onPress={state.refresh}>
+              {t('files.refresh')}
+            </Action>
+            <Action variant="secondary" onPress={switchView}>
+              {labels.referencesTab}
+            </Action>
+          </>
+        }
+      />
+      <Panel className="surface-route-region overflow-hidden">
+        <SectionBody>
+          {removed ? <p role="status">{labels.reclaimed}</p> : null}
+          {!state.result ? <p role="status">{t('administration.loading')}</p> : null}
+          {state.result && 'error' in state.result ? (
+            <CatalogFailure error={state.result.error} retry={state.refresh} />
+          ) : null}
+          {page ? (
+            <>
+              <p className="text-sm text-ink-muted">
+                {page.automatic ? labels.autoOn : labels.autoOff}
+              </p>
+              <DataTable<BlobCandidate>
+                label={labels.reclamation}
+                density="compact"
+                rows={page.items}
+                emptyContent={labels.noCandidates}
+                columns={[
+                  { id: 'id', label: 'ID', rowHeader: true, render: (row) => row.id },
+                  {
+                    id: 'size',
+                    label: labels.size,
+                    render: (row) => formatFileBytes(row.sizeBytes),
+                  },
+                  {
+                    id: 'detached',
+                    label: labels.detached,
+                    render: (row) => formatInstant(locale, region, row.detachedAt),
+                  },
+                  {
+                    id: 'readyAt',
+                    label: labels.readyAt,
+                    render: (row) => formatInstant(locale, region, row.readyAt),
+                  },
+                  {
+                    id: 'status',
+                    label: labels.status,
+                    render: (row) =>
+                      row.ready && page.canReclaim ? (
+                        <Action
+                          variant="quiet"
+                          size="sm"
+                          onPress={() => {
+                            setRemoved(false);
+                            setCandidate(row);
+                          }}
+                        >
+                          {labels.reclaim}
+                        </Action>
+                      ) : row.ready ? (
+                        labels.ready
+                      ) : (
+                        labels.waiting
+                      ),
+                  },
+                ]}
+              />
+              <BlobPager
+                page={page.page}
+                pageSize={page.pageSize}
+                total={page.total}
+                labels={labels}
+                change={setPageNumber}
+              />
+            </>
+          ) : null}
+        </SectionBody>
+      </Panel>
+      {candidate ? (
+        <DialogSurface
+          isOpen
+          triggerLabel={labels.reclaim}
+          title={labels.reclaim}
+          description={labels.reclaimHint}
+          cancelLabel={t('files.cancel')}
+          confirmLabel={labels.reclaim}
+          failureMessage={labels.reclaimFailure}
+          onOpenChange={(open) => {
+            if (!open) setCandidate(undefined);
+          }}
+          onConfirm={async () => {
+            await files.reclaimBlob(candidate.id);
+            setRemoved(true);
+            if (page?.items.length === 1 && pageNumber > 1) setPageNumber(pageNumber - 1);
+            else state.refresh();
+          }}
+        >
+          <p className="break-all">{candidate.id}</p>
+        </DialogSurface>
+      ) : null}
     </Page>
   );
 }

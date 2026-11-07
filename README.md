@@ -62,6 +62,8 @@ Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Veri
 
 管理面板的“文件 Blob”可查阅已引用的主存储对象、当前和历史引用、关联文件及对象存在状态。详见[152变更](docs/changes/152-admin-blob-catalog/README.md)。
 
+文件 Blob 的“待回收”页显示失去引用的已登记对象。独立授权的管理员可在保护期后清理；自动回收可由运维开启。详见[153变更](docs/changes/153-blob-reclamation/README.md)。
+
 当前会话密码解锁已补齐，输错可重试、共享账号失败预算，详见[142变更](docs/changes/142-session-password-unlock/README.md)。本批20项使用行为不增加20个独立功能计数；客户端遮挡仍不是服务端授权边界。
 
 WebDAV持久独占写锁已接入真实协议、所有文件保存及上传最终发布；连接页可查看和按版本解除占用，详见[141变更](docs/changes/141-webdav-write-locks/README.md)。本批20项按使用行为验收，不等同Office服务或系统驱动全量兼容。

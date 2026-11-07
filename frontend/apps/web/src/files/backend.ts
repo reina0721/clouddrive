@@ -17,6 +17,7 @@ import {
   inventoryItemSchema,
   inventoryPageSchema,
   blobDetailSchema,
+  blobCandidatePageSchema,
   blobPageSchema,
   type FileListing,
   type FilesErrorCode,
@@ -327,6 +328,11 @@ export function createFilesRuntime(
       blobDetailSchema.parse(
         await call('/blobs/' + encodeURIComponent(id) + '?page=' + page, { signal }),
       ),
+    listBlobCandidates: async (page, signal) =>
+      blobCandidatePageSchema.parse(await call('/blob-reclamation?page=' + page, { signal })),
+    reclaimBlob: async (id) => {
+      await call('/blob-reclamation/' + encodeURIComponent(id), { method: 'POST' });
+    },
     folder: async (parentId, name) =>
       fileEntrySchema.parse(await call('/folders', { method: 'POST', body: { parentId, name } })),
     update: async (id, change) =>

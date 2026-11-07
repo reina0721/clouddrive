@@ -84,7 +84,11 @@ func (r *Repository) ValidateStorage(ctx context.Context, identity string) error
 			if err := db.Model(&pendingCleanup{}).Count(&pending).Error; err != nil {
 				return err
 			}
-			if count > 0 || pending > 0 {
+			var candidates int64
+			if err := db.Model(&blobCandidateRecord{}).Count(&candidates).Error; err != nil {
+				return err
+			}
+			if count > 0 || pending > 0 || candidates > 0 {
 				return fmt.Errorf("file storage location change requires content migration")
 			}
 			var transfers int64
@@ -204,6 +208,8 @@ func (r *Repository) saveEntryChanges(db *gorm.DB, owner string, entries, change
 	}
 	seen := make(map[string]bool, len(changed))
 	var retention *model.TrashRetention
+	var detached []blobCandidateRecord
+	now := r.clock.Now().UTC().Truncate(time.Second)
 	for index, entry := range changed {
 		if entry.OwnerID != owner || entry.ID == "" || seen[entry.ID] {
 			return fmt.Errorf("files mutation identity invariant")
@@ -234,10 +240,11 @@ func (r *Repository) saveEntryChanges(db *gorm.DB, owner string, entries, change
 			if err := db.Model(&entryRecord{}).Where("id = ? AND owner_id = ?", entry.ID, owner).Select("*").Updates(&record).Error; err != nil {
 				return err
 			}
+			detached = append(detached, detachedBlobRecords(previous, entry, now)...)
 		} else if err := db.Create(&record).Error; err != nil {
 			return err
 		}
 		changed[index] = entry
 	}
-	return nil
+	return queueDetachedBlobs(db, detached)
 }
