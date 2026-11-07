@@ -33,6 +33,8 @@ import {
   blobCandidatePageSchema,
   blobPageSchema,
   filesystemSettingsSchema,
+  activeFileIconsSchema,
+  fileIconRulesViewSchema,
   propertyDefinitionsViewSchema,
   type FileListing,
   type FilesErrorCode,
@@ -392,6 +394,12 @@ export function createFilesRuntime(
     },
     readFilesystemSettings: async (signal) =>
       filesystemSettingsSchema.parse(await call('/settings', { signal })),
+    readFileIconRules: async (signal) =>
+      fileIconRulesViewSchema.parse(await call('/icon-rules', { signal })),
+    saveFileIconRules: async (body) =>
+      fileIconRulesViewSchema.parse(await call('/icon-rules', { method: 'PUT', body })),
+    readActiveFileIcons: async (signal) =>
+      activeFileIconsSchema.parse(await call('/icon-rules/active', { signal })).items,
     readStoragePolicy: async (signal) =>
       storagePolicySchema.parse(await call('/storage-policy', { signal })),
     saveStoragePolicy: async (body) =>

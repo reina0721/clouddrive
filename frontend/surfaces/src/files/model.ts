@@ -42,6 +42,7 @@ import type {
 } from './storage-policy';
 import type { BlobCandidatePage, BlobDetail, BlobPage, BlobQuery } from './blobs';
 import type { FilesystemSettings, FilesystemSettingsInput } from './filesystem-settings';
+import type { FileIconRule, FileIconRuleSet, FileIconRulesView } from './icon-rules';
 import type { PropertyDefinitionSet, PropertyDefinitionsView } from './property-definitions';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
@@ -228,6 +229,9 @@ export type FilesPort = Readonly<{
   listBlobCandidates(page: number, signal: AbortSignal): Promise<BlobCandidatePage>;
   reclaimBlob(id: string): Promise<void>;
   readFilesystemSettings(signal: AbortSignal): Promise<FilesystemSettings>;
+  readFileIconRules(signal: AbortSignal): Promise<FileIconRulesView>;
+  saveFileIconRules(input: FileIconRuleSet): Promise<FileIconRulesView>;
+  readActiveFileIcons(signal: AbortSignal): Promise<FileIconRule[]>;
   saveFilesystemSettings(input: FilesystemSettingsInput): Promise<FilesystemSettings>;
   readPropertyDefinitions(signal: AbortSignal): Promise<PropertyDefinitionsView>;
   savePropertyDefinitions(input: PropertyDefinitionSet): Promise<PropertyDefinitionsView>;

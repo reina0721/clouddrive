@@ -1,0 +1,22 @@
+schema_version: 1
+change: 164-file-icon-rules
+areas:
+  - id: startup
+    decision: updated
+    documents: [README.md]
+    reason: 说明图标入口。
+  - id: webui
+    decision: updated
+    documents: [docs/operations/file-management.md]
+    reason: 记录主题、渲染和外部图片边界。
+  - id: frontend
+    decision: updated
+    documents: [docs/repository-scope.md]
+    reason: 说明本人工作区范围。
+  - id: module
+    decision: reviewed-no-change
+    reason: 复用文件设置存储和权限边界。
+  - id: api
+    decision: updated
+    documents: [api/README.md]
+    reason: 记录活动规则与管理修订。

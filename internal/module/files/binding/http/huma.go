@@ -117,6 +117,7 @@ func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 	registerStoragePolicy(api, h, operation)
 	registerStorageNameRules(api, h, operation)
 	registerPropertyDefinitions(api, h, operation)
+	registerFileIconRules(api, h, operation)
 	registerArchives(api, h, operation)
 	registerArchiveTasks(api, h, operation)
 	registerSharing(api, h, operation)

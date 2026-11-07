@@ -4,6 +4,7 @@ import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { CheckboxField } from '@clouddrive/ui-adapter/form-field';
 import type { FileEntry } from '../../../src/files/model';
+import type { FileIconRule } from '../../../src/files/icon-rules';
 import type { FileViewPreferences, FileColumn } from '../../../src/files/view-options';
 import { FileGlyph } from '../../../src/files/icons';
 import { formatFileBytes } from '../../../src/files/format';
@@ -73,6 +74,7 @@ export function FileItem({
   onFocus,
   onContext,
   annotation,
+  iconRule,
   onTag,
   folderClick = 'open',
 }: {
@@ -90,6 +92,7 @@ export function FileItem({
   onFocus: () => void;
   onContext: () => void;
   annotation?: FileAnnotationSummary | undefined;
+  iconRule?: FileIconRule | undefined;
   onTag: (name: string) => void;
   folderClick?: 'open' | 'select' | undefined;
 }) {
@@ -141,6 +144,7 @@ export function FileItem({
       size={isList ? 'small' : 'large'}
       emoji={annotation?.emoji}
       color={annotation?.folderColor}
+      rule={iconRule}
     />
   );
   const icon = annotation?.emoji ? glyph : thumbnail || glyph;

@@ -72,6 +72,9 @@ const (
 	OperationFilesDownloadsSource           OperationID = "files.downloads.source"
 	OperationFilesDownloadsTarget           OperationID = "files.downloads.target"
 	OperationFilesFolder                    OperationID = "files.folder"
+	OperationFilesIconRulesActive           OperationID = "files.icon-rules.active"
+	OperationFilesIconRulesRead             OperationID = "files.icon-rules.read"
+	OperationFilesIconRulesSave             OperationID = "files.icon-rules.save"
 	OperationFilesInventoryDetail           OperationID = "files.inventory.detail"
 	OperationFilesInventoryList             OperationID = "files.inventory.list"
 	OperationFilesList                      OperationID = "files.list"
@@ -285,6 +288,9 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesDownloadsSource, Method: "GET", Path: "/api/v1/files/downloads/{id}/source", Policy: "protected", Scope: "files:read", Action: "files.downloads.source"},
 	{ID: OperationFilesDownloadsTarget, Method: "PUT", Path: "/api/v1/files/downloads/{id}/target", Policy: "protected", Scope: "files:write", Action: "files.downloads.target"},
 	{ID: OperationFilesFolder, Method: "POST", Path: "/api/v1/files/folders", Policy: "protected", Scope: "files:write", Action: "files.folder"},
+	{ID: OperationFilesIconRulesActive, Method: "GET", Path: "/api/v1/files/icon-rules/active", Policy: "protected", Scope: "files:read", Action: "files.icon-rules.active"},
+	{ID: OperationFilesIconRulesRead, Method: "GET", Path: "/api/v1/files/icon-rules", Policy: "protected", Scope: "files:settings:read", Action: "files.icon-rules.read"},
+	{ID: OperationFilesIconRulesSave, Method: "PUT", Path: "/api/v1/files/icon-rules", Policy: "protected", Scope: "files:settings:write", Action: "files.icon-rules.save"},
 	{ID: OperationFilesInventoryDetail, Method: "GET", Path: "/api/v1/files/inventory/{id}", Policy: "protected", Scope: "files:inventory:read", Action: "files.inventory.detail"},
 	{ID: OperationFilesInventoryList, Method: "GET", Path: "/api/v1/files/inventory", Policy: "protected", Scope: "files:inventory:read", Action: "files.inventory.list"},
 	{ID: OperationFilesList, Method: "GET", Path: "/api/v1/files", Policy: "protected", Scope: "files:read", Action: "files.list"},

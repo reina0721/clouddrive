@@ -14,6 +14,7 @@ import type {
 import { FilesError } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
 import { CatalogFailure } from './catalog-failure';
+import { FileIconRulesPanel } from './file-icon-rules-panel';
 import { PropertyDefinitionsPanel } from './property-definitions-panel';
 import { useCatalogRequest } from './use-catalog-request';
 
@@ -374,6 +375,11 @@ export function FilesystemSettingsPage() {
             id: 'parameters',
             label: chinese ? '参数设置' : 'Settings',
             content: <FilesystemSettingsBody />,
+          },
+          {
+            id: 'icons',
+            label: chinese ? '文件图标' : 'File icons',
+            content: <FileIconRulesPanel />,
           },
           {
             id: 'properties',

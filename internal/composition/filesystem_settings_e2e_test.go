@@ -68,6 +68,49 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 		return map[string]any{"revision": revision, "overrides": overrides}
 	}
 	observer.request(t, "PUT", endpoint, input(0, map[string]any{}), 403)
+	const icons = files + "/icon-rules"
+	iconBody := func(revision int, inherit bool, items ...map[string]any) map[string]any {
+		if items == nil {
+			items = []map[string]any{}
+		}
+		return map[string]any{"revision": revision, "inherit": inherit, "items": items}
+	}
+	anonymous.request(t, "GET", icons+"/active", nil, 401)
+	observer.request(t, "GET", icons+"/active", nil, 403)
+	if view := observer.request(t, "GET", icons, nil, 200); view["canSave"] != false ||
+		view["inherit"] != true || len(view["defaults"].([]any)) == 0 {
+		t.Fatalf("只读视图或内置图标未提供: %v", view)
+	}
+	observer.request(t, "PUT", icons, iconBody(0, true), 403)
+	admin.request(t, "PUT", "/native/iam/roles/"+roleID+"/permissions", map[string]any{
+		"expectedRoleVersion": 2, "permissionKeys": []string{"files:read"},
+	}, 200)
+	loginObserver()
+	observer.request(t, "GET", icons, nil, 403)
+	observer.request(t, "GET", icons+"/active", nil, 200)
+	archiveRule := map[string]any{"shape": "archive", "extensions": []string{" .CUSTOM ", "other"}, "light": "#123ABC", "dark": "#445566"}
+	admin.request(t, "PUT", icons, iconBody(0, false, archiveRule, archiveRule), 422)
+	admin.request(t, "PUT", icons, iconBody(0, false, map[string]any{
+		"shape": "file", "extensions": []string{"../x"}, "light": "#123abc",
+	}), 422)
+	admin.request(t, "PUT", icons, iconBody(0, false, map[string]any{
+		"shape": "file", "extensions": []string{"x"}, "light": "current",
+	}), 422)
+	for _, address := range []string{"http://icons.example.test/pic.svg", "https://127.0.0.1/pic.svg",
+		"https://assets.local/pic.svg", "https://a:b@icons.example.test/pic.svg", "https://icons.example.test/pic.svg?token=sample",
+		"https://icons.example.test/pic.svg#part", "https://icons.example.test/read"} {
+		admin.request(t, "PUT", icons, iconBody(0, false, map[string]any{
+			"shape": "image-url", "extensions": []string{"x"}, "imageUrl": address,
+		}), 422)
+	}
+	remoteIcon := map[string]any{"shape": "image-url", "extensions": []string{"remote"}, "imageUrl": "https://icons.example.test/pic.svg"}
+	admin.request(t, "PUT", icons, iconBody(0, false, archiveRule, remoteIcon), 200)
+	admin.request(t, "PUT", icons, iconBody(0, true), 409)
+	activeIcons := observer.request(t, "GET", icons+"/active", nil, 200)["items"].([]any)
+	firstIcon := activeIcons[0].(map[string]any)
+	if len(activeIcons) != 2 || firstIcon["light"] != "#123abc" || firstIcon["extensions"].([]any)[0] != "custom" {
+		t.Fatalf("图标规则未立即生效或归一失败: %v", activeIcons)
+	}
 	admin.request(t, "PUT", endpoint, input(0, map[string]any{"textBytes": 65}), 422)
 	admin.request(t, "PUT", endpoint, input(0, map[string]any{"batchEntries": 11}), 422)
 	admin.request(t, "PUT", endpoint, input(0, map[string]any{"blobScanSeconds": 59}), 400)
@@ -114,6 +157,18 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 	}
 	admin.base = "http://" + coordinator.Diagnostics().BoundAddress
 	active := admin.request(t, "GET", endpoint, nil, 200)
+	if view := admin.request(t, "GET", icons, nil, 200); view["revision"] != float64(1) ||
+		view["inherit"] != false || len(view["items"].([]any)) != 2 {
+		t.Fatalf("重启后未保留自定义图标: %v", view)
+	}
+	admin.request(t, "PUT", icons, iconBody(1, false), 200)
+	if empty := admin.request(t, "GET", icons+"/active", nil, 200)["items"].([]any); len(empty) != 0 {
+		t.Fatalf("空自定义不应加载内置规则: %v", empty)
+	}
+	admin.request(t, "PUT", icons, iconBody(2, true), 200)
+	if defaults := admin.request(t, "GET", icons+"/active", nil, 200)["items"].([]any); len(defaults) == 0 {
+		t.Fatal("恢复内置规则未生效")
+	}
 	if active["pendingRestart"] != false || active["blobSchedulerAvailable"] != false || active["trashSchedulerAvailable"] != false {
 		t.Fatalf("新实例未应用设置或越过部署调度权限: %v", active)
 	}

@@ -35,6 +35,8 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 `/api/v1/files/storage-policy/name-rules` 复用存储策略读写权限。规则保存使用独立的 `revision`，服务重启后生效。拥有写权限的管理者可通过 `POST /name-rules/check` 试测提交的规则，返回 `allowed`、`extension` 或 `pattern`。实际写入被拒绝时使用 `files_filename_restricted`。
 
+`/api/v1/files/icon-rules` 提供管理视图及带独立 `revision` 的整组保存。启用 `inherit` 时读取内置规则，空自定义列表关闭扩展名覆盖。`/api/v1/files/icon-rules/active` 仅向有文件读取权限的用户返回活动规则。
+
 管理端使用 `GET /api/v1/files/admin-shares` 和 `GET /api/v1/files/admin-shares/{id}` 查询分享，要求 `files:share-admin:read`。`POST /api/v1/files/admin-shares/revoke` 要求 `files:share-admin:revoke` 及 CSRF，接受最多 20 个 ID 与修订号。任一目标版本冲突时返回 409，整批保持原状。响应不含分享或访问凭据。
 
 全局属性定义使用 `GET/PUT /api/v1/files/property-definitions`，分别要求 `files:settings:read` 和 `files:settings:write`。PUT 要求会话及 CSRF，提交完整清单和修订号，修订冲突返回 409。文件所有者的属性详情返回可用定义，定义变更立即用于后续文件属性写入。详见[文件管理](../docs/operations/file-management.md)。

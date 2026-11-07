@@ -152,6 +152,17 @@ components:
         - authorizationRevision
         - roleIds
       type: object
+    ActiveFileIconsOutputBody:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/FileIconRule"
+          nullable: true
+          type: array
+      required:
+        - items
+      type: object
     AdminShareItem:
       additionalProperties: false
       properties:
@@ -2611,6 +2622,91 @@ components:
           type: string
         previous:
           type: string
+      type: object
+    FileIconRule:
+      additionalProperties: false
+      properties:
+        dark:
+          maxLength: 7
+          type: string
+        extensions:
+          items:
+            type: string
+          maxItems: 24
+          minItems: 1
+          nullable: true
+          type: array
+        imageUrl:
+          maxLength: 512
+          type: string
+        light:
+          maxLength: 7
+          type: string
+        shape:
+          enum:
+            - file
+            - text
+            - image
+            - video
+            - audio
+            - archive
+            - code
+            - pdf
+            - spreadsheet
+            - image-url
+          type: string
+      required:
+        - shape
+        - extensions
+      type: object
+    FileIconRuleSet:
+      additionalProperties: false
+      properties:
+        inherit:
+          type: boolean
+        items:
+          items:
+            $ref: "#/components/schemas/FileIconRule"
+          maxItems: 32
+          nullable: true
+          type: array
+        revision:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - revision
+        - inherit
+        - items
+      type: object
+    FileIconRulesOutputBody:
+      additionalProperties: false
+      properties:
+        canSave:
+          type: boolean
+        defaults:
+          items:
+            $ref: "#/components/schemas/FileIconRule"
+          nullable: true
+          type: array
+        inherit:
+          type: boolean
+        items:
+          items:
+            $ref: "#/components/schemas/FileIconRule"
+          maxItems: 32
+          nullable: true
+          type: array
+        revision:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - canSave
+        - defaults
+        - revision
+        - inherit
+        - items
       type: object
     FilePreferences:
       additionalProperties: false
@@ -8758,6 +8854,71 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Entry"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/icon-rules:
+    get:
+      operationId: files.icon-rules.read
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileIconRulesOutputBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+    put:
+      operationId: files.icon-rules.save
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileIconRuleSet"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileIconRulesOutputBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/icon-rules/active:
+    get:
+      operationId: files.icon-rules.active
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActiveFileIconsOutputBody"
           description: OK
         default:
           content:

@@ -24,6 +24,7 @@ export * from './worker-nodes';
 export * from './storage-policy';
 export * from './blobs';
 export * from './filesystem-settings';
+export * from './icon-rules';
 export * from './property-definitions';
 export * from './pdf-contract';
 

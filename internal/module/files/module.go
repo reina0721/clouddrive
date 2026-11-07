@@ -166,6 +166,10 @@ func New(deps Dependencies) (Module, error) {
 	boundary.ArchiveTasks = archiveTasks
 	boundary.FilesystemSettings = deps.FilesystemSettings
 	boundary.FilesystemSettingsAccess = deps.FilesystemSettingsAccess
+	boundary.FileIconRules, err = service.NewFileIconRules(repository)
+	if err != nil {
+		return Module{}, err
+	}
 	boundary.PropertyDefinitions, err = service.NewPropertyDefinitions(repository, unicodename.Normalizer{})
 	if err != nil {
 		return Module{}, err

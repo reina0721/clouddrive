@@ -17,6 +17,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
+import { fileIconExtension, type FileIconRule } from '../../../src/files/icon-rules';
 import { fileClipboardMaxEntries, type FileClipboardMode } from '../../../src/files/clipboard';
 import { formatFileBytes as bytes } from '../../../src/files/format';
 import {
@@ -156,6 +157,8 @@ export function FilesPage({
   const [failure, setFailure] = useState('');
   const [notice, setNotice] = useState('');
   const [revision, setRevision] = useWorkspaceRevision();
+  const [iconRules, setIconRules] = useState<readonly FileIconRule[]>([]);
+  const [iconRulesUnavailable, setIconRulesUnavailable] = useState(false);
   const createInWorkspace = useWorkspaceCreate();
   const [saveShortcut, setSaveShortcut] = useState(false);
   const [purgeTarget, setPurgeTarget] = useState<FileEntry>();
@@ -264,6 +267,28 @@ export function FilesPage({
     port.list,
   );
   const listing = feed.listing ?? firstListing;
+  const iconsByExtension = useMemo(() => {
+    const lookup = new Map<string, FileIconRule>();
+    for (const rule of iconRules)
+      for (const extension of rule.extensions) lookup.set(extension, rule);
+    return lookup;
+  }, [iconRules]);
+  useEffect(() => {
+    const controller = new AbortController();
+    void port.readActiveFileIcons(controller.signal).then(
+      (rules) => {
+        if (controller.signal.aborted) return;
+        setIconRules(rules);
+        setIconRulesUnavailable(false);
+      },
+      () => {
+        if (controller.signal.aborted) return;
+        setIconRules([]);
+        setIconRulesUnavailable(true);
+      },
+    );
+    return () => controller.abort();
+  }, [port, revision]);
 
   function goToNumberedPage(nextPage: number) {
     fileContent.current?.scrollIntoView({ block: 'start' });
@@ -1147,6 +1172,13 @@ export function FilesPage({
             {galleryAnnotationFailure}
           </p>
         ) : null}
+        {iconRulesUnavailable ? (
+          <p className="text-sm text-ink-muted" role="status">
+            {chinese
+              ? '文件图标规则暂不可用，当前使用类型图标。'
+              : 'File icon rules are unavailable. Showing file type icons.'}
+          </p>
+        ) : null}
         {listing?.items.length ? (
           <div className="flex flex-wrap items-center gap-3">
             <div className="min-w-32">
@@ -1386,6 +1418,11 @@ export function FilesPage({
                   key={entry.id}
                   entry={entry}
                   annotation={annotationMap.get(entry.id)}
+                  iconRule={
+                    entry.kind === 'file'
+                      ? iconsByExtension.get(fileIconExtension(entry.name))
+                      : undefined
+                  }
                   onTag={(name) =>
                     navigate({
                       filter: encodeFileFilters({
