@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Page, PageHeader, SectionBody } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
+import { TabsView } from '@clouddrive/ui-adapter/data-display';
 import { SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { Panel } from '@clouddrive/ui-adapter/panel';
@@ -13,6 +14,7 @@ import type {
 import { FilesError } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
 import { CatalogFailure } from './catalog-failure';
+import { PropertyDefinitionsPanel } from './property-definitions-panel';
 import { useCatalogRequest } from './use-catalog-request';
 
 const groups = [
@@ -282,7 +284,7 @@ function FilesystemSettingsForm({
   );
 }
 
-export function FilesystemSettingsPage() {
+function FilesystemSettingsBody() {
   const files = useFiles();
   const { t, locale } = useFrontendTranslation();
   const labels = locale.startsWith('zh') ? zh : en;
@@ -290,16 +292,13 @@ export function FilesystemSettingsPage() {
     useCallback((signal) => files.readFilesystemSettings(signal), [files]),
   );
   return (
-    <Page>
-      <PageHeader
-        title={t('systemTools.nav.filesystem')}
-        description={labels.description}
-        actions={
-          <Action variant="secondary" onPress={state.refresh}>
-            {t('files.refresh')}
-          </Action>
-        }
-      />
+    <div className="min-w-0 space-y-4">
+      <div className="flex flex-wrap justify-between gap-2">
+        <p>{labels.description}</p>
+        <Action variant="secondary" onPress={state.refresh}>
+          {t('files.refresh')}
+        </Action>
+      </div>
       {!state.result ? <p role="status">{t('administration.loading')}</p> : null}
       {state.result && 'error' in state.result ? (
         <CatalogFailure error={state.result.error} retry={state.refresh} />
@@ -311,6 +310,39 @@ export function FilesystemSettingsPage() {
           labels={labels}
         />
       ) : null}
+    </div>
+  );
+}
+
+export function FilesystemSettingsPage() {
+  const { t, locale } = useFrontendTranslation();
+  const chinese = locale.startsWith('zh');
+  const title = t('systemTools.nav.filesystem');
+  return (
+    <Page>
+      <PageHeader
+        title={title}
+        description={
+          chinese
+            ? '管理文件系统参数与全局属性。'
+            : 'Manage file system settings and global properties.'
+        }
+      />
+      <TabsView
+        label={title}
+        items={[
+          {
+            id: 'parameters',
+            label: chinese ? '参数设置' : 'Settings',
+            content: <FilesystemSettingsBody />,
+          },
+          {
+            id: 'properties',
+            label: chinese ? '自定义属性' : 'Custom properties',
+            content: <PropertyDefinitionsPanel />,
+          },
+        ]}
+      />
     </Page>
   );
 }

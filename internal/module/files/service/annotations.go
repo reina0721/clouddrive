@@ -57,11 +57,12 @@ type EntryStatistics struct {
 }
 
 type AnnotationDetail struct {
-	Entry       model.Entry        `json:"entry"`
-	Breadcrumbs []model.Entry      `json:"breadcrumbs"`
-	Annotation  AnnotationDocument `json:"annotation"`
-	Limits      AnnotationLimits   `json:"limits"`
-	Statistics  EntryStatistics    `json:"statistics"`
+	Entry               model.Entry                `json:"entry"`
+	Breadcrumbs         []model.Entry              `json:"breadcrumbs"`
+	Annotation          AnnotationDocument         `json:"annotation"`
+	Limits              AnnotationLimits           `json:"limits"`
+	Statistics          EntryStatistics            `json:"statistics"`
+	PropertyDefinitions []model.PropertyDefinition `json:"propertyDefinitions"`
 }
 
 type AnnotationUpdate struct {

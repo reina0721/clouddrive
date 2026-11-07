@@ -245,6 +245,13 @@
           "limits": {
             "$ref": "#/components/schemas/AnnotationLimits"
           },
+          "propertyDefinitions": {
+            "items": {
+              "$ref": "#/components/schemas/PropertyDefinition"
+            },
+            "nullable": true,
+            "type": "array"
+          },
           "statistics": {
             "$ref": "#/components/schemas/EntryStatistics"
           }
@@ -254,7 +261,8 @@
           "breadcrumbs",
           "annotation",
           "limits",
-          "statistics"
+          "statistics",
+          "propertyDefinitions"
         ],
         "type": "object"
       },
@@ -4574,6 +4582,111 @@
         "required": [
           "key",
           "value"
+        ],
+        "type": "object"
+      },
+      "PropertyDefinition": {
+        "additionalProperties": false,
+        "properties": {
+          "defaultValue": {
+            "maxLength": 256,
+            "type": "string"
+          },
+          "key": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "text",
+              "number",
+              "checkbox",
+              "select",
+              "multi-select",
+              "link",
+              "rating"
+            ],
+            "type": "string"
+          },
+          "maximum": {
+            "format": "double",
+            "type": "number"
+          },
+          "minimum": {
+            "format": "double",
+            "type": "number"
+          },
+          "name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 16,
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "kind"
+        ],
+        "type": "object"
+      },
+      "PropertyDefinitionOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "canSave": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PropertyDefinition"
+            },
+            "maxItems": 32,
+            "nullable": true,
+            "type": "array"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "canSave",
+          "revision",
+          "items"
+        ],
+        "type": "object"
+      },
+      "PropertyDefinitionSet": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PropertyDefinition"
+            },
+            "maxItems": 32,
+            "nullable": true,
+            "type": "array"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "items"
         ],
         "type": "object"
       },
@@ -11456,6 +11569,84 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HistoryPreferences"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/property-definitions": {
+      "get": {
+        "operationId": "files.property-definitions.read",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PropertyDefinitionOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "put": {
+        "operationId": "files.property-definitions.save",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PropertyDefinitionSet"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PropertyDefinitionOutputBody"
                 }
               }
             },

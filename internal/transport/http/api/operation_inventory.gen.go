@@ -76,6 +76,8 @@ const (
 	OperationFilesPreferencesHistorySave    OperationID = "files.preferences.history.save"
 	OperationFilesPreferencesRead           OperationID = "files.preferences.read"
 	OperationFilesPreferencesSave           OperationID = "files.preferences.save"
+	OperationFilesPropertyDefinitionsRead   OperationID = "files.property-definitions.read"
+	OperationFilesPropertyDefinitionsSave   OperationID = "files.property-definitions.save"
 	OperationFilesPublicArchive             OperationID = "files.public.archive"
 	OperationFilesPublicContent             OperationID = "files.public.content"
 	OperationFilesPublicContentHead         OperationID = "files.public.content.head"
@@ -272,6 +274,8 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesPreferencesHistorySave, Method: "PUT", Path: "/api/v1/files/preferences/history", Policy: "protected", Scope: "files:write", Action: "files.preferences.history.save"},
 	{ID: OperationFilesPreferencesRead, Method: "GET", Path: "/api/v1/files/preferences", Policy: "protected", Scope: "files:read", Action: "files.preferences.read"},
 	{ID: OperationFilesPreferencesSave, Method: "PUT", Path: "/api/v1/files/preferences", Policy: "protected", Scope: "files:write", Action: "files.preferences.save"},
+	{ID: OperationFilesPropertyDefinitionsRead, Method: "GET", Path: "/api/v1/files/property-definitions", Policy: "protected", Scope: "files:settings:read", Action: "files.property-definitions.read"},
+	{ID: OperationFilesPropertyDefinitionsSave, Method: "PUT", Path: "/api/v1/files/property-definitions", Policy: "protected", Scope: "files:settings:write", Action: "files.property-definitions.save"},
 	{ID: OperationFilesPublicArchive, Method: "POST", Path: "/api/v1/file-shares/{token}/archive", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicContent, Method: "GET", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicContentHead, Method: "HEAD", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},

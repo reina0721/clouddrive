@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { fileEntrySchema, FilesError } from './model';
+import { propertyDefinitionLimit, propertyDefinitionSchema } from './property-definitions';
 import {
   annotationDocumentSchema,
   annotationLimitsSchema,
@@ -18,6 +19,7 @@ export const annotationDetailSchema = z.object({
   breadcrumbs: z.array(fileEntrySchema),
   annotation: annotationDocumentSchema,
   limits: annotationLimitsSchema,
+  propertyDefinitions: z.array(propertyDefinitionSchema).max(propertyDefinitionLimit).default([]),
   statistics: z.object({
     files: z.number().int().nonnegative(),
     folders: z.number().int().nonnegative(),

@@ -2,7 +2,12 @@
 import { useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
-import { TextField, TextAreaField } from '@clouddrive/ui-adapter/form-field';
+import { SelectField, TextField, TextAreaField } from '@clouddrive/ui-adapter/form-field';
+import { ManagedPropertyInput } from '../../../src/files/managed-property-input';
+import {
+  initialManagedPropertyValue,
+  type PropertyDefinition,
+} from '../../../src/files/property-definitions';
 import {
   annotationColorSchema,
   annotationTagNamesSchema,
@@ -157,59 +162,114 @@ export function PropertiesEditor({
   value,
   onChange,
   maxProperties,
+  definitions = [],
+  existing = [],
   disabled = false,
 }: {
   value: FileAnnotationValues['properties'];
   onChange: (value: FileAnnotationValues['properties']) => void;
   maxProperties: number;
+  definitions?: readonly PropertyDefinition[];
+  existing?: FileAnnotationValues['properties'];
   disabled?: boolean;
 }) {
-  const { t } = useFrontendTranslation();
+  const { t, locale } = useFrontendTranslation();
+  const chinese = locale.startsWith('zh');
+  const [chosenKey, setChosenKey] = useState('');
+  const available = definitions.filter(
+    (definition) => !value.some((property) => property.key === definition.key),
+  );
+  const chosen = available.find((definition) => definition.key === chosenKey);
+  const edit = (index: number, change: Partial<FileAnnotationValues['properties'][number]>) =>
+    onChange(value.map((item, position) => (position === index ? { ...item, ...change } : item)));
+  const canAdd = !disabled && value.length < maxProperties;
   return (
     <fieldset className="space-y-3">
       <legend className="mb-2 font-semibold">{t('files.annotations.properties')}</legend>
       <p className="text-xs text-ink-muted">{t('files.annotations.propertyHint')}</p>
-      {value.map((property, index) => (
-        <div key={index} className="space-y-2 rounded-control border border-border p-3">
-          <TextField
-            label={t('files.annotations.propertyKey', { index: index + 1 })}
-            value={property.key}
-            disabled={disabled}
-            onChange={(event) =>
-              onChange(
-                value.map((item, position) =>
-                  position === index ? { ...item, key: event.target.value } : item,
-                ),
-              )
-            }
-          />
-          <TextAreaField
-            label={t('files.annotations.propertyValue', { index: index + 1 })}
-            value={property.value}
-            disabled={disabled}
-            rows={2}
-            onChange={(event) =>
-              onChange(
-                value.map((item, position) =>
-                  position === index ? { ...item, value: event.target.value } : item,
-                ),
-              )
-            }
+      {value.map((property, index) => {
+        const definition = definitions.find((candidate) => candidate.key === property.key);
+        const preserveExisting = existing.some(
+          (item) => item.key === property.key && item.value === property.value,
+        );
+        return (
+          <div key={index} className="space-y-2 rounded-control border border-border p-3">
+            {definition ? (
+              <>
+                <p className="break-all text-xs text-ink-muted">{definition.key}</p>
+                <ManagedPropertyInput
+                  definition={definition}
+                  label={definition.name}
+                  value={property.value}
+                  disabled={disabled}
+                  preserveExisting={preserveExisting}
+                  onChange={(next) => edit(index, { value: next })}
+                />
+              </>
+            ) : (
+              <>
+                <TextField
+                  label={t('files.annotations.propertyKey', {
+                    index: index + 1,
+                  })}
+                  value={property.key}
+                  disabled={disabled}
+                  onChange={(event) => edit(index, { key: event.target.value })}
+                />
+                <TextAreaField
+                  label={t('files.annotations.propertyValue', {
+                    index: index + 1,
+                  })}
+                  value={property.value}
+                  disabled={disabled}
+                  rows={2}
+                  onChange={(event) => edit(index, { value: event.target.value })}
+                />
+              </>
+            )}
+            <Action
+              size="sm"
+              variant="quiet"
+              disabled={disabled}
+              onPress={() => onChange(value.filter((_, position) => position !== index))}
+            >
+              {t('files.annotations.removeProperty', {
+                key: property.key || String(index + 1),
+              })}
+            </Action>
+          </div>
+        );
+      })}
+      {available.length > 0 ? (
+        <div className="min-w-0 space-y-2">
+          <SelectField
+            label={chinese ? '全局属性' : 'Defined property'}
+            value={chosen?.key ?? null}
+            options={available.map((definition) => ({
+              value: definition.key,
+              label: definition.name,
+            }))}
+            disabled={!canAdd}
+            onValueChange={setChosenKey}
           />
           <Action
             size="sm"
-            variant="quiet"
-            disabled={disabled}
-            onPress={() => onChange(value.filter((_, position) => position !== index))}
+            variant="secondary"
+            disabled={!canAdd || !chosen}
+            onPress={() => {
+              if (!chosen) return;
+              onChange([...value, { key: chosen.key, value: initialManagedPropertyValue(chosen) }]);
+              setChosenKey('');
+            }}
           >
-            {t('files.annotations.removeProperty', { key: property.key || String(index + 1) })}
+            {chinese ? '添加已定义属性' : 'Add defined property'}
           </Action>
         </div>
-      ))}
+      ) : null}
       <Action
         size="sm"
         variant="secondary"
-        disabled={disabled || value.length >= maxProperties}
+        disabled={!canAdd}
         onPress={() => onChange([...value, { key: '', value: '' }])}
       >
         {t('files.annotations.addProperty')}

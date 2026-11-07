@@ -48,6 +48,7 @@ type Handler struct {
 	BlobReclamationAccess    BlobReclamationAuthority
 	FilesystemSettings       *service.FilesystemSettings
 	FilesystemSettingsAccess FilesystemSettingsAuthority
+	PropertyDefinitions      *service.PropertyDefinitions
 	Downloads                *service.OfflineDownloads
 	Torrents                 *service.TorrentDownloads
 	Service                  *service.Service

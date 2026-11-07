@@ -17,6 +17,7 @@ import type { DirectLinkDelivery, DirectLinkPage, DirectLinkResult } from './dir
 import type { InventoryItem, InventoryPage, InventoryQuery } from './inventory';
 import type { BlobCandidatePage, BlobDetail, BlobPage, BlobQuery } from './blobs';
 import type { FilesystemSettings, FilesystemSettingsInput } from './filesystem-settings';
+import type { PropertyDefinitionSet, PropertyDefinitionsView } from './property-definitions';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
@@ -176,6 +177,8 @@ export type FilesPort = Readonly<{
   reclaimBlob(id: string): Promise<void>;
   readFilesystemSettings(signal: AbortSignal): Promise<FilesystemSettings>;
   saveFilesystemSettings(input: FilesystemSettingsInput): Promise<FilesystemSettings>;
+  readPropertyDefinitions(signal: AbortSignal): Promise<PropertyDefinitionsView>;
+  savePropertyDefinitions(input: PropertyDefinitionSet): Promise<PropertyDefinitionsView>;
   folder(parentId: string, name: string): Promise<FileEntry>;
   update(
     id: string,

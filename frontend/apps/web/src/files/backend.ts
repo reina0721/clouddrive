@@ -20,6 +20,7 @@ import {
   blobCandidatePageSchema,
   blobPageSchema,
   filesystemSettingsSchema,
+  propertyDefinitionsViewSchema,
   type FileListing,
   type FilesErrorCode,
   type FileShortcut,
@@ -338,6 +339,12 @@ export function createFilesRuntime(
       filesystemSettingsSchema.parse(await call('/settings', { signal })),
     saveFilesystemSettings: async (body) =>
       filesystemSettingsSchema.parse(await call('/settings', { method: 'PUT', body })),
+    readPropertyDefinitions: async (signal) =>
+      propertyDefinitionsViewSchema.parse(await call('/property-definitions', { signal })),
+    savePropertyDefinitions: async (body) =>
+      propertyDefinitionsViewSchema.parse(
+        await call('/property-definitions', { method: 'PUT', body }),
+      ),
     folder: async (parentId, name) =>
       fileEntrySchema.parse(await call('/folders', { method: 'POST', body: { parentId, name } })),
     update: async (id, change) =>

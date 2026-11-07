@@ -108,7 +108,7 @@ test('属性侧栏、标签编辑、颜色、空属性、个性化与真实复�
   await login(page);
   const value = await fixture(page);
   await api(page, '/folders', 'POST', { name: '后代', parentId: value.root.id });
-  await page.goto('/home');
+  await page.goto('/home?search=' + encodeURIComponent(value.name));
   let panel = await properties(page, value.name);
   const stats = panel.getByRole('region', { name: '有效内容统计', exact: true });
   await expect(
@@ -334,7 +334,8 @@ test('副本与回收保留整理信息，画廊按本屏加载且可批量整�
     emoji: '📚',
     folderColor: color,
   });
-  await page.goto('/home');
+  const lookup = '/home?search=' + encodeURIComponent(value.suffix);
+  await page.goto(lookup);
   await action(page, value.name, '复制');
   let dialog = page.getByRole('dialog');
   await dialog.getByLabel('名称', { exact: true }).fill(copyName);
@@ -357,15 +358,13 @@ test('副本与回收保留整理信息，画廊按本屏加载且可批量整�
   dialog = page.getByRole('dialog');
   await dialog.getByRole('button', { name: '确认', exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  await page.getByRole('link', { name: '回收站', exact: true }).click();
+  await page.goto(lookup + '&trash=true');
   await expect(row(page, value.root.id)).toContainText('📚');
   await action(page, value.name, '恢复');
   dialog = page.getByRole('dialog');
   await dialog.getByRole('button', { name: '确认', exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  await page.getByRole('link', { name: '我的文件', exact: true }).first().click();
-  await expect(page.getByRole('button', { name: value.name, exact: true })).toBeVisible();
-  await page.getByRole('button', { name: value.name, exact: true }).click();
+  await page.goto('/home?parent=' + String(value.root.id));
   const png = await page.evaluate(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 16;

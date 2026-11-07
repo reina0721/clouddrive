@@ -44,6 +44,11 @@ func registerAnnotations(api huma.API, h *handler.Handler, operation func(string
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
+		definitions, err := h.PropertyDefinitions.Read(ctx)
+		if err != nil {
+			return nil, h.Present(ctx, err)
+		}
+		value.PropertyDefinitions = definitions.Items
 		return &annotationReadOutput{Body: value}, nil
 	})
 	huma.Register(api, operation("files.annotations.replace", "PUT", "/{id}/annotations", "files:write", true), func(ctx context.Context, input *annotationWriteInput) (*annotationWriteOutput, error) {

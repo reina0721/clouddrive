@@ -10,6 +10,7 @@ import (
 	"github.com/reina0721/clouddrive/pkg/database"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"slices"
 	"time"
 )
 
@@ -209,6 +210,7 @@ func (r *Repository) saveEntryChanges(db *gorm.DB, owner string, entries, change
 	seen := make(map[string]bool, len(changed))
 	var retention *model.TrashRetention
 	var detached []blobCandidateRecord
+	var propertyDefinitions []model.PropertyDefinition
 	now := r.clock.Now().UTC().Truncate(time.Second)
 	for index, entry := range changed {
 		if entry.OwnerID != owner || entry.ID == "" || seen[entry.ID] {
@@ -237,6 +239,18 @@ func (r *Repository) saveEntryChanges(db *gorm.DB, owner string, entries, change
 			return err
 		}
 		if exists {
+			if !slices.Equal(previous.Annotations.Properties, entry.Annotations.Properties) {
+				if propertyDefinitions == nil {
+					definitions, err := loadPropertyDefinitions(db)
+					if err != nil {
+						return err
+					}
+					propertyDefinitions = definitions.Items
+				}
+				if err := validateDefinedProperties(propertyDefinitions, previous.Annotations.Properties, entry.Annotations.Properties); err != nil {
+					return err
+				}
+			}
 			if err := db.Model(&entryRecord{}).Where("id = ? AND owner_id = ?", entry.ID, owner).Select("*").Updates(&record).Error; err != nil {
 				return err
 			}

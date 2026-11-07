@@ -20,6 +20,7 @@ export * from './direct-links';
 export * from './inventory';
 export * from './blobs';
 export * from './filesystem-settings';
+export * from './property-definitions';
 export * from './pdf-contract';
 
 export * from './access';

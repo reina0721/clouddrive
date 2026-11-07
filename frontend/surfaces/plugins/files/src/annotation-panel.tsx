@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
+import { validateManagedProperty } from '../../../src/files/property-definitions';
 import { useFileTime } from './use-file-time';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { TextField } from '@clouddrive/ui-adapter/form-field';
@@ -97,11 +98,21 @@ function AnnotationPanelContent({
     setFailure(undefined);
     setNotice('');
     try {
-      const value = validateAnnotationValues(draft, detail.limits, detail.entry.kind),
-        saved = await port.replace(entry.id, {
-          ...value,
-          expectedRevision: detail.annotation.revision,
-        });
+      const value = validateAnnotationValues(draft, detail.limits, detail.entry.kind);
+      const changedInvalid = value.properties.some((property) => {
+        const definition = detail.propertyDefinitions.find(
+          (candidate) => candidate.key === property.key,
+        );
+        const unchanged = detail.annotation.properties.some(
+          (current) => current.key === property.key && current.value === property.value,
+        );
+        return definition && !unchanged && !validateManagedProperty(definition, property.value);
+      });
+      if (changedInvalid) throw new FilesError('invalid');
+      const saved = await port.replace(entry.id, {
+        ...value,
+        expectedRevision: detail.annotation.revision,
+      });
       if (generation.current !== current) return;
       setDetail({
         ...detail,
@@ -237,6 +248,8 @@ function AnnotationPanelContent({
               value={draft.properties}
               onChange={(properties) => setDraft({ ...draft, properties })}
               maxProperties={detail.limits.maxProperties}
+              definitions={detail.propertyDefinitions}
+              existing={detail.annotation.properties}
               disabled={pending}
             />
             <TextField
