@@ -135,3 +135,4 @@
 - [146 后台任务汇总](146-unified-background-tasks/README.md)：统一 ZIP、解压及两类离线下载的查看、筛选和分页。
 - [147 视频外挂字幕](147-external-video-subtitles/README.md)：本人视频自动匹配、手动切换及关闭同目录 VTT、SRT 和 ASS 字幕。
 - [148 回收站永久移除](148-trash-permanent-removal/README.md)：单项、多选、清空及确认范围校验。
+- [149 回收站保留规则](149-trash-retention/README.md)：本人设置、期限快照和限量后台清理。

@@ -10,11 +10,17 @@ import (
 //go:embed sqlite/*.sql postgres/*.sql mysql/*.sql
 var sqlFiles embed.FS
 
-const CurrentVersion uint = 19
+const CurrentVersion uint = 20
 const TableName = "files_schema_migrations"
 
 func Set() dbmigrate.Set {
 	return dbmigrate.Set{Name: "files", FS: sqlFiles, CurrentVersion: CurrentVersion, MigrationsTable: TableName, DriverPaths: map[database.Driver]string{database.DriverSQLite: "sqlite", database.DriverPostgres: "postgres", database.DriverMySQL: "mysql"}, SHA256ByFile: map[string]string{
+		"sqlite/000020_trash_retention.up.sql":         "8035ff5cf264600937810745819de9937e8e1d99f04a7ebc8323ee15570fe9f7",
+		"sqlite/000020_trash_retention.down.sql":       "8345dc7617832932ae883881d2723ca741f337d7593b0b90fab37c3fa0881603",
+		"postgres/000020_trash_retention.up.sql":       "8035ff5cf264600937810745819de9937e8e1d99f04a7ebc8323ee15570fe9f7",
+		"postgres/000020_trash_retention.down.sql":     "8345dc7617832932ae883881d2723ca741f337d7593b0b90fab37c3fa0881603",
+		"mysql/000020_trash_retention.up.sql":          "579609f29fa93ba21afe364541874f0d22025a2ab3fff6c72fea02f2775ccf2f",
+		"mysql/000020_trash_retention.down.sql":        "d3f0d2f84c01845e70e03184a8ff20999f07a8091bc0df79cc11ffea7434c261",
 		"sqlite/000019_zip_tasks.up.sql":               "65ac744c2fe2796d0e0422b6cf5eb236fc63f2e998418a2da64c4f3a2aa9012b",
 		"sqlite/000019_zip_tasks.down.sql":             "34a6203b6ca9d86cf9a39d9440880856ea142168a6487949e77c9678af7ab437",
 		"postgres/000019_zip_tasks.up.sql":             "65ac744c2fe2796d0e0422b6cf5eb236fc63f2e998418a2da64c4f3a2aa9012b",

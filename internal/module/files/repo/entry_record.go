@@ -27,6 +27,8 @@ type entryRecord struct {
 	// 业务Clock拥有更新时间；ORM自动改写会使刚返回的CAS版本立刻失效。
 	UpdatedAt          time.Time `gorm:"autoUpdateTime:false"`
 	TrashedAt          *time.Time
+	TrashExpiresAt     *time.Time
+	TrashRetryAt       *time.Time
 	UploadKey          string
 	ContentSHA         string
 	ContentRevision    int64
@@ -40,6 +42,9 @@ type entryRecord struct {
 func (entryRecord) TableName() string { return "files_entries" }
 
 func entryRecordFromModel(entry model.Entry) (entryRecord, error) {
+	if err := model.ValidateTrashDeadline(entry.TrashedAt, entry.TrashExpiresAt, entry.TrashRetryAt); err != nil {
+		return entryRecord{}, err
+	}
 	if entry.AccessPolicyRevision < 0 || entry.AccessPolicyRevision > model.MaxContentRevision {
 		return entryRecord{}, model.ErrInvalid
 	}
@@ -70,10 +75,13 @@ func entryRecordFromModel(entry model.Entry) (entryRecord, error) {
 	if err != nil {
 		return entryRecord{}, fmt.Errorf("encode file annotations: %w", err)
 	}
-	return entryRecord{AccessPolicyJSON: accessJSON, AccessPolicyRevision: entry.AccessPolicyRevision, ID: entry.ID, OwnerID: entry.OwnerID, ParentID: entry.ParentID, Kind: entry.Kind, Name: entry.Name, NormalizedName: entry.NormalizedName, ObjectKey: entry.ObjectKey, SizeBytes: entry.SizeBytes, MediaType: entry.MediaType, CreatedAt: entry.CreatedAt, UpdatedAt: entry.UpdatedAt, TrashedAt: entry.TrashedAt, UploadKey: entry.UploadKey, ContentSHA: entry.ContentSHA, ContentRevision: entry.ContentRevision, ShareToken: entry.ShareToken, AnnotationJSON: string(encoded), AnnotationRevision: entry.AnnotationRevision, HistoryJSON: string(history), HistoryRevision: entry.HistoryRevision}, nil
+	return entryRecord{AccessPolicyJSON: accessJSON, AccessPolicyRevision: entry.AccessPolicyRevision, ID: entry.ID, OwnerID: entry.OwnerID, ParentID: entry.ParentID, Kind: entry.Kind, Name: entry.Name, NormalizedName: entry.NormalizedName, ObjectKey: entry.ObjectKey, SizeBytes: entry.SizeBytes, MediaType: entry.MediaType, CreatedAt: entry.CreatedAt, UpdatedAt: entry.UpdatedAt, TrashedAt: entry.TrashedAt, TrashExpiresAt: entry.TrashExpiresAt, TrashRetryAt: entry.TrashRetryAt, UploadKey: entry.UploadKey, ContentSHA: entry.ContentSHA, ContentRevision: entry.ContentRevision, ShareToken: entry.ShareToken, AnnotationJSON: string(encoded), AnnotationRevision: entry.AnnotationRevision, HistoryJSON: string(history), HistoryRevision: entry.HistoryRevision}, nil
 }
 
 func (record entryRecord) model() (model.Entry, error) {
+	if err := model.ValidateTrashDeadline(record.TrashedAt, record.TrashExpiresAt, record.TrashRetryAt); err != nil {
+		return model.Entry{}, fmt.Errorf("stored trash deadline: %w", err)
+	}
 	if record.AccessPolicyRevision < 0 || record.AccessPolicyRevision > model.MaxContentRevision {
 		return model.Entry{}, model.ErrInvalid
 	}
@@ -117,7 +125,7 @@ func (record entryRecord) model() (model.Entry, error) {
 	if record.Kind != model.Folder && annotations.FolderColor != "" {
 		return model.Entry{}, model.ErrInvalid
 	}
-	return model.Entry{AccessPolicy: accessPolicy, AccessPolicyRevision: record.AccessPolicyRevision, ID: record.ID, OwnerID: record.OwnerID, ParentID: record.ParentID, Kind: record.Kind, Name: record.Name, NormalizedName: record.NormalizedName, ObjectKey: record.ObjectKey, SizeBytes: record.SizeBytes, MediaType: record.MediaType, CreatedAt: record.CreatedAt, UpdatedAt: record.UpdatedAt, TrashedAt: record.TrashedAt, UploadKey: record.UploadKey, ContentSHA: record.ContentSHA, ContentRevision: record.ContentRevision, ShareToken: record.ShareToken, Annotations: annotations, AnnotationRevision: record.AnnotationRevision, History: history, HistoryRevision: record.HistoryRevision}, nil
+	return model.Entry{AccessPolicy: accessPolicy, AccessPolicyRevision: record.AccessPolicyRevision, ID: record.ID, OwnerID: record.OwnerID, ParentID: record.ParentID, Kind: record.Kind, Name: record.Name, NormalizedName: record.NormalizedName, ObjectKey: record.ObjectKey, SizeBytes: record.SizeBytes, MediaType: record.MediaType, CreatedAt: record.CreatedAt, UpdatedAt: record.UpdatedAt, TrashedAt: record.TrashedAt, TrashExpiresAt: record.TrashExpiresAt, TrashRetryAt: record.TrashRetryAt, UploadKey: record.UploadKey, ContentSHA: record.ContentSHA, ContentRevision: record.ContentRevision, ShareToken: record.ShareToken, Annotations: annotations, AnnotationRevision: record.AnnotationRevision, History: history, HistoryRevision: record.HistoryRevision}, nil
 }
 
 func entryModels(records []entryRecord) ([]model.Entry, error) {

@@ -10,6 +10,7 @@ import {
   fileShareSchema,
   shareListingSchema,
   trashPurgePreviewSchema,
+  trashRetentionSchema,
   type FileListing,
   type FilesErrorCode,
   type FileShortcut,
@@ -310,6 +311,12 @@ export function createFilesRuntime(
       ),
     trash: async (id) =>
       fileEntrySchema.parse(await call(`/${encodeURIComponent(id)}/trash`, { method: 'POST' })),
+    loadTrashRetention: async (signal) =>
+      trashRetentionSchema.parse(await call('/trash/retention', { signal })),
+    saveTrashRetention: async (policy, signal) =>
+      trashRetentionSchema.parse(
+        await call('/trash/retention', { method: 'PUT', body: policy, signal }),
+      ),
     previewTrashPurge: async (selection, signal) =>
       trashPurgePreviewSchema.parse(
         await call('/trash/purge-preview', { method: 'POST', body: selection, signal }),

@@ -121,21 +121,18 @@ func planTrashPurge(ctx context.Context, owner string, input TrashPurgeSelection
 		ContentRevision, HistoryRevision int64
 		SizeBytes                        int64
 	}
-	index := make(map[string]model.Entry, len(entries))
-	children := make(map[string][]string)
+	tree, err := newTrashTree(owner, entries)
+	if err != nil {
+		return TrashPurgePreview{}, nil, err
+	}
 	roots := append([]string(nil), input.IDs...)
 	for _, entry := range entries {
-		if entry.OwnerID != owner || entry.ID == "" || index[entry.ID].ID != "" {
-			return TrashPurgePreview{}, nil, fmt.Errorf("trash purge entry identity invariant")
-		}
-		index[entry.ID] = entry
-		children[entry.ParentID] = append(children[entry.ParentID], entry.ID)
 		if input.Scope == TrashPurgeAll && entry.TrashedAt != nil {
 			roots = append(roots, entry.ID)
 		}
 	}
 	for _, id := range roots {
-		entry, exists := index[id]
+		entry, exists := tree.entries[id]
 		if !exists {
 			return TrashPurgePreview{}, nil, model.ErrMissing
 		}
@@ -144,22 +141,9 @@ func planTrashPurge(ctx context.Context, owner string, input TrashPurgeSelection
 		}
 	}
 	sort.Strings(roots)
-	queue := append([]string(nil), roots...)
-	targets := make(map[string]model.Entry)
-	for cursor := 0; cursor < len(queue); cursor++ {
-		if err := ctx.Err(); err != nil {
-			return TrashPurgePreview{}, nil, err
-		}
-		id := queue[cursor]
-		if _, visited := targets[id]; visited {
-			continue
-		}
-		entry := index[id]
-		targets[id] = entry
-		if len(children[id]) != 0 && entry.Kind != model.Folder {
-			return TrashPurgePreview{}, nil, fmt.Errorf("trash purge parent kind invariant")
-		}
-		queue = append(queue, children[id]...)
+	targets, err := tree.expand(ctx, roots)
+	if err != nil {
+		return TrashPurgePreview{}, nil, err
 	}
 	ids := make([]string, 0, len(targets))
 	for id := range targets {
@@ -184,4 +168,44 @@ func planTrashPurge(ctx context.Context, owner string, input TrashPurgeSelection
 	}
 	digest := sha256.Sum256(encoded)
 	return TrashPurgePreview{RootCount: len(roots), EntryCount: len(ids), Bytes: model.Used(selected), Snapshot: hex.EncodeToString(digest[:])}, ids, nil
+}
+
+type trashTree struct {
+	entries  map[string]model.Entry
+	children map[string][]string
+}
+
+func newTrashTree(owner string, entries []model.Entry) (trashTree, error) {
+	tree := trashTree{entries: make(map[string]model.Entry, len(entries)), children: make(map[string][]string)}
+	for _, entry := range entries {
+		if entry.OwnerID != owner || entry.ID == "" || tree.entries[entry.ID].ID != "" {
+			return trashTree{}, fmt.Errorf("trash entry identity invariant")
+		}
+		tree.entries[entry.ID] = entry
+		tree.children[entry.ParentID] = append(tree.children[entry.ParentID], entry.ID)
+	}
+	return tree, nil
+}
+
+// expand 只沿本人的目录边展开回收子树。
+func (t trashTree) expand(ctx context.Context, roots []string) (map[string]model.Entry, error) {
+	queue := append([]string(nil), roots...)
+	targets := make(map[string]model.Entry)
+	for cursor := 0; cursor < len(queue); cursor++ {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		id := queue[cursor]
+		if _, visited := targets[id]; visited {
+			continue
+		}
+		entry, exists := t.entries[id]
+		children := t.children[id]
+		if !exists || (len(children) != 0 && entry.Kind != model.Folder) {
+			return nil, fmt.Errorf("trash tree parent invariant")
+		}
+		targets[id] = entry
+		queue = append(queue, children...)
+	}
+	return targets, nil
 }

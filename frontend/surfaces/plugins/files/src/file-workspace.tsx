@@ -42,6 +42,7 @@ import { PinnedLinks } from './pinned-links';
 import type { CreateAction } from './workspace-create';
 import type { TrashPurgeSelection } from '../../../src/files/trash-purge';
 const TrashPurgeDialog = lazy(() => import('./trash-purge-dialog'));
+const TrashRetentionDialog = lazy(() => import('./trash-retention-dialog'));
 const allTrash: TrashPurgeSelection = { scope: 'all', ids: [] };
 const Create = lazy(() =>
   import('./workspace-create').then((module) => ({ default: module.WorkspaceCreate })),
@@ -72,6 +73,7 @@ export function FileWorkspace({
   const [revision, setRevision] = useWorkspaceRevision();
   const [historySettings, setHistorySettings] = useState(false);
   const [emptyTrash, setEmptyTrash] = useState(false);
+  const [trashRetention, setTrashRetention] = useState(false);
   const [storage, setStorage] = useState<FileListing>(),
     [storageFailure, setStorageFailure] = useState(''),
     [notice, setNotice] = useState(''),
@@ -403,14 +405,24 @@ export function FileWorkspace({
             className="flex shrink-0 flex-wrap items-center gap-2 bg-canvas px-3 py-2"
           >
             {isTrash ? (
-              <Action
-                size="sm"
-                variant="danger"
-                leadingIcon={<Trash2 className="size-4" />}
-                onPress={() => setEmptyTrash(true)}
-              >
-                {t('files.trashPurge.empty')}
-              </Action>
+              <>
+                <Action
+                  size="sm"
+                  variant="danger"
+                  leadingIcon={<Trash2 className="size-4" />}
+                  onPress={() => setEmptyTrash(true)}
+                >
+                  {t('files.trashPurge.empty')}
+                </Action>
+                <Action
+                  size="sm"
+                  variant="quiet"
+                  leadingIcon={<Settings className="size-4" />}
+                  onPress={() => setTrashRetention(true)}
+                >
+                  {t('files.trashRetention.title')}
+                </Action>
+              </>
             ) : (
               <MenuButton
                 ariaLabel={t('files.new')}
@@ -550,6 +562,11 @@ export function FileWorkspace({
               if (query.page && query.page !== '1') port.navigate('files', { ...query, page: '1' });
             }}
           />
+        </Suspense>
+      ) : null}
+      {isTrash && trashRetention ? (
+        <Suspense>
+          <TrashRetentionDialog onClose={() => setTrashRetention(false)} />
         </Suspense>
       ) : null}
       {historySettings ? (

@@ -5111,6 +5111,84 @@
         ]
       }
     },
+    "/api/console/v1/native/files/trash/retention": {
+      "get": {
+        "operationId": "files.trash.retention.read",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashRetention"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "put": {
+        "operationId": "files.trash.retention.write",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrashRetention"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashRetention"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
     "/api/console/v1/native/files/write-locks": {
       "get": {
         "operationId": "files.write-locks.list",
@@ -31697,6 +31775,10 @@
             "format": "int64",
             "type": "integer"
           },
+          "trashExpiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "trashedAt": {
             "format": "date-time",
             "nullable": true,
@@ -35010,6 +35092,28 @@
         "required": [
           "scope",
           "ids"
+        ],
+        "type": "object"
+      },
+      "TrashRetention": {
+        "additionalProperties": false,
+        "properties": {
+          "days": {
+            "format": "int64",
+            "maximum": 365,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "days",
+          "revision"
         ],
         "type": "object"
       },

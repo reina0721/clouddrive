@@ -119,6 +119,8 @@ const (
 	OperationFilesTrash                     OperationID = "files.trash"
 	OperationFilesTrashPurge                OperationID = "files.trash.purge"
 	OperationFilesTrashPurgePreview         OperationID = "files.trash.purge-preview"
+	OperationFilesTrashRetentionRead        OperationID = "files.trash.retention.read"
+	OperationFilesTrashRetentionWrite       OperationID = "files.trash.retention.write"
 	OperationFilesUpdate                    OperationID = "files.update"
 	OperationFilesVersionsContent           OperationID = "files.versions.content"
 	OperationFilesVersionsContentHead       OperationID = "files.versions.content.head"
@@ -300,6 +302,8 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesTrash, Method: "POST", Path: "/api/v1/files/{id}/trash", Policy: "protected", Scope: "files:write", Action: "files.trash"},
 	{ID: OperationFilesTrashPurge, Method: "POST", Path: "/api/v1/files/trash/purge", Policy: "protected", Scope: "files:write", Action: "files.trash.purge"},
 	{ID: OperationFilesTrashPurgePreview, Method: "POST", Path: "/api/v1/files/trash/purge-preview", Policy: "protected", Scope: "files:write", Action: "files.trash.purge-preview"},
+	{ID: OperationFilesTrashRetentionRead, Method: "GET", Path: "/api/v1/files/trash/retention", Policy: "protected", Scope: "files:read", Action: "files.trash.retention.read"},
+	{ID: OperationFilesTrashRetentionWrite, Method: "PUT", Path: "/api/v1/files/trash/retention", Policy: "protected", Scope: "files:write", Action: "files.trash.retention.write"},
 	{ID: OperationFilesUpdate, Method: "PATCH", Path: "/api/v1/files/{id}", Policy: "protected", Scope: "files:write", Action: "files.update"},
 	{ID: OperationFilesVersionsContent, Method: "GET", Path: "/api/v1/files/{id}/versions/{revision}/content", Policy: "protected", Scope: "files:read", Action: "files.versions.content"},
 	{ID: OperationFilesVersionsContentHead, Method: "HEAD", Path: "/api/v1/files/{id}/versions/{revision}/content", Policy: "protected", Scope: "files:read", Action: "files.versions.content.head"},

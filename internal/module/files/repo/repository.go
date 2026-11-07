@@ -203,22 +203,41 @@ func (r *Repository) saveEntryChanges(db *gorm.DB, owner string, entries, change
 		return err
 	}
 	seen := make(map[string]bool, len(changed))
-	for _, entry := range changed {
+	var retention *model.TrashRetention
+	for index, entry := range changed {
 		if entry.OwnerID != owner || entry.ID == "" || seen[entry.ID] {
 			return fmt.Errorf("files mutation identity invariant")
 		}
 		seen[entry.ID] = true
+		previous, exists := model.Find(entries, entry.ID)
+		entry.TrashExpiresAt, entry.TrashRetryAt = nil, nil
+		if entry.TrashedAt != nil {
+			if exists && previous.TrashedAt != nil {
+				entry.TrashExpiresAt, entry.TrashRetryAt = previous.TrashExpiresAt, previous.TrashRetryAt
+			} else {
+				if retention == nil {
+					policy, err := loadTrashRetention(db, owner)
+					if err != nil {
+						return err
+					}
+					retention = &policy
+				}
+				entry.TrashExpiresAt = retention.Expiry(*entry.TrashedAt)
+				entry.TrashRetryAt = entry.TrashExpiresAt
+			}
+		}
 		record, err := entryRecordFromModel(entry)
 		if err != nil {
 			return err
 		}
-		if _, exists := model.Find(entries, entry.ID); exists {
+		if exists {
 			if err := db.Model(&entryRecord{}).Where("id = ? AND owner_id = ?", entry.ID, owner).Select("*").Updates(&record).Error; err != nil {
 				return err
 			}
 		} else if err := db.Create(&record).Error; err != nil {
 			return err
 		}
+		changed[index] = entry
 	}
 	return nil
 }

@@ -145,6 +145,11 @@ export function FileItem({
   );
   const icon = annotation?.emoji ? glyph : thumbnail || glyph;
   const tags = annotation ? <TagBadges tags={annotation.tags} onTag={onTag} /> : null;
+  const expiry = entry.trashExpiresAt ? (
+    <p className="mt-1 text-xs text-ink-muted">
+      {t('files.trashRetention.expires', { date: time.full(entry.trashExpiresAt) })}
+    </p>
+  ) : null;
   const columnValue = (column: FileColumn) =>
     column === 'kind'
       ? kind
@@ -177,6 +182,7 @@ export function FileItem({
             <div className="min-w-0 flex-1">
               {title}
               {tags}
+              {expiry}
               <p className="mt-1 text-xs text-ink-muted sm:hidden">
                 {entry.kind === 'file' ? formatFileBytes(entry.sizeBytes) : kind}
               </p>
@@ -210,6 +216,7 @@ export function FileItem({
             <div className="min-w-0 max-w-full w-full">
               {title}
               {tags}
+              {expiry}
               <p className="mt-1 text-xs text-ink-muted">
                 {entry.kind === 'file' ? formatFileBytes(entry.sizeBytes) : kind}
               </p>

@@ -1,0 +1,23 @@
+schema_version: 1
+id: R149-001
+title: 回收站保留规则与安全到期
+question: 如何让新回收项按账号到期并保留已有数据和独立回收项？
+research_type: current-project-and-external-primary-source
+topics: [files, recycle-bin, scheduling]
+status: active
+summary: 回收时持久化截止时间，使用既有文件树、事务锁和调度执行限量逻辑移除。
+applicable_scenarios: [账号保留期限, 新回收项, 逻辑配额]
+non_applicable_scenarios: [用户组默认规则, 物理对象回收]
+evidence:
+  primary_sources:
+    - title: 文件模块与预览现状
+      locator: report.md
+      snapshot: 26b41ed
+    - title: Cloudreve 文件概念
+      locator: https://docs.cloudreve.org/en/usage/concept
+      snapshot: 2026-11-07 用户组页面观察
+verified_at: 2026-11-07
+validity:
+  mode: snapshot
+  refresh_triggers: [回收站数据模型变化, 对象引用边界变化, 调度或用户组政策变化]
+report: report.md

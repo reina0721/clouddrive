@@ -150,6 +150,10 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
+	boundary.TrashRetention, err = service.NewTrashRetention(repository, deps.Clock, deps.Policy)
+	if err != nil {
+		return Module{}, err
+	}
 	boundary.BackgroundTasks, err = service.NewBackgroundTasks(repository, archiveTasks)
 	if err != nil {
 		return Module{}, err
@@ -224,7 +228,15 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	return Module{Handler: boundary, Contribution: module.Contribution{ID: "files", Participants: participants, Schedules: []schedule.Binding{binding, torrentBinding, archiveBinding}}}, nil
+	trashTrigger, err := schedule.FixedDelay(service.TrashExpiryInterval, service.TrashExpiryInterval)
+	if err != nil {
+		return Module{}, err
+	}
+	trashBinding, err := schedule.Bind(schedule.Spec{ID: service.TrashExpiryTaskID, Trigger: trashTrigger, Concurrency: archiveConcurrency, Coordination: schedule.Local()}, boundary.TrashRetention.Dispatch)
+	if err != nil {
+		return Module{}, err
+	}
+	return Module{Handler: boundary, Contribution: module.Contribution{ID: "files", Participants: participants, Schedules: []schedule.Binding{binding, torrentBinding, archiveBinding, trashBinding}}}, nil
 }
 
 func stagingIdentity(root string) (string, error) {

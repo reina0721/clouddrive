@@ -45,6 +45,8 @@ type Entry struct {
 	CreatedAt            time.Time         `json:"createdAt"`
 	UpdatedAt            time.Time         `json:"updatedAt"`
 	TrashedAt            *time.Time        `json:"trashedAt"`
+	TrashExpiresAt       *time.Time        `json:"trashExpiresAt,omitempty"`
+	TrashRetryAt         *time.Time        `json:"-"`
 	UploadKey            string            `json:"-"`
 	ContentSHA           string            `json:"-"`
 	ContentRevision      int64             `json:"contentRevision"`

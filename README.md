@@ -54,6 +54,8 @@ Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Veri
 
 回收站支持永久删除本人文件和目录，可单选、多选或一键清空本人回收站。确认前展示实际范围和可释放的账户配额。详见[148变更](docs/changes/148-trash-permanent-removal/README.md)。
 
+在回收站可设置本人保留天数。默认手动清理；启用后，今后移入的项目会显示到期时间，服务后台按该时间清理。详见[149变更](docs/changes/149-trash-retention/README.md)。
+
 当前会话密码解锁已补齐，输错可重试、共享账号失败预算，详见[142变更](docs/changes/142-session-password-unlock/README.md)。本批20项使用行为不增加20个独立功能计数；客户端遮挡仍不是服务端授权边界。
 
 WebDAV持久独占写锁已接入真实协议、所有文件保存及上传最终发布；连接页可查看和按版本解除占用，详见[141变更](docs/changes/141-webdav-write-locks/README.md)。本批20项按使用行为验收，不等同Office服务或系统驱动全量兼容。

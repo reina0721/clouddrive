@@ -12,6 +12,7 @@ import type { FilePreferenceSnapshot } from './preferences';
 import type { FileSidebarPreferences } from './sidebar-preferences';
 import type { BackgroundTaskListing, BackgroundTaskQuery } from './background-tasks';
 import type { TrashPurgePreview, TrashPurgeSelection } from './trash-purge';
+import type { TrashRetention } from './trash-retention';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
@@ -57,6 +58,7 @@ export const fileEntrySchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   trashedAt: z.string().nullable(),
+  trashExpiresAt: z.string().optional(),
   contentRevision: z.number().int().positive(),
 });
 export type FileEntry = z.infer<typeof fileEntrySchema>;
@@ -168,6 +170,8 @@ export type FilesPort = Readonly<{
     change: { name?: string; parentId?: string; expectedRevision?: number },
   ): Promise<FileEntry>;
   trash(id: string): Promise<FileEntry>;
+  loadTrashRetention(signal: AbortSignal): Promise<TrashRetention>;
+  saveTrashRetention(policy: TrashRetention, signal: AbortSignal): Promise<TrashRetention>;
   previewTrashPurge(
     selection: TrashPurgeSelection,
     signal: AbortSignal,

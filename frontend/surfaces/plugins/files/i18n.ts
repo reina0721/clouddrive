@@ -150,6 +150,15 @@ const zh = {
   empty: '拖拽文件至此',
   emptyDescription: '或点击“上传文件”，开始整理你的云端空间。',
   emptyTrash: '回收站为空',
+  trashRetention: {
+    title: '保留规则',
+    loading: '正在读取保留规则…',
+    description: '期限只适用于以后移入回收站的项目。到期后，后台会永久清理。',
+    days: '保留天数',
+    hint: '输入 0 继续手动清理，或输入 1 至 {{max}} 的整数。',
+    invalid: '请输入有效的保留天数。',
+    expires: '到期 {{date}}',
+  },
   trashPurge: {
     empty: '清空回收站',
     permanent: '永久删除',
@@ -382,6 +391,16 @@ const en: typeof zh = {
   empty: 'Drop files here',
   emptyDescription: 'Or choose Upload files to start organizing your cloud space.',
   emptyTrash: 'Trash is empty',
+  trashRetention: {
+    title: 'Retention',
+    loading: 'Loading retention…',
+    description:
+      'This rule applies to future trash items. Expired items are permanently removed in the background.',
+    days: 'Days to keep',
+    hint: 'Enter 0 for manual cleanup, or a whole number from 1 to {{max}}.',
+    invalid: 'Enter a valid number of days.',
+    expires: 'Expires {{date}}',
+  },
   trashPurge: {
     empty: 'Empty trash',
     permanent: 'Delete permanently',
