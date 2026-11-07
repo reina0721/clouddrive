@@ -54,6 +54,8 @@ type Dependencies struct {
 	BlobReclamationAccess    handler.BlobReclamationAuthority
 	FilesystemSettings       *service.FilesystemSettings
 	FilesystemSettingsAccess handler.FilesystemSettingsAuthority
+	StoragePolicy            *service.StoragePolicy
+	StoragePolicyAccess      handler.StoragePolicyAuthority
 	TrashScanInterval        time.Duration
 	TrashSchedulerEnabled    bool
 	TransferContent          service.TransferContent
@@ -82,7 +84,8 @@ type Module struct {
 
 func New(deps Dependencies) (Module, error) {
 	if deps.Actors == nil || deps.Logger == nil || deps.PublicAuthentication == nil || deps.BlobReclamationAccess == nil ||
-		deps.FilesystemSettings == nil || deps.FilesystemSettingsAccess == nil || deps.AdminShareAccess == nil || deps.AdminTaskAccess == nil {
+		deps.FilesystemSettings == nil || deps.FilesystemSettingsAccess == nil || deps.AdminShareAccess == nil || deps.AdminTaskAccess == nil ||
+		deps.StoragePolicy == nil || deps.StoragePolicyAccess == nil {
 		return Module{}, fmt.Errorf("files boundary dependencies missing")
 	}
 	repository, err := repo.New(deps.Database, deps.StorageIdentity, deps.Clock)
@@ -138,6 +141,7 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
+	p.MaxFileBytes = min(p.MaxFileBytes, deps.Policy.MaxFileBytes)
 	transfers, err := service.NewTransfers(useCases, transfersRepository, staging, deps.TransferContent, connections, p)
 	if err != nil {
 		return Module{}, err
@@ -156,6 +160,7 @@ func New(deps Dependencies) (Module, error) {
 	}
 	boundary := &handler.Handler{PublicAuthentication: deps.PublicAuthentication, Service: useCases, Sharing: sharing, ShareTransfers: shareTransfers, Navigation: navigation, Preferences: preferences, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
 	boundary.Archives = archives
+	boundary.StoragePolicy, boundary.StoragePolicyAccess = deps.StoragePolicy, deps.StoragePolicyAccess
 	boundary.ArchiveTasks = archiveTasks
 	boundary.FilesystemSettings = deps.FilesystemSettings
 	boundary.FilesystemSettingsAccess = deps.FilesystemSettingsAccess
@@ -331,6 +336,21 @@ func PrepareFilesystemSettings(ctx context.Context, access repo.Access, storageI
 	}
 	active := defaults.Resolve(stored.Overrides)
 	settings, err := service.NewFilesystemSettings(repository, defaults, active)
+	return settings, active, err
+}
+
+// PrepareStoragePolicy 读取本代上传覆盖，供所有文件写入入口共用。
+func PrepareStoragePolicy(ctx context.Context, access repo.Access, identity string, source clock.Clock, backend service.StorageBackend, defaults service.StorageLimits) (*service.StoragePolicy, service.StorageLimits, error) {
+	repository, err := repo.New(access, identity, source)
+	if err != nil {
+		return nil, service.StorageLimits{}, err
+	}
+	stored, err := repository.ReadStoragePolicy(ctx)
+	if err != nil {
+		return nil, service.StorageLimits{}, fmt.Errorf("load storage policy: %w", err)
+	}
+	active := defaults.Resolve(stored.Overrides)
+	settings, err := service.NewStoragePolicy(repository, source, backend, defaults, active)
 	return settings, active, err
 }
 

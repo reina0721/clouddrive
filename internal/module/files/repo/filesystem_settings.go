@@ -24,38 +24,51 @@ type filesystemSettingsRecord struct {
 func (filesystemSettingsRecord) TableName() string { return "files_filesystem_settings" }
 
 func (r *Repository) ReadFilesystemSettings(ctx context.Context) (service.StoredFilesystemSettings, error) {
-	var output service.StoredFilesystemSettings
+	revision, overrides, err := readFileSettings[service.FilesystemOverrides](ctx, r, filesystemSettingsID)
+	output := service.StoredFilesystemSettings{Revision: revision, Overrides: overrides}
+	if err == nil && revision != 0 {
+		err = output.ValidateStored()
+	}
+	return output, err
+}
+
+func readFileSettings[T any](ctx context.Context, r *Repository, id string) (int64, T, error) {
+	var revision int64
+	var output T
 	err := r.access.Use(ctx, func(client database.Client) error {
 		return database.UseGORM(ctx, client, func(db *gorm.DB) error {
 			if err := r.checkStorage(db); err != nil {
 				return err
 			}
 			var record filesystemSettingsRecord
-			query := db.Where("id = ?", filesystemSettingsID).Limit(1).Find(&record)
+			query := db.Where("id = ?", id).Limit(1).Find(&record)
 			if query.Error != nil || query.RowsAffected == 0 {
 				return query.Error
 			}
-			output.Revision = record.Revision
+			if record.Revision < 1 || record.Revision > model.MaxPreferenceRevision {
+				return model.ErrInvalid
+			}
+			revision = record.Revision
 			decoder := json.NewDecoder(strings.NewReader(record.OverridesJSON))
 			decoder.DisallowUnknownFields()
-			var overrides *service.FilesystemOverrides
+			var overrides *T
 			if err := decoder.Decode(&overrides); err != nil {
-				return fmt.Errorf("decode stored filesystem settings: %w", err)
+				return fmt.Errorf("decode stored file settings: %w", err)
 			}
 			if overrides == nil {
-				return fmt.Errorf("stored filesystem settings must be an object")
+				return fmt.Errorf("stored file settings must be an object")
 			}
-			output.Overrides = *overrides
 			if err := decoder.Decode(new(struct{})); err != io.EOF {
 				if err != nil {
-					return fmt.Errorf("decode stored filesystem settings trailing content: %w", err)
+					return fmt.Errorf("decode stored file settings trailing content: %w", err)
 				}
-				return fmt.Errorf("unexpected stored filesystem settings trailing value")
+				return fmt.Errorf("unexpected stored file settings trailing value")
 			}
-			return output.ValidateStored()
+			output = *overrides
+			return nil
 		})
 	})
-	return output, err
+	return revision, output, err
 }
 
 func (r *Repository) SaveFilesystemSettings(ctx context.Context, value service.StoredFilesystemSettings) (service.StoredFilesystemSettings, error) {
@@ -64,19 +77,23 @@ func (r *Repository) SaveFilesystemSettings(ctx context.Context, value service.S
 	if err := value.ValidateStored(); err != nil {
 		return service.StoredFilesystemSettings{}, err
 	}
-	payload, err := json.Marshal(value.Overrides)
+	return value, r.saveFileSettings(ctx, filesystemSettingsID, expected, value.Revision, value.Overrides)
+}
+
+func (r *Repository) saveFileSettings(ctx context.Context, id string, expected, revision int64, overrides any) error {
+	payload, err := json.Marshal(overrides)
 	if err != nil {
-		return service.StoredFilesystemSettings{}, fmt.Errorf("encode filesystem settings: %w", err)
+		return fmt.Errorf("encode file settings: %w", err)
 	}
-	record := filesystemSettingsRecord{ID: filesystemSettingsID, Revision: value.Revision, OverridesJSON: string(payload)}
-	err = r.access.WithinTx(ctx, func(ctx context.Context, _ database.Client, tx database.Tx) error {
+	record := filesystemSettingsRecord{ID: id, Revision: revision, OverridesJSON: string(payload)}
+	return r.access.WithinTx(ctx, func(ctx context.Context, _ database.Client, tx database.Tx) error {
 		return database.UseGORMTx(ctx, tx, func(db *gorm.DB) error {
 			if err := r.lockStorage(db); err != nil {
 				return err
 			}
 			if expected == 0 {
 				var count int64
-				if err := db.Model(&filesystemSettingsRecord{}).Where("id = ?", filesystemSettingsID).Count(&count).Error; err != nil {
+				if err := db.Model(&filesystemSettingsRecord{}).Where("id = ?", id).Count(&count).Error; err != nil {
 					return err
 				}
 				if count != 0 {
@@ -84,7 +101,7 @@ func (r *Repository) SaveFilesystemSettings(ctx context.Context, value service.S
 				}
 				return db.Create(&record).Error
 			}
-			updated := db.Model(&filesystemSettingsRecord{}).Where("id = ? AND revision = ?", filesystemSettingsID, expected).
+			updated := db.Model(&filesystemSettingsRecord{}).Where("id = ? AND revision = ?", id, expected).
 				Select("revision", "overrides_json").Updates(&record)
 			if updated.Error != nil {
 				return updated.Error
@@ -95,5 +112,4 @@ func (r *Repository) SaveFilesystemSettings(ctx context.Context, value service.S
 			return nil
 		})
 	})
-	return value, err
 }

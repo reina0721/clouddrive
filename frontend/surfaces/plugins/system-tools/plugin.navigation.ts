@@ -58,6 +58,14 @@ export const navigationContribution = {
       routeId: 'system-tools.nodes',
     },
     {
+      navigationId: 'system-tools.storage',
+      labelKey: 'systemTools.nav.storage',
+      groupId: 'administration',
+      order: 51,
+      iconId: 'resource',
+      routeId: 'system-tools.storage',
+    },
+    {
       navigationId: 'system-tools.runtime',
       labelKey: 'administration.runtime',
       groupId: 'administration',

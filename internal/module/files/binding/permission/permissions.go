@@ -4,18 +4,20 @@ package permission
 import permissioncatalog "github.com/reina0721/clouddrive/internal/permission"
 
 const (
-	Read             permissioncatalog.Key = "files:read"
-	Write            permissioncatalog.Key = "files:write"
-	InventoryRead    permissioncatalog.Key = "files:inventory:read"
-	BlobRead         permissioncatalog.Key = "files:blob:read"
-	BlobReclaim      permissioncatalog.Key = "files:blob:reclaim"
-	SettingsRead     permissioncatalog.Key = "files:settings:read"
-	SettingsWrite    permissioncatalog.Key = "files:settings:write"
-	AdminShareRead   permissioncatalog.Key = "files:share-admin:read"
-	AdminShareRevoke permissioncatalog.Key = "files:share-admin:revoke"
-	AdminTaskRead    permissioncatalog.Key = "files:task-admin:read"
-	AdminTaskCleanup permissioncatalog.Key = "files:task-admin:cleanup"
-	WorkerNodeRead   permissioncatalog.Key = "files:node:read"
+	Read               permissioncatalog.Key = "files:read"
+	Write              permissioncatalog.Key = "files:write"
+	InventoryRead      permissioncatalog.Key = "files:inventory:read"
+	BlobRead           permissioncatalog.Key = "files:blob:read"
+	BlobReclaim        permissioncatalog.Key = "files:blob:reclaim"
+	SettingsRead       permissioncatalog.Key = "files:settings:read"
+	SettingsWrite      permissioncatalog.Key = "files:settings:write"
+	AdminShareRead     permissioncatalog.Key = "files:share-admin:read"
+	AdminShareRevoke   permissioncatalog.Key = "files:share-admin:revoke"
+	AdminTaskRead      permissioncatalog.Key = "files:task-admin:read"
+	AdminTaskCleanup   permissioncatalog.Key = "files:task-admin:cleanup"
+	WorkerNodeRead     permissioncatalog.Key = "files:node:read"
+	StoragePolicyRead  permissioncatalog.Key = "files:storage-policy:read"
+	StoragePolicyWrite permissioncatalog.Key = "files:storage-policy:write"
 )
 
 func Definitions() []permissioncatalog.Definition {
@@ -32,5 +34,7 @@ func Definitions() []permissioncatalog.Definition {
 		{Key: AdminTaskRead, OwnerModuleID: "files", DescriptionMessageID: "permission.files.task-admin.read", Risk: permissioncatalog.RiskElevated},
 		{Key: AdminTaskCleanup, OwnerModuleID: "files", DescriptionMessageID: "permission.files.task-admin.cleanup", Risk: permissioncatalog.RiskCritical},
 		{Key: WorkerNodeRead, OwnerModuleID: "files", DescriptionMessageID: "permission.files.node.read", Risk: permissioncatalog.RiskElevated},
+		{Key: StoragePolicyRead, OwnerModuleID: "files", DescriptionMessageID: "permission.files.storage-policy.read", Risk: permissioncatalog.RiskElevated},
+		{Key: StoragePolicyWrite, OwnerModuleID: "files", DescriptionMessageID: "permission.files.storage-policy.write", Risk: permissioncatalog.RiskCritical},
 	}
 }

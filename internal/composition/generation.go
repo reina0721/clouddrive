@@ -478,13 +478,28 @@ func (f *applicationGenerationFactory) Prepare(
 	if err != nil {
 		return abort(err)
 	}
-	storageIdentity, err := filesStorageIdentity(snapshot)
+	var storageConfig storageapp.Config
+	if err := snapshot.DecodeSection(storageapp.ConfigPath, &storageConfig); err != nil {
+		return abort(err)
+	}
+	storageIdentity, err := filesStorageIdentity(storageConfig)
 	if err != nil {
 		return abort(err)
 	}
 	if err := files.ValidateStorage(ctx, databaseAccess, storageIdentity, clock.System()); err != nil {
 		return abort(err)
 	}
+	storageBackend, err := filesStorageBackend(storageConfig.Driver)
+	if err != nil {
+		return abort(err)
+	}
+	transferPolicy := filesPolicy.TransferPolicy()
+	storagePolicy, storageLimits, err := files.PrepareStoragePolicy(ctx, databaseAccess, storageIdentity, clock.System(), storageBackend,
+		filesservice.StorageLimits{MaxFileBytes: filesPolicy.MaxFileBytes, ChunkBytes: transferPolicy.ChunkBytes})
+	if err != nil {
+		return abort(err)
+	}
+	transferPolicy.ChunkBytes = storageLimits.ChunkBytes
 	trashScheduled, err := scheduleapp.TaskConfiguredEnabled(snapshot, filesservice.TrashExpiryTaskID)
 	if err != nil {
 		return abort(err)
@@ -493,8 +508,10 @@ func (f *applicationGenerationFactory) Prepare(
 	if err != nil {
 		return abort(err)
 	}
+	fileRuntimePolicy := filesPolicy.Policy()
+	fileRuntimePolicy.MaxFileBytes = storageLimits.MaxFileBytes
 	filesystemSettings, activeFilesystem, err := files.PrepareFilesystemSettings(ctx, databaseAccess, storageIdentity, clock.System(), filesservice.FilesystemRuntime{
-		Policy: filesPolicy.Policy(), Blob: filesPolicy.BlobReclamation, TrashInterval: filesservice.TrashExpiryInterval,
+		Policy: fileRuntimePolicy, Blob: filesPolicy.BlobReclamation, TrashInterval: filesservice.TrashExpiryInterval,
 		TrashScheduled: trashScheduled, BlobScheduled: blobScheduled,
 	})
 	if err != nil {
@@ -538,10 +555,11 @@ func (f *applicationGenerationFactory) Prepare(
 		NavigationPolicy: filesPolicy.NavigationPolicy(), ConnectionOrigin: filesPolicy.Connections.PublicOrigin,
 		ConnectionPolicy: filesPolicy.ConnectionPolicy(), ConnectionAuthority: fileAuthority, PublicOrigins: httpConfig.CORS.AllowedOrigins,
 		StorageIdentity: storageIdentity, Database: databaseAccess, Content: fileContent, BlobProbe: fileContent,
-		TransferContent: fileContent, TransferPolicy: filesPolicy.TransferPolicy(), StagingPath: filesPolicy.Transfers.StagingPath,
+		TransferContent: fileContent, TransferPolicy: transferPolicy, StagingPath: filesPolicy.Transfers.StagingPath,
 		BlobReclamationPolicy: blobPolicy, BlobReclamationAccess: fileAuthority, TrashScanInterval: activeFilesystem.TrashInterval,
 		TrashSchedulerEnabled: activeFilesystem.TrashScheduled,
 		FilesystemSettings:    filesystemSettings, FilesystemSettingsAccess: fileAuthority,
+		StoragePolicy: storagePolicy, StoragePolicyAccess: fileAuthority,
 		AdminShareAccess: fileAuthority,
 		AdminTaskAccess:  fileAuthority,
 		Clock:            clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: activeFilesystem.Policy,

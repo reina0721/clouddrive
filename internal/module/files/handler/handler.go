@@ -23,6 +23,10 @@ type FilesystemSettingsAuthority interface {
 	AuthorizeFilesystemSettingsWrite(context.Context, string) (bool, error)
 }
 
+type StoragePolicyAuthority interface {
+	AuthorizeStoragePolicyWrite(context.Context, string) (bool, error)
+}
+
 type AdminShareAuthority interface {
 	AuthorizeAdminShareRevoke(context.Context, string) (bool, error)
 }
@@ -62,6 +66,8 @@ type Handler struct {
 	BlobReclamationAccess    BlobReclamationAuthority
 	FilesystemSettings       *service.FilesystemSettings
 	FilesystemSettingsAccess FilesystemSettingsAuthority
+	StoragePolicy            *service.StoragePolicy
+	StoragePolicyAccess      StoragePolicyAuthority
 	PropertyDefinitions      *service.PropertyDefinitions
 	Downloads                *service.OfflineDownloads
 	Torrents                 *service.TorrentDownloads

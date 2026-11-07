@@ -81,10 +81,9 @@ func registerSharedTransfers(api huma.API, h *handler.Handler) {
 					request, writer := humabinding.BeginRawHTTP(raw)
 					started = true
 					request = request.WithContext(locked)
-					if request.Method == http.MethodPatch {
-						request.Body = http.MaxBytesReader(writer, request.Body, h.Transfers.ChunkBytes())
+					if transferChunkAllowed(writer, request, h) {
+						h.TransferProtocol.Handle(writer, request, input.ID)
 					}
-					h.TransferProtocol.Handle(writer, request, input.ID)
 					return nil
 				})
 				if err != nil {

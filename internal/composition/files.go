@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	storageapp "github.com/reina0721/clouddrive/internal/kernel/app/storage"
-	"github.com/reina0721/clouddrive/internal/kernel/config"
 	authmodel "github.com/reina0721/clouddrive/internal/module/auth/model"
 	filespermission "github.com/reina0721/clouddrive/internal/module/files/binding/permission"
 	filesservice "github.com/reina0721/clouddrive/internal/module/files/service"
@@ -28,6 +27,13 @@ func (a filesConnectionAuthority) AuthorizeFilesystemSettingsWrite(ctx context.C
 		return false, fmt.Errorf("filesystem settings authorization unavailable")
 	}
 	return a.access.AuthorizeAccount(ctx, owner, filespermission.SettingsWrite)
+}
+
+func (a filesConnectionAuthority) AuthorizeStoragePolicyWrite(ctx context.Context, owner string) (bool, error) {
+	if a.access == nil {
+		return false, fmt.Errorf("storage policy authorization unavailable")
+	}
+	return a.access.AuthorizeAccount(ctx, owner, filespermission.StoragePolicyWrite)
 }
 
 func (a filesConnectionAuthority) AuthorizeBlobReclamation(ctx context.Context, owner string) (bool, error) {
@@ -101,11 +107,7 @@ func (a filesConnectionAuthority) AuthorizeConnection(ctx context.Context, owner
 }
 
 // filesStorageIdentity 只对内容位置求摘要，不包含凭据或公开 URL。
-func filesStorageIdentity(snapshot config.Snapshot) (string, error) {
-	var cfg storageapp.Config
-	if err := snapshot.DecodeSection(storageapp.ConfigPath, &cfg); err != nil {
-		return "", err
-	}
+func filesStorageIdentity(cfg storageapp.Config) (string, error) {
 	root, err := filepath.Abs(cfg.Local.BasePath)
 	if err != nil {
 		return "", err
@@ -120,6 +122,21 @@ func filesStorageIdentity(snapshot config.Snapshot) (string, error) {
 	}
 	digest := sha256.Sum256(encoded)
 	return hex.EncodeToString(digest[:]), nil
+}
+
+func filesStorageBackend(driver storage.Driver) (filesservice.StorageBackend, error) {
+	switch driver {
+	case storage.DriverDisabled:
+		return filesservice.StorageBackendDisabled, nil
+	case storage.DriverLocal:
+		return filesservice.StorageBackendLocal, nil
+	case storage.DriverS3, storage.DriverLocalS3:
+		return filesservice.StorageBackendS3, nil
+	case storage.DriverMinIO, storage.DriverLocalMinIO:
+		return filesservice.StorageBackendMinIO, nil
+	default:
+		return "", fmt.Errorf("unsupported file storage driver")
+	}
 }
 
 // filesActorAdapter 只投影已认证主体，不允许请求参数选择文件 owner。

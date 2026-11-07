@@ -4724,6 +4724,109 @@ components:
       required:
         - status
       type: object
+    StorageLimitOverrides:
+      additionalProperties: false
+      properties:
+        chunkBytes:
+          format: int64
+          minimum: 1
+          type: integer
+        maxFileBytes:
+          format: int64
+          minimum: 1
+          type: integer
+      type: object
+    StorageLimits:
+      additionalProperties: false
+      properties:
+        chunkBytes:
+          format: int64
+          minimum: 1
+          type: integer
+        maxFileBytes:
+          format: int64
+          minimum: 1
+          type: integer
+      required:
+        - maxFileBytes
+        - chunkBytes
+      type: object
+    StoragePolicyOutputBody:
+      additionalProperties: false
+      properties:
+        active:
+          $ref: "#/components/schemas/StorageLimits"
+        backend:
+          enum:
+            - disabled
+            - local
+            - s3
+            - minio
+          type: string
+        canSave:
+          type: boolean
+        configured:
+          $ref: "#/components/schemas/StorageLimits"
+        defaults:
+          $ref: "#/components/schemas/StorageLimits"
+        overrides:
+          $ref: "#/components/schemas/StorageLimitOverrides"
+        pendingRestart:
+          type: boolean
+        revision:
+          format: int64
+          maximum: 9007199254740991
+          minimum: 0
+          type: integer
+      required:
+        - canSave
+        - backend
+        - defaults
+        - configured
+        - active
+        - pendingRestart
+        - revision
+        - overrides
+      type: object
+    StorageUsageSnapshot:
+      additionalProperties: false
+      properties:
+        blobBytes:
+          format: int64
+          minimum: 0
+          type: integer
+        blobCount:
+          format: int64
+          minimum: 0
+          type: integer
+        checkedAt:
+          format: date-time
+          type: string
+        currentReferences:
+          format: int64
+          minimum: 0
+          type: integer
+        historyReferences:
+          format: int64
+          minimum: 0
+          type: integer
+        pendingBytes:
+          format: int64
+          minimum: 0
+          type: integer
+        pendingCount:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - checkedAt
+        - blobCount
+        - blobBytes
+        - currentReferences
+        - historyReferences
+        - pendingCount
+        - pendingBytes
+      type: object
     StoredFilesystemSettings:
       additionalProperties: false
       properties:
@@ -4731,6 +4834,20 @@ components:
           $ref: "#/components/schemas/FilesystemOverrides"
         revision:
           format: int64
+          minimum: 0
+          type: integer
+      required:
+        - revision
+        - overrides
+      type: object
+    StoredStoragePolicy:
+      additionalProperties: false
+      properties:
+        overrides:
+          $ref: "#/components/schemas/StorageLimitOverrides"
+        revision:
+          format: int64
+          maximum: 9007199254740991
           minimum: 0
           type: integer
       required:
@@ -9243,6 +9360,71 @@ paths:
             Location:
               schema:
                 type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/storage-policy:
+    get:
+      operationId: files.storage-policy.read
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoragePolicyOutputBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+    put:
+      operationId: files.storage-policy.save
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StoredStoragePolicy"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoragePolicyOutputBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/storage-policy/usage:
+    get:
+      operationId: files.storage-policy.usage
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StorageUsageSnapshot"
+          description: OK
         default:
           content:
             application/problem+json:

@@ -1,0 +1,26 @@
+schema_version: 1
+id: R160-001
+title: 默认存储策略与上传限额
+question: 如何管理当前存储策略、实际 Blob 用量和上传限额？
+research_type: current-project-and-external-primary-source
+topics: [files, storage, blob, upload, settings]
+status: active
+summary: 复用当前对象存储、Blob 关系查询和持久设置，为默认策略提供真实统计和两个可保存的上传限额。
+applicable_scenarios: [当前默认策略, Blob 用量, 文件及分片限制]
+non_applicable_scenarios: [多策略分配, 迁移对象, CDN, 加密]
+evidence:
+  primary_sources:
+    - title: Cloudreve 存储策略
+      locator: https://docs.cloudreve.org/en/usage/storage/
+      snapshot: 存储类型和上传能力比较
+    - title: Cloudreve 上传流程
+      locator: https://docs.cloudreve.org/en/api/upload
+      snapshot: 会话及分片大小
+    - title: 参考界面与本地项目
+      locator: report.md
+      snapshot: f342749
+verified_at: 2026-11-07
+validity:
+  mode: snapshot
+  refresh_triggers: [文件 Blob 关系改变, 存储绑定改变, 上传与暂存边界改变]
+report: report.md

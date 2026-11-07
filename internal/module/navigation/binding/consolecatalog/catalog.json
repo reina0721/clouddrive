@@ -460,6 +460,16 @@
     "Manageable": true
   },
   {
+    "ID": "system-tools.storage",
+    "ModuleID": "system-tools",
+    "RouteID": "system-tools.storage",
+    "TitleMessageID": "systemTools.nav.storage",
+    "IconID": "resource",
+    "DefaultParentID": "group:administration",
+    "DefaultOrder": 51,
+    "Manageable": true
+  },
+  {
     "ID": "system-tools.runtime",
     "ModuleID": "system-tools",
     "RouteID": "system-tools.runtime",

@@ -11,6 +11,7 @@ export const pluginI18nResources = {
           shares: '分享管理',
           tasks: '后台任务管理',
           nodes: '节点管理',
+          storage: '存储策略',
         },
         icons: {
           title: 'Icon 大全',
@@ -32,6 +33,7 @@ export const pluginI18nResources = {
           shares: 'Manage shares',
           tasks: 'Manage background tasks',
           nodes: 'Worker nodes',
+          storage: 'Storage policy',
         },
         icons: {
           title: 'Icon Gallery',

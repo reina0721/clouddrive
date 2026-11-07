@@ -542,6 +542,14 @@ export const generatedRouteCatalog: RouteCatalog = {
       paramNames: [],
     },
     {
+      routeId: 'system-tools.storage',
+      pluginId: 'system-tools',
+      path: 'storage',
+      segments: ['storage'],
+      pattern: '/system-tools/storage',
+      paramNames: [],
+    },
+    {
       routeId: 'system-tools.tasks',
       pluginId: 'system-tools',
       path: 'tasks',
@@ -1120,6 +1128,14 @@ export const generatedRouteCatalog: RouteCatalog = {
             order: 50,
             iconId: 'resource',
             routeId: 'system-tools.nodes',
+          },
+          {
+            navigationId: 'system-tools.storage',
+            labelKey: 'systemTools.nav.storage',
+            groupId: 'administration',
+            order: 51,
+            iconId: 'resource',
+            routeId: 'system-tools.storage',
           },
           {
             navigationId: 'system-tools.runtime',

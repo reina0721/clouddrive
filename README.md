@@ -76,6 +76,8 @@ Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Veri
 
 管理区的“节点管理”显示主机任务职责、部署配置的 BitTorrent 节点、实时连接检查和 aria2 实例统计，并可打开按节点筛选的后台任务。详见[159变更](docs/changes/159-file-worker-nodes/README.md)。
 
+管理区的“存储策略”显示默认发布后端和 Blob 用量，可保存单文件与分片上限，在服务重启后应用。详见[160变更](docs/changes/160-storage-policy/README.md)。
+
 当前会话密码解锁已补齐，输错可重试、共享账号失败预算，详见[142变更](docs/changes/142-session-password-unlock/README.md)。本批20项使用行为不增加20个独立功能计数；客户端遮挡仍不是服务端授权边界。
 
 WebDAV持久独占写锁已接入真实协议、所有文件保存及上传最终发布；连接页可查看和按版本解除占用，详见[141变更](docs/changes/141-webdav-write-locks/README.md)。本批20项按使用行为验收，不等同Office服务或系统驱动全量兼容。

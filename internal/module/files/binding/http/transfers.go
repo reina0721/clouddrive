@@ -6,6 +6,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/reina0721/clouddrive/internal/module/files/handler"
+	"github.com/reina0721/clouddrive/internal/module/files/model"
 	"github.com/reina0721/clouddrive/internal/module/files/service"
 	"github.com/reina0721/clouddrive/internal/transport/http/humabinding"
 	"github.com/reina0721/clouddrive/pkg/httpx"
@@ -164,10 +165,9 @@ func registerTransfers(api huma.API, h *handler.Handler, operation func(string, 
 					started = true
 					request = request.WithContext(locked)
 					writer.Header().Set("Cache-Control", "private, no-store")
-					if request.Method == http.MethodPatch {
-						request.Body = http.MaxBytesReader(writer, request.Body, h.Transfers.ChunkBytes())
+					if transferChunkAllowed(writer, request, h) {
+						h.TransferProtocol.Handle(writer, request, input.ID)
 					}
-					h.TransferProtocol.Handle(writer, request, input.ID)
 					return nil
 				})
 				if err != nil {
@@ -181,6 +181,19 @@ func registerTransfers(api huma.API, h *handler.Handler, operation func(string, 
 			}}, nil
 		})
 	}
+}
+
+func transferChunkAllowed(writer http.ResponseWriter, request *http.Request, h *handler.Handler) bool {
+	if request.Method != http.MethodPatch {
+		return true
+	}
+	maximum := h.Transfers.ChunkBytes()
+	if request.ContentLength > maximum {
+		httpx.WriteProblem(writer, request, h.Present(request.Context(), model.ErrTooLarge))
+		return false
+	}
+	request.Body = http.MaxBytesReader(writer, request.Body, maximum)
+	return true
 }
 
 func transferBudget(op huma.Operation) huma.Operation {

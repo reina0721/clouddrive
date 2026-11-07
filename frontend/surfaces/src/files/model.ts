@@ -31,6 +31,7 @@ import type {
   AdminTaskTarget,
 } from './admin-tasks';
 import type { WorkerNodeCatalog, WorkerNodeCheck } from './worker-nodes';
+import type { StoragePolicy, StoragePolicyInput, StorageUsage } from './storage-policy';
 import type { BlobCandidatePage, BlobDetail, BlobPage, BlobQuery } from './blobs';
 import type { FilesystemSettings, FilesystemSettingsInput } from './filesystem-settings';
 import type { PropertyDefinitionSet, PropertyDefinitionsView } from './property-definitions';
@@ -198,6 +199,9 @@ export type FilesPort = Readonly<{
   cleanAdminTasks(targets: readonly AdminTaskTarget[]): Promise<AdminTaskCleanup>;
   listWorkerNodes(signal: AbortSignal): Promise<WorkerNodeCatalog>;
   checkWorkerNode(id: string, signal: AbortSignal): Promise<WorkerNodeCheck>;
+  readStoragePolicy(signal: AbortSignal): Promise<StoragePolicy>;
+  saveStoragePolicy(input: StoragePolicyInput): Promise<StoragePolicy>;
+  readStorageUsage(signal: AbortSignal): Promise<StorageUsage>;
   readInventory(id: string, signal: AbortSignal): Promise<InventoryItem>;
   listBlobs(query: BlobQuery, signal: AbortSignal): Promise<BlobPage>;
   readBlob(id: string, page: number, signal: AbortSignal): Promise<BlobDetail>;

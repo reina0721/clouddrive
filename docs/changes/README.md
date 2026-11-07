@@ -146,3 +146,4 @@
 - [157 管理端后台任务](157-admin-background-tasks/README.md)：跨账号文件任务查询、清理预览与逐项结果。
 - [158 文件维护运行历史](158-maintenance-run-history/README.md) 记录回收站到期扫描与定时 Blob 回收的执行结果。
 - [159 文件任务节点](159-file-worker-nodes/README.md) 查看节点职责、通信、统计和关联任务。
+- [160 默认存储策略](160-storage-policy/README.md) 查看发布后端和 Blob 用量，管理上传限额。

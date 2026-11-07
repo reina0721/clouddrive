@@ -121,6 +121,9 @@ const (
 	OperationFilesShortcutsList             OperationID = "files.shortcuts.list"
 	OperationFilesShortcutsOpen             OperationID = "files.shortcuts.open"
 	OperationFilesShortcutsPurge            OperationID = "files.shortcuts.purge"
+	OperationFilesStoragePolicyRead         OperationID = "files.storage-policy.read"
+	OperationFilesStoragePolicySave         OperationID = "files.storage-policy.save"
+	OperationFilesStoragePolicyUsage        OperationID = "files.storage-policy.usage"
 	OperationFilesTextCreate                OperationID = "files.text.create"
 	OperationFilesTextReplace               OperationID = "files.text.replace"
 	OperationFilesTorrentsCapabilities      OperationID = "files.torrents.capabilities"
@@ -328,6 +331,9 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesShortcutsList, Method: "GET", Path: "/api/v1/files/shortcuts", Policy: "protected", Scope: "files:read", Action: "files.shortcuts.list"},
 	{ID: OperationFilesShortcutsOpen, Method: "GET", Path: "/api/v1/files/shortcuts/{shortcutId}/open", Policy: "protected", Scope: "files:read", Action: "files.shortcuts.open"},
 	{ID: OperationFilesShortcutsPurge, Method: "DELETE", Path: "/api/v1/files/shortcuts/{shortcutId}", Policy: "protected", Scope: "files:write", Action: "files.shortcuts.purge"},
+	{ID: OperationFilesStoragePolicyRead, Method: "GET", Path: "/api/v1/files/storage-policy", Policy: "protected", Scope: "files:storage-policy:read", Action: "files.storage-policy.read"},
+	{ID: OperationFilesStoragePolicySave, Method: "PUT", Path: "/api/v1/files/storage-policy", Policy: "protected", Scope: "files:storage-policy:write", Action: "files.storage-policy.save"},
+	{ID: OperationFilesStoragePolicyUsage, Method: "GET", Path: "/api/v1/files/storage-policy/usage", Policy: "protected", Scope: "files:storage-policy:read", Action: "files.storage-policy.usage"},
 	{ID: OperationFilesTextCreate, Method: "POST", Path: "/api/v1/files/text", Policy: "protected", Scope: "files:write", Action: "files.text.create"},
 	{ID: OperationFilesTextReplace, Method: "PUT", Path: "/api/v1/files/{id}/text", Policy: "protected", Scope: "files:write", Action: "files.text.replace"},
 	{ID: OperationFilesTorrentsCapabilities, Method: "GET", Path: "/api/v1/files/torrent-downloads/capabilities", Policy: "protected", Scope: "files:read", Action: "files.torrents.capabilities"},

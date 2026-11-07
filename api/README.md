@@ -23,13 +23,15 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 文件权限维护新增 `GET/PUT /api/v1/files/{id}/access`（PUT携带独立revision，policy为null明确恢复继承）、`POST /api/v1/files/audience/lookup`（精确账号/角色查找）及 `POST /api/v1/files/{id}/access/effective`（实际分享及匿名/账号的已保存权限）。均使用原IAM、文件scope与写请求CSRF边界。分享管理投影增加audience，公开metadata增加denied/signInRequired，目录和条目返回实际permissions。公开路由保留public profile，同时可选解析同源Session获取受众事实；存在但无效的会话不会静默降级匿名。详见[文件管理](../docs/operations/file-management.md)。
 
-原生 OpenAPI 与 operation inventory 通过 `internal/composition/httpcatalog` 的同一清单生成，当前共 204 个操作。生成器不再单独选择模块，也不导入带资源的应用组合根。
+原生 OpenAPI 与 operation inventory 通过 `internal/composition/httpcatalog` 的同一清单生成，当前共 207 个操作。生成器不再单独选择模块，也不导入带资源的应用组合根。
 
 管理端 `GET /api/v1/files/admin-tasks` 及 `GET /api/v1/files/admin-tasks/{kind}/{id}` 要求 `files:task-admin:read`。`GET /admin-tasks/cleanup-preview` 与 `POST /admin-tasks/cleanup` 另需 `files:task-admin:cleanup`，变更需要 CSRF。清理接受最多 20 个任务快照，返回逐项状态。过期或已变化的选择以详情及结果为准。
 
 列表和清理预览支持 `origin=all|user|system`，默认 `all`。系统类型为 `trash-expiry` 和 `blob-reclaim`。系统记录的 `createdAt` 和 `updatedAt` 分别表示开始和结束，`durationMs` 为毫秒数，用户任务的 `durationMs` 为 `null`。
 
 `GET /api/v1/files/worker-nodes` 与 `GET /api/v1/files/worker-nodes/{id}/check` 要求 `files:node:read`。前者返回本代主机职责与节点摘要，后者返回一次实际 aria2 通信检查与全局统计。管理任务列表和清理预览支持可选的精确 `nodeId`。
+
+`GET /api/v1/files/storage-policy` 和 `GET /api/v1/files/storage-policy/usage` 需要 `files:storage-policy:read`。`PUT /api/v1/files/storage-policy` 需要 `files:storage-policy:write` 和 CSRF，使用当前 `revision` 替换两个可选限额，缺失值继承部署。保存后重启服务生效。用量读取只返回汇总值。
 
 管理端使用 `GET /api/v1/files/admin-shares` 和 `GET /api/v1/files/admin-shares/{id}` 查询分享，要求 `files:share-admin:read`。`POST /api/v1/files/admin-shares/revoke` 要求 `files:share-admin:revoke` 及 CSRF，接受最多 20 个 ID 与修订号。任一目标版本冲突时返回 409，整批保持原状。响应不含分享或访问凭据。
 

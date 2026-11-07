@@ -177,7 +177,7 @@ func (s *Transfers) createAuthorized(ctx context.Context, owner string, input Tr
 	if err != nil || len(digest) != sha256.Size || hex.EncodeToString(digest) != input.SHA256 || len(input.Key) < 16 || len(input.Key) > 128 || strings.IndexFunc(input.Key, func(r rune) bool { return r < 33 || r > 126 }) >= 0 {
 		return TransferSummary{}, model.ErrInvalid
 	}
-	if input.SizeBytes < 0 || input.SizeBytes > s.policy.MaxFileBytes {
+	if input.SizeBytes < 0 || input.SizeBytes > DefaultMaxFileBytes {
 		return TransferSummary{}, model.ErrTooLarge
 	}
 	if err := s.sweep(ctx); err != nil {
@@ -202,6 +202,9 @@ func (s *Transfers) createAuthorized(ctx context.Context, owner string, input Tr
 				return model.Transfer{}, nil, model.ErrConflict
 			}
 			return *previous, nil, nil
+		}
+		if input.SizeBytes > s.policy.MaxFileBytes {
+			return model.Transfer{}, nil, model.ErrTooLarge
 		}
 		if err := model.Parent(snapshot.Entries, input.ParentID); err != nil {
 			return model.Transfer{}, nil, err

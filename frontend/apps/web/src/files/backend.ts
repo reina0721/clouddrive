@@ -25,6 +25,8 @@ import {
   adminTaskCleanupSchema,
   workerNodeCatalogSchema,
   workerNodeCheckSchema,
+  storagePolicySchema,
+  storageUsageSchema,
   blobDetailSchema,
   blobCandidatePageSchema,
   blobPageSchema,
@@ -385,6 +387,12 @@ export function createFilesRuntime(
     },
     readFilesystemSettings: async (signal) =>
       filesystemSettingsSchema.parse(await call('/settings', { signal })),
+    readStoragePolicy: async (signal) =>
+      storagePolicySchema.parse(await call('/storage-policy', { signal })),
+    saveStoragePolicy: async (body) =>
+      storagePolicySchema.parse(await call('/storage-policy', { method: 'PUT', body })),
+    readStorageUsage: async (signal) =>
+      storageUsageSchema.parse(await call('/storage-policy/usage', { signal })),
     saveFilesystemSettings: async (body) =>
       filesystemSettingsSchema.parse(await call('/settings', { method: 'PUT', body })),
     readPropertyDefinitions: async (signal) =>
