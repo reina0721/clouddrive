@@ -154,6 +154,10 @@
     "pdfjs-dist": {
       "owner": "Host PDF应用：固定本地SDK资源与独立frame/Worker生命周期；SDK对象不得穿越Surface契约",
       "allowed": ["apps/web"]
+    },
+    "subsrt-ts": {
+      "owner": "Host 视频字幕 Worker：解析 VTT、SRT、ASS 并只返回有限纯文本时间段",
+      "allowed": ["apps/web"]
     }
   }
 }

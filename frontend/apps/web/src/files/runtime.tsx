@@ -13,10 +13,13 @@ import { AuthContext, useAuth } from '../auth/context';
 import { FileAccountMenu } from './account-menu';
 import { createFilesRuntime, fileDestinationHrefs } from './backend';
 import { fileDestinationHref } from './destinations';
-import { FileMediaView } from './media-view';
+import { FileMediaView, type VideoToolsProps } from './media-view';
 
 const PDFReader = lazy(() =>
   import('./pdf/reader-view').then((module) => ({ default: module.PDFReaderView })),
+);
+const VideoSubtitles = lazy(() =>
+  import('./video-subtitles').then((module) => ({ default: module.VideoSubtitles })),
 );
 export function FilesRuntime({
   children,
@@ -41,15 +44,29 @@ export function FilesRuntime({
         ),
     );
   }, [controller, account, router]);
-  const Media = useMemo(
-    () =>
-      runtime
-        ? function MediaRenderer(props: FileMediaProps) {
-            return <FileMediaView {...props} readContent={runtime.readMedia} />;
-          }
-        : undefined,
-    [runtime],
-  );
+  const Media = useMemo(() => {
+    if (!runtime) return undefined;
+    const { readMedia, subtitles } = runtime;
+    function VideoTools({ entry, media }: VideoToolsProps) {
+      return (
+        <Suspense>
+          <VideoSubtitles
+            key={entry.id + ':' + entry.contentRevision}
+            source={subtitles}
+            entry={entry}
+            media={media}
+          />
+        </Suspense>
+      );
+    }
+    return function MediaRenderer(props: FileMediaProps) {
+      return props.mode === 'preview' && props.version === undefined ? (
+        <FileMediaView {...props} readContent={readMedia} videoTools={VideoTools} />
+      ) : (
+        <FileMediaView {...props} readContent={readMedia} />
+      );
+    };
+  }, [runtime]);
   const Document = useMemo(
     () =>
       runtime

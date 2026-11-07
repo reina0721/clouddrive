@@ -30,3 +30,5 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 [141持久写锁](changes/141-webdav-write-locks/README.md)补齐WebDAV独占锁、条件写入、跨入口事务保护和本人占用管理；20项仍按使用行为验收，不支持共享锁或Office服务。v16追加锁表和传输条件列，原数据保留；完整验证与部署状态以任务清单为准。
 
 [144后台解压](changes/144-background-archive-tasks/README.md)覆盖本人无密码 ZIP/7Z 的持久任务、结果及排队取消，迁移 v18 增加一张任务表。[145后台创建 ZIP](changes/145-background-zip-creation/README.md)在原表增加类型和结果信息，覆盖文件及目录压缩、下载和结果定位。[146任务汇总](changes/146-unified-background-tasks/README.md)将归档和两类离线下载汇总到同一列表，支持筛选、分页和精确下载详情入口。
+
+[147视频外挂字幕](changes/147-external-video-subtitles/README.md)接入本人当前视频的同目录 VTT、SRT 和 ASS 字幕。播放格式仍取决于浏览器，ASS 保留时间和文本，HLS、内嵌字幕、样式设置、公开分享和历史版本外挂字幕不在此次范围。

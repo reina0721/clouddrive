@@ -83,6 +83,13 @@ const zh = {
   gallery: '画廊',
   mediaPreview: '媒体预览',
   mediaLoading: '正在加载媒体…',
+  subtitles: {
+    label: '字幕',
+    off: '关闭字幕',
+    empty: '同目录没有 VTT、SRT 或 ASS 字幕。',
+    loading: '正在读取字幕…',
+    invalid: '无法读取字幕。请使用含有效时间段的 UTF-8 字幕文件。',
+  },
   mediaTooLarge: '超过本视图预览预算，请下载查看。',
   mediaUnsupported: '浏览器无法预览该格式或文件已损坏，请下载查看。',
   actionsFor: '{{name}} 的操作',
@@ -294,6 +301,13 @@ const en: typeof zh = {
   gallery: 'Gallery',
   mediaPreview: 'Media preview',
   mediaLoading: 'Loading media…',
+  subtitles: {
+    label: 'Subtitles',
+    off: 'Disable subtitles',
+    empty: 'No VTT, SRT, or ASS subtitles in this folder.',
+    loading: 'Loading subtitles…',
+    invalid: 'Could not read the subtitles. Use a UTF-8 subtitle file with valid timestamps.',
+  },
   mediaTooLarge: 'This file exceeds the preview budget. Download to view.',
   mediaUnsupported:
     'The browser cannot preview this format, or the file is damaged. Download to view.',

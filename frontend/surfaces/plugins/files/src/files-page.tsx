@@ -164,6 +164,7 @@ export function FilesPage({
   const [textRequest, setTextRequest] = useState<TextRequest>();
   const [pdfEntry, setPdfEntry] = useState<FileEntry>();
   const [mediaEntry, setMediaEntry] = useState<FileEntry>();
+  const videoPreview = mediaEntry?.mediaType.startsWith('video/');
   const [archiveEntry, setArchiveEntry] = useState<FileEntry>();
   const [zipSelection, setZIPSelection] = useState<{
     entries: readonly FileEntry[];
@@ -1750,26 +1751,30 @@ export function FilesPage({
           title={mediaEntry.name}
           description={t('files.mediaPreview')}
           cancelLabel={t('files.close')}
+          size={videoPreview ? 'cover' : 'lg'}
+          layout={videoPreview ? 'workspace' : 'standard'}
           isOpen
           onOpenChange={(open) => {
             if (!open) setMediaEntry(undefined);
           }}
         >
-          <div className="space-y-4">
+          <div className={videoPreview ? 'flex h-full min-h-0 flex-col gap-4' : 'space-y-4'}>
             <FileMedia
               key={mediaEntry.id + ':' + mediaEntry.contentRevision}
               entry={mediaEntry}
               mode="preview"
               maxBytes={listing.maxMediaBytes}
             />
-            <Action
-              variant="secondary"
-              onPress={() => {
-                void download(mediaEntry);
-              }}
-            >
-              {t('files.download')}
-            </Action>
+            <div className="shrink-0">
+              <Action
+                variant="secondary"
+                onPress={() => {
+                  void download(mediaEntry);
+                }}
+              >
+                {t('files.download')}
+              </Action>
+            </div>
           </div>
         </DialogSurface>
       ) : null}

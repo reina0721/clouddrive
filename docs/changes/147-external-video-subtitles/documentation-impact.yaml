@@ -1,0 +1,11 @@
+schema_version: 1
+change: 147-external-video-subtitles
+areas:
+  - id: webui
+    decision: updated
+    documents: [README.md]
+    reason: 项目入口说明私有视频字幕。
+  - id: frontend
+    decision: updated
+    documents: [docs/repository-scope.md]
+    reason: 记录字幕产品范围及限制。

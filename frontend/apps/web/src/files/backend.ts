@@ -31,6 +31,7 @@ import { createFilePreferences } from './preferences';
 import { createHistoryPreferences } from './history-preferences';
 import { withFileIOAdmissionRetry } from './file-io-retry';
 import { createFileSidebarPreferences } from './sidebar-preferences';
+import { createVideoSubtitleSource } from './video-subtitle-source';
 export { fileDestinationHrefs } from './destinations';
 
 const transferTimeoutMs = 120_000;
@@ -505,6 +506,7 @@ export function createFilesRuntime(
   return {
     archives: archives.port,
     readDocument: createDocumentReader(call, versions.readContent, assertCurrent),
+    subtitles: createVideoSubtitleSource(port, call, assertCurrent),
     port,
     navigation: createFileNavigationPort(call, base + native, () => {
       if (disposed || !account || owner() !== account) throw new FilesError('canceled');

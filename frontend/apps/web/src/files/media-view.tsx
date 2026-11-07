@@ -1,5 +1,12 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentType,
+  type RefObject,
+} from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { FilesError, type FilesErrorCode } from '@clouddrive/surface/files';
@@ -19,6 +26,11 @@ const audioTypes = new Set([
 ]);
 const videoTypes = new Set(['video/mp4', 'video/webm', 'video/ogg']);
 
+export type VideoToolsProps = Readonly<{
+  entry: FileMediaProps['entry'];
+  media: RefObject<HTMLMediaElement | null>;
+}>;
+
 /** FileMediaView 拥有媒体 URL、请求和播放器关闭，不向 Surface 传递浏览器句柄。 */
 export function FileMediaView({
   entry,
@@ -27,6 +39,7 @@ export function FileMediaView({
   readContent,
   version,
   labels,
+  videoTools: VideoTools,
 }: FileMediaProps &
   Readonly<{
     readContent: (
@@ -35,6 +48,7 @@ export function FileMediaView({
       signal: AbortSignal,
       version?: number,
     ) => Promise<Blob>;
+    videoTools?: ComponentType<VideoToolsProps>;
   }>) {
   const { t } = useFrontendTranslation();
   const [result, setResult] = useState<
@@ -163,18 +177,23 @@ export function FileMediaView({
     );
   if (entry.mediaType.startsWith('video/'))
     return (
-      // eslint-disable-next-line jsx-a11y-x/media-has-caption -- 原始上传媒体没有配套字幕；不伪造字幕，保留浏览器原生控制。
-      <video
-        ref={attachMedia}
-        controls
-        preload="metadata"
-        src={url}
-        aria-label={entry.name}
-        className="max-h-screen w-full"
-        onError={() =>
-          setResult({ key: requestKey, reader: readContent, url: '', failure: 'unsupported' })
-        }
-      />
+      <>
+        {VideoTools ? <VideoTools entry={entry} media={media} /> : null}
+        {/* 本人视频按需通过 TextTrack 接入字幕，其他原始媒体沿用原生控制。 */}
+        {/* eslint-disable-next-line jsx-a11y-x/media-has-caption */}
+        <video
+          ref={attachMedia}
+          controls
+          preload="metadata"
+          src={url}
+          aria-label={entry.name}
+          className="max-h-screen w-full object-contain"
+          style={VideoTools ? { minHeight: 0, backgroundColor: 'black' } : undefined}
+          onError={() =>
+            setResult({ key: requestKey, reader: readContent, url: '', failure: 'unsupported' })
+          }
+        />
+      </>
     );
   return (
     // eslint-disable-next-line jsx-a11y-x/media-has-caption -- 原始上传媒体没有配套字幕；不伪造字幕，保留浏览器原生控制。
