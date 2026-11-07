@@ -13,7 +13,7 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 		t.Fatal(err)
 	}
 	definitions := blueprint.httpDefinitions
-	if len(definitions) != 198 {
+	if len(definitions) != 202 {
 		t.Fatalf("operation count = %d", len(definitions))
 	}
 	seen := make(map[string]struct{}, len(definitions))
@@ -32,6 +32,7 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 		"files.direct-links.list": "files:read", "files.direct-links.issue": "files:write", "files.direct-links.revoke": "files:write",
 		"files.inventory.list": "files:inventory:read", "files.inventory.detail": "files:inventory:read",
 		"files.admin-shares.list": "files:share-admin:read", "files.admin-shares.read": "files:share-admin:read", "files.admin-shares.revoke": "files:share-admin:revoke",
+		"files.admin-tasks.list": "files:task-admin:read", "files.admin-tasks.read": "files:task-admin:read", "files.admin-tasks.cleanup-preview": "files:task-admin:cleanup", "files.admin-tasks.cleanup": "files:task-admin:cleanup",
 		"files.blobs.list": "files:blob:read", "files.blobs.detail": "files:blob:read",
 		"files.blob-reclamation.list": "files:blob:read", "files.blob-reclamation.remove": "files:blob:reclaim",
 		"files.settings.read": "files:settings:read", "files.settings.save": "files:settings:write",

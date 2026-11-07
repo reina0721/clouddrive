@@ -20,6 +20,10 @@ const (
 	OperationFilesAdminSharesList           OperationID = "files.admin-shares.list"
 	OperationFilesAdminSharesRead           OperationID = "files.admin-shares.read"
 	OperationFilesAdminSharesRevoke         OperationID = "files.admin-shares.revoke"
+	OperationFilesAdminTasksCleanup         OperationID = "files.admin-tasks.cleanup"
+	OperationFilesAdminTasksCleanupPreview  OperationID = "files.admin-tasks.cleanup-preview"
+	OperationFilesAdminTasksList            OperationID = "files.admin-tasks.list"
+	OperationFilesAdminTasksRead            OperationID = "files.admin-tasks.read"
 	OperationFilesAnnotationsRead           OperationID = "files.annotations.read"
 	OperationFilesAnnotationsReplace        OperationID = "files.annotations.replace"
 	OperationFilesAnnotationsSummaries      OperationID = "files.annotations.summaries"
@@ -221,6 +225,10 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesAdminSharesList, Method: "GET", Path: "/api/v1/files/admin-shares", Policy: "protected", Scope: "files:share-admin:read", Action: "files.admin-shares.list"},
 	{ID: OperationFilesAdminSharesRead, Method: "GET", Path: "/api/v1/files/admin-shares/{id}", Policy: "protected", Scope: "files:share-admin:read", Action: "files.admin-shares.read"},
 	{ID: OperationFilesAdminSharesRevoke, Method: "POST", Path: "/api/v1/files/admin-shares/revoke", Policy: "protected", Scope: "files:share-admin:revoke", Action: "files.admin-shares.revoke"},
+	{ID: OperationFilesAdminTasksCleanup, Method: "POST", Path: "/api/v1/files/admin-tasks/cleanup", Policy: "protected", Scope: "files:task-admin:cleanup", Action: "files.admin-tasks.cleanup"},
+	{ID: OperationFilesAdminTasksCleanupPreview, Method: "GET", Path: "/api/v1/files/admin-tasks/cleanup-preview", Policy: "protected", Scope: "files:task-admin:cleanup", Action: "files.admin-tasks.cleanup-preview"},
+	{ID: OperationFilesAdminTasksList, Method: "GET", Path: "/api/v1/files/admin-tasks", Policy: "protected", Scope: "files:task-admin:read", Action: "files.admin-tasks.list"},
+	{ID: OperationFilesAdminTasksRead, Method: "GET", Path: "/api/v1/files/admin-tasks/{kind}/{id}", Policy: "protected", Scope: "files:task-admin:read", Action: "files.admin-tasks.read"},
 	{ID: OperationFilesAnnotationsRead, Method: "GET", Path: "/api/v1/files/{id}/annotations", Policy: "protected", Scope: "files:read", Action: "files.annotations.read"},
 	{ID: OperationFilesAnnotationsReplace, Method: "PUT", Path: "/api/v1/files/{id}/annotations", Policy: "protected", Scope: "files:write", Action: "files.annotations.replace"},
 	{ID: OperationFilesAnnotationsSummaries, Method: "GET", Path: "/api/v1/files/annotations/summaries", Policy: "protected", Scope: "files:read", Action: "files.annotations.summaries"},

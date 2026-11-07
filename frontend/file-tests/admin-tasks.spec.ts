@@ -1,0 +1,138 @@
+import { randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { expect, test, type Page } from '@playwright/test';
+
+type Access = { url: string; username: string; password: string };
+type Job = { id: string; state: string; resultEntryId: string };
+
+async function login(page: Page, account: Access, path: string) {
+  const origin = new URL(account.url).origin;
+  await page.goto(origin + '/login?returnTo=' + encodeURIComponent(path));
+  await page.getByLabel('邮箱', { exact: true }).fill(account.username);
+  await page.getByLabel('密码', { exact: true }).fill(account.password);
+  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await expect(page).toHaveURL(origin + path);
+}
+
+async function fileRequest<T>(page: Page, path: string, body?: unknown) {
+  return page.evaluate(
+    async ({ path, body }) => {
+      const { token } = (await (
+        await fetch('/api/console/v1/auth/csrf', { cache: 'no-store' })
+      ).json()) as { token: string };
+      const response = await fetch(
+        '/api/console/v1/native/files' + path,
+        body === undefined
+          ? { cache: 'no-store' }
+          : {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+              body: JSON.stringify(body),
+            },
+      );
+      if (!response.ok) throw new Error('Task fixture failed with HTTP ' + response.status);
+      return (await response.json()) as T;
+    },
+    { path, body },
+  );
+}
+
+test('管理员过滤并清理成员的终态归档任务，保留发布文件', async ({ page, browser }, info) => {
+  const adminPath = process.env.CLOUDDRIVE_FILE_TEST_ACCESS;
+  const memberPath = process.env.CLOUDDRIVE_INVENTORY_MEMBER_ACCESS;
+  test.skip(!adminPath || !memberPath, '清理验收仅使用隔离 QA。');
+  const readAccess = async (path: string) =>
+    JSON.parse((await readFile(resolve(__dirname, path), 'utf8')).replace(/^\uFEFF/, '')) as Access;
+  const [admin, member] = await Promise.all([readAccess(adminPath!), readAccess(memberPath!)]);
+  const origin = new URL(admin.url).origin;
+  expect(origin).toBe('http://127.0.0.1:4194');
+  expect(new URL(member.url).origin).toBe(origin);
+  const memberContext = await browser.newContext({ locale: 'zh-CN' });
+  try {
+    const owner = await memberContext.newPage();
+    await login(owner, member, '/home');
+    const suffix = randomUUID().slice(0, 8);
+    const folder = await fileRequest<{ id: string }>(owner, '/folders', {
+      parentId: '',
+      name: `任务验收-${suffix}`,
+    });
+    const source = await fileRequest<{ id: string }>(owner, '/text', {
+      parentId: folder.id,
+      name: 'source.txt',
+      key: randomUUID(),
+      text: 'task fixture',
+    });
+    const zip = `任务结果-${suffix}.zip`;
+    const submitted = await fileRequest<Job>(owner, '/archive-tasks/zip', {
+      clientKey: randomUUID(),
+      sourceIds: [source.id],
+      parentId: folder.id,
+      name: zip,
+    });
+    const personalTask = '/archive-tasks/' + submitted.id;
+    await expect
+      .poll(async () => (await fileRequest<Job>(owner, personalTask)).state, { timeout: 25000 })
+      .toBe('completed');
+    const result = await fileRequest<Job>(owner, personalTask);
+    expect(result.resultEntryId).not.toBe('');
+
+    await login(page, admin, '/system-tools/tasks');
+    await page.getByRole('button', { name: '清理任务', exact: true }).first().click();
+    const criteria = page.getByRole('dialog', { name: '清理任务', exact: true });
+    for (const [name, value] of [
+      [/^(年|year),/i, '2000'],
+      [/^(月|month),/i, '01'],
+      [/^(日|day),/i, '01'],
+    ] as const) {
+      const segment = criteria.getByRole('spinbutton', { name });
+      await segment.press('ControlOrMeta+a');
+      await segment.pressSequentially(value);
+      await segment.press('Tab');
+    }
+    await criteria.getByRole('button', { name: '预览清理范围', exact: true }).click();
+    const emptyPreview = page.getByRole('dialog', { name: '清理任务', exact: true });
+    await expect(
+      emptyPreview.getByText('本次可清理 0 条，共匹配 0 条。', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      emptyPreview.getByRole('button', { name: '清理任务', exact: true }),
+    ).toBeDisabled();
+    await emptyPreview.getByRole('button', { name: '取消', exact: true }).click();
+    await page.getByRole('button', { name: '过滤', exact: true }).click();
+    const filters = page.getByRole('dialog', { name: '过滤', exact: true });
+    await filters.getByLabel('任务 ID', { exact: true }).fill(submitted.id);
+    await filters.getByRole('button', { name: '应用', exact: true }).click();
+    const grid = page.getByRole('grid', { name: '后台任务管理', exact: true });
+    const row = grid.getByRole('row').filter({ hasText: submitted.id.slice(0, 8) });
+    await expect(row).toHaveCount(1);
+    await row.getByRole('button').filter({ hasNotText: '清理任务' }).click();
+    const detail = page.getByRole('dialog', { name: '任务详情', exact: true });
+    await expect(detail.getByText(submitted.id, { exact: true })).toBeVisible();
+    await detail.getByRole('button', { name: '关闭', exact: true }).click();
+    await page.screenshot({
+      path: info.outputPath('admin-tasks-desktop.png'),
+      animations: 'disabled',
+    });
+
+    await page.setViewportSize({ width: 320, height: 760 });
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+      .toBe(true);
+    await row.getByRole('checkbox').press('Space', { timeout: 10000 });
+    await page.getByRole('button', { name: '清理选中任务 (1)', exact: true }).click();
+    const confirm = page.getByRole('dialog', { name: '清理任务', exact: true });
+    await expect(confirm.getByText(submitted.id, { exact: false })).toBeVisible();
+    await page.screenshot({
+      path: info.outputPath('admin-tasks-mobile.png'),
+      animations: 'disabled',
+    });
+    await confirm.getByRole('button', { name: '清理任务', exact: true }).click();
+    await expect(page.getByText('已清理 1 条，未清理 0 条。', { exact: true })).toBeVisible();
+    await expect(grid.getByText('没有符合条件的任务', { exact: true })).toBeVisible();
+    await owner.goto(origin + '/home?parent=' + folder.id);
+    await expect(owner.getByRole('button', { name: zip, exact: true })).toBeVisible();
+  } finally {
+    await memberContext.close();
+  }
+});

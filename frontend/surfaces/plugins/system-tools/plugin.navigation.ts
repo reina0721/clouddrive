@@ -42,6 +42,14 @@ export const navigationContribution = {
       routeId: 'system-tools.shares',
     },
     {
+      navigationId: 'system-tools.tasks',
+      labelKey: 'systemTools.nav.tasks',
+      groupId: 'administration',
+      order: 49,
+      iconId: 'resource',
+      routeId: 'system-tools.tasks',
+    },
+    {
       navigationId: 'system-tools.runtime',
       labelKey: 'administration.runtime',
       groupId: 'administration',

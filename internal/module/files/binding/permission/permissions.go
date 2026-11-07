@@ -13,6 +13,8 @@ const (
 	SettingsWrite    permissioncatalog.Key = "files:settings:write"
 	AdminShareRead   permissioncatalog.Key = "files:share-admin:read"
 	AdminShareRevoke permissioncatalog.Key = "files:share-admin:revoke"
+	AdminTaskRead    permissioncatalog.Key = "files:task-admin:read"
+	AdminTaskCleanup permissioncatalog.Key = "files:task-admin:cleanup"
 )
 
 func Definitions() []permissioncatalog.Definition {
@@ -26,5 +28,7 @@ func Definitions() []permissioncatalog.Definition {
 		{Key: SettingsWrite, OwnerModuleID: "files", DescriptionMessageID: "permission.files.settings.write", Risk: permissioncatalog.RiskCritical},
 		{Key: AdminShareRead, OwnerModuleID: "files", DescriptionMessageID: "permission.files.share-admin.read", Risk: permissioncatalog.RiskElevated},
 		{Key: AdminShareRevoke, OwnerModuleID: "files", DescriptionMessageID: "permission.files.share-admin.revoke", Risk: permissioncatalog.RiskCritical},
+		{Key: AdminTaskRead, OwnerModuleID: "files", DescriptionMessageID: "permission.files.task-admin.read", Risk: permissioncatalog.RiskElevated},
+		{Key: AdminTaskCleanup, OwnerModuleID: "files", DescriptionMessageID: "permission.files.task-admin.cleanup", Risk: permissioncatalog.RiskCritical},
 	}
 }

@@ -70,6 +70,8 @@ Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Veri
 
 管理区的“分享管理”页可按分享者、源文件和状态查看链接与活动。获准的管理者可单独或批量撤销链接，源文件仍由原所有者管理。详见[156变更](docs/changes/156-admin-share-management/README.md)。
 
+管理区的“后台任务管理”页提供跨账号归档和下载查询。获准的管理者可以预览并清理终态任务，保留已发布文件。详见[157变更](docs/changes/157-admin-background-tasks/README.md)。
+
 当前会话密码解锁已补齐，输错可重试、共享账号失败预算，详见[142变更](docs/changes/142-session-password-unlock/README.md)。本批20项使用行为不增加20个独立功能计数；客户端遮挡仍不是服务端授权边界。
 
 WebDAV持久独占写锁已接入真实协议、所有文件保存及上传最终发布；连接页可查看和按版本解除占用，详见[141变更](docs/changes/141-webdav-write-locks/README.md)。本批20项按使用行为验收，不等同Office服务或系统驱动全量兼容。

@@ -371,6 +371,251 @@
         ],
         "type": "object"
       },
+      "AdminTask": {
+        "additionalProperties": false,
+        "properties": {
+          "cleanable": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "failureCode": {
+            "type": "string"
+          },
+          "id": {
+            "maxLength": 36,
+            "minLength": 36,
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "zip",
+              "extract",
+              "http",
+              "bittorrent"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nodeId": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "state": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ownerId",
+          "name",
+          "state",
+          "failureCode",
+          "nodeId",
+          "createdAt",
+          "cleanable",
+          "kind",
+          "id",
+          "updatedAt",
+          "revision"
+        ],
+        "type": "object"
+      },
+      "AdminTaskCleanupInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "targets": {
+            "items": {
+              "$ref": "#/components/schemas/AdminTaskTarget"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "targets"
+        ],
+        "type": "object"
+      },
+      "AdminTaskCleanupOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AdminTaskOutcome"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "AdminTaskListOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "canCleanup": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AdminTask"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "page": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "canCleanup",
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ],
+        "type": "object"
+      },
+      "AdminTaskOutcome": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "id": {
+            "maxLength": 36,
+            "minLength": 36,
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "zip",
+              "extract",
+              "http",
+              "bittorrent"
+            ],
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "status": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "kind",
+          "id",
+          "updatedAt",
+          "revision"
+        ],
+        "type": "object"
+      },
+      "AdminTaskPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AdminTask"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "page": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ],
+        "type": "object"
+      },
+      "AdminTaskTarget": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 36,
+            "minLength": 36,
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "zip",
+              "extract",
+              "http",
+              "bittorrent"
+            ],
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "updatedAt",
+          "revision"
+        ],
+        "type": "object"
+      },
       "AnnotationBatchResult": {
         "additionalProperties": false,
         "properties": {
@@ -9432,6 +9677,327 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminShareItem"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/admin-tasks": {
+      "get": {
+        "operationId": "files.admin-tasks.list",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "ownerId",
+            "schema": {
+              "maxLength": 128,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "kind",
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "zip",
+                "extract",
+                "http",
+                "bittorrent"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "active",
+                "completed",
+                "failed",
+                "canceled",
+                "expired"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "taskId",
+            "schema": {
+              "maxLength": 36,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "default": "created",
+              "enum": [
+                "id",
+                "created"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "direction",
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "format": "int64",
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTaskListOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/admin-tasks/cleanup": {
+      "post": {
+        "operationId": "files.admin-tasks.cleanup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminTaskCleanupInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTaskCleanupOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/admin-tasks/cleanup-preview": {
+      "get": {
+        "operationId": "files.admin-tasks.cleanup-preview",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "ownerId",
+            "schema": {
+              "maxLength": 128,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "kind",
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "zip",
+                "extract",
+                "http",
+                "bittorrent"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "active",
+                "completed",
+                "failed",
+                "canceled",
+                "expired"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "before",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTaskPage"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/admin-tasks/{kind}/{id}": {
+      "get": {
+        "operationId": "files.admin-tasks.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "enum": [
+                "zip",
+                "extract",
+                "http",
+                "bittorrent"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTask"
                 }
               }
             },

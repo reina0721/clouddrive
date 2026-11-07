@@ -170,6 +170,14 @@ func (r *Repository) CancelArchiveTask(ctx context.Context, owner, id string) er
 }
 
 func (r *Repository) RemoveArchiveTask(ctx context.Context, owner, id string) error {
+	return r.removeArchiveTask(ctx, owner, id, nil)
+}
+
+func (r *Repository) RemoveArchiveTaskIfUnchanged(ctx context.Context, owner, id string, updatedAt time.Time) error {
+	return r.removeArchiveTask(ctx, owner, id, &updatedAt)
+}
+
+func (r *Repository) removeArchiveTask(ctx context.Context, owner, id string, expected *time.Time) error {
 	return r.archiveTransaction(ctx, func(db *gorm.DB) error {
 		if err := r.lockOwner(db, owner); err != nil {
 			return err
@@ -178,7 +186,7 @@ func (r *Repository) RemoveArchiveTask(ctx context.Context, owner, id string) er
 		if err != nil {
 			return err
 		}
-		if !row.State.Terminal() || row.Candidates != "" {
+		if !row.State.Terminal() || row.Candidates != "" || (expected != nil && !row.UpdatedAt.Equal(*expected)) {
 			return model.ErrConflict
 		}
 		return db.Where("owner_id = ? AND id = ?", owner, id).Delete(&archiveTaskRecord{}).Error

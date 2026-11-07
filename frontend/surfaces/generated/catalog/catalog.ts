@@ -534,6 +534,14 @@ export const generatedRouteCatalog: RouteCatalog = {
       paramNames: [],
     },
     {
+      routeId: 'system-tools.tasks',
+      pluginId: 'system-tools',
+      path: 'tasks',
+      segments: ['tasks'],
+      pattern: '/system-tools/tasks',
+      paramNames: [],
+    },
+    {
       routeId: 'ui-elements',
       pluginId: 'ui-elements',
       path: '',
@@ -1088,6 +1096,14 @@ export const generatedRouteCatalog: RouteCatalog = {
             order: 48,
             iconId: 'resource',
             routeId: 'system-tools.shares',
+          },
+          {
+            navigationId: 'system-tools.tasks',
+            labelKey: 'systemTools.nav.tasks',
+            groupId: 'administration',
+            order: 49,
+            iconId: 'resource',
+            routeId: 'system-tools.tasks',
           },
           {
             navigationId: 'system-tools.runtime',

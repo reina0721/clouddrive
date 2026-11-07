@@ -46,6 +46,7 @@ type Dependencies struct {
 	OfflineAuthority         service.DownloadAccountAuthority
 	ShareAuthority           service.ShareAccountAuthority
 	AdminShareAccess         handler.AdminShareAuthority
+	AdminTaskAccess          handler.AdminTaskAuthority
 	Database                 repo.Access
 	Content                  service.Content
 	BlobProbe                service.BlobObjectProbe
@@ -80,7 +81,7 @@ type Module struct {
 
 func New(deps Dependencies) (Module, error) {
 	if deps.Actors == nil || deps.Logger == nil || deps.PublicAuthentication == nil || deps.BlobReclamationAccess == nil ||
-		deps.FilesystemSettings == nil || deps.FilesystemSettingsAccess == nil || deps.AdminShareAccess == nil {
+		deps.FilesystemSettings == nil || deps.FilesystemSettingsAccess == nil || deps.AdminShareAccess == nil || deps.AdminTaskAccess == nil {
 		return Module{}, fmt.Errorf("files boundary dependencies missing")
 	}
 	repository, err := repo.New(deps.Database, deps.StorageIdentity, deps.Clock)
@@ -232,6 +233,11 @@ func New(deps Dependencies) (Module, error) {
 		return Module{}, err
 	}
 	boundary.Downloads = downloads
+	boundary.AdminTaskAccess = deps.AdminTaskAccess
+	boundary.AdminTasks, err = service.NewAdminTasks(repository, downloads, deps.Clock)
+	if err != nil {
+		return Module{}, err
+	}
 	boundary.Torrents = torrents
 	trigger, err := schedule.FixedDelay(deps.OfflinePolicy.DispatchInterval, deps.OfflinePolicy.DispatchInterval)
 	if err != nil {

@@ -21,6 +21,15 @@ import type {
   AdminShareQuery,
   AdminShareTarget,
 } from './admin-shares';
+import type {
+  AdminTask,
+  AdminTaskCleanup,
+  AdminTaskList,
+  AdminTaskPage,
+  AdminTaskPreviewQuery,
+  AdminTaskQuery,
+  AdminTaskTarget,
+} from './admin-tasks';
 import type { BlobCandidatePage, BlobDetail, BlobPage, BlobQuery } from './blobs';
 import type { FilesystemSettings, FilesystemSettingsInput } from './filesystem-settings';
 import type { PropertyDefinitionSet, PropertyDefinitionsView } from './property-definitions';
@@ -179,6 +188,13 @@ export type FilesPort = Readonly<{
   listAdminShares(query: AdminShareQuery, signal: AbortSignal): Promise<AdminSharePage>;
   readAdminShare(id: string, signal: AbortSignal): Promise<AdminShareItem>;
   revokeAdminShares(targets: readonly AdminShareTarget[]): Promise<number>;
+  listAdminTasks(query: AdminTaskQuery, signal: AbortSignal): Promise<AdminTaskList>;
+  readAdminTask(kind: AdminTaskTarget['kind'], id: string, signal: AbortSignal): Promise<AdminTask>;
+  previewAdminTaskCleanup(
+    query: AdminTaskPreviewQuery,
+    signal: AbortSignal,
+  ): Promise<AdminTaskPage>;
+  cleanAdminTasks(targets: readonly AdminTaskTarget[]): Promise<AdminTaskCleanup>;
   readInventory(id: string, signal: AbortSignal): Promise<InventoryItem>;
   listBlobs(query: BlobQuery, signal: AbortSignal): Promise<BlobPage>;
   readBlob(id: string, page: number, signal: AbortSignal): Promise<BlobDetail>;

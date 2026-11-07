@@ -9,6 +9,7 @@ export const pluginI18nResources = {
           blobs: '文件 Blob',
           filesystem: '文件系统',
           shares: '分享管理',
+          tasks: '后台任务管理',
         },
         icons: {
           title: 'Icon 大全',
@@ -28,6 +29,7 @@ export const pluginI18nResources = {
           blobs: 'File blobs',
           filesystem: 'File system',
           shares: 'Manage shares',
+          tasks: 'Manage background tasks',
         },
         icons: {
           title: 'Icon Gallery',

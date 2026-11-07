@@ -440,6 +440,16 @@
     "Manageable": true
   },
   {
+    "ID": "system-tools.tasks",
+    "ModuleID": "system-tools",
+    "RouteID": "system-tools.tasks",
+    "TitleMessageID": "systemTools.nav.tasks",
+    "IconID": "resource",
+    "DefaultParentID": "group:administration",
+    "DefaultOrder": 49,
+    "Manageable": true
+  },
+  {
     "ID": "system-tools.runtime",
     "ModuleID": "system-tools",
     "RouteID": "system-tools.runtime",

@@ -19,6 +19,10 @@ import {
   adminShareItemSchema,
   adminSharePageSchema,
   adminShareRevokeSchema,
+  adminTaskSchema,
+  adminTaskPageSchema,
+  adminTaskListSchema,
+  adminTaskCleanupSchema,
   blobDetailSchema,
   blobCandidatePageSchema,
   blobPageSchema,
@@ -325,6 +329,24 @@ export function createFilesRuntime(
     },
     readInventory: async (id, signal) =>
       inventoryItemSchema.parse(await call('/inventory/' + encodeURIComponent(id), { signal })),
+    listAdminTasks: async (query, signal) => {
+      const params = new URLSearchParams({ ...query, page: String(query.page) });
+      return adminTaskListSchema.parse(await call('/admin-tasks?' + params.toString(), { signal }));
+    },
+    readAdminTask: async (kind, id, signal) =>
+      adminTaskSchema.parse(
+        await call(`/admin-tasks/${kind}/${encodeURIComponent(id)}`, { signal }),
+      ),
+    previewAdminTaskCleanup: async (query, signal) =>
+      adminTaskPageSchema.parse(
+        await call('/admin-tasks/cleanup-preview?' + new URLSearchParams(query).toString(), {
+          signal,
+        }),
+      ),
+    cleanAdminTasks: async (targets) =>
+      adminTaskCleanupSchema.parse(
+        await call('/admin-tasks/cleanup', { method: 'POST', body: { targets } }),
+      ),
     listAdminShares: async (query, signal) => {
       const params = new URLSearchParams();
       for (const [key, value] of Object.entries(query)) {

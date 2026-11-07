@@ -44,3 +44,5 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 [155全局文件属性定义](changes/155-property-definitions/README.md)提供七种属性类型、管理权限、文件编辑和事务校验。文件原有属性值及现有私有搜索条件保持兼容。
 
 [156管理端分享](changes/156-admin-share-management/README.md)提供独立授权的跨账号清单、浏览与下载授权计数及批量撤销。活动计数从升级后累计。
+
+[157管理端后台任务](changes/157-admin-background-tasks/README.md)提供 ZIP、解压、HTTP 与 BT 跨账号查询、诊断详情及终态清理。定时系统任务运行历史和跨请求关联独立规划。

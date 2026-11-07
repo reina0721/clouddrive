@@ -542,6 +542,7 @@ func (f *applicationGenerationFactory) Prepare(
 		BlobReclamationPolicy: blobPolicy, BlobReclamationAccess: fileAuthority, TrashScanInterval: activeFilesystem.TrashInterval,
 		FilesystemSettings: filesystemSettings, FilesystemSettingsAccess: fileAuthority,
 		AdminShareAccess: fileAuthority,
+		AdminTaskAccess:  fileAuthority,
 		Clock:            clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: activeFilesystem.Policy,
 	})
 	if err != nil {

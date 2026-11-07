@@ -27,6 +27,10 @@ type AdminShareAuthority interface {
 	AuthorizeAdminShareRevoke(context.Context, string) (bool, error)
 }
 
+type AdminTaskAuthority interface {
+	AuthorizeAdminTaskCleanup(context.Context, string) (bool, error)
+}
+
 // TransferProtocol 只处理已经经 service 加锁并授权的核心续传请求。
 type TransferProtocol interface {
 	Handle(http.ResponseWriter, *http.Request, string)
@@ -49,6 +53,8 @@ type Handler struct {
 	Inventory                *service.Inventory
 	AdminShares              *service.AdminShares
 	AdminShareAccess         AdminShareAuthority
+	AdminTasks               *service.AdminTasks
+	AdminTaskAccess          AdminTaskAuthority
 	Blobs                    *service.BlobCatalog
 	BlobReclamation          *service.BlobReclamation
 	BlobReclamationAccess    BlobReclamationAuthority
