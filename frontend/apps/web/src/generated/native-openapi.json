@@ -3530,6 +3530,18 @@
         ],
         "type": "object"
       },
+      "FileCursorPage": {
+        "additionalProperties": false,
+        "properties": {
+          "next": {
+            "type": "string"
+          },
+          "previous": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "FilePreferences": {
         "additionalProperties": false,
         "properties": {
@@ -3688,6 +3700,19 @@
             "minimum": 1,
             "type": "integer"
           },
+          "maxPageSize": {
+            "format": "int64",
+            "maximum": 200,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "pagination": {
+            "enum": [
+              "numbered",
+              "cursor"
+            ],
+            "type": "string"
+          },
           "textBytes": {
             "format": "int64",
             "minimum": 1,
@@ -3769,6 +3794,17 @@
             "format": "int64",
             "type": "integer"
           },
+          "maxPageSize": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pagination": {
+            "enum": [
+              "numbered",
+              "cursor"
+            ],
+            "type": "string"
+          },
           "textBytes": {
             "format": "int64",
             "type": "integer"
@@ -3779,6 +3815,8 @@
           }
         },
         "required": [
+          "pagination",
+          "maxPageSize",
           "textBytes",
           "batchEntries",
           "historyEnabled",
@@ -4170,6 +4208,9 @@
           "concurrentUploads": {
             "format": "int64",
             "type": "integer"
+          },
+          "cursorPage": {
+            "$ref": "#/components/schemas/FileCursorPage"
           },
           "defaultPageSize": {
             "format": "int64",
@@ -9830,6 +9871,27 @@
               "maximum": 200,
               "minimum": 0,
               "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "pagination",
+            "schema": {
+              "enum": [
+                "auto",
+                "numbered"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
             }
           },
           {

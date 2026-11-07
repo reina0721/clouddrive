@@ -148,3 +148,4 @@
 - [159 文件任务节点](159-file-worker-nodes/README.md) 查看节点职责、通信、统计和关联任务。
 - [160 默认存储策略](160-storage-policy/README.md) 查看发布后端和 Blob 用量，管理上传限额。
 - [161 存储策略文件名规则](161-storage-name-rules/README.md) 配置并试测扩展名及文件名正则。
+- [162 工作区文件分页](162-workspace-pagination/README.md) 管理翻页方式、页大小和搜索游标。

@@ -14,13 +14,15 @@ const (
 )
 
 type FilesystemOverrides struct {
-	TextBytes        *int64 `json:"textBytes,omitempty" minimum:"1"`
-	BatchEntries     *int   `json:"batchEntries,omitempty" minimum:"1"`
-	HistoryEnabled   *bool  `json:"historyEnabled,omitempty"`
-	HistoryPerFile   *int   `json:"historyPerFile,omitempty" minimum:"1"`
-	TrashScanSeconds *int   `json:"trashScanSeconds,omitempty" minimum:"60" maximum:"86400"`
-	BlobScanSeconds  *int   `json:"blobScanSeconds,omitempty" minimum:"60" maximum:"86400"`
-	AutomaticBlob    *bool  `json:"automaticBlob,omitempty"`
+	Pagination       *WorkspacePagination `json:"pagination,omitempty" enum:"numbered,cursor"`
+	MaxPageSize      *int                 `json:"maxPageSize,omitempty" minimum:"1" maximum:"200"`
+	TextBytes        *int64               `json:"textBytes,omitempty" minimum:"1"`
+	BatchEntries     *int                 `json:"batchEntries,omitempty" minimum:"1"`
+	HistoryEnabled   *bool                `json:"historyEnabled,omitempty"`
+	HistoryPerFile   *int                 `json:"historyPerFile,omitempty" minimum:"1"`
+	TrashScanSeconds *int                 `json:"trashScanSeconds,omitempty" minimum:"60" maximum:"86400"`
+	BlobScanSeconds  *int                 `json:"blobScanSeconds,omitempty" minimum:"60" maximum:"86400"`
+	AutomaticBlob    *bool                `json:"automaticBlob,omitempty"`
 }
 
 type StoredFilesystemSettings struct {
@@ -29,13 +31,15 @@ type StoredFilesystemSettings struct {
 }
 
 type FilesystemValues struct {
-	TextBytes        int64   `json:"textBytes"`
-	BatchEntries     int     `json:"batchEntries"`
-	HistoryEnabled   bool    `json:"historyEnabled"`
-	HistoryPerFile   int     `json:"historyPerFile"`
-	TrashScanSeconds float64 `json:"trashScanSeconds"`
-	BlobScanSeconds  float64 `json:"blobScanSeconds"`
-	AutomaticBlob    bool    `json:"automaticBlob"`
+	Pagination       WorkspacePagination `json:"pagination" enum:"numbered,cursor"`
+	MaxPageSize      int                 `json:"maxPageSize"`
+	TextBytes        int64               `json:"textBytes"`
+	BatchEntries     int                 `json:"batchEntries"`
+	HistoryEnabled   bool                `json:"historyEnabled"`
+	HistoryPerFile   int                 `json:"historyPerFile"`
+	TrashScanSeconds float64             `json:"trashScanSeconds"`
+	BlobScanSeconds  float64             `json:"blobScanSeconds"`
+	AutomaticBlob    bool                `json:"automaticBlob"`
 }
 
 type FilesystemSettingsView struct {
@@ -64,6 +68,7 @@ type FilesystemRuntime struct {
 
 func (r FilesystemRuntime) values() FilesystemValues {
 	return FilesystemValues{
+		Pagination: r.Policy.WorkspacePagination, MaxPageSize: r.Policy.WorkspaceMaxPageSize,
 		TextBytes: r.Policy.MaxTextBytes, BatchEntries: r.Policy.MaxBatchEntries, HistoryEnabled: r.Policy.HistoryEnabled,
 		HistoryPerFile: r.Policy.HistoryPerFile, TrashScanSeconds: r.TrashInterval.Seconds(),
 		BlobScanSeconds: r.Blob.Interval.Seconds(), AutomaticBlob: r.Blob.Automatic,
@@ -72,6 +77,12 @@ func (r FilesystemRuntime) values() FilesystemValues {
 
 // Resolve 保留已存覆盖；部署降低硬上限时，仅降低生效值。
 func (r FilesystemRuntime) Resolve(overrides FilesystemOverrides) FilesystemRuntime {
+	if overrides.Pagination != nil {
+		r.Policy.WorkspacePagination = *overrides.Pagination
+	}
+	if overrides.MaxPageSize != nil {
+		r.Policy.WorkspaceMaxPageSize = min(*overrides.MaxPageSize, r.Policy.WorkspaceMaxPageSize)
+	}
 	if overrides.TextBytes != nil {
 		r.Policy.MaxTextBytes = min(*overrides.TextBytes, r.Policy.MaxTextBytes)
 	}
@@ -101,7 +112,9 @@ func validSetting[T ~int | ~int64](value *T, minimum, maximum T) bool {
 }
 
 func (o FilesystemOverrides) validate(policy Policy) error {
-	if !validSetting(o.TextBytes, 1, policy.MaxTextBytes) ||
+	if (o.Pagination != nil && !o.Pagination.valid()) ||
+		!validSetting(o.MaxPageSize, 1, policy.WorkspaceMaxPageSize) ||
+		!validSetting(o.TextBytes, 1, policy.MaxTextBytes) ||
 		!validSetting(o.BatchEntries, 1, policy.MaxBatchEntries) ||
 		!validSetting(o.HistoryPerFile, 1, policy.HistoryPerFile) ||
 		!validSetting(o.TrashScanSeconds, MinFileScanSeconds, MaxFileScanSeconds) ||

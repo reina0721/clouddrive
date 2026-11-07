@@ -66,6 +66,8 @@ Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Veri
 
 管理区的“文件系统”页显示部署值、已保存值与当前生效值，可调整文本、批量、版本和回收参数。保存后通过服务重启统一应用。详见[154变更](docs/changes/154-filesystem-settings/README.md)。
 
+同一页面可设置本人文件列表和网格的分页方式及页大小上限，文件搜索支持游标翻页。详见[162变更](docs/changes/162-workspace-pagination/README.md)。
+
 “文件系统”的“自定义属性”页可管理全局属性定义。文件所有者可在属性侧栏选择定义并填写对应类型的值。详见[155变更](docs/changes/155-property-definitions/README.md)。
 
 管理区的“分享管理”页可按分享者、源文件和状态查看链接与活动。获准的管理者可单独或批量撤销链接，源文件仍由原所有者管理。详见[156变更](docs/changes/156-admin-share-management/README.md)。

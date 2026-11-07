@@ -49,6 +49,8 @@ WebDAV 管理使用 `/api/v1/files/connections`（列表/创建）和 `/{connect
 
 `GET /api/v1/files` 在同一 operation 承载高级搜索：重复的 `keywords`、`extensions`、`kinds` 参数，`scope`、`match`、`caseSensitive`、字节/时间上下界、`foldersFirst`、`page` 和 `pageSize`。数组不按逗号拆分，字节零值区别于缺失；时间为包含起点、不含终点。返回 `total` 与生效分页及预算。未指定 `pageSize` 或显式 0 保留有界非分页读取，普通网页显式请求 50/100/200；范围、排序和日期语义见[文件管理](../docs/operations/file-management.md)。
 
+本人文件工作区请求可带 `pagination=auto` 或 `pagination=numbered`，两者均按活动设置收紧正数 `pageSize`。自动模式在搜索及筛选时使用游标，并在其他列表读取活动分页模式。结果有 `cursorPage` 时，可带其 `next` 或 `previous` 重发同一查询，省略页码或保留 `page=1`。不存在的方向不会返回游标。锚点失效或作用域变化返回 409，客户端可省略游标重新开始。省略 `pagination` 时沿用原契约。
+
 分享引用管理为 `/api/v1/files/shortcuts`（GET 列表 / POST 保存）、`/{shortcutId}`（DELETE 已回收引用，body 带 revision）和 `/{shortcutId}/open`（受保护 GET 返回 303，Location 为 `/share#token=...`）。固定集合为 `/files/pins`（GET / POST）、`/{pinId}`（DELETE）与 `/order`（PUT 完整有序 ID 集合），所有写入携带集合 revision，冲突 409。快捷方式改名/移动复用条目 PATCH 并要求 expectedRevision。控制 JSON 限 4096 字节，当前 IAM / CSRF 与 owner 检查不变；响应 private/no-store、no-referrer。
 
 本人压缩包使用 "POST /api/v1/files/{id}/archive/inspect"、"/member"、"/download"、"/extract"，均带源expectedRevision及可选密码（仅body）。前三项files:read，提取files:write，全部要求会话及CSRF；源/目标归属、预算和错误语义见[文件管理](../docs/operations/file-management.md#本人压缩包浏览与提取)。

@@ -19,6 +19,7 @@ import {
 
 export function ViewOptionsDialog({
   preferences,
+  maxPageSize,
   snapshot,
   parentId,
   busy,
@@ -28,6 +29,7 @@ export function ViewOptionsDialog({
   onSave,
 }: {
   preferences: FileViewPreferences;
+  maxPageSize: number | undefined;
   snapshot: FilePreferenceSnapshot;
   parentId: string | undefined;
   busy: boolean;
@@ -36,7 +38,7 @@ export function ViewOptionsDialog({
   onClose: () => void;
   onSave: (value: FilePreferenceSnapshot) => Promise<boolean>;
 }) {
-  const { t } = useFrontendTranslation(),
+  const { t, locale } = useFrontendTranslation(),
     [draft, setDraftValue] = useState(preferences),
     [settings, setSettings] = useState(snapshot),
     [saveCurrent, setSaveCurrent] = useState(true),
@@ -196,6 +198,13 @@ export function ViewOptionsDialog({
           />
           <SelectField
             label={t('files.discovery.pageSize')}
+            {...(maxPageSize && draft.pageSize > maxPageSize
+              ? {
+                  hint: locale.startsWith('zh')
+                    ? `当前服务每页最多显示 ${maxPageSize} 项。你的原偏好会保留。`
+                    : `The service currently shows up to ${maxPageSize} items per page. Your preference is kept.`,
+                }
+              : {})}
             value={String(draft.pageSize)}
             disabled={draft.view === 'gallery'}
             onValueChange={(value) =>

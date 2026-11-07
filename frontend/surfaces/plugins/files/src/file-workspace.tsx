@@ -559,7 +559,8 @@ export function FileWorkspace({
                 }),
               );
               setRevision((value) => value + 1);
-              if (query.page && query.page !== '1') port.navigate('files', { ...query, page: '1' });
+              if (query.cursor || (query.page && query.page !== '1'))
+                port.navigate('files', { ...query, page: '', cursor: '' });
             }}
           />
         </Suspense>

@@ -1,0 +1,23 @@
+schema_version: 1
+id: R162-001
+title: 文件列表分页与管理设置
+question: 如何在当前私有文件快照上提供游标翻页，并保留旧页码访问？
+research_type: current-project-and-external-primary-source
+topics: [files, query, pagination]
+status: active
+summary: 复用文件快照、排序及现有设置修订；管理控制用户工作区列表预算。
+applicable_scenarios: [本人列表, 普通搜索, 高级筛选, 管理设置]
+non_applicable_scenarios: [数据库索引迁移, 访客浏览, 目录选择器, 画廊]
+evidence:
+  primary_sources:
+    - title: Cloudreve 文件系统管理与我的文件
+      locator: report.md
+      snapshot: 文件列表分页方式、最大分页大小、搜索强制游标
+    - title: 本地查询和设置
+      locator: report.md
+      snapshot: 44262ee
+verified_at: 2026-11-07
+validity:
+  mode: snapshot
+  refresh_triggers: [列表排序契约变化, 查询数据源替换, 代际设置生效机制变化]
+report: report.md

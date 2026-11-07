@@ -72,6 +72,8 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 	admin.request(t, "PUT", endpoint, input(0, map[string]any{"batchEntries": 11}), 422)
 	admin.request(t, "PUT", endpoint, input(0, map[string]any{"blobScanSeconds": 59}), 400)
 	admin.request(t, "PUT", endpoint, input(0, map[string]any{"trashScanSeconds": 86401}), 400)
+	admin.request(t, "PUT", endpoint, input(0, map[string]any{"pagination": "offset"}), 400)
+	admin.request(t, "PUT", endpoint, input(0, map[string]any{"maxPageSize": 201}), 400)
 	create := func(name, text string, status int) map[string]any {
 		t.Helper()
 		return admin.request(t, "POST", files+"/text", map[string]string{"parentId": "", "name": name + ".txt", "key": generate(), "text": text}, status)
@@ -88,6 +90,7 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 	overrides := map[string]any{
 		"textBytes": 4, "batchEntries": 1, "historyEnabled": false, "historyPerFile": 2,
 		"trashScanSeconds": 80, "blobScanSeconds": 120, "automaticBlob": true,
+		"pagination": "cursor", "maxPageSize": 1,
 	}
 	saved := admin.request(t, "PUT", endpoint, input(0, overrides), 200)
 	if saved["revision"] != float64(1) || saved["pendingRestart"] != true || saved["canSave"] != true ||
@@ -100,6 +103,10 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 		t.Fatalf("刷新后丢失保存参数: %v", persisted)
 	}
 	create("still-active", "allowed before restart", 200)
+	legacy := admin.request(t, "GET", files+"?pagination=auto&pageSize=50", nil, 200)
+	if legacy["cursorPage"] != nil || legacy["pageSize"] != float64(50) {
+		t.Fatalf("未重启即启用了分页设置: %v", legacy)
+	}
 	stop()
 	coordinator, _ = newGenerationTestCoordinator(t, configPath)
 	if err := coordinator.Start(t.Context()); err != nil {
@@ -118,6 +125,15 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 			t.Fatalf("重启后参数 %s 未生效: %v", name, active["active"])
 		}
 	}
+	firstPage := admin.request(t, "GET", files+"?pagination=auto&pageSize=50", nil, 200)
+	cursor := firstPage["cursorPage"].(map[string]any)["next"].(string)
+	secondPage := admin.request(t, "GET", files+"?pagination=auto&pageSize=50&cursor="+cursor, nil, 200)
+	numbered := admin.request(t, "GET", files+"?pagination=numbered&page=2&pageSize=50", nil, 200)
+	if firstPage["pageSize"] != float64(1) || secondPage["pageSize"] != float64(1) || numbered["cursorPage"] != nil ||
+		secondPage["items"].([]any)[0].(map[string]any)["id"] != numbered["items"].([]any)[0].(map[string]any)["id"] {
+		t.Fatal("工作区上限、游标和旧链接不一致")
+	}
+	admin.request(t, "GET", files+"?pagination=auto&pageSize=50&sort=updated&cursor="+cursor, nil, 409)
 	if blobs := admin.request(t, "GET", files+"/blob-reclamation", nil, 200); blobs["automatic"] != false {
 		t.Fatal("部署已禁用调度，自动清理仍报告开启")
 	}

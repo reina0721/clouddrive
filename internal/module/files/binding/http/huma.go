@@ -17,32 +17,34 @@ import (
 const prefix = "/api/v1/files"
 
 type listInput struct {
-	Parent        string                          `query:"parent" maxLength:"36"`
-	Search        string                          `query:"search" maxLength:"255"`
-	Category      string                          `query:"category"`
-	Trash         bool                            `query:"trash"`
-	Sort          service.SortKey                 `query:"sort" enum:"name,size,updated,created"`
-	Desc          bool                            `query:"desc"`
-	Scope         service.SearchScope             `query:"scope" enum:"auto,folder,tree,all"`
-	Keywords      []string                        `query:"keywords,explode" maxItems:"8"`
-	CaseSensitive bool                            `query:"caseSensitive"`
-	Match         service.KeywordMatch            `query:"match" enum:"all,any"`
-	Kinds         []string                        `query:"kinds,explode" maxItems:"3"`
-	Extensions    []string                        `query:"extensions,explode" maxItems:"16"`
-	MinBytes      humabinding.Optional[int64]     `query:"minBytes" minimum:"0"`
-	MaxBytes      humabinding.Optional[int64]     `query:"maxBytes" minimum:"0"`
-	CreatedFrom   humabinding.Optional[time.Time] `query:"createdFrom"`
-	CreatedTo     humabinding.Optional[time.Time] `query:"createdTo"`
-	ModifiedFrom  humabinding.Optional[time.Time] `query:"modifiedFrom"`
-	ModifiedTo    humabinding.Optional[time.Time] `query:"modifiedTo"`
-	FoldersFirst  bool                            `query:"foldersFirst"`
-	Page          int                             `query:"page" default:"1" minimum:"1" maximum:"10000"`
-	PageSize      int                             `query:"pageSize" minimum:"0" maximum:"200"`
-	Tags          []string                        `query:"tags,explode" maxItems:"8"`
-	TagMatch      service.KeywordMatch            `query:"tagMatch" enum:"all,any"`
-	PropertyKey   string                          `query:"propertyKey" maxLength:"64"`
-	PropertyMatch service.PropertyMatch           `query:"propertyMatch" enum:"exists,equals,contains"`
-	PropertyValue string                          `query:"propertyValue" maxLength:"256"`
+	Parent        string                           `query:"parent" maxLength:"36"`
+	Search        string                           `query:"search" maxLength:"255"`
+	Category      string                           `query:"category"`
+	Trash         bool                             `query:"trash"`
+	Sort          service.SortKey                  `query:"sort" enum:"name,size,updated,created"`
+	Desc          bool                             `query:"desc"`
+	Scope         service.SearchScope              `query:"scope" enum:"auto,folder,tree,all"`
+	Keywords      []string                         `query:"keywords,explode" maxItems:"8"`
+	CaseSensitive bool                             `query:"caseSensitive"`
+	Match         service.KeywordMatch             `query:"match" enum:"all,any"`
+	Kinds         []string                         `query:"kinds,explode" maxItems:"3"`
+	Extensions    []string                         `query:"extensions,explode" maxItems:"16"`
+	MinBytes      humabinding.Optional[int64]      `query:"minBytes" minimum:"0"`
+	MaxBytes      humabinding.Optional[int64]      `query:"maxBytes" minimum:"0"`
+	CreatedFrom   humabinding.Optional[time.Time]  `query:"createdFrom"`
+	CreatedTo     humabinding.Optional[time.Time]  `query:"createdTo"`
+	ModifiedFrom  humabinding.Optional[time.Time]  `query:"modifiedFrom"`
+	ModifiedTo    humabinding.Optional[time.Time]  `query:"modifiedTo"`
+	FoldersFirst  bool                             `query:"foldersFirst"`
+	Page          int                              `query:"page" default:"1" minimum:"1" maximum:"10000"`
+	PageSize      int                              `query:"pageSize" minimum:"0" maximum:"200"`
+	Pagination    service.WorkspaceQueryPagination `query:"pagination" enum:"auto,numbered"`
+	Cursor        string                           `query:"cursor" maxLength:"120"`
+	Tags          []string                         `query:"tags,explode" maxItems:"8"`
+	TagMatch      service.KeywordMatch             `query:"tagMatch" enum:"all,any"`
+	PropertyKey   string                           `query:"propertyKey" maxLength:"64"`
+	PropertyMatch service.PropertyMatch            `query:"propertyMatch" enum:"exists,equals,contains"`
+	PropertyValue string                           `query:"propertyValue" maxLength:"256"`
 }
 type listOutput struct{ Body service.Listing }
 type entryOutput struct{ Body model.Entry }
@@ -140,7 +142,7 @@ func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 		if input.PropertyKey != "" || input.PropertyMatch != "" || input.PropertyValue != "" {
 			property = &service.AnnotationPropertyFilter{Key: input.PropertyKey, Match: input.PropertyMatch, Value: input.PropertyValue}
 		}
-		result, err := h.Service.List(ctx, owner, service.Query{ParentID: input.Parent, Search: input.Search, Category: input.Category, Trash: input.Trash, Sort: input.Sort, Desc: input.Desc, Scope: input.Scope, Keywords: input.Keywords, CaseSensitive: input.CaseSensitive, Match: input.Match, Kinds: kinds, Extensions: input.Extensions, MinBytes: input.MinBytes.Pointer(), MaxBytes: input.MaxBytes.Pointer(), CreatedFrom: input.CreatedFrom.Pointer(), CreatedTo: input.CreatedTo.Pointer(), ModifiedFrom: input.ModifiedFrom.Pointer(), ModifiedTo: input.ModifiedTo.Pointer(), FoldersFirst: input.FoldersFirst, Page: input.Page, PageSize: input.PageSize, Tags: input.Tags, TagMatch: input.TagMatch, Property: property})
+		result, err := h.Service.List(ctx, owner, service.Query{ParentID: input.Parent, Search: input.Search, Category: input.Category, Trash: input.Trash, Sort: input.Sort, Desc: input.Desc, Scope: input.Scope, Keywords: input.Keywords, CaseSensitive: input.CaseSensitive, Match: input.Match, Kinds: kinds, Extensions: input.Extensions, MinBytes: input.MinBytes.Pointer(), MaxBytes: input.MaxBytes.Pointer(), CreatedFrom: input.CreatedFrom.Pointer(), CreatedTo: input.CreatedTo.Pointer(), ModifiedFrom: input.ModifiedFrom.Pointer(), ModifiedTo: input.ModifiedTo.Pointer(), FoldersFirst: input.FoldersFirst, Page: input.Page, PageSize: input.PageSize, Pagination: input.Pagination, Cursor: input.Cursor, Tags: input.Tags, TagMatch: input.TagMatch, Property: property})
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}

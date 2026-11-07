@@ -137,6 +137,41 @@ test('分页、列表列偏好、目录优先及当前页键盘范围选择', as
   await page.getByRole('button', { name: '下一页', exact: true }).click();
   await expect(entries(page)).toHaveCount(5);
   await expect(page.getByText('已选择 50 项', { exact: true })).toHaveCount(0);
+  await expect(page).toHaveURL(/page=2/);
+  const searchParams = new URLSearchParams({
+    parent: folder.id,
+    search: 'item-',
+    filter: JSON.stringify({ scope: 'folder' }),
+  });
+  await page.goto('/home?' + searchParams.toString());
+  const next = page.getByRole('button', { name: '下一页', exact: true });
+  const previous = page.getByRole('button', { name: '上一页', exact: true });
+  const firstPage = page.getByRole('button', { name: '第一页', exact: true });
+  await expect(entries(page)).toHaveCount(50);
+  await expect(previous).toBeDisabled();
+  await next.click();
+  await expect(page).toHaveURL(/cursor=n\./);
+  await expect(entries(page)).toHaveCount(4);
+  await expect(next).toBeDisabled();
+  const endURL = page.url();
+  await page.screenshot({
+    path: info.outputPath('search-cursor-last-page.png'),
+    animations: 'disabled',
+  });
+  await previous.click();
+  await expect(entries(page)).toHaveCount(50);
+  await page.goBack();
+  await expect(page).toHaveURL(endURL);
+  await expect(entries(page)).toHaveCount(4);
+  await firstPage.click();
+  await expect(page).not.toHaveURL(/cursor=/);
+  await expect(entries(page)).toHaveCount(50);
+  await page.goto(endURL.replace('search=item-', 'search=item-53'));
+  await expect(page.getByText('此翻页位置已失效，请从第一页重新浏览。')).toBeVisible();
+  await firstPage.click();
+  await expect(entries(page)).toHaveCount(1);
+  await page.goto('/home?parent=' + folder.id + '&page=2');
+  await expect(entries(page)).toHaveCount(5);
   await page.getByRole('button', { name: '视图', exact: true }).click();
   await page.getByRole('menuitem', { name: '视图选项', exact: true }).click();
   await page.getByRole('dialog').getByLabel('目录优先', { exact: true }).press('Space');

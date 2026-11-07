@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test';
 
 type SettingsResponse = {
   revision: number;
-  overrides: Record<string, number | boolean>;
+  overrides: Record<string, number | boolean | string>;
   pendingRestart: boolean;
 };
 
@@ -37,6 +37,8 @@ test('管理文件系统参数可校验、保存、刷新和恢复继承', async
   const title = page.getByRole('heading', { name: '文件系统', exact: true });
   await expect(title).toBeVisible();
   const text = page.getByLabel('在线文本大小上限（字节）', { exact: true });
+  const maxPageSize = page.getByLabel('最大分页大小（项）', { exact: true });
+  const pagination = page.getByRole('button', { name: /文件列表分页方式/ });
   const save = page.getByRole('button', { name: '保存参数', exact: true });
   const dialog = page.getByRole('dialog', { name: '确认保存文件系统参数' });
   const confirm = dialog.getByRole('button', { name: '保存参数', exact: true });
@@ -66,6 +68,12 @@ test('管理文件系统参数可校验、保存、刷新和恢复继承', async
       { endpoint, revision, overrides },
     );
   try {
+    await maxPageSize.fill('201');
+    await expect(page.getByText(/请输入 1 至 200 之间/)).toBeVisible();
+    await expect(save).toBeDisabled();
+    await maxPageSize.fill('25');
+    await pagination.click();
+    await page.getByRole('option', { name: '游标分页', exact: true }).click();
     await text.fill('0');
     await expect(page.getByText(/请输入 1 至/)).toBeVisible();
     await expect(save).toBeDisabled();
@@ -79,6 +87,8 @@ test('管理文件系统参数可校验、保存、刷新和恢复继承', async
     await expect(page.getByRole('status').filter({ hasText: '等待服务重启' })).toBeVisible();
     await page.reload();
     await expect(text).toHaveValue('8192');
+    await expect(maxPageSize).toHaveValue('25');
+    await expect(pagination).toContainText('游标分页');
     await expect(page.getByText(/已保存 8192/)).toBeVisible();
     const accessibility = await new AxeBuilder({ page })
       .include('main')
@@ -91,12 +101,17 @@ test('管理文件系统参数可校验、保存、刷新和恢复继承', async
     });
 
     await text.fill('4096');
-    expect(await saveDirect(initial.revision + 1, { textBytes: 16384 })).toBe(200);
+    await pagination.click();
+    await page.getByRole('option', { name: '页码分页', exact: true }).click();
+    expect(
+      await saveDirect(initial.revision + 1, { textBytes: 16384, pagination: 'numbered' }),
+    ).toBe(200);
     await save.click();
     await confirm.click();
     await expect(dialog.getByRole('alert')).toContainText('其他管理员已保存新的参数');
     await dialog.getByRole('button', { name: '刷新', exact: true }).click();
     await expect(text).toHaveValue('16384');
+    await expect(pagination).toContainText('页码分页');
     await page.setViewportSize({ width: 320, height: 760 });
     expect(
       await page.locator('main').evaluate((main) => main.scrollWidth <= main.clientWidth),

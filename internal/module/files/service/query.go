@@ -69,9 +69,12 @@ type Query struct {
 	FoldersFirst  bool
 	Page          int
 	PageSize      int
+	Pagination    WorkspaceQueryPagination
+	Cursor        string
 	Tags          []string
 	TagMatch      KeywordMatch
 	Property      *AnnotationPropertyFilter
+	cursorOwner   string
 }
 
 type Listing struct {
@@ -91,6 +94,7 @@ type Listing struct {
 	Total               int                 `json:"total"`
 	Page                int                 `json:"page"`
 	PageSize            int                 `json:"pageSize"`
+	CursorPage          *FileCursorPage     `json:"cursorPage,omitempty"`
 	DefaultPageSize     int                 `json:"defaultPageSize"`
 	MaxPageSize         int                 `json:"maxPageSize"`
 	SearchTreeEntries   int                 `json:"searchTreeEntries"`
@@ -365,6 +369,9 @@ func (s *Service) List(ctx context.Context, owner string, input Query) (Listing,
 	if err != nil {
 		return Listing{}, err
 	}
+	if err := s.prepareWorkspacePagination(owner, input, &q); err != nil {
+		return Listing{}, err
+	}
 	entries, err := s.repo.ReadBounded(ctx, owner, s.policy.SearchTreeEntries)
 	if err != nil {
 		return Listing{}, err
@@ -481,7 +488,15 @@ func (s *Service) listEntries(ctx context.Context, entries []model.Entry, q Quer
 		return Listing{}, err
 	}
 	result.Total = len(result.Items)
-	if q.PageSize > 0 {
+	if q.Pagination != "" {
+		result.MaxPageSize = s.policy.WorkspaceMaxPageSize
+		result.DefaultPageSize = min(result.MaxPageSize, result.DefaultPageSize)
+	}
+	if q.cursorOwner != "" {
+		if err := result.applyCursor(q); err != nil {
+			return Listing{}, err
+		}
+	} else if q.PageSize > 0 {
 		result.Page = max(1, q.Page)
 		result.PageSize = q.PageSize
 		start := (result.Page - 1) * q.PageSize

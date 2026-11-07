@@ -1,0 +1,22 @@
+schema_version: 1
+change: 162-workspace-pagination
+areas:
+  - id: startup
+    decision: updated
+    documents: [README.md]
+    reason: 说明分页设置入口。
+  - id: webui
+    decision: updated
+    documents: [docs/operations/file-management.md]
+    reason: 记录分页、恢复及页大小适用边界。
+  - id: frontend
+    decision: updated
+    documents: [docs/repository-scope.md]
+    reason: 更新范围与其余差距。
+  - id: module
+    decision: reviewed-no-change
+    reason: 复用文件查询及现有管理参数边界。
+  - id: api
+    decision: updated
+    documents: [api/README.md]
+    reason: 说明游标和既有查询兼容性。

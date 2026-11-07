@@ -13,6 +13,8 @@ export function fileListParameters(query: FileQuery): URLSearchParams {
     page: String(query.page ?? 1),
     pageSize: String(query.pageSize ?? 0),
   });
+  if (query.pagination) parameters.set('pagination', query.pagination);
+  if (query.cursor) parameters.set('cursor', query.cursor);
   const filters = fileFiltersSchema.parse(query.filters ?? {});
   encodeFileFilters(filters);
   for (const key of ['keywords', 'kinds', 'extensions'] as const)

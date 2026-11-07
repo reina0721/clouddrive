@@ -18,6 +18,7 @@ import { PropertyDefinitionsPanel } from './property-definitions-panel';
 import { useCatalogRequest } from './use-catalog-request';
 
 const groups = [
+  ['paginationGroup', ['pagination', 'maxPageSize']],
   ['files', ['textBytes', 'batchEntries']],
   ['versions', ['historyEnabled', 'historyPerFile']],
   ['reclamation', ['trashScanSeconds', 'blobScanSeconds', 'automaticBlob']],
@@ -25,6 +26,7 @@ const groups = [
 type Field = (typeof groups)[number][1][number];
 const fields = groups.flatMap(([, keys]) => [...keys]);
 const numericFields = [
+  'maxPageSize',
   'textBytes',
   'batchEntries',
   'historyPerFile',
@@ -38,6 +40,12 @@ type Draft = Record<Field, string>;
 const zh = {
   description: '管理文件操作、版本和存储回收参数。保存的变更在服务重启后生效。',
   files: '文件操作',
+  paginationGroup: '文件列表',
+  pagination: '文件列表分页方式',
+  maxPageSize: '最大分页大小（项）',
+  numbered: '页码分页',
+  cursor: '游标分页',
+  searchPagination: '文件搜索和高级筛选使用游标分页。',
   versions: '历史版本',
   reclamation: '回收任务',
   textBytes: '在线文本大小上限（字节）',
@@ -71,6 +79,12 @@ const en: typeof zh = {
   description:
     'Manage file operations, versions, and reclamation. Saved changes take effect after restart.',
   files: 'File operations',
+  paginationGroup: 'File listing',
+  pagination: 'File list pagination',
+  maxPageSize: 'Maximum page size (items)',
+  numbered: 'Numbered pages',
+  cursor: 'Cursor pages',
+  searchPagination: 'File search and advanced filters use cursor pagination.',
   versions: 'Version history',
   reclamation: 'Reclamation tasks',
   textBytes: 'Online text limit (bytes)',
@@ -141,6 +155,8 @@ function FilesystemSettingsForm({
 
   const save = async () => {
     const overrides: FilesystemSettingsInput['overrides'] = {};
+    if (draft.pagination === 'cursor' || draft.pagination === 'numbered')
+      overrides.pagination = draft.pagination;
     for (const key of numericFields) {
       if (draft[key] !== '') overrides[key] = Number(draft[key]);
     }
@@ -158,8 +174,11 @@ function FilesystemSettingsForm({
     }
   };
 
-  const display = (value: number | boolean) =>
-    typeof value === 'number' ? String(value) : value ? labels.enabled : labels.disabled;
+  const display = (value: FilesystemSettings['active'][Field]) => {
+    if (typeof value === 'string') return labels[value];
+    if (typeof value === 'number') return String(value);
+    return value ? labels.enabled : labels.disabled;
+  };
   return (
     <>
       <p role="status" className="text-sm text-ink-muted">
@@ -180,6 +199,9 @@ function FilesystemSettingsForm({
             <SectionBody>
               <div className="min-w-0 max-w-md space-y-4">
                 <h2 className="text-lg font-semibold">{labels[title]}</h2>
+                {title === 'paginationGroup' ? (
+                  <p className="text-sm text-ink-muted">{labels.searchPagination}</p>
+                ) : null}
                 {title === 'reclamation' && !view.trashSchedulerAvailable ? (
                   <p className="text-sm text-ink-muted">{labels.trashUnavailable}</p>
                 ) : null}
@@ -196,6 +218,23 @@ function FilesystemSettingsForm({
                     setSaved(false);
                     setDraft({ ...draft, [key]: value });
                   };
+                  if (key === 'pagination') {
+                    return (
+                      <SelectField
+                        key={key}
+                        label={labels[key]}
+                        hint={hint}
+                        value={draft[key] || 'inherit'}
+                        disabled={!view.canSave}
+                        options={[
+                          { value: 'inherit', label: labels.inherit },
+                          { value: 'numbered', label: labels.numbered },
+                          { value: 'cursor', label: labels.cursor },
+                        ]}
+                        onValueChange={(value) => update(value === 'inherit' ? '' : value)}
+                      />
+                    );
+                  }
                   if (key === 'historyEnabled' || key === 'automaticBlob') {
                     return (
                       <SelectField

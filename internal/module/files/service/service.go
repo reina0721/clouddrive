@@ -33,6 +33,8 @@ const (
 
 type Policy struct {
 	PDFReader              PDFReaderPolicy
+	WorkspacePagination    WorkspacePagination
+	WorkspaceMaxPageSize   int
 	MaxFileBytes           int64
 	NameAdmission          FileNameAdmission
 	QuotaBytes             int64
@@ -53,9 +55,12 @@ type Policy struct {
 }
 
 func DefaultPolicy() Policy {
-	return Policy{PDFReader: DefaultPDFReaderPolicy(), MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries, ShortcutLimit: DefaultShortcutLimit, SearchTreeEntries: DefaultSearchTreeEntries, AnnotationMaxBytes: model.MaxAnnotationBytes, AnnotationBatchEntries: DefaultAnnotationBatchEntries, HistoryEnabled: true, HistoryPerFile: model.MaxFileHistory, HistoryPerOwner: model.MaxOwnerHistory}
+	return Policy{PDFReader: DefaultPDFReaderPolicy(), WorkspacePagination: PaginationNumbered, WorkspaceMaxPageSize: MaxListPageSize, MaxFileBytes: DefaultMaxFileBytes, QuotaBytes: DefaultQuotaBytes, ConcurrentUploads: DefaultConcurrentUploads, MaxTextBytes: DefaultMaxTextBytes, MaxArchiveBytes: DefaultMaxArchiveBytes, MaxBatchEntries: DefaultMaxBatchEntries, MaxThumbnailBytes: DefaultMaxThumbnailBytes, MaxMediaBytes: DefaultMaxMediaBytes, MaxGalleryEntries: DefaultMaxGalleryEntries, ShortcutLimit: DefaultShortcutLimit, SearchTreeEntries: DefaultSearchTreeEntries, AnnotationMaxBytes: model.MaxAnnotationBytes, AnnotationBatchEntries: DefaultAnnotationBatchEntries, HistoryEnabled: true, HistoryPerFile: model.MaxFileHistory, HistoryPerOwner: model.MaxOwnerHistory}
 }
 func (p Policy) Validate() error {
+	if !p.WorkspacePagination.valid() || p.WorkspaceMaxPageSize < 1 || p.WorkspaceMaxPageSize > MaxListPageSize {
+		return fmt.Errorf("invalid file workspace pagination policy")
+	}
 	if err := p.PDFReader.Validate(); err != nil {
 		return err
 	}

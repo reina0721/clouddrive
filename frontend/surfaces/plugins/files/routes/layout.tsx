@@ -18,6 +18,7 @@ function WorkspaceRoute({ children }: { children: ReactNode }) {
         search: params.get('search') ?? '',
         filter: params.get('filter') ?? '',
         page: params.get('page') ?? '',
+        cursor: params.get('cursor') ?? '',
       }}
     >
       {children}

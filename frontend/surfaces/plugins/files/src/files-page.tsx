@@ -95,6 +95,8 @@ type Props = Readonly<{
   search: string;
   filters: FileFilters;
   page: number;
+  numbered: boolean;
+  cursor: string;
   queryInvalid: boolean;
   navigate: (query: Record<string, string>) => void;
 }>;
@@ -112,6 +114,8 @@ export function FilesPage({
   search,
   filters,
   page,
+  numbered,
+  cursor,
   queryInvalid,
   navigate: routeNavigate,
 }: Props) {
@@ -120,7 +124,8 @@ export function FilesPage({
   const navigation = useFileNavigation();
   const transfers = useTransfers();
   const transferState = useTransferSnapshot();
-  const { t } = useFrontendTranslation();
+  const { t, locale } = useFrontendTranslation();
+  const chinese = locale.startsWith('zh');
   const [listing, setListing] = useState<FileListing>();
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
@@ -132,12 +137,14 @@ export function FilesPage({
         (query.trash === 'true') !== trash ||
         (query.search ?? '') !== search ||
         (query.filter ?? '') !== filterKey ||
-        Number(query.page ?? 1) !== page
+        Number(query.page ?? 1) !== page ||
+        !!query.page !== numbered ||
+        (query.cursor ?? '') !== cursor
       )
         setNavigating(true);
       routeNavigate(query);
     },
-    [routeNavigate, parent, category, trash, search, filterKey, page],
+    [routeNavigate, parent, category, trash, search, filterKey, page, numbered, cursor],
   );
   const [failure, setFailure] = useState('');
   const [notice, setNotice] = useState('');
@@ -203,6 +210,10 @@ export function FilesPage({
     [t],
   );
   const reload = useCallback(() => setRevision((value) => value + 1), [setRevision]);
+  const firstPage = () =>
+    navigate({ parent, category, trash: trash ? 'true' : '', search, filter: filterKey });
+  const preferenceReady = !!preferenceSnapshot || !!preferenceFailure;
+  const cursorWaitingForPreferences = !!cursor && !preferenceReady;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -236,6 +247,7 @@ export function FilesPage({
       setNavigating(false);
       return () => controller.abort();
     }
+    if (cursorWaitingForPreferences) return () => controller.abort();
     port
       .list(
         {
@@ -249,6 +261,9 @@ export function FilesPage({
           foldersFirst: preferences.foldersFirst,
           page: preferences.view === 'gallery' ? 1 : page,
           pageSize: preferences.view === 'gallery' ? 0 : preferences.pageSize,
+          ...(preferences.view !== 'gallery'
+            ? { pagination: numbered ? ('numbered' as const) : ('auto' as const), cursor }
+            : {}),
         },
         controller.signal,
       )
@@ -259,9 +274,13 @@ export function FilesPage({
         if (!controller.signal.aborted) {
           setListing(undefined);
           setFailure(
-            error instanceof FilesError && error.code === 'large'
-              ? t('files.discovery.budgetExceeded')
-              : errorText(error),
+            cursor && error instanceof FilesError && ['invalid', 'conflict'].includes(error.code)
+              ? chinese
+                ? '此翻页位置已失效，请从第一页重新浏览。'
+                : 'This page position has expired. Start again from the first page.'
+              : error instanceof FilesError && error.code === 'large'
+                ? t('files.discovery.budgetExceeded')
+                : errorText(error),
           );
         }
       })
@@ -285,9 +304,13 @@ export function FilesPage({
     preferences.view,
     filterKey,
     page,
+    numbered,
+    cursor,
+    cursorWaitingForPreferences,
     queryInvalid,
     revision,
     errorText,
+    chinese,
     t,
   ]);
   useEffect(() => {
@@ -417,8 +440,7 @@ export function FilesPage({
       next.pageSize !== preferences.pageSize ||
       next.view !== preferences.view;
     setPreferences(fileViewPreferencesSchema.parse(next));
-    if (affectsQuery && page !== 1)
-      navigate({ parent, category, trash: trash ? 'true' : '', search, filter: filterKey });
+    if (affectsQuery && (page !== 1 || cursor)) firstPage();
   }
   const openDialog = useCallback(
     (mode: Dialog['mode'] | 'folder', targets: FileEntry[] = []) => {
@@ -1018,7 +1040,11 @@ export function FilesPage({
             })
           }
         />
-        {queryInvalid ? (
+        {cursor && failure && !loading ? (
+          <Action variant="secondary" onPress={firstPage}>
+            {t('files.discovery.firstPage')}
+          </Action>
+        ) : queryInvalid ? (
           <Action
             variant="secondary"
             onPress={() => navigate({ parent, category, trash: trash ? 'true' : '' })}
@@ -1479,7 +1505,59 @@ export function FilesPage({
             </div>
           )}
         </section>
-        {listing && preferences.view !== 'gallery' ? (
+        {listing?.cursorPage && preferences.view !== 'gallery' ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <Action
+              size="sm"
+              variant="secondary"
+              disabled={loading || navigating || !preferenceReady || !listing.cursorPage.previous}
+              onPress={() =>
+                navigate({
+                  parent,
+                  category,
+                  trash: trash ? 'true' : '',
+                  search,
+                  filter: filterKey,
+                  cursor: listing.cursorPage?.previous ?? '',
+                })
+              }
+            >
+              {t('files.previousPage')}
+            </Action>
+            <span className="text-sm text-ink-muted" role="status">
+              {chinese
+                ? `本页 ${listing.items.length} 项，共 ${listing.total} 项`
+                : `${listing.items.length} on this page, ${listing.total} total`}
+            </span>
+            <Action
+              size="sm"
+              variant="secondary"
+              disabled={loading || navigating || !preferenceReady || !listing.cursorPage.next}
+              onPress={() =>
+                navigate({
+                  parent,
+                  category,
+                  trash: trash ? 'true' : '',
+                  search,
+                  filter: filterKey,
+                  cursor: listing.cursorPage?.next ?? '',
+                })
+              }
+            >
+              {t('files.nextPage')}
+            </Action>
+            {cursor ? (
+              <Action
+                size="sm"
+                variant="quiet"
+                disabled={loading || navigating}
+                onPress={firstPage}
+              >
+                {t('files.discovery.firstPage')}
+              </Action>
+            ) : null}
+          </div>
+        ) : listing && preferences.view !== 'gallery' ? (
           <div className="flex flex-wrap items-center gap-3">
             <Action
               variant="secondary"
@@ -1501,14 +1579,14 @@ export function FilesPage({
             <span className="text-sm text-ink-muted">
               {t('files.discovery.page', {
                 current: page,
-                pages: Math.max(1, Math.ceil(listing.total / preferences.pageSize)),
+                pages: Math.max(1, Math.ceil(listing.total / listing.pageSize)),
                 total: listing.total,
               })}
             </span>
             <Action
               variant="secondary"
               size="sm"
-              disabled={loading || page * preferences.pageSize >= listing.total}
+              disabled={loading || page * listing.pageSize >= listing.total}
               onPress={() =>
                 navigate({
                   parent,
@@ -1693,6 +1771,7 @@ export function FilesPage({
       {viewOptionsOpen && preferenceSnapshot ? (
         <ViewOptionsDialog
           preferences={preferences}
+          maxPageSize={listing?.maxPageSize}
           snapshot={preferenceSnapshot}
           parentId={preferenceParent}
           busy={preferenceBusy}

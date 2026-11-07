@@ -110,6 +110,7 @@ export const fileListingSchema = z.object({
   total: z.number().int().nonnegative(),
   page: z.number().int().nonnegative(),
   pageSize: z.number().int().nonnegative(),
+  cursorPage: z.object({ previous: z.string().optional(), next: z.string().optional() }).optional(),
   defaultPageSize: z.number().int().positive(),
   maxPageSize: z.number().int().positive(),
   searchTreeEntries: z.number().int().positive(),
@@ -134,6 +135,8 @@ export type FileQuery = Readonly<{
   foldersFirst?: boolean;
   page?: number;
   pageSize?: number;
+  pagination?: 'auto' | 'numbered';
+  cursor?: string;
 }>;
 export type UploadCandidate = Readonly<{
   id: string;
@@ -171,6 +174,7 @@ export type FileBrowseQuery = Readonly<{
   search?: string;
   filter?: string;
   page?: string;
+  cursor?: string;
 }>;
 export type FilesDestination =
   | 'files'

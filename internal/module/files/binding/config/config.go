@@ -50,7 +50,7 @@ func (c Config) SharePolicy() service.SharePolicy {
 }
 
 func (c Config) Policy() service.Policy {
-	return service.Policy{PDFReader: c.PDFReader, MaxFileBytes: c.MaxFileBytes, QuotaBytes: c.QuotaBytes, ConcurrentUploads: c.ConcurrentUploads, MaxTextBytes: c.MaxTextBytes, MaxArchiveBytes: c.MaxArchiveBytes, MaxBatchEntries: c.MaxBatchEntries, MaxThumbnailBytes: c.MaxThumbnailBytes, MaxMediaBytes: c.MaxMediaBytes, MaxGalleryEntries: c.MaxGalleryEntries, ShortcutLimit: c.Navigation.ShortcutLimit, SearchTreeEntries: c.Search.TreeEntries, AnnotationMaxBytes: c.Annotations.MaxBytes, AnnotationBatchEntries: c.Annotations.BatchEntries, HistoryEnabled: c.History.Enabled, HistoryPerFile: c.History.PerFile, HistoryPerOwner: c.History.PerOwner}
+	return service.Policy{PDFReader: c.PDFReader, WorkspacePagination: service.PaginationNumbered, WorkspaceMaxPageSize: service.MaxListPageSize, MaxFileBytes: c.MaxFileBytes, QuotaBytes: c.QuotaBytes, ConcurrentUploads: c.ConcurrentUploads, MaxTextBytes: c.MaxTextBytes, MaxArchiveBytes: c.MaxArchiveBytes, MaxBatchEntries: c.MaxBatchEntries, MaxThumbnailBytes: c.MaxThumbnailBytes, MaxMediaBytes: c.MaxMediaBytes, MaxGalleryEntries: c.MaxGalleryEntries, ShortcutLimit: c.Navigation.ShortcutLimit, SearchTreeEntries: c.Search.TreeEntries, AnnotationMaxBytes: c.Annotations.MaxBytes, AnnotationBatchEntries: c.Annotations.BatchEntries, HistoryEnabled: c.History.Enabled, HistoryPerFile: c.History.PerFile, HistoryPerOwner: c.History.PerOwner}
 }
 func Decode(snapshot config.Snapshot) (Config, error) {
 	p := service.DefaultPolicy()

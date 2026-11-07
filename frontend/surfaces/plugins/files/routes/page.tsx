@@ -8,7 +8,8 @@ export default function FilesRoute() {
   const params = useSearchParams();
   const router = useRouter();
   const rawFilter = params.get('filter'),
-    rawPage = params.get('page');
+    rawPage = params.get('page'),
+    cursor = params.get('cursor') ?? '';
   const query = useMemo(() => {
     try {
       const filters = decodeFileFilters(rawFilter);
@@ -17,11 +18,16 @@ export default function FilesRoute() {
         (!/^[1-9]\d*$/.test(rawPage) || Number(rawPage) > fileSearchLimits.maxPage)
       )
         throw new Error('invalid page');
+      if (
+        cursor &&
+        (rawPage !== null || !/^[np]\.[\w-]+\.[\w-]{43}$/.test(cursor) || cursor.length > 120)
+      )
+        throw new Error('invalid cursor');
       return { filters, page: rawPage === null ? 1 : Number(rawPage), invalid: false };
     } catch {
       return { filters: {}, page: 1, invalid: true };
     }
-  }, [rawFilter, rawPage]);
+  }, [rawFilter, rawPage, cursor]);
   return (
     <FilesPage
       parent={params.get('parent') ?? ''}
@@ -30,6 +36,8 @@ export default function FilesRoute() {
       search={params.get('search') ?? ''}
       filters={query.filters}
       page={query.page}
+      numbered={rawPage !== null}
+      cursor={cursor}
       queryInvalid={query.invalid}
       navigate={(query) => {
         const next = new URLSearchParams();

@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 const settingsValues = z.object({
+  pagination: z.enum(['numbered', 'cursor']),
+  maxPageSize: z.number().int().positive(),
   textBytes: z.number().int().positive(),
   batchEntries: z.number().int().positive(),
   historyEnabled: z.boolean(),
