@@ -36,24 +36,27 @@ type DownloadSourcePolicy struct {
 }
 
 type DownloadPolicy struct {
-	Enabled          bool                 `mapstructure:"enabled"`
-	BatchEntries     int                  `mapstructure:"batchEntries"`
-	OwnerRecords     int                  `mapstructure:"ownerRecords"`
-	GlobalRecords    int                  `mapstructure:"globalRecords"`
-	Concurrency      int                  `mapstructure:"concurrency"`
-	DispatchInterval time.Duration        `mapstructure:"dispatchInterval"`
-	LeaseTTL         time.Duration        `mapstructure:"leaseTTL"`
-	RenewInterval    time.Duration        `mapstructure:"renewInterval"`
-	ProgressInterval time.Duration        `mapstructure:"progressInterval"`
-	AttemptTimeout   time.Duration        `mapstructure:"attemptTimeout"`
-	MaxAttempts      int                  `mapstructure:"maxAttempts"`
-	MaxRequests      int                  `mapstructure:"maxRequests"`
-	Source           DownloadSourcePolicy `mapstructure:"source"`
+	TorrentNodes             []TorrentNodeConfig  `mapstructure:"torrentNodes"`
+	TorrentNodeConcurrency   int                  `mapstructure:"torrentNodeConcurrency"`
+	TorrentNodeReservedBytes int64                `mapstructure:"torrentNodeReservedBytes"`
+	Enabled                  bool                 `mapstructure:"enabled"`
+	BatchEntries             int                  `mapstructure:"batchEntries"`
+	OwnerRecords             int                  `mapstructure:"ownerRecords"`
+	GlobalRecords            int                  `mapstructure:"globalRecords"`
+	Concurrency              int                  `mapstructure:"concurrency"`
+	DispatchInterval         time.Duration        `mapstructure:"dispatchInterval"`
+	LeaseTTL                 time.Duration        `mapstructure:"leaseTTL"`
+	RenewInterval            time.Duration        `mapstructure:"renewInterval"`
+	ProgressInterval         time.Duration        `mapstructure:"progressInterval"`
+	AttemptTimeout           time.Duration        `mapstructure:"attemptTimeout"`
+	MaxAttempts              int                  `mapstructure:"maxAttempts"`
+	MaxRequests              int                  `mapstructure:"maxRequests"`
+	Source                   DownloadSourcePolicy `mapstructure:"source"`
 }
 
 // DefaultDownloadPolicy 集中声明业务、租约和网络预算，binding不复制第二套默认值。
 func DefaultDownloadPolicy() DownloadPolicy {
-	return DownloadPolicy{Enabled: true, BatchEntries: model.MaxDownloadBatchEntries, OwnerRecords: model.MaxDownloadOwnerRecords, GlobalRecords: model.MaxDownloadGlobalRecords, Concurrency: DefaultDownloadConcurrency, DispatchInterval: DefaultDownloadInterval, LeaseTTL: DefaultDownloadLeaseTTL, RenewInterval: DefaultDownloadRenewInterval, ProgressInterval: DefaultDownloadProgressInterval, AttemptTimeout: DefaultDownloadAttemptTimeout, MaxAttempts: model.MaxDownloadAttempts, MaxRequests: DefaultDownloadMaxRequests, Source: DownloadSourcePolicy{ConnectTimeout: DefaultDownloadSourceTimeout, IdleTimeout: DefaultDownloadIdleTimeout, HeaderBytes: DefaultDownloadHeaderBytes, Redirects: DefaultDownloadRedirects, DNSAddresses: DefaultDownloadDNSAddresses, AllowedNetworks: []string{}}}
+	return DownloadPolicy{TorrentNodes: []TorrentNodeConfig{}, TorrentNodeConcurrency: DefaultTorrentNodeConcurrency, TorrentNodeReservedBytes: DefaultTorrentNodeReservedBytes, Enabled: true, BatchEntries: model.MaxDownloadBatchEntries, OwnerRecords: model.MaxDownloadOwnerRecords, GlobalRecords: model.MaxDownloadGlobalRecords, Concurrency: DefaultDownloadConcurrency, DispatchInterval: DefaultDownloadInterval, LeaseTTL: DefaultDownloadLeaseTTL, RenewInterval: DefaultDownloadRenewInterval, ProgressInterval: DefaultDownloadProgressInterval, AttemptTimeout: DefaultDownloadAttemptTimeout, MaxAttempts: model.MaxDownloadAttempts, MaxRequests: DefaultDownloadMaxRequests, Source: DownloadSourcePolicy{ConnectTimeout: DefaultDownloadSourceTimeout, IdleTimeout: DefaultDownloadIdleTimeout, HeaderBytes: DefaultDownloadHeaderBytes, Redirects: DefaultDownloadRedirects, DNSAddresses: DefaultDownloadDNSAddresses, AllowedNetworks: []string{}}}
 }
 func (p DownloadSourcePolicy) Validate() error {
 	if p.ConnectTimeout <= 0 || p.ConnectTimeout > DefaultDownloadSourceTimeout || p.IdleTimeout <= 0 || p.IdleTimeout > DefaultDownloadIdleTimeout || p.HeaderBytes < 1 || p.HeaderBytes > DefaultDownloadHeaderBytes || p.Redirects < 0 || p.Redirects > DefaultDownloadRedirects || p.DNSAddresses < 1 || p.DNSAddresses > DefaultDownloadDNSAddresses || len(p.AllowedNetworks) > MaxDownloadAllowedNetworks {
@@ -68,6 +71,9 @@ func (p DownloadSourcePolicy) Validate() error {
 	return nil
 }
 func (p DownloadPolicy) Validate() error {
+	if err := p.validateTorrentNodes(); err != nil {
+		return err
+	}
 	if p.BatchEntries < 1 || p.BatchEntries > model.MaxDownloadBatchEntries || p.OwnerRecords < 1 || p.OwnerRecords > model.MaxDownloadOwnerRecords || p.GlobalRecords < p.OwnerRecords || p.GlobalRecords > model.MaxDownloadGlobalRecords || p.Concurrency < 1 || p.Concurrency > MaxDownloadConcurrency || p.MaxAttempts < 1 || p.MaxAttempts > model.MaxDownloadAttempts || p.MaxRequests < 1 || p.MaxRequests > DefaultDownloadMaxRequests {
 		return fmt.Errorf("invalid offline task budget")
 	}

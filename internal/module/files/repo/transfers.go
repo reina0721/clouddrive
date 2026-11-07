@@ -269,28 +269,12 @@ func (r *Transfers) changeTransfer(ctx context.Context, owner, id, key string, t
 			if err != nil {
 				return err
 			}
-			type reservation struct {
-				OwnerID    string
-				Bytes      int64
-				QuotaBytes int64
-				Count      int64
-			}
-			reservations := []reservation{}
-			// 仅聚合仍占预算的项；不把无界历史记录全量载入 service。
-			if err := db.Model(&transferRecord{}).Select("owner_id, SUM(size_bytes) AS bytes, SUM(quota_reserved_bytes) AS quota_bytes, COUNT(*) AS count").Where("state NOT IN ? OR cleanup_pending = ?", []model.TransferState{model.TransferCompleted, model.TransferCanceled, model.TransferExpired}, true).Group("owner_id").Scan(&reservations).Error; err != nil {
+			reservations, err := loadTransferReservations(db, owner)
+			if err != nil {
 				return err
 			}
-			for _, reservation := range reservations {
-				if reservation.Bytes < 0 || reservation.QuotaBytes < 0 || reservation.Count < 0 {
-					return fmt.Errorf("transfer reservation invariant")
-				}
-				snapshot.GlobalReservedBytes += reservation.Bytes
-				snapshot.GlobalReservedCount += reservation.Count
-				if reservation.OwnerID == owner {
-					snapshot.OwnerReservedBytes = reservation.QuotaBytes
-					snapshot.OwnerReservedCount = reservation.Count
-				}
-			}
+			snapshot.GlobalReservedBytes, snapshot.GlobalReservedCount = reservations.GlobalBytes, reservations.GlobalCount
+			snapshot.OwnerReservedBytes, snapshot.OwnerReservedCount = reservations.OwnerBytes, reservations.OwnerCount
 			if task != nil {
 				var total, owned int64
 				if err := db.Model(&downloadRecord{}).Count(&total).Error; err != nil {

@@ -7,7 +7,9 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/reina0721/clouddrive/internal/module"
+	"github.com/reina0721/clouddrive/internal/module/files/adapter/aria2"
 	"github.com/reina0721/clouddrive/internal/module/files/adapter/httpdownload"
+	"github.com/reina0721/clouddrive/internal/module/files/adapter/metainfo"
 	"github.com/reina0721/clouddrive/internal/module/files/adapter/tus"
 	"github.com/reina0721/clouddrive/internal/module/files/adapter/unicodename"
 	webdavbinding "github.com/reina0721/clouddrive/internal/module/files/binding/webdav"
@@ -15,6 +17,7 @@ import (
 	"github.com/reina0721/clouddrive/internal/module/files/repo"
 	"github.com/reina0721/clouddrive/internal/module/files/service"
 	"github.com/reina0721/clouddrive/pkg/clock"
+	"github.com/reina0721/clouddrive/pkg/execution"
 	"github.com/reina0721/clouddrive/pkg/idgen"
 	"github.com/reina0721/clouddrive/pkg/logger"
 	"github.com/reina0721/clouddrive/pkg/schedule"
@@ -36,6 +39,7 @@ type Dependencies struct {
 	ArchiveProcessor         service.ArchiveProcessor
 	OfflinePolicy            service.DownloadPolicy
 	OfflineDispatcherEnabled bool
+	TorrentDispatcherEnabled bool
 	OfflineAuthority         service.DownloadAccountAuthority
 	ShareAuthority           service.ShareAccountAuthority
 	Database                 repo.Access
@@ -148,11 +152,31 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	downloads, err := service.NewOfflineDownloads(transfers, downloadRepository, source, deps.OfflineAuthority, deps.OfflinePolicy, deps.OfflineDispatcherEnabled, deps.Logger)
+	torrentRepository, err := repo.NewTorrents(downloadRepository)
+	if err != nil {
+		return Module{}, err
+	}
+	decoder := metainfo.Decoder{}
+	nodes := make([]service.TorrentNode, 0, len(deps.OfflinePolicy.TorrentNodes))
+	participants := []supervisor.Participant{source}
+	for _, configured := range deps.OfflinePolicy.TorrentNodes {
+		client, err := aria2.New(configured, decoder, deps.Logger)
+		if err != nil {
+			return Module{}, err
+		}
+		nodes = append(nodes, service.TorrentNode{Config: configured, Engine: client})
+		participants = append(participants, client)
+	}
+	torrents, err := service.NewTorrentDownloads(transfers, torrentRepository, decoder, deps.OfflineAuthority, deps.OfflinePolicy, deps.TorrentDispatcherEnabled, nodes, deps.Logger)
+	if err != nil {
+		return Module{}, err
+	}
+	downloads, err := service.NewOfflineDownloads(transfers, downloadRepository, source, deps.OfflineAuthority, deps.OfflinePolicy, deps.OfflineDispatcherEnabled, torrents, deps.Logger)
 	if err != nil {
 		return Module{}, err
 	}
 	boundary.Downloads = downloads
+	boundary.Torrents = torrents
 	trigger, err := schedule.FixedDelay(deps.OfflinePolicy.DispatchInterval, deps.OfflinePolicy.DispatchInterval)
 	if err != nil {
 		return Module{}, err
@@ -165,7 +189,15 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	return Module{Handler: boundary, Contribution: module.Contribution{ID: "files", Participants: []supervisor.Participant{source}, Schedules: []schedule.Binding{binding}}}, nil
+	torrentTrigger, err := schedule.FixedDelay(deps.OfflinePolicy.DispatchInterval, deps.OfflinePolicy.DispatchInterval)
+	if err != nil {
+		return Module{}, err
+	}
+	torrentBinding, err := schedule.Bind(schedule.Spec{ID: service.TorrentDispatchTaskID, Trigger: torrentTrigger, Concurrency: concurrency, Coordination: schedule.Local(), ExecutionPolicy: execution.PersistentTaskPolicyName}, torrents.Dispatch)
+	if err != nil {
+		return Module{}, err
+	}
+	return Module{Handler: boundary, Contribution: module.Contribution{ID: "files", Participants: participants, Schedules: []schedule.Binding{binding, torrentBinding}}}, nil
 }
 
 func stagingIdentity(root string) (string, error) {

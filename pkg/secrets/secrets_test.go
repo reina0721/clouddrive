@@ -1,6 +1,43 @@
 package secrets
 
-import "testing"
+import (
+	"encoding/json"
+	"strings"
+	"testing"
+)
+
+func TestRedactMapProtectsNodeCredentialsInsideLists(t *testing.T) {
+	const marker = "must-not-appear-in-diagnostics"
+	node := map[string]any{"name": "download node", "secret": marker, "nested": []any{[]any{map[string]any{"token": marker}}}}
+	input := map[string]any{"nodes": []any{node}, "typedNodes": []map[string]any{{"credential": marker}}}
+	redacted := RedactMap(input)
+	encoded, err := json.Marshal(redacted)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(encoded), marker) {
+		t.Fatal("列表配置中的凭据泄露到诊断输出")
+	}
+	if node["secret"] != marker {
+		t.Fatal("脱敏修改了原始配置")
+	}
+	copyNode := redacted["nodes"].([]any)[0].(map[string]any)
+	copyNode["name"] = "changed"
+	if node["name"] != "download node" {
+		t.Fatal("脱敏结果仍共享原配置的列表对象")
+	}
+}
+
+func TestRedactMapPreservesMissingAndEmptyListSemantics(t *testing.T) {
+	input := map[string]any{"missing": []any(nil), "empty": []any{}, "typedMissing": []map[string]any(nil), "typedEmpty": []map[string]any{}}
+	redacted := RedactMap(input)
+	if redacted["missing"].([]any) != nil || redacted["typedMissing"].([]map[string]any) != nil {
+		t.Fatal("缺失列表被改成空列表")
+	}
+	if redacted["empty"].([]any) == nil || redacted["typedEmpty"].([]map[string]any) == nil {
+		t.Fatal("显式空列表被改成缺失")
+	}
+}
 
 func TestSecretStringIsRedacted(t *testing.T) {
 	secret := New("plain-value")

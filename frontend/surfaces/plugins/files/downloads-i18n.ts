@@ -1,4 +1,23 @@
 export const zhDownloads = {
+  sourceType: '下载来源',
+  mode: { http: 'HTTP / HTTPS 链接', magnet: '磁力链接', torrent: '种子文件' },
+  torrentHint:
+    '选择下载节点并提交磁力或 BT v1 种子。元数据解析完成后，选择所需文件再开始下载；文件将保存到本人目录。',
+  noTorrentNode: '当前没有可用的 BT 下载节点。请联系管理员配置受信节点。',
+  node: '下载节点',
+  magnet: '磁力链接（单条）',
+  magnetPlaceholder: '输入以 magnet: 开头的链接',
+  customName: '设置保存名称',
+  pickTorrent: '选择 .torrent 文件',
+  noTorrentFile: '尚未选择种子文件（最大 1 MiB）',
+  torrentFiles: '种子文件列表',
+  torrentSelectionHint: '选择需要保存的文件；所选文件计入可用空间。下载完成后保留文件夹层次。',
+  metadataWaiting: '文件列表尚未就绪，请等待元数据解析或查看任务失败原因。',
+  allFiles: '全选文件',
+  fileSelection: '已选 {{selected}} / {{total}} 个文件',
+  startSelected: '下载所选文件',
+  selectFiles: '选择文件',
+  retryCleanup: '重试清理',
   subtitle: '由服务器持续下载，并保存到你的文件目录。',
   searchAction: '搜索',
   targetName: '保存名称',
@@ -78,6 +97,9 @@ export const zhDownloads = {
   changed: '任务已更新',
   removeDone: '记录已移除，已保存的文件保留。',
   state: {
+    resolving: '正在解析元数据',
+    selecting: '等待选择文件',
+    canceling: '正在取消并清理',
     queued: '等待中',
     fetching: '下载中',
     pausing: '正在暂停',
@@ -89,6 +111,9 @@ export const zhDownloads = {
     expired: '已到期',
   },
   failure: {
+    metadata: '种子元数据无效、不受支持或超过预算',
+    node: '下载节点不可用，请检查节点后重试',
+    'write-locked': '保存目标被写入锁保护',
     network: '连接来源失败',
     timeout: '来源连接超时',
     'source-status': '来源拒绝请求',
@@ -109,6 +134,27 @@ export const zhDownloads = {
 };
 
 export const enDownloads = {
+  sourceType: 'Download source',
+  mode: { http: 'HTTP / HTTPS links', magnet: 'Magnet link', torrent: 'Torrent file' },
+  torrentHint:
+    'Choose a download node and submit a magnet link or BT v1 torrent. Select files after metadata is ready. Files are saved to your own folder.',
+  noTorrentNode:
+    'No BT download node is available. Ask an administrator to configure a trusted node.',
+  node: 'Download node',
+  magnet: 'Magnet link (one task)',
+  magnetPlaceholder: 'Enter a link starting with magnet:',
+  customName: 'Set a save name',
+  pickTorrent: 'Choose a .torrent file',
+  noTorrentFile: 'No torrent chosen (maximum 1 MiB)',
+  torrentFiles: 'Torrent files',
+  torrentSelectionHint:
+    'Choose the files to save. Selected files count toward available storage; folder structure is preserved.',
+  metadataWaiting: 'The file list is not ready. Wait for metadata or check the task failure.',
+  allFiles: 'Select all files',
+  fileSelection: '{{selected}} / {{total}} files selected',
+  startSelected: 'Download selected files',
+  selectFiles: 'Select files',
+  retryCleanup: 'Retry cleanup',
   subtitle: 'Download on the server and save files to your folders.',
   searchAction: 'Search',
   targetName: 'Save name',
@@ -194,6 +240,9 @@ export const enDownloads = {
   changed: 'Task updated',
   removeDone: 'Record removed. Saved files are kept.',
   state: {
+    resolving: 'Fetching metadata',
+    selecting: 'Waiting for file selection',
+    canceling: 'Canceling and cleaning up',
     queued: 'Queued',
     fetching: 'Downloading',
     pausing: 'Pausing',
@@ -205,6 +254,9 @@ export const enDownloads = {
     expired: 'Expired',
   },
   failure: {
+    metadata: 'Torrent metadata is invalid, unsupported or exceeds the budget',
+    node: 'Download node unavailable; check the node before retrying',
+    'write-locked': 'The destination is protected by a write lock',
     network: 'Could not connect to source',
     timeout: 'Source timed out',
     'source-status': 'Source rejected the request',

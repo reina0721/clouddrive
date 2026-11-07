@@ -12,7 +12,7 @@ import {
 import { DialogSurface, DrawerSurface } from '@clouddrive/ui-adapter/overlays';
 import { ProgressMeter } from '@clouddrive/ui-adapter/progress-meter';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
-import { useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import {
   downloadBatchError,
   downloadFinished,
@@ -28,6 +28,7 @@ import { Download, Info, RefreshCw } from '../../../src/files/icons';
 import { FilesError } from '../../../src/files/model';
 import { useDownloads, useFiles } from '../../../src/files/runtime';
 import { DownloadCreateDialog, DownloadTargetDialog } from './download-dialogs';
+const TorrentFiles = lazy(() => import('./torrent-files'));
 
 type Confirmation = Readonly<{
   action: 'restart' | 'cancel' | 'remove';
@@ -35,6 +36,9 @@ type Confirmation = Readonly<{
 }>;
 const statusValues = [
   'queued',
+  'resolving',
+  'selecting',
+  'canceling',
   'fetching',
   'pausing',
   'paused',
@@ -150,7 +154,7 @@ export function DownloadsPage() {
       const current = await port.read(task);
       if (!current.resultAvailable || !current.entryId) throw new FilesError('missing');
       const detail = await files.detail(current.entryId);
-      files.openFolder(detail.entry.parentId);
+      files.openFolder(current.resultIsFolder ? detail.entry.id : detail.entry.parentId);
     } catch (error) {
       setNotice(errorText(error));
     } finally {
@@ -158,8 +162,14 @@ export function DownloadsPage() {
     }
   }
   const controlsDisabled = busy || loading || Boolean(failure);
-  const canDownload = Boolean(page?.available && !page.metadataLimited);
+  const canDownload = Boolean(
+    (page?.available || page?.torrent.available) && !page?.metadataLimited,
+  );
   function card(task: OfflineDownload) {
+    const canRun = Boolean(
+      !page?.metadataLimited &&
+      (task.kind === 'bittorrent' ? page?.torrent.available : page?.available),
+    );
     const percentage =
       task.declaredBytes === null
         ? undefined
@@ -200,6 +210,15 @@ export function DownloadsPage() {
               {task.name}
             </button>
             <p className="mt-1 break-all text-xs text-ink-muted">{task.origin}</p>
+            {task.kind === 'bittorrent' ? (
+              <p className="mt-1 break-all text-xs text-ink-muted">
+                {task.nodeName || task.nodeId} ·{' '}
+                {t('files.downloads.fileSelection', {
+                  selected: task.selectedCount,
+                  total: task.fileCount,
+                })}
+              </p>
+            ) : null}
             <p className="mt-1 break-all text-sm text-ink-muted">
               {task.metadataLimited
                 ? t('files.downloads.metadataUnknown')
@@ -236,7 +255,7 @@ export function DownloadsPage() {
           <p className="mt-2 text-sm text-ink-muted">{t('files.downloads.cleanup')}</p>
         ) : null}
         <div className="mt-3 flex flex-wrap gap-2">
-          {['queued', 'fetching', 'publishing'].includes(task.state) ? (
+          {['queued', 'resolving', 'selecting', 'fetching', 'publishing'].includes(task.state) ? (
             <Action
               size="sm"
               variant="quiet"
@@ -252,7 +271,7 @@ export function DownloadsPage() {
             <Action
               size="sm"
               variant="quiet"
-              disabled={controlsDisabled || !canDownload || !task.resumable}
+              disabled={controlsDisabled || !canRun || !task.resumable || task.cancelRequested}
               onPress={() => {
                 void command(task, 'resume');
               }}
@@ -264,20 +283,20 @@ export function DownloadsPage() {
             <Action
               size="sm"
               variant="quiet"
-              disabled={controlsDisabled || !canDownload || !task.resumable}
+              disabled={controlsDisabled || (!task.cancelRequested && (!canRun || !task.resumable))}
               onPress={() => {
                 void command(task, 'retry');
               }}
             >
-              {t('files.downloads.retry')}
+              {t(task.cancelRequested ? 'files.downloads.retryCleanup' : 'files.downloads.retry')}
             </Action>
           ) : null}
-          {['paused', 'failed'].includes(task.state) ? (
+          {['paused', 'failed'].includes(task.state) && !task.cancelRequested ? (
             <>
               <Action
                 size="sm"
                 variant="quiet"
-                disabled={controlsDisabled || !canDownload}
+                disabled={controlsDisabled || !canRun}
                 onPress={() => setConfirmation({ action: 'restart', tasks: [task] })}
               >
                 {t('files.downloads.restart')}
@@ -325,7 +344,11 @@ export function DownloadsPage() {
             </Action>
           ) : null}
           <Action size="sm" variant="quiet" onPress={() => setDetail(task)}>
-            {t('files.downloads.details')}
+            {t(
+              task.state === 'selecting'
+                ? 'files.downloads.selectFiles'
+                : 'files.downloads.details',
+            )}
           </Action>
         </div>
         {['paused', 'failed'].includes(task.state) && !task.resumable ? (
@@ -367,7 +390,7 @@ export function DownloadsPage() {
                 </Action>
               }
             />
-            {page && !page.available ? (
+            {page && !page.available && !page.torrent.available ? (
               <p role="status" className="mt-3 text-sm text-ink-muted">
                 {t('files.downloads.unavailable')}
               </p>
@@ -596,6 +619,8 @@ export function DownloadsPage() {
       {creating && page ? (
         <DownloadCreateDialog
           limit={page.batchEntries}
+          httpAvailable={page.available}
+          torrent={page.torrent}
           onClose={() => setCreating(false)}
           onCreated={refresh}
         />
@@ -622,6 +647,11 @@ export function DownloadsPage() {
           }}
         >
           <div className="space-y-4 break-words">
+            {currentDetail.kind === 'bittorrent' ? (
+              <Suspense fallback={<p role="status">{t('files.downloads.loading')}</p>}>
+                <TorrentFiles key={currentDetail.id} task={currentDetail} onSaved={refresh} />
+              </Suspense>
+            ) : null}
             <p>{t(`files.downloads.state.${currentDetail.state}`)}</p>
             <p>{currentDetail.origin}</p>
             <p>{currentDetail.destinationPath}</p>
@@ -658,7 +688,7 @@ export function DownloadsPage() {
             <p className="text-sm text-ink-muted">{t('files.downloads.privateSource')}</p>
             <Action
               variant="secondary"
-              disabled={busy}
+              disabled={busy || !currentDetail.canCopySource}
               onPress={() => {
                 void port
                   .copySource(currentDetail)

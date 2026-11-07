@@ -488,7 +488,14 @@ func (f *applicationGenerationFactory) Prepare(
 	if err := files.PrepareTransfers(ctx, databaseAccess, storageIdentity, filesPolicy.Transfers.StagingPath, clock.System()); err != nil {
 		return abort(err)
 	}
+	if err := files.PrepareTorrentNodes(ctx, files.TorrentPreparation{Database: databaseAccess, StorageIdentity: storageIdentity, StagingPath: filesPolicy.Transfers.StagingPath, MetadataEntries: filesPolicy.Policy().SearchTreeEntries, Clock: clock.System(), Nodes: filesPolicy.Offline.TorrentNodes}); err != nil {
+		return abort(err)
+	}
 	offlineEnabled, err := scheduleapp.TaskConfiguredEnabled(snapshot, filesservice.DownloadDispatchTaskID)
+	if err != nil {
+		return abort(err)
+	}
+	torrentEnabled, err := scheduleapp.TaskConfiguredEnabled(snapshot, filesservice.TorrentDispatchTaskID)
 	if err != nil {
 		return abort(err)
 	}
@@ -500,7 +507,7 @@ func (f *applicationGenerationFactory) Prepare(
 	if err != nil {
 		return abort(err)
 	}
-	filesModule, err := files.New(files.Dependencies{PublicAuthentication: fileOptionalSessionAuth{session: filesSessionAuth}, ArchiveProcessor: archiveProcessor, ShareAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization, audience: generation.iamModule.Collaboration}, OfflinePolicy: filesPolicy.Offline, OfflineDispatcherEnabled: offlineEnabled, OfflineAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization}, NavigationPolicy: filesPolicy.NavigationPolicy(), ConnectionOrigin: filesPolicy.Connections.PublicOrigin, ConnectionPolicy: filesPolicy.ConnectionPolicy(), ConnectionAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization}, TransferContent: filesContentAdapter{access: generation.storage.value()}, TransferPolicy: filesPolicy.TransferPolicy(), StagingPath: filesPolicy.Transfers.StagingPath, Passwords: iam.NewCredentialDigests(), SharePolicy: filesPolicy.SharePolicy(), PublicOrigins: httpConfig.CORS.AllowedOrigins, StorageIdentity: storageIdentity, Database: databaseAccess, Content: filesContentAdapter{access: generation.storage.value()}, Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: filesPolicy.Policy()})
+	filesModule, err := files.New(files.Dependencies{PublicAuthentication: fileOptionalSessionAuth{session: filesSessionAuth}, ArchiveProcessor: archiveProcessor, ShareAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization, audience: generation.iamModule.Collaboration}, OfflinePolicy: filesPolicy.Offline, OfflineDispatcherEnabled: offlineEnabled, TorrentDispatcherEnabled: torrentEnabled, OfflineAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization}, NavigationPolicy: filesPolicy.NavigationPolicy(), ConnectionOrigin: filesPolicy.Connections.PublicOrigin, ConnectionPolicy: filesPolicy.ConnectionPolicy(), ConnectionAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization}, TransferContent: filesContentAdapter{access: generation.storage.value()}, TransferPolicy: filesPolicy.TransferPolicy(), StagingPath: filesPolicy.Transfers.StagingPath, Passwords: iam.NewCredentialDigests(), SharePolicy: filesPolicy.SharePolicy(), PublicOrigins: httpConfig.CORS.AllowedOrigins, StorageIdentity: storageIdentity, Database: databaseAccess, Content: filesContentAdapter{access: generation.storage.value()}, Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: filesPolicy.Policy()})
 	if err != nil {
 		return abort(err)
 	}

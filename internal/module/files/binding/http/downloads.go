@@ -23,7 +23,7 @@ type downloadRemovedOutput struct {
 type downloadCreateInput struct{ Body service.DownloadCreate }
 type downloadListInput struct {
 	Section string              `query:"section" enum:",all,active,finished"`
-	State   model.DownloadState `query:"state" enum:",queued,fetching,pausing,paused,publishing,completed,failed,canceled,expired"`
+	State   model.DownloadState `query:"state" enum:",queued,resolving,selecting,fetching,pausing,paused,canceling,publishing,completed,failed,canceled,expired"`
 	Search  string              `query:"search" maxLength:"200"`
 	Cursor  string              `query:"cursor" maxLength:"256"`
 }
@@ -85,6 +85,10 @@ func downloadResult(ctx context.Context, h *handler.Handler, result service.Down
 // downloadItemError 为部分成功结果保留稳定分类，不能输出含来源URI或账号信息的错误文本。
 func downloadItemError(err error) string {
 	switch {
+	case errors.Is(err, service.ErrTorrentNode):
+		return "files_offline_node_unavailable"
+	case errors.Is(err, service.ErrTorrentMetadata):
+		return "files_offline_torrent_invalid"
 	case errors.Is(err, model.ErrDownloadMetadataLimited):
 		return "files_offline_metadata_limited"
 	case err == nil:

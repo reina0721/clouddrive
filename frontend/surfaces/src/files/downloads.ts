@@ -3,6 +3,9 @@ import type { FilesErrorCode } from './model';
 
 export const downloadStateSchema = z.enum([
   'queued',
+  'resolving',
+  'selecting',
+  'canceling',
   'fetching',
   'pausing',
   'paused',
@@ -16,7 +19,14 @@ export const downloadSchema = z.object({
   metadataLimited: z.boolean(),
   id: z.string().uuid(),
   clientKey: z.string(),
-  kind: z.literal('http'),
+  kind: z.enum(['http', 'bittorrent']),
+  nodeId: z.string(),
+  nodeName: z.string(),
+  fileCount: z.number().int().nonnegative(),
+  selectedCount: z.number().int().nonnegative(),
+  resultIsFolder: z.boolean(),
+  cancelRequested: z.boolean(),
+  canCopySource: z.boolean(),
   origin: z.string(),
   name: z.string(),
   parentId: z.string(),
@@ -42,6 +52,37 @@ export const downloadSchema = z.object({
   expiresAt: z.string(),
 });
 export type OfflineDownload = z.infer<typeof downloadSchema>;
+export const torrentCapabilitiesSchema = z.object({
+  available: z.boolean(),
+  nodes: z.array(z.object({ id: z.string(), name: z.string() })).max(4),
+  maxMetadataBytes: z.number().int().positive().max(1048576),
+  maxFiles: z.number().int().positive().max(200),
+});
+export type TorrentCapabilities = z.infer<typeof torrentCapabilitiesSchema>;
+export const torrentDetailSchema = z.object({
+  task: downloadSchema,
+  files: z
+    .array(
+      z.object({
+        index: z.number().int().positive(),
+        path: z.string(),
+        sizeBytes: z.number().int().nonnegative(),
+        selected: z.boolean(),
+      }),
+    )
+    .max(200),
+  totalBytes: z.number().int().nonnegative(),
+  canSelect: z.boolean(),
+});
+export type TorrentDetail = z.infer<typeof torrentDetailSchema>;
+export type TorrentCreate = Readonly<{
+  uri: string;
+  torrentBase64: string;
+  nodeId: string;
+  parentId: string;
+  name: string;
+  clientKey: string;
+}>;
 export const downloadListingSchema = z.object({
   metadataLimited: z.boolean(),
   items: z.array(downloadSchema),
@@ -50,6 +91,7 @@ export const downloadListingSchema = z.object({
   finishedCount: z.number().int().nonnegative(),
   totalCount: z.number().int().nonnegative(),
   available: z.boolean(),
+  torrent: torrentCapabilitiesSchema,
   batchEntries: z.number().int().positive().max(20),
   ownerRecords: z.number().int().positive().max(200),
 });
@@ -88,6 +130,8 @@ export function downloadBatchError(code: string): FilesErrorCode {
     files_offline_permission: 'forbidden',
     files_offline_source_blocked: 'invalid',
     files_offline_resume_unsupported: 'unsupported',
+    files_offline_node_unavailable: 'unavailable',
+    files_offline_torrent_invalid: 'invalid',
     files_not_found: 'missing',
     files_invalid: 'invalid',
     files_conflict: 'conflict',
@@ -104,6 +148,10 @@ export type DownloadsPort = Readonly<{
   list(filter: DownloadFilter, signal?: AbortSignal): Promise<DownloadListing>;
   read(task: OfflineDownload, signal?: AbortSignal): Promise<OfflineDownload>;
   create(items: readonly DownloadCreate[], signal?: AbortSignal): Promise<DownloadBatch>;
+  pickTorrent(maxBytes: number): Promise<Readonly<{ name: string; base64: string }> | undefined>;
+  createTorrent(input: TorrentCreate): Promise<OfflineDownload>;
+  torrentDetail(task: OfflineDownload, signal?: AbortSignal): Promise<TorrentDetail>;
+  selectTorrent(task: OfflineDownload, indexes: readonly number[]): Promise<OfflineDownload>;
   command(task: OfflineDownload, command: DownloadCommand): Promise<OfflineDownload>;
   retarget(task: OfflineDownload, parentId: string, name: string): Promise<OfflineDownload>;
   remove(task: OfflineDownload): Promise<void>;

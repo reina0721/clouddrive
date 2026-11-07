@@ -33,12 +33,18 @@ var (
 
 type DownloadKind string
 
-const DownloadHTTP DownloadKind = "http"
+const (
+	DownloadHTTP       DownloadKind = "http"
+	DownloadBitTorrent DownloadKind = "bittorrent"
+)
 
 type DownloadState string
 
 const (
 	DownloadQueued     DownloadState = "queued"
+	DownloadResolving  DownloadState = "resolving"
+	DownloadSelecting  DownloadState = "selecting"
+	DownloadCanceling  DownloadState = "canceling"
 	DownloadFetching   DownloadState = "fetching"
 	DownloadPausing    DownloadState = "pausing"
 	DownloadPaused     DownloadState = "paused"
@@ -51,7 +57,7 @@ const (
 
 func (s DownloadState) Valid() bool {
 	switch s {
-	case DownloadQueued, DownloadFetching, DownloadPausing, DownloadPaused, DownloadPublishing, DownloadCompleted, DownloadFailed, DownloadCanceled, DownloadExpired:
+	case DownloadQueued, DownloadResolving, DownloadSelecting, DownloadCanceling, DownloadFetching, DownloadPausing, DownloadPaused, DownloadPublishing, DownloadCompleted, DownloadFailed, DownloadCanceled, DownloadExpired:
 		return true
 	default:
 		return false
@@ -105,11 +111,14 @@ const (
 	DownloadFailureAttempts    DownloadFailure = "attempt-limit"
 	DownloadFailureExpired     DownloadFailure = "expired"
 	DownloadFailureIncomplete  DownloadFailure = "incomplete"
+	DownloadFailureMetadata    DownloadFailure = "metadata"
+	DownloadFailureNode        DownloadFailure = "node"
+	DownloadFailureWriteLocked DownloadFailure = "write-locked"
 )
 
 func (f DownloadFailure) Valid() bool {
 	switch f {
-	case DownloadFailureNone, DownloadFailureNetwork, DownloadFailureTimeout, DownloadFailureStatus, DownloadFailureChanged, DownloadFailureResume, DownloadFailureBlocked, DownloadFailureLarge, DownloadFailureQuota, DownloadFailureDestination, DownloadFailurePermission, DownloadFailureStorage, DownloadFailureLease, DownloadFailureCleanup, DownloadFailureAttempts, DownloadFailureExpired, DownloadFailureIncomplete:
+	case DownloadFailureNone, DownloadFailureNetwork, DownloadFailureTimeout, DownloadFailureStatus, DownloadFailureChanged, DownloadFailureResume, DownloadFailureBlocked, DownloadFailureLarge, DownloadFailureQuota, DownloadFailureDestination, DownloadFailurePermission, DownloadFailureStorage, DownloadFailureLease, DownloadFailureCleanup, DownloadFailureAttempts, DownloadFailureExpired, DownloadFailureIncomplete, DownloadFailureMetadata, DownloadFailureNode, DownloadFailureWriteLocked:
 		return true
 	default:
 		return false
@@ -157,7 +166,10 @@ func (t DownloadTask) LeaseValid(now time.Time) bool {
 
 // ValidateDownloadTask 拒绝损坏的私有持久化，不用空URL、默认状态或零租约掩盖读取失败。
 func ValidateDownloadTask(t DownloadTask) error {
-	if ValidateTransferID(t.ID) != nil || t.OwnerID == "" || t.Kind != DownloadHTTP || !t.State.Valid() || !t.Intent.Valid() || !t.ValidatorKind.Valid() || !t.FailureCode.Valid() || t.Revision < 1 || t.Revision > MaxDownloadRevision || t.Attempts < 0 || t.Attempts > MaxDownloadAttempts {
+	if t.Kind == DownloadHTTP && (t.State == DownloadResolving || t.State == DownloadSelecting || t.State == DownloadCanceling) {
+		return ErrInvalid
+	}
+	if ValidateTransferID(t.ID) != nil || t.OwnerID == "" || (t.Kind != DownloadHTTP && t.Kind != DownloadBitTorrent) || !t.State.Valid() || !t.Intent.Valid() || !t.ValidatorKind.Valid() || !t.FailureCode.Valid() || t.Revision < 1 || t.Revision > MaxDownloadRevision || t.Attempts < 0 || t.Attempts > MaxDownloadAttempts {
 		return ErrInvalid
 	}
 	for _, value := range []string{t.SourceURI, t.EffectiveURI, t.SourceOrigin} {

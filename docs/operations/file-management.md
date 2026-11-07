@@ -34,7 +34,17 @@ HTTP/HTTPS离线任务位于 `/home/downloads`，支持单链接、最多20行�
 
 `files.offline` 由既有Scheduler驱动，关闭Scheduler或该任务后仍可读记录、取消和清理，新建/继续明确不可用。默认每账号200条、全局2000条、每批20条、并发1、1秒调度、20秒租约/5秒续租、单次15分钟、最多20次自动领取（下载与清理共用）、每次64个逻辑来源请求；硬预算只能调小。清理耗尽自动预算会保留待办，显式取消/移除仍能维护清理；从头下载重新建立预算。内容和暂存仍使用原文件配额及单文件上限，不创建第二套存储。
 
-来源默认仅公网HTTP(S)，逐跳验证全部DNS结果并钉住实际连接IP，不使用环境代理，不转发网页登录Cookie、Authorization或Referer，HTTPS不降级。`files.offline.source.allowedNetworks` 仅供明确受信网络的受控部署；云元数据地址始终拒绝。浏览器夹具必须使用隔离数据库并显式设置 `CLOUDDRIVE_FILE_TEST_OFFLINE_SOURCE_ALLOWED=1`，普通预览不放开回环来源。超过 `files.search.treeEntries` 时任务列表标记目录信息受限，保存相关操作拒绝使用截断树，取消和记录清理保持可用。当前未接入BT/magnet、种子多文件、远程下载节点或通用任务中心。
+HTTP来源默认仅公网HTTP(S)，逐跳验证全部DNS结果并钉住实际连接IP，不使用环境代理，不转发网页登录Cookie、Authorization或Referer，HTTPS不降级。`files.offline.source.allowedNetworks` 仅供明确受信网络的受控部署；云元数据地址始终拒绝。浏览器夹具必须使用隔离数据库并显式设置 `CLOUDDRIVE_FILE_TEST_OFFLINE_SOURCE_ALLOWED=1`，普通预览不放开回环来源。超过 `files.search.treeEntries` 时任务列表标记目录信息受限，保存相关操作拒绝使用截断树，取消和记录清理保持可用。
+
+### BT任务与受信节点
+
+在 `/home/downloads` 新建任务时，选择磁力链接或 `.torrent` 文件及实例提供的节点和目标目录。磁力先解析元数据；种子解析成功后直接进入文件选择。选择后才下载所选内容，保留目录层次。暂停保留可校验的部分数据，继续时重新校验并复用；转存完成才显示可打开的结果。任务删除不删除已保存的文件。
+
+启用 `files.offline.enabled` 和调度任务 `files.bittorrent.dispatch`，由运维在私有配置的 `files.offline.torrentNodes` 中定义最多4个节点：`id`、`name`、`endpoint`、`secret`、`workspaceRoot`。默认无节点，BT创建不可用。远端RPC使用可验证的HTTPS；字面回环地址可用HTTP。节点运行aria2 1.37.0，RPC不对公众开放。设置绝对 `save-session` 与同一文件的 `input-file`，`deferred-input=false`、`check-certificate=true`，并保证节点和服务可读写同一私有绝对目录。独立数据库实例使用独立节点及目录。凭据不写进仓库；有未清理任务时不能直接移除节点或更换端点、目录。
+
+支持BT v1 infohash和种子，元数据最多1 MiB、200个文件，整个种子的内容上限512 MiB，单个所选文件还受本实例文件上限与本人配额约束。默认每节点1个活动任务（最多2个），同一节点的相同hash串行，账号之间仍使用独立任务、文件选择和暂存路径。`torrentNodeReservedBytes` 默认2 GiB，预留覆盖完整种子范围、控制文件及恢复期间的旧目录；运维仍需给节点暂存配置真实磁盘配额。清理未完成时保留任务和预留；停止节点和核对会话后再按任务操作恢复。
+
+Tracker、peer、DHT及Webseed出站由节点网络策略管理，不继承HTTP来源过滤。只连接受信节点，部署时隔离其网络和磁盘。当前不支持BT v2、无共享挂载的远程代理或通用任务中心。[143验收记录](../changes/143-bittorrent-downloads/verification.md)说明实际验证范围。
 
 模块配置 `files.maxFileBytes` 默认 512 MiB、`files.quotaBytes` 默认每账号 1 GiB、`files.concurrentUploads` 默认 2。可配置为更小的正数预算；文件上限不能超过 512 MiB，并发不能超过 2，配额不能小于单文件上限。修改 files 配置需要重启。并发名额属于当前 Application Generation；切换其他配置排空旧代期间可能同时存在两代有界请求。
 

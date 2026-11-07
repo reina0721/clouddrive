@@ -7,6 +7,13 @@ const task: OfflineDownload = {
   id: 'd25f5cc7-8a0d-4483-9764-7b70580a39fc',
   clientKey: 'offline-host-fixture',
   kind: 'http',
+  nodeId: '',
+  nodeName: '',
+  fileCount: 1,
+  selectedCount: 1,
+  resultIsFolder: false,
+  cancelRequested: false,
+  canCopySource: true,
   origin: 'https://source.example',
   name: 'saved.bin',
   parentId: '',
@@ -38,6 +45,19 @@ afterEach(() => {
 });
 
 describe('离线下载Host的账号与计时器生命周期', () => {
+  it('BT选择携带当前版本且种子不能复制成虚假来源链接', async () => {
+    const torrent = { ...task, kind: 'bittorrent' as const, canCopySource: false };
+    const call = vi.fn(() => Promise.resolve({ ...torrent, revision: 5 }));
+    const runtime = createDownloadsRuntime(call, () => {});
+    await runtime.port.selectTorrent(torrent, [1, 3]);
+    expect(call).toHaveBeenCalledWith('/torrent-downloads/' + task.id + '/selection', {
+      method: 'PATCH',
+      body: { revision: 4, indexes: [1, 3] },
+    });
+    await expect(runtime.port.copySource(torrent)).rejects.toMatchObject({ code: 'unsupported' });
+    expect(call).toHaveBeenCalledTimes(1);
+    runtime.dispose();
+  });
   it('隐藏页面不轮询，恢复可见时刷新，退出后清除全部订阅', () => {
     vi.useFakeTimers();
     const document = Object.assign(new EventTarget(), { visibilityState: 'visible' });

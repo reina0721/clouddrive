@@ -12,11 +12,12 @@ func offlineDefaults(ctx context.Context) (config.Object, error) {
 		return nil, err
 	}
 	p := service.DefaultDownloadPolicy()
+	nodeDefaults := config.Object{config.FieldOf("torrentNodes", config.List())}
 	fields := config.Object{config.FieldOf("enabled", config.Bool(p.Enabled)), config.FieldOf("dispatchInterval", config.String(p.DispatchInterval.String())), config.FieldOf("leaseTTL", config.String(p.LeaseTTL.String())), config.FieldOf("renewInterval", config.String(p.RenewInterval.String())), config.FieldOf("progressInterval", config.String(p.ProgressInterval.String())), config.FieldOf("attemptTimeout", config.String(p.AttemptTimeout.String()))}
 	for _, budget := range []struct {
 		name  string
 		value int64
-	}{{"batchEntries", int64(p.BatchEntries)}, {"ownerRecords", int64(p.OwnerRecords)}, {"globalRecords", int64(p.GlobalRecords)}, {"concurrency", int64(p.Concurrency)}, {"maxAttempts", int64(p.MaxAttempts)}, {"maxRequests", int64(p.MaxRequests)}} {
+	}{{"batchEntries", int64(p.BatchEntries)}, {"ownerRecords", int64(p.OwnerRecords)}, {"globalRecords", int64(p.GlobalRecords)}, {"concurrency", int64(p.Concurrency)}, {"maxAttempts", int64(p.MaxAttempts)}, {"maxRequests", int64(p.MaxRequests)}, {"torrentNodeConcurrency", int64(p.TorrentNodeConcurrency)}, {"torrentNodeReservedBytes", p.TorrentNodeReservedBytes}} {
 		value, err := config.Number(fmt.Sprint(budget.value))
 		if err != nil {
 			return nil, err
@@ -39,5 +40,5 @@ func offlineDefaults(ctx context.Context) (config.Object, error) {
 		networks[index] = config.String(value)
 	}
 	source = append(source, config.FieldOf("allowedNetworks", config.List(networks...)))
-	return append(fields, config.FieldOf("source", config.ObjectValue(source))), nil
+	return append(append(fields, nodeDefaults...), config.FieldOf("source", config.ObjectValue(source))), nil
 }

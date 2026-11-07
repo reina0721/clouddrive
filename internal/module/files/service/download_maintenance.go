@@ -114,6 +114,13 @@ func (s *OfflineDownloads) releaseControl(ctx context.Context, claim DownloadCla
 }
 
 func (s *OfflineDownloads) Restart(ctx context.Context, owner, id string, revision int64) (result DownloadSummary, resultErr error) {
+	sourceSnapshot, readErr := s.repo.ReadDownload(ctx, owner, id)
+	if readErr != nil {
+		return DownloadSummary{}, readErr
+	}
+	if sourceSnapshot.Task.Kind == model.DownloadBitTorrent {
+		return s.torrents.Restart(ctx, owner, id, revision)
+	}
 	if !s.available {
 		return result, model.ErrDownloadUnavailable
 	}
@@ -185,6 +192,13 @@ func (s *OfflineDownloads) Restart(ctx context.Context, owner, id string, revisi
 }
 
 func (s *OfflineDownloads) Remove(ctx context.Context, owner, id string, revision int64) (resultErr error) {
+	sourceSnapshot, readErr := s.repo.ReadDownload(ctx, owner, id)
+	if readErr != nil {
+		return readErr
+	}
+	if sourceSnapshot.Task.Kind == model.DownloadBitTorrent {
+		return s.torrents.Remove(ctx, owner, id, revision)
+	}
 	claim, err := s.claimControl(ctx, owner, id, revision, downloadRemove)
 	if err != nil {
 		return err

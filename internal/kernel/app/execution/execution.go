@@ -258,6 +258,9 @@ func decode(snapshot config.Snapshot) (Config, error) {
 		if err := validatePolicy(name, policy); err != nil {
 			return Config{}, err
 		}
+		if name == pkgexecution.PersistentTaskPolicyName && policy != persistentTaskPolicy() {
+			return Config{}, fmt.Errorf("execution policy %q delegates timing and retry to its operation", name)
+		}
 	}
 	return cfg, nil
 }
@@ -340,8 +343,11 @@ func defaultConfig() Config {
 		RetryInitialDelayMs: defaultInitialDelayMs, RetryMaxDelayMs: defaultMaxDelayMs,
 		RetryJitterFactor: defaultJitterFactor, RetryAttemptTimeoutMs: defaultAttemptTimeoutMs,
 		RetryTotalTimeoutMs: defaultTotalTimeoutMs,
+		Policies:            map[string]PolicyConfig{pkgexecution.PersistentTaskPolicyName: persistentTaskPolicy()},
 	}
 }
+
+func persistentTaskPolicy() PolicyConfig { return PolicyConfig{RetryMaxAttempts: 1} }
 
 var _ Access = (*access)(nil)
 var _ config.DefaultContract = defaults{}

@@ -30,6 +30,7 @@ type Handler struct {
 	PublicAuthentication PublicAuthenticator
 	Archives             *service.Archives
 	Downloads            *service.OfflineDownloads
+	Torrents             *service.TorrentDownloads
 	Service              *service.Service
 	Sharing              *service.Sharing
 	ShareTransfers       *service.ShareTransfers
@@ -60,6 +61,10 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 	switch {
 	case errors.Is(err, model.ErrShareForbidden):
 		status, code = http.StatusForbidden, "files_share_forbidden"
+	case errors.Is(err, service.ErrTorrentNode), errors.Is(err, service.ErrTorrentBinding), errors.Is(err, service.ErrTorrentProtocol), errors.Is(err, service.ErrTorrentJobMissing):
+		status, code = http.StatusServiceUnavailable, "files_offline_node_unavailable"
+	case errors.Is(err, service.ErrTorrentMetadata), errors.Is(err, service.ErrTorrentUnsupported):
+		status, code = http.StatusUnprocessableEntity, "files_offline_torrent_invalid"
 	case errors.Is(err, model.ErrDownloadMetadataLimited):
 		status, code = 413, "files_offline_metadata_limited"
 	case errors.Is(err, model.ErrDownloadUnavailable):

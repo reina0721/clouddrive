@@ -61,12 +61,15 @@ require (
 )
 
 require (
+	github.com/anacrolix/missinggo v1.3.0 // indirect
+	github.com/anacrolix/missinggo/v2 v2.11.0 // indirect
 	github.com/andybalholm/brotli v1.2.2 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
 	github.com/casbin/govaluate v1.3.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
+	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/klauspost/compress v1.19.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.27 // indirect
 	github.com/stangelandcl/ppmd v0.1.1 // indirect
@@ -78,6 +81,7 @@ require (
 	cloud.google.com/go v0.123.0 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/TwiN/go-color v1.4.1 // indirect
+	github.com/anacrolix/torrent v1.61.1-0.20261106080042-7d22f0ea40bd
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.20 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.19.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.1 // indirect
@@ -177,7 +181,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.45.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.11.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
-	go.uber.org/multierr v1.10.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.2 // indirect
 	golang.org/x/exp v0.0.0-20260611194520-c48552f49976
 	golang.org/x/image v0.44.0 // indirect

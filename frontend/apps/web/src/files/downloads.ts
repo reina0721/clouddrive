@@ -2,6 +2,7 @@ import {
   downloadSchema,
   downloadListingSchema,
   downloadBatchSchema,
+  torrentDetailSchema,
   FilesError,
   type DownloadsPort,
   type OfflineDownload,
@@ -57,6 +58,92 @@ export function createDownloadsRuntime(
           ...(signal ? { signal } : {}),
         }),
       ),
+    pickTorrent: (maxBytes) => {
+      assertActive();
+      if (!Number.isSafeInteger(maxBytes) || maxBytes < 1 || maxBytes > 1048576)
+        return Promise.reject(new FilesError('invalid'));
+      return new Promise((resolve, reject) => {
+        const picker = document.createElement('input');
+        picker.type = 'file';
+        picker.accept = '.torrent,application/x-bittorrent';
+        picker.hidden = true;
+        let finished = false;
+        const cleanup = () => {
+          picker.remove();
+          cleanups.delete(cancel);
+        };
+        const cancel = () => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          resolve(undefined);
+        };
+        cleanups.add(cancel);
+        picker.addEventListener('cancel', cancel, { once: true });
+        picker.addEventListener(
+          'change',
+          () => {
+            if (finished) return;
+            finished = true;
+            const file = picker.files?.[0];
+            cleanup();
+            if (!file) {
+              resolve(undefined);
+              return;
+            }
+            if (
+              !file.name.toLowerCase().endsWith('.torrent') ||
+              file.size < 1 ||
+              file.size > maxBytes
+            ) {
+              reject(new FilesError(file.size > maxBytes ? 'large' : 'invalid'));
+              return;
+            }
+            void file
+              .arrayBuffer()
+              .then((buffer) => {
+                assertActive();
+                const bytes = new Uint8Array(buffer);
+                let binary = '';
+                const chunkBytes = 8192;
+                for (let offset = 0; offset < bytes.length; offset += chunkBytes)
+                  binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkBytes));
+                resolve({ name: file.name, base64: btoa(binary) });
+              })
+              .catch((cause: unknown) =>
+                reject(
+                  cause instanceof FilesError ? cause : new FilesError('unavailable', { cause }),
+                ),
+              );
+          },
+          { once: true },
+        );
+        document.body.append(picker);
+        try {
+          picker.click();
+        } catch (cause) {
+          finished = true;
+          cleanup();
+          reject(new FilesError('unavailable', { cause }));
+        }
+      });
+    },
+    createTorrent: async (input) =>
+      downloadSchema.parse(await activeCall('/torrent-downloads', { method: 'POST', body: input })),
+    torrentDetail: async (task, signal) =>
+      torrentDetailSchema.parse(
+        await activeCall(
+          '/torrent-downloads/' + encodeURIComponent(task.id),
+          signal ? { signal } : {},
+        ),
+      ),
+    selectTorrent: async (task, indexes) =>
+      downloadSchema.parse(
+        await activeCall('/torrent-downloads/' + encodeURIComponent(task.id) + '/selection', {
+          method: 'PATCH',
+          body: { revision: task.revision, indexes },
+        }),
+      ),
     command: async (task, command) =>
       downloadSchema.parse(
         await activeCall(path(task) + '/' + command, {
@@ -88,6 +175,7 @@ export function createDownloadsRuntime(
       ),
     copySource: async (task) => {
       assertActive();
+      if (!task.canCopySource) throw new FilesError('unsupported');
       const source = downloadSourceSchema.parse(await activeCall(path(task) + '/source'));
       assertActive();
       try {

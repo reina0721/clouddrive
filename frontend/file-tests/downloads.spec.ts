@@ -152,7 +152,9 @@ test('离线入口、目录选择、实际服务器下载、详情复制、查�
     '/file?signature=browser-private&name=' +
     encodeURIComponent('auto-' + suffix + '.txt');
   await dialog.getByLabel('下载链接', { exact: true }).fill(uri);
+  await dialog.getByRole('button', { name: '设置保存名称', exact: true }).click();
   await dialog.getByLabel('保存名称（可选）', { exact: true }).fill('云端-' + suffix + '.txt');
+  await dialog.getByRole('button', { name: /^下载至/ }).click();
   await dialog.getByRole('button', { name: folderName + '/', exact: true }).click();
   await page.screenshot({ path: '../.data/129-downloads-create.png' });
   expect(

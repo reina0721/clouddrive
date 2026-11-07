@@ -2018,12 +2018,16 @@
             "format": "int64",
             "type": "integer"
           },
+          "torrent": {
+            "$ref": "#/components/schemas/TorrentCapabilities"
+          },
           "totalCount": {
             "format": "int64",
             "type": "integer"
           }
         },
         "required": [
+          "torrent",
           "metadataLimited",
           "items",
           "nextCursor",
@@ -2067,6 +2071,12 @@
             "format": "int64",
             "type": "integer"
           },
+          "canCopySource": {
+            "type": "boolean"
+          },
+          "cancelRequested": {
+            "type": "boolean"
+          },
           "cleanupPending": {
             "type": "boolean"
           },
@@ -2098,6 +2108,10 @@
           "failureCode": {
             "type": "string"
           },
+          "fileCount": {
+            "format": "int64",
+            "type": "integer"
+          },
           "finishedAt": {
             "format": "date-time",
             "nullable": true,
@@ -2113,6 +2127,12 @@
             "type": "boolean"
           },
           "name": {
+            "type": "string"
+          },
+          "nodeId": {
+            "type": "string"
+          },
+          "nodeName": {
             "type": "string"
           },
           "origin": {
@@ -2137,10 +2157,17 @@
           "resultAvailable": {
             "type": "boolean"
           },
+          "resultIsFolder": {
+            "type": "boolean"
+          },
           "resumable": {
             "type": "boolean"
           },
           "revision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "selectedCount": {
             "format": "int64",
             "type": "integer"
           },
@@ -2162,6 +2189,13 @@
           }
         },
         "required": [
+          "nodeId",
+          "nodeName",
+          "fileCount",
+          "selectedCount",
+          "resultIsFolder",
+          "cancelRequested",
+          "canCopySource",
           "metadataLimited",
           "id",
           "clientKey",
@@ -5150,6 +5184,171 @@
           "offset",
           "limit",
           "total"
+        ],
+        "type": "object"
+      },
+      "TorrentCapabilities": {
+        "additionalProperties": false,
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "maxFiles": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxMetadataBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/TorrentNodeSummary"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "available",
+          "nodes",
+          "maxMetadataBytes",
+          "maxFiles"
+        ],
+        "type": "object"
+      },
+      "TorrentCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "clientKey": {
+            "maxLength": 64,
+            "minLength": 16,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "nodeId": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "torrentBase64": {
+            "maxLength": 1398104,
+            "type": "string"
+          },
+          "uri": {
+            "maxLength": 4096,
+            "type": "string"
+          }
+        },
+        "required": [
+          "nodeId",
+          "parentId",
+          "name",
+          "clientKey"
+        ],
+        "type": "object"
+      },
+      "TorrentDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "canSelect": {
+            "type": "boolean"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/TorrentFileSummary"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "task": {
+            "$ref": "#/components/schemas/DownloadSummary"
+          },
+          "totalBytes": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "task",
+          "files",
+          "totalBytes",
+          "canSelect"
+        ],
+        "type": "object"
+      },
+      "TorrentFileSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "index": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "path": {
+            "type": "string"
+          },
+          "selected": {
+            "type": "boolean"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "index",
+          "path",
+          "sizeBytes",
+          "selected"
+        ],
+        "type": "object"
+      },
+      "TorrentNodeSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
+      "TorrentSelection": {
+        "additionalProperties": false,
+        "properties": {
+          "indexes": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "nullable": true,
+            "type": "array"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "indexes"
         ],
         "type": "object"
       },
@@ -8225,9 +8424,12 @@
               "enum": [
                 "",
                 "queued",
+                "resolving",
+                "selecting",
                 "fetching",
                 "pausing",
                 "paused",
+                "canceling",
                 "publishing",
                 "completed",
                 "failed",
@@ -9866,6 +10068,190 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Entry"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/torrent-downloads": {
+      "post": {
+        "operationId": "files.torrents.create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TorrentCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DownloadSummary"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/torrent-downloads/capabilities": {
+      "get": {
+        "operationId": "files.torrents.capabilities",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TorrentCapabilities"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/torrent-downloads/{id}": {
+      "get": {
+        "operationId": "files.torrents.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TorrentDetail"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/torrent-downloads/{id}/selection": {
+      "patch": {
+        "operationId": "files.torrents.select",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 36,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TorrentSelection"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DownloadSummary"
                 }
               }
             },

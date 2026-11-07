@@ -54,13 +54,42 @@ func RedactMap(values map[string]any) map[string]any {
 			out[key] = redactedValue
 			continue
 		}
-		if nested, ok := value.(map[string]any); ok {
-			out[key] = RedactMap(nested)
-			continue
-		}
-		out[key] = value
+		out[key] = redactConfigValue(value)
 	}
 	return out
+}
+
+// redactConfigValue 覆盖配置树的对象和列表，不修改调用者仍在使用的原快照。
+func redactConfigValue(value any) any {
+	switch nested := value.(type) {
+	case map[string]any:
+		if nested == nil {
+			return map[string]any(nil)
+		}
+		return RedactMap(nested)
+	case []any:
+		if nested == nil {
+			return []any(nil)
+		}
+		redacted := make([]any, len(nested))
+		for index, item := range nested {
+			redacted[index] = redactConfigValue(item)
+		}
+		return redacted
+	case []map[string]any:
+		if nested == nil {
+			return []map[string]any(nil)
+		}
+		redacted := make([]map[string]any, len(nested))
+		for index, item := range nested {
+			if item != nil {
+				redacted[index] = RedactMap(item)
+			}
+		}
+		return redacted
+	default:
+		return value
+	}
 }
 
 // Token 生成 URL 安全的随机 token。

@@ -94,6 +94,10 @@ const (
 	OperationFilesShortcutsPurge            OperationID = "files.shortcuts.purge"
 	OperationFilesTextCreate                OperationID = "files.text.create"
 	OperationFilesTextReplace               OperationID = "files.text.replace"
+	OperationFilesTorrentsCapabilities      OperationID = "files.torrents.capabilities"
+	OperationFilesTorrentsCreate            OperationID = "files.torrents.create"
+	OperationFilesTorrentsRead              OperationID = "files.torrents.read"
+	OperationFilesTorrentsSelect            OperationID = "files.torrents.select"
 	OperationFilesTransfersCancel           OperationID = "files.transfers.cancel"
 	OperationFilesTransfersChunk            OperationID = "files.transfers.chunk"
 	OperationFilesTransfersCommit           OperationID = "files.transfers.commit"
@@ -262,6 +266,10 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesShortcutsPurge, Method: "DELETE", Path: "/api/v1/files/shortcuts/{shortcutId}", Policy: "protected", Scope: "files:write", Action: "files.shortcuts.purge"},
 	{ID: OperationFilesTextCreate, Method: "POST", Path: "/api/v1/files/text", Policy: "protected", Scope: "files:write", Action: "files.text.create"},
 	{ID: OperationFilesTextReplace, Method: "PUT", Path: "/api/v1/files/{id}/text", Policy: "protected", Scope: "files:write", Action: "files.text.replace"},
+	{ID: OperationFilesTorrentsCapabilities, Method: "GET", Path: "/api/v1/files/torrent-downloads/capabilities", Policy: "protected", Scope: "files:read", Action: "files.torrents.capabilities"},
+	{ID: OperationFilesTorrentsCreate, Method: "POST", Path: "/api/v1/files/torrent-downloads", Policy: "protected", Scope: "files:write", Action: "files.torrents.create"},
+	{ID: OperationFilesTorrentsRead, Method: "GET", Path: "/api/v1/files/torrent-downloads/{id}", Policy: "protected", Scope: "files:read", Action: "files.torrents.read"},
+	{ID: OperationFilesTorrentsSelect, Method: "PATCH", Path: "/api/v1/files/torrent-downloads/{id}/selection", Policy: "protected", Scope: "files:write", Action: "files.torrents.select"},
 	{ID: OperationFilesTransfersCancel, Method: "POST", Path: "/api/v1/files/transfers/{id}/cancel", Policy: "protected", Scope: "files:write", Action: "files.transfers.cancel"},
 	{ID: OperationFilesTransfersChunk, Method: "PATCH", Path: "/api/v1/files/transfers/{id}/data", Policy: "protected", Scope: "files:write", Action: "files.transfers.chunk"},
 	{ID: OperationFilesTransfersCommit, Method: "POST", Path: "/api/v1/files/transfers/{id}/commit", Policy: "protected", Scope: "files:write", Action: "files.transfers.commit"},

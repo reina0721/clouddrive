@@ -20,6 +20,7 @@ func (s *OfflineDownloads) BatchLimit() int { return s.policy.BatchEntries }
 
 // OfflineDownloads 使用既有文件发布和调度生命周期，不自行启动永久worker或持有数据库连接。
 type OfflineDownloads struct {
+	torrents  *TorrentDownloads
 	transfers *Transfers
 	repo      DownloadRepository
 	source    HTTPDownloadSource
@@ -35,14 +36,14 @@ type downloadRun struct {
 	cancel context.CancelCauseFunc
 }
 
-func NewOfflineDownloads(transfers *Transfers, repository DownloadRepository, source HTTPDownloadSource, accounts DownloadAccountAuthority, policy DownloadPolicy, dispatcherEnabled bool, logging logger.Logger) (*OfflineDownloads, error) {
-	if transfers == nil || repository == nil || source == nil || accounts == nil || logging == nil {
+func NewOfflineDownloads(transfers *Transfers, repository DownloadRepository, source HTTPDownloadSource, accounts DownloadAccountAuthority, policy DownloadPolicy, dispatcherEnabled bool, torrents *TorrentDownloads, logging logger.Logger) (*OfflineDownloads, error) {
+	if transfers == nil || repository == nil || source == nil || accounts == nil || torrents == nil || logging == nil {
 		return nil, fmt.Errorf("offline download dependencies incomplete")
 	}
 	if err := policy.Validate(); err != nil {
 		return nil, err
 	}
-	return &OfflineDownloads{transfers: transfers, repo: repository, source: source, accounts: accounts, policy: policy, available: policy.Enabled && dispatcherEnabled, logger: logging, active: make(map[string]downloadRun)}, nil
+	return &OfflineDownloads{torrents: torrents, transfers: transfers, repo: repository, source: source, accounts: accounts, policy: policy, available: policy.Enabled && dispatcherEnabled, logger: logging, active: make(map[string]downloadRun)}, nil
 }
 
 type DownloadCreate struct {
@@ -54,6 +55,13 @@ type DownloadCreate struct {
 
 // DownloadSummary 只公开来源origin；完整含签名URL需用户明确读取且不进入日志。
 type DownloadSummary struct {
+	NodeID               string                `json:"nodeId"`
+	NodeName             string                `json:"nodeName"`
+	FileCount            int                   `json:"fileCount"`
+	SelectedCount        int                   `json:"selectedCount"`
+	ResultIsFolder       bool                  `json:"resultIsFolder"`
+	CancelRequested      bool                  `json:"cancelRequested"`
+	CanCopySource        bool                  `json:"canCopySource"`
 	MetadataLimited      bool                  `json:"metadataLimited"`
 	ID                   string                `json:"id"`
 	ClientKey            string                `json:"clientKey"`
@@ -83,15 +91,16 @@ type DownloadSummary struct {
 	ExpiresAt            time.Time             `json:"expiresAt"`
 }
 type DownloadListing struct {
-	MetadataLimited bool              `json:"metadataLimited"`
-	Items           []DownloadSummary `json:"items"`
-	NextCursor      string            `json:"nextCursor"`
-	ActiveCount     int               `json:"activeCount"`
-	FinishedCount   int               `json:"finishedCount"`
-	TotalCount      int               `json:"totalCount"`
-	Available       bool              `json:"available"`
-	BatchEntries    int               `json:"batchEntries"`
-	OwnerRecords    int               `json:"ownerRecords"`
+	Torrent         TorrentCapabilities `json:"torrent"`
+	MetadataLimited bool                `json:"metadataLimited"`
+	Items           []DownloadSummary   `json:"items"`
+	NextCursor      string              `json:"nextCursor"`
+	ActiveCount     int                 `json:"activeCount"`
+	FinishedCount   int                 `json:"finishedCount"`
+	TotalCount      int                 `json:"totalCount"`
+	Available       bool                `json:"available"`
+	BatchEntries    int                 `json:"batchEntries"`
+	OwnerRecords    int                 `json:"ownerRecords"`
 }
 
 func downloadDestination(entries []model.Entry, parent string) (string, bool) {
@@ -127,7 +136,7 @@ func summarizeDownload(snapshot DownloadSnapshot) DownloadSummary {
 		entry, found := model.Find(entries, child.EntryID)
 		resultAvailable = found && model.Visible(entries, entry) && entry.Kind == model.File
 	}
-	return DownloadSummary{MetadataLimited: snapshot.MetadataLimited, ID: task.ID, ClientKey: task.ClientKey, Kind: task.Kind, Origin: task.SourceOrigin, Name: child.Name, ParentID: task.TargetParentID, DestinationPath: destination, DestinationAvailable: available, State: task.State, FailureCode: task.FailureCode, SourceStatus: task.SourceStatus, DeclaredBytes: task.DeclaredBytes, ReceivedBytes: task.ReceivedBytes, RateBytesPerSecond: task.RateBytesPerSecond, ProgressAt: task.ProgressAt, Resumable: task.ReceivedBytes == 0 || task.ValidatorKind != model.DownloadValidatorNone, Attempts: task.Attempts, Revision: task.Revision, EntryID: child.EntryID, ResultAvailable: resultAvailable, CleanupPending: child.CleanupPending, CreatedAt: task.CreatedAt, UpdatedAt: task.UpdatedAt, StartedAt: task.StartedAt, FinishedAt: task.FinishedAt, ExpiresAt: task.ExpiresAt}
+	return DownloadSummary{FileCount: 1, SelectedCount: 1, CanCopySource: true, CancelRequested: task.Intent == model.DownloadCancel, MetadataLimited: snapshot.MetadataLimited, ID: task.ID, ClientKey: task.ClientKey, Kind: task.Kind, Origin: task.SourceOrigin, Name: child.Name, ParentID: task.TargetParentID, DestinationPath: destination, DestinationAvailable: available, State: task.State, FailureCode: task.FailureCode, SourceStatus: task.SourceStatus, DeclaredBytes: task.DeclaredBytes, ReceivedBytes: task.ReceivedBytes, RateBytesPerSecond: task.RateBytesPerSecond, ProgressAt: task.ProgressAt, Resumable: task.ReceivedBytes == 0 || task.ValidatorKind != model.DownloadValidatorNone, Attempts: task.Attempts, Revision: task.Revision, EntryID: child.EntryID, ResultAvailable: resultAvailable, CleanupPending: child.CleanupPending, CreatedAt: task.CreatedAt, UpdatedAt: task.UpdatedAt, StartedAt: task.StartedAt, FinishedAt: task.FinishedAt, ExpiresAt: task.ExpiresAt}
 }
 
 func (s *OfflineDownloads) Create(ctx context.Context, owner string, input DownloadCreate) (DownloadSummary, error) {
@@ -194,6 +203,9 @@ func (s *OfflineDownloads) Read(ctx context.Context, owner, id string) (Download
 	if err != nil {
 		return DownloadSummary{}, err
 	}
+	if snapshot.Task.Kind == model.DownloadBitTorrent {
+		return s.torrents.Read(ctx, owner, id)
+	}
 	if len(snapshot.Transfers) != 1 {
 		return DownloadSummary{}, model.ErrInvalid
 	}
@@ -204,12 +216,20 @@ func (s *OfflineDownloads) List(ctx context.Context, owner string, query Downloa
 	if err != nil {
 		return DownloadListing{}, err
 	}
-	result := DownloadListing{MetadataLimited: page.MetadataLimited, Items: []DownloadSummary{}, NextCursor: page.NextCursor, ActiveCount: page.ActiveCount, FinishedCount: page.FinishedCount, TotalCount: page.TotalCount, Available: s.available, BatchEntries: s.policy.BatchEntries, OwnerRecords: s.policy.OwnerRecords}
+	result := DownloadListing{Torrent: s.torrents.Capabilities(), MetadataLimited: page.MetadataLimited, Items: []DownloadSummary{}, NextCursor: page.NextCursor, ActiveCount: page.ActiveCount, FinishedCount: page.FinishedCount, TotalCount: page.TotalCount, Available: s.available, BatchEntries: s.policy.BatchEntries, OwnerRecords: s.policy.OwnerRecords}
 	children := make(map[string]model.Transfer, len(page.Transfers))
 	for _, child := range page.Transfers {
 		children[child.DownloadID] = child
 	}
 	for _, task := range page.Tasks {
+		if task.Kind == model.DownloadBitTorrent {
+			summary, err := s.torrents.Read(ctx, owner, task.ID)
+			if err != nil {
+				return DownloadListing{}, err
+			}
+			result.Items = append(result.Items, summary)
+			continue
+		}
 		child, found := children[task.ID]
 		if !found {
 			return DownloadListing{}, model.ErrInvalid
@@ -223,6 +243,9 @@ func (s *OfflineDownloads) Source(ctx context.Context, owner, id string) (string
 	snapshot, err := s.repo.ReadDownload(ctx, owner, id)
 	if err != nil {
 		return "", err
+	}
+	if snapshot.Task.Kind == model.DownloadBitTorrent && torrentSourceIsUpload(snapshot.Task.SourceURI) {
+		return "", model.ErrUnsupported
 	}
 	return snapshot.Task.SourceURI, nil
 }
@@ -248,6 +271,13 @@ const (
 )
 
 func (s *OfflineDownloads) Command(ctx context.Context, owner, id string, revision int64, command DownloadCommand) (DownloadSummary, error) {
+	sourceSnapshot, readErr := s.repo.ReadDownload(ctx, owner, id)
+	if readErr != nil {
+		return DownloadSummary{}, readErr
+	}
+	if sourceSnapshot.Task.Kind == model.DownloadBitTorrent {
+		return s.torrents.Command(ctx, owner, id, revision, command)
+	}
 	if revision < 1 || revision >= model.MaxDownloadRevision {
 		return DownloadSummary{}, model.ErrInvalid
 	}
@@ -334,6 +364,13 @@ func (s *OfflineDownloads) signal(id string, cause error) {
 }
 
 func (s *OfflineDownloads) Retarget(ctx context.Context, owner, id string, revision int64, parent, name string) (DownloadSummary, error) {
+	sourceSnapshot, readErr := s.repo.ReadDownload(ctx, owner, id)
+	if readErr != nil {
+		return DownloadSummary{}, readErr
+	}
+	if sourceSnapshot.Task.Kind == model.DownloadBitTorrent {
+		return s.torrents.Retarget(ctx, owner, id, revision, parent, name)
+	}
 	if err := s.authorize(ctx, owner); err != nil {
 		return DownloadSummary{}, err
 	}

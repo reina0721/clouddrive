@@ -2,7 +2,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
-import { TextAreaField, TextField } from '@clouddrive/ui-adapter/form-field';
+import { DisclosurePanel } from '@clouddrive/ui-adapter/disclosure';
+import { SelectField, TextAreaField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { useDownloads, useFiles } from '../../../src/files/runtime';
 import { FilesError, type FileListing } from '../../../src/files/model';
@@ -10,13 +11,21 @@ import {
   downloadBatchError,
   type DownloadCreate,
   type OfflineDownload,
+  type TorrentCapabilities,
+  type TorrentCreate,
 } from '../../../src/files/downloads';
 
 function DownloadFolders({
   parent,
   onChange,
   onReady,
-}: Readonly<{ parent: string; onChange(value: string): void; onReady(ready: boolean): void }>) {
+  compact = false,
+}: Readonly<{
+  parent: string;
+  onChange(value: string): void;
+  onReady(ready: boolean): void;
+  compact?: boolean;
+}>) {
   const files = useFiles(),
     { t } = useFrontendTranslation();
   const [page, setPage] = useState(1),
@@ -68,12 +77,8 @@ function DownloadFolders({
     onReady(false);
     setPage(value);
   }
-  return (
-    <section
-      className="rounded-control border border-border p-3"
-      aria-label={t('files.downloads.destination')}
-    >
-      <h2 className="font-semibold">{t('files.downloads.destination')}</h2>
+  const picker = (
+    <>
       <div className="my-2 flex flex-wrap gap-2">
         <Action variant="quiet" onPress={() => open('')}>
           {t('files.downloads.root')}
@@ -117,6 +122,23 @@ function DownloadFolders({
           {t('files.downloads.next')}
         </Action>
       </div>
+    </>
+  );
+  const destination = t('files.downloads.destination');
+  if (compact) {
+    const summary = listing
+      ? [t('files.downloads.root'), ...listing.breadcrumbs.map((entry) => entry.name)].join(' / ')
+      : t(failure ? 'files.downloads.directoryUnavailable' : 'files.downloads.directoryLoading');
+    return (
+      <DisclosurePanel title={destination} description={summary}>
+        {picker}
+      </DisclosurePanel>
+    );
+  }
+  return (
+    <section className="rounded-control border border-border p-3" aria-label={destination}>
+      <h2 className="font-semibold">{destination}</h2>
+      {picker}
     </section>
   );
 }
@@ -124,17 +146,31 @@ function DownloadFolders({
 export function DownloadCreateDialog({
   initialParent = '',
   limit,
+  httpAvailable,
+  torrent,
   onClose,
   onCreated,
-}: Readonly<{ initialParent?: string; limit: number; onClose(): void; onCreated(): void }>) {
+}: Readonly<{
+  initialParent?: string;
+  limit: number;
+  httpAvailable: boolean;
+  torrent: TorrentCapabilities;
+  onClose(): void;
+  onCreated(): void;
+}>) {
   const port = useDownloads(),
     { t } = useFrontendTranslation();
   const [links, setLinks] = useState(''),
+    [mode, setMode] = useState(httpAvailable ? 'http' : 'magnet'),
+    [nodeId, setNodeId] = useState(torrent.nodes[0]?.id ?? ''),
+    [seed, setSeed] = useState<Readonly<{ name: string; base64: string }>>(),
+    [picking, setPicking] = useState(false),
     [name, setName] = useState(''),
     [parent, setParent] = useState(initialParent),
     [ready, setReady] = useState(false),
     [failure, setFailure] = useState('');
   const pendingInputs = useRef<readonly DownloadCreate[] | undefined>(undefined);
+  const pendingTorrent = useRef<TorrentCreate | undefined>(undefined);
   const [itemFailures, setItemFailures] = useState<
     readonly { key: string; position: number; message: string }[]
   >([]);
@@ -144,6 +180,7 @@ export function DownloadCreateDialog({
     .filter(Boolean);
   const changed = () => {
     pendingInputs.current = undefined;
+    pendingTorrent.current = undefined;
     setFailure('');
     setItemFailures([]);
   };
@@ -151,18 +188,40 @@ export function DownloadCreateDialog({
     <DialogSurface
       triggerLabel={t('files.downloads.create')}
       title={t('files.downloads.create')}
-      description={t('files.downloads.createHint')}
+      description={t(
+        mode === 'http' ? 'files.downloads.createHint' : 'files.downloads.torrentHint',
+      )}
       cancelLabel={t('files.cancel')}
       confirmLabel={t('files.downloads.confirm')}
       isOpen
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
-      confirmDisabled={!ready || !lines.length || lines.length > limit}
+      confirmDisabled={
+        !ready ||
+        picking ||
+        (mode === 'http'
+          ? !httpAvailable || !lines.length || lines.length > limit
+          : !torrent.available || !nodeId || (mode === 'magnet' ? lines.length !== 1 : !seed))
+      }
       failureMessage={failure}
       onConfirm={async () => {
         let partial = false;
         try {
+          if (mode !== 'http') {
+            const input = pendingTorrent.current ?? {
+              uri: mode === 'magnet' ? links.trim() : '',
+              torrentBase64: mode === 'torrent' ? (seed?.base64 ?? '') : '',
+              nodeId,
+              parentId: parent,
+              name,
+              clientKey: port.newClientKey(),
+            };
+            pendingTorrent.current = input;
+            await port.createTorrent(input);
+            onCreated();
+            return;
+          }
           const inputs =
             pendingInputs.current ??
             lines.map((uri) => ({
@@ -203,7 +262,35 @@ export function DownloadCreateDialog({
         }
       }}
     >
-      <div className="space-y-4">
+      <div className="space-y-3">
+        <SelectField
+          label={t('files.downloads.sourceType')}
+          value={mode}
+          options={['http', 'magnet', 'torrent'].map((value) => ({
+            value,
+            label: t(`files.downloads.mode.${value}`),
+          }))}
+          onValueChange={(value) => {
+            changed();
+            setMode(value);
+          }}
+        />
+        {(mode === 'http' ? !httpAvailable : !torrent.available) ? (
+          <p role="status" className="text-sm text-ink-muted">
+            {t(mode === 'http' ? 'files.downloads.unavailable' : 'files.downloads.noTorrentNode')}
+          </p>
+        ) : null}
+        {mode !== 'http' ? (
+          <SelectField
+            label={t('files.downloads.node')}
+            value={nodeId}
+            options={torrent.nodes.map((node) => ({ value: node.id, label: node.name }))}
+            onValueChange={(value) => {
+              changed();
+              setNodeId(value);
+            }}
+          />
+        ) : null}
         {itemFailures.length ? (
           <ul role="status" className="space-y-2 text-sm text-danger">
             {itemFailures.map((item) => (
@@ -213,33 +300,57 @@ export function DownloadCreateDialog({
             ))}
           </ul>
         ) : null}
-        <TextAreaField
-          label={t('files.downloads.links')}
-          placeholder={t('files.downloads.linksPlaceholder')}
-          value={links}
-          rows={4}
-          onChange={(event) => {
-            changed();
-            setLinks(event.target.value);
-          }}
-        />
-        {lines.length > limit ? (
+        {mode === 'torrent' ? (
+          <div className="space-y-2">
+            <Action
+              variant="secondary"
+              disabled={picking || !torrent.available}
+              onPress={() => {
+                changed();
+                setPicking(true);
+                void port
+                  .pickTorrent(torrent.maxMetadataBytes)
+                  .then((value) => {
+                    if (value) setSeed(value);
+                  })
+                  .catch((error: unknown) => {
+                    setSeed(undefined);
+                    setFailure(
+                      t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`),
+                    );
+                  })
+                  .finally(() => setPicking(false));
+              }}
+            >
+              {t('files.downloads.pickTorrent')}
+            </Action>
+            <p className="break-all text-sm text-ink-muted">
+              {seed?.name ?? t('files.downloads.noTorrentFile')}
+            </p>
+          </div>
+        ) : (
+          <TextAreaField
+            label={t(mode === 'magnet' ? 'files.downloads.magnet' : 'files.downloads.links')}
+            placeholder={t(
+              mode === 'magnet'
+                ? 'files.downloads.magnetPlaceholder'
+                : 'files.downloads.linksPlaceholder',
+            )}
+            value={links}
+            rows={2}
+            onChange={(event) => {
+              changed();
+              setLinks(event.target.value);
+            }}
+          />
+        )}
+        {mode === 'http' && lines.length > limit ? (
           <p role="alert" className="text-danger">
             {t('files.downloads.limit', { count: limit })}
           </p>
         ) : null}
-        {lines.length <= 1 ? (
-          <TextField
-            label={t('files.downloads.name')}
-            hint={t('files.downloads.nameHint')}
-            value={name}
-            onChange={(event) => {
-              changed();
-              setName(event.target.value);
-            }}
-          />
-        ) : null}
         <DownloadFolders
+          compact
           parent={parent}
           onChange={(value) => {
             changed();
@@ -247,6 +358,22 @@ export function DownloadCreateDialog({
           }}
           onReady={setReady}
         />
+        {mode !== 'http' || lines.length <= 1 ? (
+          <DisclosurePanel
+            title={t('files.downloads.customName')}
+            {...(name ? { description: name } : {})}
+          >
+            <TextField
+              label={t('files.downloads.name')}
+              hint={t('files.downloads.nameHint')}
+              value={name}
+              onChange={(event) => {
+                changed();
+                setName(event.target.value);
+              }}
+            />
+          </DisclosurePanel>
+        ) : null}
       </div>
     </DialogSurface>
   );

@@ -34,6 +34,10 @@ type Result struct {
 // Operation 是业务执行体，返回业务结果与错误。
 type Operation func(ctx context.Context) (any, error)
 
+// PersistentTaskPolicyName 用于已自行限制单次时长、重试和收尾的持久任务。
+// 托管执行只负责本次调用去重与生命周期，不额外重试或抢先结束业务时限。
+const PersistentTaskPolicyName = "persistent-task"
+
 // RetryPolicy 定义一次受托管执行的完整重试预算。
 // MaxAttempts 为零时按一次执行处理；所有 duration 为零时表示不额外设置该项预算。
 type RetryPolicy struct {

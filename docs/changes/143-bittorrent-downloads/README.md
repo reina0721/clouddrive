@@ -1,9 +1,9 @@
 # BitTorrent离线下载与节点接入
 
-状态：研究门禁通过，按当前goal授权进入实施。已补齐aria2真实元数据、peer下载与隔离/重启证据；20项功能尚未接通或验收。
+状态：已接通并验证BT v1磁力、种子、文件选择、持久任务、账号隔离和原子转存。节点部署及当前限制以[文件管理运行说明](../../operations/file-management.md)为准。
 
-持续目标明确授权直接实施、不重复审批；本任务不等待用户确认。仍须先解决实际协议、账号隔离和发布边界，不能用输入框接受magnet冒充BT下载。上一批142的主、开发和QA预览继续运行；本目录的目标不是当前产品已实现能力。
+持续目标明确授权直接实施、不重复审批。真实aria2与Transmission peer验证、HTTP回归和浏览器视觉证据见[集中验收记录](verification.md)。原预览数据库使用追加迁移并保留旧文件数据。
 
 基线：`b370d466c3b3eb1ce74a4dd97ab6a35d83bc56c3`，研究入口工作区干净。
 
-阅读顺序：[研究](research/README.md)、[目标需求](requirements/README.md)、[实施设计](design/README.md)、[任务清单](tasks.md)。R143-002补齐运行证据，研究门禁通过，当前goal授权进入实施；20项尚未接通或验收，不增加功能累计。
+阅读顺序：[研究](research/README.md)、[目标需求](requirements/README.md)、[实施设计](design/README.md)、[任务清单](tasks.md)。本批20项按使用行为验收，保留此前300项独立能力的统计口径。

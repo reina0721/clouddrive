@@ -10,11 +10,17 @@ import (
 //go:embed sqlite/*.sql postgres/*.sql mysql/*.sql
 var sqlFiles embed.FS
 
-const CurrentVersion uint = 16
+const CurrentVersion uint = 17
 const TableName = "files_schema_migrations"
 
 func Set() dbmigrate.Set {
 	return dbmigrate.Set{Name: "files", FS: sqlFiles, CurrentVersion: CurrentVersion, MigrationsTable: TableName, DriverPaths: map[database.Driver]string{database.DriverSQLite: "sqlite", database.DriverPostgres: "postgres", database.DriverMySQL: "mysql"}, SHA256ByFile: map[string]string{
+		"sqlite/000017_bittorrent.up.sql":              "6c4152dc60cadfeeba298a7d34415dc25455171fb7c80f96998764721fd73bd8",
+		"sqlite/000017_bittorrent.down.sql":            "1f5fc3463ca4cfafb3fd57166ae943ca028019e1119777b855c13c33fb5b33be",
+		"postgres/000017_bittorrent.up.sql":            "e96707227bfc053867c97230a817baae3de9271c33278c7794e2d9a07ac363dc",
+		"postgres/000017_bittorrent.down.sql":          "1f5fc3463ca4cfafb3fd57166ae943ca028019e1119777b855c13c33fb5b33be",
+		"mysql/000017_bittorrent.up.sql":               "f208ae598e07b0d96f87f49505e63990a219b848a45b230e7abd92d494b22207",
+		"mysql/000017_bittorrent.down.sql":             "2065458c5f26f73308092ee5e5b3086387ec592f1f4d224af13b92a3598dd1a5",
 		"sqlite/000016_write_locks.up.sql":             "e5669bf96cd8a6e4deb70f37c08a699cfcdc161125ca3e1718785d8390465e95",
 		"sqlite/000016_write_locks.down.sql":           "01f6897508733ca362844f3b4cc87be8e1a5a3c5eb7b5d9b75de22f00846f835",
 		"postgres/000016_write_locks.up.sql":           "d290c49717814cfb8af43fd8bdb410169e9d531902d94939b7c071a22e46ad04",

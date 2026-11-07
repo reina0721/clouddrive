@@ -101,20 +101,33 @@ func (r *Downloads) CreateDownload(ctx context.Context, task model.DownloadTask,
 	return result, err
 }
 
-func downloadChildren(db *gorm.DB, owner, taskID string) ([]model.Transfer, error) {
-	// 当前HTTP来源恰好一个文件；显式检查基数，不能把多文件数据静默截断。
+func downloadChildrenForKind(db *gorm.DB, owner, taskID string, kind model.DownloadKind) ([]model.Transfer, error) {
+	// HTTP仍恰好一个；BT仅在真实选择后存在候选，不用零字节child掩盖metadata阶段。
+	limit := 2
+	if kind == model.DownloadBitTorrent {
+		limit = service.MaxTorrentFiles + 1
+	} else if kind != model.DownloadHTTP {
+		return nil, model.ErrInvalid
+	}
 	var records []transferRecord
-	if err := db.Where("owner_id = ? AND download_id = ?", owner, taskID).Order("id ASC").Limit(2).Find(&records).Error; err != nil {
+	if err := db.Where("owner_id = ? AND download_id = ?", owner, taskID).Order("id ASC").Limit(limit).Find(&records).Error; err != nil {
 		return nil, err
 	}
-	if len(records) != 1 || records[0].Source != model.TransferSourceOffline {
+	if kind == model.DownloadHTTP && len(records) != 1 || kind == model.DownloadBitTorrent && len(records) > service.MaxTorrentFiles {
 		return nil, fmt.Errorf("download child ownership invariant")
 	}
-	child, err := records[0].model()
-	if err != nil {
-		return nil, err
+	children := make([]model.Transfer, 0, len(records))
+	for _, record := range records {
+		if record.Source != model.TransferSourceOffline {
+			return nil, fmt.Errorf("download child ownership invariant")
+		}
+		child, err := record.model()
+		if err != nil {
+			return nil, err
+		}
+		children = append(children, child)
 	}
-	return []model.Transfer{child}, nil
+	return children, nil
 }
 
 func downloadEntrySnapshot(db *gorm.DB, owner string, limit int) ([]model.Entry, bool, error) {
@@ -134,7 +147,7 @@ func (r *Downloads) snapshot(db *gorm.DB, owner, id string) (service.DownloadSna
 	if err != nil {
 		return service.DownloadSnapshot{}, err
 	}
-	children, err := downloadChildren(db, owner, id)
+	children, err := downloadChildrenForKind(db, owner, id, task.Kind)
 	if err != nil {
 		return service.DownloadSnapshot{}, err
 	}
@@ -143,7 +156,7 @@ func (r *Downloads) snapshot(db *gorm.DB, owner, id string) (service.DownloadSna
 		return service.DownloadSnapshot{}, err
 	}
 	var active int64
-	if err := db.Model(&downloadRecord{}).Where("lease_token <> ? AND lease_until > ?", "", r.transfers.clock.Now().UTC()).Count(&active).Error; err != nil {
+	if err := db.Model(&downloadRecord{}).Where("(lease_token <> ? AND lease_until > ?) OR EXISTS (SELECT 1 FROM files_torrent_jobs WHERE files_torrent_jobs.task_id = files_download_tasks.id AND files_torrent_jobs.owner_id = files_download_tasks.owner_id AND cleaned = ? AND stopped = ?)", "", r.transfers.clock.Now().UTC(), false, false).Count(&active).Error; err != nil {
 		return service.DownloadSnapshot{}, err
 	}
 	return service.DownloadSnapshot{MetadataLimited: limited, Task: task, Transfers: children, Entries: entries, GlobalActiveTasks: int(active)}, nil
@@ -355,7 +368,7 @@ func (r *Downloads) NextDownload(ctx context.Context, now time.Time, maxAttempts
 	var record downloadRecord
 	err := r.use(ctx, func(db *gorm.DB) error {
 		// 有清理债务的完成项、取消/过期意图也由同一任务所有者处理。
-		return db.Where("(lease_until IS NULL OR lease_until <= ?)", now).
+		return db.Where("kind = ? AND (lease_until IS NULL OR lease_until <= ?)", model.DownloadHTTP, now).
 			Where("((intent = ? AND state IN ?) OR (attempts >= ? AND state IN ?) OR (attempts < ? AND ((intent = ? AND state = ?) OR (intent = ? AND state NOT IN ?) OR (expires_at <= ? AND state NOT IN ?) OR EXISTS (SELECT 1 FROM files_transfers WHERE files_transfers.download_id = files_download_tasks.id AND files_transfers.owner_id = files_download_tasks.owner_id AND cleanup_pending = ?))))",
 				model.DownloadRun, []model.DownloadState{model.DownloadQueued, model.DownloadFetching, model.DownloadPublishing}, maxAttempts, []model.DownloadState{model.DownloadQueued, model.DownloadFetching, model.DownloadPausing, model.DownloadPublishing}, maxAttempts, model.DownloadPause, model.DownloadPausing, model.DownloadCancel, []model.DownloadState{model.DownloadCompleted, model.DownloadCanceled, model.DownloadExpired}, now, []model.DownloadState{model.DownloadCompleted, model.DownloadCanceled, model.DownloadExpired}, true).
 			Order("updated_at ASC").Order("id ASC").First(&record).Error
@@ -446,7 +459,7 @@ func (r *Downloads) ListDownloads(ctx context.Context, owner string, query servi
 		if query.Search != "" {
 			// 不把私有完整URL纳入检索或返回；通配字符转义为字面量。
 			needle := "%" + strings.NewReplacer("!", "!!", "%", "!%", "_", "!_").Replace(strings.ToLower(query.Search)) + "%"
-			filtered = filtered.Where("(LOWER(requested_name) LIKE ? ESCAPE '!' OR LOWER(source_origin) LIKE ? ESCAPE '!' OR EXISTS (SELECT 1 FROM files_transfers WHERE files_transfers.download_id = files_download_tasks.id AND files_transfers.owner_id = files_download_tasks.owner_id AND LOWER(files_transfers.name) LIKE ? ESCAPE '!'))", needle, needle, needle)
+			filtered = filtered.Where("(LOWER(requested_name) LIKE ? ESCAPE '!' OR LOWER(source_origin) LIKE ? ESCAPE '!' OR EXISTS (SELECT 1 FROM files_transfers WHERE files_transfers.download_id = files_download_tasks.id AND files_transfers.owner_id = files_download_tasks.owner_id AND LOWER(files_transfers.name) LIKE ? ESCAPE '!' ) OR EXISTS (SELECT 1 FROM files_torrent_tasks WHERE files_torrent_tasks.task_id = files_download_tasks.id AND files_torrent_tasks.owner_id = files_download_tasks.owner_id AND LOWER(files_torrent_tasks.name) LIKE ? ESCAPE '!'))", needle, needle, needle, needle)
 		}
 		if cursor.ID != "" {
 			filtered = filtered.Where("created_at < ? OR (created_at = ? AND id < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.ID)
@@ -469,7 +482,7 @@ func (r *Downloads) ListDownloads(ctx context.Context, owner string, query servi
 			if err := model.ValidateDownloadTask(task); err != nil {
 				return err
 			}
-			children, err := downloadChildren(db, owner, task.ID)
+			children, err := downloadChildrenForKind(db, owner, task.ID, task.Kind)
 			if err != nil {
 				return err
 			}

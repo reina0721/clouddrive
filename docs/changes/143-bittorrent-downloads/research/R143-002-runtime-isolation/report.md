@@ -20,6 +20,8 @@ aria2 1.37.0的metadata-only/save-metadata官方机制在真实peer交换中生�
 
 实施入口已解析实际包可达图：新引入的第三方可达包仅为bencode、missinggo/expect、missinggo/v2及xstrings，没有anacrolix的peer/tracker/client。Go模块图同时将既有multierr从1.10.0提升至1.11.0，已取得校验和；依赖图枚举不是编译或产品测试。完整模块的声明图会带入更多go.mod校验和，不表示这些包进入运行二进制。记录`.data/143-decoder-reachable-packages.txt`；最终构建仍待本批接通后集中执行。
 
+固定模块LICENSE复核为MPL-2.0，延续R143-001记录；没有修改第三方覆盖源码。对上述实际可达辅助包的生产源文件定向检查，未发现init函数、后台goroutine创建或默认HTTP/日志替换；不把这个检查扩大为完整第三方安全审计。实施还发现当前`pkg/secrets.RedactMap`只遍历map，不能保护节点列表内secret字段；详细设计已将必要的列表递归修复纳入本批，测试在20项接通后运行。
+
 ## 分类、比较和决策
 
 BT网络与块下载属于成熟第三方通用能力；不自研协议、tracker或块存储。采用外部aria2，GPL-2.0-or-later下载器独立进程运行，不把其源码静态链接入Go服务；运行二进制和发行再分发义务另按实际打包处理，本仓库不提交该可执行文件。MSYS2是本机研究与预览可用的维护中发行包，生产节点由运维配置和维护。JSON-RPC传输属于标准库net/http、encoding/json的局部Adapter；业务只见使用方定义的任务、状态与错误，不复制完整RPC API。
