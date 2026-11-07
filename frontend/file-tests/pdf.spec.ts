@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { openReadingFixtureFolder } from './reading-fixture';
 const accessPath = process.env.CLOUDDRIVE_FILE_TEST_ACCESS!;
 async function login(page: Page) {
   const a = JSON.parse((await readFile(accessPath, 'utf8')).replace(/^\uFEFF/, '')) as {
@@ -30,7 +31,10 @@ async function upload(page: Page, path: string) {
   return page.getByRole('dialog', { name, exact: true });
 }
 const fixture = (name: string) => resolve(__dirname, 'fixtures/pdf', name);
-test.beforeEach(async ({ page }) => login(page));
+test.beforeEach(async ({ page }) => {
+  await login(page);
+  await openReadingFixtureFolder(page, 'PDF验收-');
+});
 test('F261–277：真实PDF分页显示文字查找导航与本地组件', async ({ page }, info) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));

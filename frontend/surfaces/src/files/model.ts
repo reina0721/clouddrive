@@ -43,6 +43,7 @@ import type {
 import type { BlobCandidatePage, BlobDetail, BlobPage, BlobQuery } from './blobs';
 import type { FilesystemSettings, FilesystemSettingsInput } from './filesystem-settings';
 import type { FileIconRule, FileIconRuleSet, FileIconRulesView } from './icon-rules';
+import type { EpubBook, EpubEntry } from './epub-contract';
 import type { PropertyDefinitionSet, PropertyDefinitionsView } from './property-definitions';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
@@ -282,6 +283,7 @@ export type FilesPort = Readonly<{
   releaseCandidate(id: string): void;
   download(entry: FileEntry): Promise<void>;
   preview(entry: FileEntry, signal?: AbortSignal): Promise<string>;
+  openEpub(entry: EpubEntry, signal: AbortSignal): Promise<EpubBook>;
   loadSidebarPreferences(): FileSidebarPreferences;
   saveSidebarPreferences(value: FileSidebarPreferences): void;
   loadPreferences(

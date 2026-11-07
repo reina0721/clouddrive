@@ -1,5 +1,5 @@
 import { createFileAccessPort } from './access';
-import { createDocumentReader } from './document-reader';
+import { createDocumentReader, createFileByteReader } from './document-reader';
 import { createArchivesRuntime } from './archives';
 import {
   backgroundTaskListingSchema,
@@ -7,6 +7,7 @@ import {
   fileEntrySchema,
   fileListingSchema,
   FilesError,
+  epubLimits,
   fileShareSchema,
   shareListingSchema,
   trashPurgePreviewSchema,
@@ -299,6 +300,7 @@ export function createFilesRuntime(
     },
   });
   const versions = createVersionsPort(call, base + native, assertCurrent);
+  const readFileBytes = createFileByteReader(call, versions.readContent, assertCurrent);
   const downloads = createDownloadsRuntime(call, assertCurrent);
   const clipboard = createFileClipboard(assertCurrent, {
     detail: (id) => port.detail(id),
@@ -666,6 +668,19 @@ export function createFilesRuntime(
       } catch (error) {
         throw new FilesError('unsupported', { cause: error });
       }
+    },
+    openEpub: async (entry, signal) => {
+      const { openEpubBook } = await import('./epub-book');
+      const scoped = AbortSignal.any([signal, lifecycle.signal]);
+      const bounded = AbortSignal.any([scoped, AbortSignal.timeout(epubLimits.workTimeoutMs)]);
+      const bytes = await readFileBytes(
+        {
+          entry,
+          limits: { maxBytes: epubLimits.fileBytes, workTimeoutMs: epubLimits.workTimeoutMs },
+        },
+        bounded,
+      );
+      return openEpubBook(bytes, bounded, scoped);
     },
     ...createFileSidebarPreferences(account, assertCurrent),
     ...createFilePreferences(call, account, assertCurrent),

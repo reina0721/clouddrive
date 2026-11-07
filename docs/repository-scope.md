@@ -45,6 +45,8 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 
 [164文件图标](changes/164-file-icon-rules/README.md)在本人文件工作区应用扩展名规则，提供内置图形、浅深色及合规的外部图片。
 
+[165 EPUB 阅读](changes/165-epub-reader/README.md)在本人文件工作区阅读当前版本的可重排 XHTML 电子书。支持目录、章节、包内栅格图片及字号。
+
 [156管理端分享](changes/156-admin-share-management/README.md)提供独立授权的跨账号清单、浏览与下载授权计数及批量撤销。活动计数从升级后累计。
 
 [157管理端后台任务](changes/157-admin-background-tasks/README.md)提供 ZIP、解压、HTTP 与 BT 跨账号查询、诊断详情及终态清理。[158文件维护运行历史](changes/158-maintenance-run-history/README.md)增加回收站到期扫描和定时 Blob 回收的终态记录。运行中跟踪和跨请求关联仍在本范围之外。

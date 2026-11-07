@@ -17,6 +17,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
+import { isEpubDocument } from '../../../src/files/epub-contract';
 import { fileIconExtension, type FileIconRule } from '../../../src/files/icon-rules';
 import { fileClipboardMaxEntries, type FileClipboardMode } from '../../../src/files/clipboard';
 import { formatFileBytes as bytes } from '../../../src/files/format';
@@ -78,6 +79,9 @@ import type { TrashPurgeSelection } from '../../../src/files/trash-purge';
 const TrashPurgeDialog = lazy(() => import('./trash-purge-dialog'));
 const PdfDialog = lazy(() =>
   import('./pdf-dialog').then((module) => ({ default: module.PdfDialog })),
+);
+const EpubDialog = lazy(() =>
+  import('./epub-dialog').then((module) => ({ default: module.EpubDialog })),
 );
 const ArchiveDialog = lazy(() =>
   import('./archive-dialog').then((module) => ({ default: module.ArchiveDialog })),
@@ -186,6 +190,7 @@ export function FilesPage({
   const [accessTarget, setAccessTarget] = useState<FileEntry>();
   const [textRequest, setTextRequest] = useState<TextRequest>();
   const [pdfEntry, setPdfEntry] = useState<FileEntry>();
+  const [epubEntry, setEpubEntry] = useState<FileEntry>();
   const [mediaEntry, setMediaEntry] = useState<FileEntry>();
   const videoPreview = mediaEntry?.mediaType.startsWith('video/');
   const [archiveEntry, setArchiveEntry] = useState<FileEntry>();
@@ -599,6 +604,10 @@ export function FilesPage({
       }
       if (isPDFDocument(entry)) {
         setPdfEntry(entry);
+        return;
+      }
+      if (entry.kind === 'file' && isEpubDocument(entry)) {
+        setEpubEntry(entry);
         return;
       }
       if (/^(image|audio|video)\//.test(entry.mediaType)) {
@@ -1885,6 +1894,15 @@ export function FilesPage({
             entry={pdfEntry}
             limits={listing.pdfReader}
             onClose={() => setPdfEntry(undefined)}
+          />
+        </Suspense>
+      ) : null}
+      {epubEntry ? (
+        <Suspense fallback={<p role="status">{epubEntry.name}</p>}>
+          <EpubDialog
+            entry={epubEntry}
+            onClose={() => setEpubEntry(undefined)}
+            onDownload={() => void download(epubEntry)}
           />
         </Suspense>
       ) : null}
