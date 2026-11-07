@@ -1976,6 +1976,51 @@
         ]
       }
     },
+    "/api/console/v1/native/files/archive-tasks/zip": {
+      "post": {
+        "operationId": "files.archive-tasks.zip",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZIPTaskInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveTask"
+                }
+              }
+            },
+            "description": "Accepted"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
     "/api/console/v1/native/files/archive-tasks/{id}": {
       "delete": {
         "operationId": "files.archive-tasks.remove",
@@ -29821,9 +29866,19 @@
           "id": {
             "type": "string"
           },
+          "kind": {
+            "enum": [
+              "extract",
+              "zip"
+            ],
+            "type": "string"
+          },
           "renamedCount": {
             "format": "int64",
             "type": "integer"
+          },
+          "resultEntryId": {
+            "type": "string"
           },
           "skippedCount": {
             "format": "int64",
@@ -29842,8 +29897,10 @@
         },
         "required": [
           "id",
+          "kind",
           "sourceName",
           "destinationId",
+          "resultEntryId",
           "state",
           "failureCode",
           "createdCount",
@@ -35072,6 +35129,41 @@
         },
         "required": [
           "items"
+        ],
+        "type": "object"
+      },
+      "ZIPTaskInput": {
+        "additionalProperties": false,
+        "properties": {
+          "clientKey": {
+            "maxLength": 36,
+            "minLength": 36,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "sourceIds": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "clientKey",
+          "sourceIds",
+          "parentId",
+          "name"
         ],
         "type": "object"
       }

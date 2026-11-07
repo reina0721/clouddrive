@@ -75,6 +75,9 @@ const PdfDialog = lazy(() =>
 const ArchiveDialog = lazy(() =>
   import('./archive-dialog').then((module) => ({ default: module.ArchiveDialog })),
 );
+const ArchiveCreateDialog = lazy(() =>
+  import('./archive-create-dialog').then((module) => ({ default: module.ArchiveCreateDialog })),
+);
 const archiveFile = (entry: FileEntry) =>
   entry.kind === 'file' &&
   (/\.(zip|7z)$/i.test(entry.name) ||
@@ -162,6 +165,11 @@ export function FilesPage({
   const [pdfEntry, setPdfEntry] = useState<FileEntry>();
   const [mediaEntry, setMediaEntry] = useState<FileEntry>();
   const [archiveEntry, setArchiveEntry] = useState<FileEntry>();
+  const [zipSelection, setZIPSelection] = useState<{
+    entries: readonly FileEntry[];
+    parent: string;
+  }>();
+  const [queuedZIPName, setQueuedZIPName] = useState('');
   const [contextEntry, setContextEntry] = useState<string>();
   const [galleryPage, setGalleryPage] = useState(0);
   const [archiving, setArchiving] = useState(false);
@@ -1042,6 +1050,16 @@ export function FilesPage({
             {notice}
           </p>
         ) : null}
+        {queuedZIPName ? (
+          <div className="flex flex-wrap items-center gap-2 rounded-control border border-border bg-surface p-3 text-sm">
+            <span role="status">
+              {t('files.archives.createZIP.queued', { name: queuedZIPName })}
+            </span>
+            <Action size="sm" variant="quiet" onPress={() => port.navigate('tasks')}>
+              {t('files.archives.tasks.open')}
+            </Action>
+          </div>
+        ) : null}
         {galleryAnnotationsLoading ? (
           <p role="status" className="text-sm text-ink-muted">
             {t('files.annotations.loading')}
@@ -1083,6 +1101,14 @@ export function FilesPage({
                       onPress={() => queueClipboard('cut', targets)}
                     >
                       {t('files.explorer.cutPending')}
+                    </Action>
+                    <Action
+                      size="sm"
+                      variant="secondary"
+                      disabled={targets.some((entry) => entry.kind === 'shortcut')}
+                      onPress={() => setZIPSelection({ entries: targets, parent })}
+                    >
+                      {t('files.archives.createZIP.title')}
                     </Action>
                   </>
                 ) : null}
@@ -1359,6 +1385,10 @@ export function FilesPage({
                               ...(entry.kind === 'shortcut'
                                 ? []
                                 : [
+                                    {
+                                      id: 'create-zip',
+                                      label: t('files.archives.createZIP.title'),
+                                    },
                                     { id: 'share', label: t('files.share') },
                                     { id: 'access', label: t('files.access.title') },
                                   ]),
@@ -1371,6 +1401,8 @@ export function FilesPage({
                       onAction={(action) => {
                         setContextEntry(undefined);
                         if (action === 'browse-archive') setArchiveEntry(entry);
+                        else if (action === 'create-zip')
+                          setZIPSelection({ entries: [entry], parent: entry.parentId });
                         else if (action === 'versions') setVersionEntry(entry);
                         else if (action === 'upload-version') void uploadVersion(entry);
                         else if (action === 'queue-copy' || action === 'queue-cut')
@@ -1779,6 +1811,19 @@ export function FilesPage({
             entry={archiveEntry}
             onClose={() => setArchiveEntry(undefined)}
             onChanged={reload}
+          />
+        </Suspense>
+      ) : null}
+      {zipSelection ? (
+        <Suspense fallback={<p role="status">{t('files.previewLoading')}</p>}>
+          <ArchiveCreateDialog
+            entries={zipSelection.entries}
+            initialParent={zipSelection.parent}
+            onClose={() => setZIPSelection(undefined)}
+            onCreated={(task) => {
+              setZIPSelection(undefined);
+              setQueuedZIPName(task.sourceName);
+            }}
           />
         </Suspense>
       ) : null}

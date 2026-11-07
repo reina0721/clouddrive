@@ -36,8 +36,10 @@ export type ArchiveExtract = Readonly<{
 const archiveTaskCount = z.number().int().nonnegative().max(500);
 export const archiveTaskSchema = z.object({
   id: z.string().uuid(),
+  kind: z.enum(['extract', 'zip']).default('extract'),
   sourceName: z.string(),
   destinationId: z.string(),
+  resultEntryId: z.string().default(''),
   state: z.enum(['queued', 'running', 'publishing', 'completed', 'failed', 'canceled']),
   failureCode: z.enum([
     '',
@@ -70,6 +72,11 @@ export const archiveTaskListingSchema = z.object({
 export type ArchiveTask = z.infer<typeof archiveTaskSchema>;
 export type ArchiveTaskListing = z.infer<typeof archiveTaskListingSchema>;
 export type ArchiveTaskSource = Readonly<{ id: string; expectedRevision: number }>;
+export type ZIPTaskInput = Readonly<{
+  sourceIds: readonly string[];
+  parentId: string;
+  name: string;
+}>;
 // ArchiveImageLease 的浏览器资源只由Host创建，调用方在关闭预览时归还。
 export type ArchiveImageLease = Readonly<{ url: string; release: () => void }>;
 export type ArchivesPort = Readonly<{
@@ -104,6 +111,7 @@ export type ArchivesPort = Readonly<{
     key: string,
     signal?: AbortSignal,
   ): Promise<ArchiveTask>;
+  createZIP(input: ZIPTaskInput, key: string, signal: AbortSignal): Promise<ArchiveTask>;
   listTasks(signal: AbortSignal): Promise<ArchiveTaskListing>;
   cancelTask(id: string, signal: AbortSignal): Promise<void>;
   removeTask(id: string, signal: AbortSignal): Promise<void>;

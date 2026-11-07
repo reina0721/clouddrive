@@ -14,31 +14,34 @@ import (
 )
 
 type archiveTaskRecord struct {
-	ID            string `gorm:"primaryKey"`
-	OwnerID       string
-	SourceID      string
-	SourceName    string
-	ClientKey     string
-	RequestJSON   string `gorm:"column:request_json"`
-	DestinationID string
-	State         service.ArchiveTaskState
-	FailureCode   string
-	CreatedCount  int
-	SkippedCount  int
-	RenamedCount  int
-	Candidates    string
-	LeaseToken    string
-	LeaseUntil    *time.Time
-	CleanupAfter  *time.Time
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID              string `gorm:"primaryKey"`
+	OwnerID         string
+	Kind            service.ArchiveTaskKind
+	SourceID        string
+	SourceName      string
+	SourceSignature string
+	ClientKey       string
+	RequestJSON     string `gorm:"column:request_json"`
+	DestinationID   string
+	ResultEntryID   string
+	State           service.ArchiveTaskState
+	FailureCode     string
+	CreatedCount    int
+	SkippedCount    int
+	RenamedCount    int
+	Candidates      string
+	LeaseToken      string
+	LeaseUntil      *time.Time
+	CleanupAfter    *time.Time
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 func (archiveTaskRecord) TableName() string { return "files_archive_tasks" }
 
 func (r archiveTaskRecord) summary() service.ArchiveTask {
 	return service.ArchiveTask{
-		ID: r.ID, SourceName: r.SourceName, DestinationID: r.DestinationID, State: r.State, FailureCode: r.FailureCode,
+		ID: r.ID, Kind: r.Kind, SourceName: r.SourceName, DestinationID: r.DestinationID, ResultEntryID: r.ResultEntryID, State: r.State, FailureCode: r.FailureCode,
 		CreatedCount: r.CreatedCount, SkippedCount: r.SkippedCount, RenamedCount: r.RenamedCount,
 		CleanupPending: r.State == service.ArchiveTaskFailed && r.Candidates != "",
 		CreatedAt:      r.CreatedAt, UpdatedAt: r.UpdatedAt,
@@ -46,7 +49,7 @@ func (r archiveTaskRecord) summary() service.ArchiveTask {
 }
 
 func (r archiveTaskRecord) claim() service.ArchiveTaskClaim {
-	return service.ArchiveTaskClaim{ID: r.ID, OwnerID: r.OwnerID, SourceID: r.SourceID, Token: r.LeaseToken, RequestJSON: r.RequestJSON}
+	return service.ArchiveTaskClaim{ID: r.ID, OwnerID: r.OwnerID, Kind: r.Kind, SourceID: r.SourceID, Signature: r.SourceSignature, Token: r.LeaseToken, RequestJSON: r.RequestJSON}
 }
 
 func archiveTaskAt(db *gorm.DB, owner, id string) (archiveTaskRecord, error) {
@@ -70,7 +73,7 @@ func (r *Repository) archiveTransaction(ctx context.Context, change func(*gorm.D
 	})
 }
 
-func (r *Repository) CreateArchiveTask(ctx context.Context, task service.ArchiveTaskClaim, key string, limit int, validate func([]model.Entry) (string, error)) (service.ArchiveTask, error) {
+func (r *Repository) CreateArchiveTask(ctx context.Context, task service.ArchiveTaskClaim, key string, limit int, validate func([]model.Entry) (service.ArchiveTaskSource, error)) (service.ArchiveTask, error) {
 	var result service.ArchiveTask
 	err := r.archiveTransaction(ctx, func(db *gorm.DB) error {
 		if err := r.lockOwner(db, task.OwnerID); err != nil {
@@ -79,7 +82,7 @@ func (r *Repository) CreateArchiveTask(ctx context.Context, task service.Archive
 		var previous archiveTaskRecord
 		err := db.Take(&previous, "owner_id = ? AND client_key = ?", task.OwnerID, key).Error
 		if err == nil {
-			if previous.SourceID != task.SourceID || previous.RequestJSON != task.RequestJSON {
+			if previous.Kind != task.Kind || previous.SourceID != task.SourceID || previous.RequestJSON != task.RequestJSON {
 				return model.ErrConflict
 			}
 			result = previous.summary()
@@ -102,12 +105,12 @@ func (r *Repository) CreateArchiveTask(ctx context.Context, task service.Archive
 		if err != nil {
 			return err
 		}
-		name, err := validate(entries)
+		source, err := validate(entries)
 		if err != nil {
 			return err
 		}
 		now := r.clock.Now().UTC()
-		row := archiveTaskRecord{ID: task.ID, OwnerID: task.OwnerID, SourceID: task.SourceID, ClientKey: key, SourceName: name, RequestJSON: task.RequestJSON, State: service.ArchiveTaskQueued, CreatedAt: now, UpdatedAt: now}
+		row := archiveTaskRecord{ID: task.ID, OwnerID: task.OwnerID, Kind: task.Kind, SourceID: task.SourceID, ClientKey: key, SourceName: source.Name, SourceSignature: source.Signature, RequestJSON: task.RequestJSON, State: service.ArchiveTaskQueued, CreatedAt: now, UpdatedAt: now}
 		if err := db.Create(&row).Error; err != nil {
 			return err
 		}
@@ -298,9 +301,10 @@ func (r *Repository) PublishArchiveTask(ctx context.Context, claim service.Archi
 			return err
 		}
 		row.State, row.UpdatedAt = service.ArchiveTaskCompleted, now
-		row.DestinationID, row.CreatedCount, row.SkippedCount, row.RenamedCount = result.DestinationID, result.CreatedCount, result.SkippedCount, result.RenamedCount
+		row.DestinationID, row.ResultEntryID = result.DestinationID, result.ResultEntryID
+		row.CreatedCount, row.SkippedCount, row.RenamedCount = result.CreatedCount, result.SkippedCount, result.RenamedCount
 		row.LeaseToken, row.LeaseUntil, row.Candidates = "", nil, ""
-		return archiveTaskUpdate(db, row, "state", "updated_at", "destination_id", "created_count", "skipped_count", "renamed_count", "lease_token", "lease_until", "candidates")
+		return archiveTaskUpdate(db, row, "state", "updated_at", "destination_id", "result_entry_id", "created_count", "skipped_count", "renamed_count", "lease_token", "lease_until", "candidates")
 	})
 }
 

@@ -60,8 +60,9 @@ func TestArchiveTaskClaimsPublicationAndV18Rollback(t *testing.T) {
 		t.Fatal(err)
 	}
 	const upgrade = "sqlite/000018_archive_tasks.up.sql"
+	const zipUpgrade = "sqlite/000019_zip_tasks.up.sql"
 	for _, path := range paths {
-		if path == upgrade {
+		if path == upgrade || path == zipUpgrade {
 			continue
 		}
 		if err := apply(path); err != nil {
@@ -93,10 +94,15 @@ func TestArchiveTaskClaimsPublicationAndV18Rollback(t *testing.T) {
 	if err := apply(upgrade); err != nil {
 		t.Fatal(err)
 	}
+	if err := apply(zipUpgrade); err != nil {
+		t.Fatal(err)
+	}
 
-	validate := func([]model.Entry) (string, error) { return "source.zip", nil }
+	validate := func([]model.Entry) (service.ArchiveTaskSource, error) {
+		return service.ArchiveTaskSource{Name: "source.zip"}, nil
+	}
 	enqueue := func() (service.ArchiveTaskClaim, string) {
-		task := service.ArchiveTaskClaim{ID: newID(), OwnerID: legacy.OwnerID, SourceID: newID(), RequestJSON: "{}"}
+		task := service.ArchiveTaskClaim{ID: newID(), OwnerID: legacy.OwnerID, Kind: service.ArchiveTaskExtract, SourceID: newID(), RequestJSON: "{}"}
 		key := newID()
 		queued, err := repository.CreateArchiveTask(ctx, task, key, service.DefaultSearchTreeEntries, validate)
 		if err != nil || queued.State != service.ArchiveTaskQueued {

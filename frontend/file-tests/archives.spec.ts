@@ -48,6 +48,126 @@ test.beforeEach(async ({ page }) => {
 });
 const fixture = resolve(__dirname, 'fixtures/archives/browser.zip');
 
+test('F481–F491：单项菜单、多选、目标冲突、持久 ZIP 和结果操作', async ({ page }, info) => {
+  const stamp = Date.now();
+  const rootName = '0000-zip-source-' + stamp;
+  const targetName = '0000-zip-target-' + stamp;
+  const root = await api<FixtureEntry>(page, '/folders', { parentId: '', name: rootName });
+  const target = await api<FixtureEntry>(page, '/folders', { parentId: '', name: targetName });
+  const first = await api<FixtureEntry>(page, '/text', {
+    parentId: root.id,
+    name: '正文.txt',
+    key: crypto.randomUUID(),
+    text: '真实 ZIP 内容',
+  });
+  await api<FixtureEntry>(page, '/folders', { parentId: root.id, name: '空目录' });
+  await api<FixtureEntry>(page, '/text', {
+    parentId: target.id,
+    name: '占用.zip',
+    key: crypto.randomUUID(),
+    text: 'existing',
+  });
+  await page.goto('/home?parent=' + root.id);
+  await page.getByRole('button', { name: first.name, exact: true }).click({ button: 'right' });
+  await page.getByRole('menuitem', { name: '创建 ZIP 压缩包', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '创建 ZIP 压缩包', exact: true });
+  const name = dialog.getByLabel('ZIP 文件名', { exact: true });
+  await expect(name).toHaveValue('正文.zip');
+  await dialog.getByRole('button', { name: '取消', exact: true }).click();
+
+  for (const name of [first.name, '空目录']) {
+    const checkbox = page.getByRole('checkbox', { name: '选择 ' + name, exact: true });
+    if (!(await checkbox.isChecked())) await checkbox.press('Space');
+    await expect(checkbox).toBeChecked();
+  }
+  await page.getByRole('button', { name: '创建 ZIP 压缩包', exact: true }).click();
+  await expect(name).toHaveValue('archive.zip');
+  await dialog.getByRole('button', { name: '取消', exact: true }).click();
+
+  await page.goto('/home?search=' + encodeURIComponent(rootName));
+  await page.getByRole('button', { name: rootName, exact: true }).click({ button: 'right' });
+  await page.getByRole('menuitem', { name: '创建 ZIP 压缩包', exact: true }).click();
+  await expect(name).toHaveValue(rootName + '.zip');
+  await dialog.getByRole('button', { name: '进入 ' + targetName, exact: true }).click();
+  await name.fill('占用');
+  await dialog.getByRole('button', { name: '开始压缩', exact: true }).click();
+  await expect(dialog.getByRole('alert').first()).toBeVisible();
+  const resultName = '实际结果-' + stamp;
+  await name.fill(resultName);
+  await expect(dialog.getByText(/存在同名文件/)).toHaveCount(0);
+  await page.screenshot({
+    path: info.outputPath('create-zip-desktop.png'),
+    animations: 'disabled',
+  });
+  await dialog.getByRole('button', { name: '开始压缩', exact: true }).click();
+  await expect(
+    page.getByText('已提交压缩任务 ' + resultName + '.zip', { exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: '查看后台任务', exact: true }).click();
+  const row = page
+    .getByRole('listitem')
+    .filter({ has: page.getByRole('heading', { name: resultName + '.zip', exact: true }) });
+  await expect(row.getByText('已完成', { exact: true })).toBeVisible();
+  await expect(row).toContainText('压缩 ZIP');
+  await page.reload();
+  await expect(row.getByText('已完成', { exact: true })).toBeVisible();
+  await page.setViewportSize({ width: 375, height: 812 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({
+    path: info.outputPath('create-zip-mobile-result.png'),
+    animations: 'disabled',
+  });
+  const downloadEvent = page.waitForEvent('download');
+  await row.getByRole('button', { name: '下载 ZIP 文件', exact: true }).click();
+  const download = await downloadEvent;
+  expect(download.suggestedFilename()).toBe(resultName + '.zip');
+  const downloaded = await readFile(await download.path());
+  expect(downloaded.subarray(0, 2).toString()).toBe('PK');
+  await row.getByRole('button', { name: '定位 ZIP 文件', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp('parent=' + target.id));
+  await expect(page.getByRole('button', { name: resultName + '.zip', exact: true })).toBeVisible();
+});
+
+test('F494/498：压缩请求键去重及单一 ZIP 发布', async ({ page }) => {
+  const target = await api<FixtureEntry>(page, '/folders', {
+    parentId: '',
+    name: 'zip-replay-' + Date.now(),
+  });
+  const first = await api<FixtureEntry>(page, '/text', {
+    parentId: target.id,
+    name: 'one.txt',
+    key: crypto.randomUUID(),
+    text: 'one',
+  });
+  const second = await api<FixtureEntry>(page, '/text', {
+    parentId: target.id,
+    name: 'two.txt',
+    key: crypto.randomUUID(),
+    text: 'two',
+  });
+  type Job = { id: string; kind: string; state: string; resultEntryId: string };
+  const input = {
+    clientKey: crypto.randomUUID(),
+    sourceIds: [first.id, second.id],
+    parentId: target.id,
+    name: 'replay.zip',
+  };
+  const job = await api<Job>(page, '/archive-tasks/zip', input);
+  const replay = await api<Job>(page, '/archive-tasks/zip', {
+    ...input,
+    sourceIds: [second.id, first.id, second.id],
+  });
+  expect(replay.id).toBe(job.id);
+  expect(replay.kind).toBe('zip');
+  const status = () => api<Job>(page, '/archive-tasks/' + job.id);
+  await expect.poll(async () => (await status()).state, { timeout: 20000 }).toBe('completed');
+  const done = await status();
+  const destination = await api<{ items: FixtureEntry[] }>(page, '?parent=' + target.id);
+  expect(
+    destination.items.filter((entry) => entry.name === 'replay.zip').map((entry) => entry.id),
+  ).toEqual([done.resultEntryId]);
+});
+
 test('F461–F465/468–469/473–475：独立任务页、刷新、全包解压与持久结果', async ({ page }, info) => {
   const taskLink = page.getByRole('link', { name: '后台任务', exact: true });
   await taskLink.click();

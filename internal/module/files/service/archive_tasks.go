@@ -30,6 +30,13 @@ var ErrArchiveTaskForbidden = errors.New("archive task write permission required
 
 type ArchiveTaskState string
 
+type ArchiveTaskKind string
+
+const (
+	ArchiveTaskExtract ArchiveTaskKind = "extract"
+	ArchiveTaskZIP     ArchiveTaskKind = "zip"
+)
+
 const (
 	ArchiveTaskQueued     ArchiveTaskState = "queued"
 	ArchiveTaskRunning    ArchiveTaskState = "running"
@@ -60,8 +67,10 @@ func (q ArchiveTaskInput) extraction() ArchiveExtractRequest {
 // ArchiveTask 是账号可见的任务回执，仅报告实际提交结果。
 type ArchiveTask struct {
 	ID             string           `json:"id"`
+	Kind           ArchiveTaskKind  `json:"kind" enum:"extract,zip"`
 	SourceName     string           `json:"sourceName"`
 	DestinationID  string           `json:"destinationId"`
+	ResultEntryID  string           `json:"resultEntryId"`
 	State          ArchiveTaskState `json:"state"`
 	FailureCode    string           `json:"failureCode"`
 	CreatedCount   int              `json:"createdCount"`
@@ -82,8 +91,16 @@ type ArchiveTaskClaim struct {
 	ID          string
 	OwnerID     string
 	SourceID    string
+	Kind        ArchiveTaskKind
+	Signature   string
 	Token       string
 	RequestJSON string
+}
+
+// ArchiveTaskSource 是入队时在所有者事务内确认的名称和来源签名。
+type ArchiveTaskSource struct {
+	Name      string
+	Signature string
 }
 
 type ArchiveCleanup struct {
@@ -95,7 +112,7 @@ type ArchiveCleanup struct {
 
 // ArchiveTaskRepository 负责归档任务状态和文件发布在同一所有者事务中的一致性。
 type ArchiveTaskRepository interface {
-	CreateArchiveTask(context.Context, ArchiveTaskClaim, string, int, func([]model.Entry) (string, error)) (ArchiveTask, error)
+	CreateArchiveTask(context.Context, ArchiveTaskClaim, string, int, func([]model.Entry) (ArchiveTaskSource, error)) (ArchiveTask, error)
 	ListArchiveTasks(context.Context, string) ([]ArchiveTask, error)
 	ReadArchiveTask(context.Context, string, string) (ArchiveTask, error)
 	CancelArchiveTask(context.Context, string, string) error
@@ -163,26 +180,26 @@ func (s *ArchiveTasks) Create(ctx context.Context, owner, sourceID string, input
 	if err != nil {
 		return ArchiveTask{}, err
 	}
-	task := ArchiveTaskClaim{ID: id, OwnerID: owner, SourceID: sourceID, RequestJSON: string(request)}
-	return s.repo.CreateArchiveTask(ctx, task, input.ClientKey, files.policy.SearchTreeEntries, func(entries []model.Entry) (string, error) {
+	task := ArchiveTaskClaim{ID: id, OwnerID: owner, SourceID: sourceID, Kind: ArchiveTaskExtract, RequestJSON: string(request)}
+	return s.repo.CreateArchiveTask(ctx, task, input.ClientKey, files.policy.SearchTreeEntries, func(entries []model.Entry) (ArchiveTaskSource, error) {
 		entry, found := model.Find(entries, sourceID)
 		if !found || !model.Visible(entries, entry) {
-			return "", model.ErrMissing
+			return ArchiveTaskSource{}, model.ErrMissing
 		}
 		extension := strings.ToLower(path.Ext(entry.Name))
 		if entry.Kind != model.File || (extension != ".zip" && extension != ".7z") {
-			return "", model.ErrUnsupported
+			return ArchiveTaskSource{}, model.ErrUnsupported
 		}
 		if entry.ContentRevision != input.ExpectedRevision {
-			return "", model.ErrConflict
+			return ArchiveTaskSource{}, model.ErrConflict
 		}
 		if entry.SizeBytes > files.policy.MaxArchiveBytes {
-			return "", model.ErrTooLarge
+			return ArchiveTaskSource{}, model.ErrTooLarge
 		}
 		if err := model.Parent(entries, input.ParentID); err != nil {
-			return "", err
+			return ArchiveTaskSource{}, err
 		}
-		return entry.Name, nil
+		return ArchiveTaskSource{Name: entry.Name}, nil
 	})
 }
 
@@ -203,7 +220,7 @@ func (s *ArchiveTasks) Remove(ctx context.Context, owner, id string) error {
 	return s.repo.RemoveArchiveTask(ctx, owner, id)
 }
 
-// Dispatch 由现有调度器管理，每次至多处理一个补偿批次和一个真实解压。
+// Dispatch 由现有调度器管理，每次至多处理一个补偿批次和一个归档任务。
 func (s *ArchiveTasks) Dispatch(ctx context.Context) error {
 	if !s.available {
 		return nil
@@ -248,10 +265,21 @@ func (s *ArchiveTasks) run(ctx context.Context, claim ArchiveTaskClaim) error {
 	if err := s.authorize(ctx, claim.OwnerID); err != nil {
 		return err
 	}
-	var persisted ArchiveTaskInput
 	if len(claim.RequestJSON) > ArchiveTaskRequestBytes {
 		return model.ErrTooLarge
 	}
+	switch claim.Kind {
+	case ArchiveTaskZIP:
+		return s.runZIP(ctx, claim)
+	case ArchiveTaskExtract:
+		return s.runExtraction(ctx, claim)
+	default:
+		return model.ErrInvalid
+	}
+}
+
+func (s *ArchiveTasks) runExtraction(ctx context.Context, claim ArchiveTaskClaim) error {
+	var persisted ArchiveTaskInput
 	if err := json.Unmarshal([]byte(claim.RequestJSON), &persisted); err != nil {
 		return fmt.Errorf("decode archive task input: %w", err)
 	}

@@ -143,6 +143,14 @@ export function createArchivesRuntime(
           ...(signal ? { signal } : {}),
         }),
       ),
+    createZIP: async (request, clientKey, signal) =>
+      archiveTaskSchema.parse(
+        await activeCall('/archive-tasks/zip', {
+          method: 'POST',
+          body: { ...request, clientKey },
+          signal,
+        }),
+      ),
     listTasks: async (signal) =>
       archiveTaskListingSchema.parse(await activeCall('/archive-tasks', { signal })),
     cancelTask: async (id, signal) => {

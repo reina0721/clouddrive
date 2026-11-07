@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"path"
 	"sort"
@@ -145,104 +146,131 @@ func (s *Service) Archive(ctx context.Context, owner string, ids []string) ([]by
 	if err != nil {
 		return nil, err
 	}
+	members, err := s.archiveMembers(ctx, entries, ids)
+	if err != nil {
+		return nil, err
+	}
+	var output bytes.Buffer
+	if err := s.writeArchive(ctx, owner, members, &output, zip.Store); err != nil {
+		return nil, err
+	}
+	return output.Bytes(), nil
+}
+
+type zipMember struct {
+	entry model.Entry
+	name  string
+}
+
+func (s *Service) archiveMembers(ctx context.Context, entries []model.Entry, ids []string) ([]zipMember, error) {
+	if len(ids) == 0 || len(ids) > s.policy.MaxBatchEntries {
+		return nil, model.ErrInvalid
+	}
+	tree, err := newQueryTree(ctx, entries, "")
+	if err != nil {
+		return nil, err
+	}
 	selected := make(map[string]bool, len(ids))
 	for _, id := range ids {
-		entry, ok := model.Find(entries, id)
-		if !ok || !model.Visible(entries, entry) {
+		visible, err := tree.walk(ctx, id, walkVisibility)
+		if err != nil {
+			return nil, err
+		}
+		if !visible {
 			return nil, model.ErrMissing
 		}
 		selected[id] = true
 	}
 	for id := range selected {
-		for other := range selected {
-			if id != other && Within(entries, other, id) {
+		for parent := tree.entries[id].ParentID; parent != ""; parent = tree.entries[parent].ParentID {
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+			if selected[parent] {
 				delete(selected, id)
 				break
 			}
 		}
 	}
-	type member struct {
-		entry model.Entry
-		name  string
+	children := make(map[string][]model.Entry)
+	for _, entry := range entries {
+		if entry.TrashedAt == nil {
+			children[entry.ParentID] = append(children[entry.ParentID], entry)
+		}
 	}
-	members := []member{}
+	pending := make([]zipMember, 0, len(selected))
+	for id := range selected {
+		entry := tree.entries[id]
+		pending = append(pending, zipMember{entry: entry, name: entry.Name})
+	}
+	members := []zipMember{}
 	names := map[string]bool{}
 	remaining := s.policy.MaxArchiveBytes
-	for _, entry := range entries {
-		if !model.Visible(entries, entry) {
-			continue
+	for len(pending) > 0 {
+		if err := ctx.Err(); err != nil {
+			return nil, err
 		}
-		for root := range selected {
-			if !Within(entries, root, entry.ID) {
-				continue
+		member := pending[len(pending)-1]
+		pending = pending[:len(pending)-1]
+		if !fs.ValidPath(member.name) || strings.ContainsRune(member.name, '\\') {
+			return nil, model.ErrInvalid
+		}
+		switch member.entry.Kind {
+		case model.Folder:
+			member.name += "/"
+			for _, child := range children[member.entry.ID] {
+				pending = append(pending, zipMember{entry: child, name: member.name + child.Name})
 			}
-			name := entry.Name
-			for parent := entry.ParentID; entry.ID != root && parent != ""; {
-				ancestor, ok := model.Find(entries, parent)
-				if !ok {
-					return nil, model.ErrMissing
-				}
-				name = ancestor.Name + "/" + name
-				if parent == root {
-					break
-				}
-				parent = ancestor.ParentID
-			}
-			if !fs.ValidPath(name) || strings.Contains(name, "\\") {
-				return nil, model.ErrInvalid
-			}
-			if entry.Kind == model.Folder {
-				name += "/"
-			}
-			if entry.Kind == model.Shortcut {
-				return nil, model.ErrUnsupported
-			}
-			if names[name] {
-				return nil, model.ErrConflict
-			}
-			names[name] = true
-			if entry.SizeBytes < 0 || entry.SizeBytes > remaining {
-				return nil, model.ErrTooLarge
-			}
-			remaining -= entry.SizeBytes
-			members = append(members, member{entry, name})
-			if len(members) > s.policy.MaxBatchEntries {
-				return nil, model.ErrTooLarge
-			}
-			break
+		case model.File:
+		default:
+			return nil, model.ErrUnsupported
+		}
+		if names[member.name] {
+			return nil, model.ErrConflict
+		}
+		names[member.name] = true
+		if member.entry.SizeBytes < 0 || member.entry.SizeBytes > remaining {
+			return nil, model.ErrTooLarge
+		}
+		remaining -= member.entry.SizeBytes
+		members = append(members, member)
+		if len(members) > s.policy.MaxBatchEntries {
+			return nil, model.ErrTooLarge
 		}
 	}
 	sort.Slice(members, func(i, j int) bool { return members[i].name < members[j].name })
-	var output bytes.Buffer
-	writer := zip.NewWriter(&output)
+	return members, nil
+}
+
+func (s *Service) writeArchive(ctx context.Context, owner string, members []zipMember, output io.Writer, method uint16) error {
+	writer := zip.NewWriter(output)
 	for _, member := range members {
 		if err := ctx.Err(); err != nil {
-			return nil, errors.Join(err, writer.Close())
+			return errors.Join(err, writer.Close())
 		}
 		var content []byte
+		memberMethod := uint16(zip.Store)
 		if member.entry.Kind == model.File {
 			current, payload, err := s.ReadSmall(ctx, owner, member.entry.ID, s.policy.MaxArchiveBytes)
 			if err != nil {
-				return nil, errors.Join(err, writer.Close())
+				return errors.Join(err, writer.Close())
 			}
-			if current.ObjectKey != member.entry.ObjectKey {
-				return nil, errors.Join(model.ErrConflict, writer.Close())
+			if current.ObjectKey != member.entry.ObjectKey || current.ContentRevision != member.entry.ContentRevision {
+				return errors.Join(model.ErrConflict, writer.Close())
 			}
 			content = payload
+			memberMethod = method
 		}
-		header := &zip.FileHeader{Name: member.name, Method: zip.Store, Modified: member.entry.UpdatedAt}
+		header := &zip.FileHeader{Name: member.name, Method: memberMethod, Modified: member.entry.UpdatedAt}
 		part, err := writer.CreateHeader(header)
 		if err != nil {
-			return nil, errors.Join(err, writer.Close())
+			return errors.Join(err, writer.Close())
 		}
 		if _, err := part.Write(content); err != nil {
-			return nil, errors.Join(err, writer.Close())
+			return errors.Join(err, writer.Close())
 		}
 	}
-	if err := writer.Close(); err != nil {
-		return nil, err
-	}
-	return output.Bytes(), nil
+	return writer.Close()
 }
 
 // CopyDepth 限定WebDAV浅复制或现有完整子树复制。

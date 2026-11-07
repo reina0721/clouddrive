@@ -13,6 +13,7 @@ type archiveTaskCreateInput struct {
 	ID   string `path:"id" minLength:"1" maxLength:"36"`
 	Body service.ArchiveTaskInput
 }
+type zipTaskCreateInput struct{ Body service.ZIPTaskInput }
 type archiveTaskOutput struct{ Body service.ArchiveTask }
 type archiveTaskListOutput struct{ Body service.ArchiveTaskListing }
 
@@ -26,6 +27,20 @@ func registerArchiveTasks(api huma.API, h *handler.Handler, operation func(strin
 			return nil, h.Present(ctx, err)
 		}
 		task, err := h.ArchiveTasks.Create(ctx, owner, input.ID, input.Body)
+		if err != nil {
+			return nil, h.Present(ctx, err)
+		}
+		return &archiveTaskOutput{Body: task}, nil
+	})
+	createZIP := operation("files.archive-tasks.zip", http.MethodPost, "/archive-tasks/zip", "files:write", true)
+	createZIP.DefaultStatus = http.StatusAccepted
+	createZIP.MaxBodyBytes = service.ArchiveTaskRequestBytes
+	huma.Register(api, createZIP, func(ctx context.Context, input *zipTaskCreateInput) (*archiveTaskOutput, error) {
+		owner, err := h.Owner(ctx)
+		if err != nil {
+			return nil, h.Present(ctx, err)
+		}
+		task, err := h.ArchiveTasks.CreateZIP(ctx, owner, input.Body)
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}

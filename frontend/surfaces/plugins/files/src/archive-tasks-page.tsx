@@ -10,7 +10,7 @@ import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
 import type { ArchiveTask, ArchiveTaskListing } from '../../../src/files/archives';
 import { Info, Package, RefreshCw } from '../../../src/files/icons';
 import { FilesError } from '../../../src/files/model';
-import { useArchives } from '../../../src/files/runtime';
+import { useArchives, useFiles } from '../../../src/files/runtime';
 import { FileLink } from './file-link';
 import { useFileTime } from './use-file-time';
 
@@ -18,6 +18,7 @@ type TaskAction = Readonly<{ type: 'cancel' | 'remove'; task: ArchiveTask }>;
 
 export function ArchiveTasksPage() {
   const port = useArchives();
+  const files = useFiles();
   const { t } = useFrontendTranslation();
   const time = useFileTime();
   const [listing, setListing] = useState<ArchiveTaskListing>();
@@ -25,6 +26,8 @@ export function ArchiveTasksPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [loadFailure, setLoadFailure] = useState('');
   const [actionFailure, setActionFailure] = useState('');
+  const [resultFailure, setResultFailure] = useState('');
+  const [resultBusy, setResultBusy] = useState(false);
   const [action, setAction] = useState<TaskAction>();
   const read = useRef<AbortController | undefined>(undefined);
   const mutation = useRef<AbortController | undefined>(undefined);
@@ -92,6 +95,20 @@ export function ArchiveTasksPage() {
     }
   }
 
+  async function visitZIP(task: ArchiveTask, action: 'find' | 'download') {
+    setResultFailure('');
+    setResultBusy(true);
+    try {
+      const { entry } = await files.detail(task.resultEntryId);
+      if (action === 'download') await files.download(entry);
+      else files.navigate('files', { parent: entry.parentId, search: entry.name });
+    } catch (error) {
+      setResultFailure(errorText(error));
+    } finally {
+      setResultBusy(false);
+    }
+  }
+
   return (
     <section
       className="flex h-full min-w-0 flex-col p-4 sm:p-6"
@@ -131,6 +148,11 @@ export function ArchiveTasksPage() {
           {loadFailure}
         </p>
       ) : null}
+      {resultFailure ? (
+        <p role="alert" className="mt-3 text-sm text-danger">
+          {resultFailure}
+        </p>
+      ) : null}
       {!listing && !loadFailure ? (
         <p role="status" className="mt-3 text-sm text-ink-muted">
           {t('files.downloads.loading')}
@@ -160,7 +182,14 @@ export function ArchiveTasksPage() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h2 className="min-w-0 break-words font-semibold">{task.sourceName}</h2>
                   <span className="text-sm text-ink-muted">
-                    {t('files.archives.tasks.state.' + task.state)}
+                    {t('files.archives.tasks.kind.' + task.kind)} ·{' '}
+                    <span>
+                      {t(
+                        task.kind === 'zip' && task.state === 'running'
+                          ? 'files.archives.createZIP.running'
+                          : 'files.archives.tasks.state.' + task.state,
+                      )}
+                    </span>
                   </span>
                 </div>
                 <time className="text-xs text-ink-muted" dateTime={task.updatedAt}>
@@ -175,7 +204,7 @@ export function ArchiveTasksPage() {
                 {task.cleanupPending ? (
                   <p className="text-sm text-ink-muted">{t('files.archives.tasks.cleanup')}</p>
                 ) : null}
-                {task.state === 'completed' ? (
+                {task.state === 'completed' && task.kind === 'extract' ? (
                   <p className="text-sm">
                     {t('files.archives.created', { count: task.createdCount })} ·{' '}
                     {t('files.archives.skipped', { count: task.skippedCount })} ·{' '}
@@ -191,6 +220,26 @@ export function ArchiveTasksPage() {
                     >
                       {t('files.archives.openTarget')}
                     </FileLink>
+                  ) : null}
+                  {task.state === 'completed' && task.resultEntryId ? (
+                    <>
+                      <Action
+                        size="sm"
+                        variant="quiet"
+                        disabled={resultBusy}
+                        onPress={() => void visitZIP(task, 'find')}
+                      >
+                        {t('files.archives.createZIP.find')}
+                      </Action>
+                      <Action
+                        size="sm"
+                        variant="quiet"
+                        disabled={resultBusy}
+                        onPress={() => void visitZIP(task, 'download')}
+                      >
+                        {t('files.archives.createZIP.download')}
+                      </Action>
+                    </>
                   ) : null}
                   {task.state === 'queued' ? (
                     <Action

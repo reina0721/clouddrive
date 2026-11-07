@@ -1,0 +1,29 @@
+schema_version: 1
+id: R145-001
+title: 复用持久归档队列创建 ZIP
+question: 如何补齐文件区在线压缩并保证来源快照和持久发布的一致性？
+research_type: current-project-and-external-primary-source
+topics: [files, zip, archive-tasks, publication]
+status: active
+summary: 复用归档任务、数据库、存储和现有标准 ZIP 写入，增加 ZIP 创建类型及输入快照围栏。
+applicable_scenarios: [本人私有文件和文件夹, 有界 ZIP, 当前存储后端]
+non_applicable_scenarios: [远程压缩节点, 加密 ZIP, 公共分享压缩]
+evidence:
+  primary_sources:
+    - title: 当前仓库
+      locator: report.md
+      snapshot: 2f3f150
+    - title: Cloudreve 文件区压缩表单
+      locator: https://github.com/cloudreve/frontend/blob/c7b6fa5288ed0490a5589ddff4f56ea1f96a5315/src/component/FileManager/Dialogs/CreateArchive.tsx
+      snapshot: c7b6fa5288ed0490a5589ddff4f56ea1f96a5315
+    - title: Go archive/zip
+      locator: https://pkg.go.dev/archive/zip
+      snapshot: 2026-11-07 复核 ZIP 写入与关闭
+verified_at: 2026-11-07
+validity:
+  mode: snapshot
+  refresh_triggers: [归档队列或存储发布契约改变, 新格式或节点部署需求, 来源快照语义改变]
+relations:
+  extends: [R144-001]
+  related: [R133-001]
+report: report.md

@@ -130,3 +130,5 @@
 - [143 BitTorrent下载与节点接入](143-bittorrent-downloads/README.md)：已交付受信节点 BT v1 磁力、种子、文件选择和转存。
 
 - [144 后台解压任务](144-background-archive-tasks/README.md)：独立任务页、ZIP/7Z 后台解压、取消待处理任务及结果，验收见任务清单。
+
+- [145 后台创建 ZIP](145-background-zip-creation/README.md)：文件和目录压缩、保存目标、任务结果与下载，验收见任务清单。

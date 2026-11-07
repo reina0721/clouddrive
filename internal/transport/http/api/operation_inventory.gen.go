@@ -27,6 +27,7 @@ const (
 	OperationFilesArchiveTasksList          OperationID = "files.archive-tasks.list"
 	OperationFilesArchiveTasksRead          OperationID = "files.archive-tasks.read"
 	OperationFilesArchiveTasksRemove        OperationID = "files.archive-tasks.remove"
+	OperationFilesArchiveTasksZip           OperationID = "files.archive-tasks.zip"
 	OperationFilesArchiveDownload           OperationID = "files.archive.download"
 	OperationFilesArchiveExtract            OperationID = "files.archive.extract"
 	OperationFilesArchiveInspect            OperationID = "files.archive.inspect"
@@ -204,6 +205,7 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesArchiveTasksList, Method: "GET", Path: "/api/v1/files/archive-tasks", Policy: "protected", Scope: "files:read", Action: "files.archive-tasks.list"},
 	{ID: OperationFilesArchiveTasksRead, Method: "GET", Path: "/api/v1/files/archive-tasks/{id}", Policy: "protected", Scope: "files:read", Action: "files.archive-tasks.read"},
 	{ID: OperationFilesArchiveTasksRemove, Method: "DELETE", Path: "/api/v1/files/archive-tasks/{id}", Policy: "protected", Scope: "files:write", Action: "files.archive-tasks.remove"},
+	{ID: OperationFilesArchiveTasksZip, Method: "POST", Path: "/api/v1/files/archive-tasks/zip", Policy: "protected", Scope: "files:write", Action: "files.archive-tasks.zip"},
 	{ID: OperationFilesArchiveDownload, Method: "POST", Path: "/api/v1/files/{id}/archive/download", Policy: "protected", Scope: "files:read", Action: "files.archive.download"},
 	{ID: OperationFilesArchiveExtract, Method: "POST", Path: "/api/v1/files/{id}/archive/extract", Policy: "protected", Scope: "files:write", Action: "files.archive.extract"},
 	{ID: OperationFilesArchiveInspect, Method: "POST", Path: "/api/v1/files/{id}/archive/inspect", Policy: "protected", Scope: "files:read", Action: "files.archive.inspect"},
