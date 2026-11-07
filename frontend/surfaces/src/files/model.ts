@@ -13,6 +13,7 @@ import type { FileSidebarPreferences } from './sidebar-preferences';
 import type { BackgroundTaskListing, BackgroundTaskQuery } from './background-tasks';
 import type { TrashPurgePreview, TrashPurgeSelection } from './trash-purge';
 import type { TrashRetention } from './trash-retention';
+import type { DirectLinkDelivery, DirectLinkPage, DirectLinkResult } from './direct-links';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
@@ -189,6 +190,11 @@ export type FilesPort = Readonly<{
   setShareEnabled(share: FileShare, enabled: boolean): Promise<FileShare>;
   createShare(input: ShareCreate): Promise<FileShare>;
   revokeShare(id: string): Promise<FileShare>;
+  issueDirectLinks(ids: readonly string[], signal: AbortSignal): Promise<DirectLinkResult[]>;
+  listDirectLinks(page: number, signal: AbortSignal): Promise<DirectLinkPage>;
+  revokeDirectLink(id: string, signal: AbortSignal): Promise<void>;
+  directLink(token: string, delivery?: DirectLinkDelivery): string;
+  copyDirectLinks(urls: readonly string[]): Promise<void>;
   shareLink(token: string): string;
   copyShareLink(token: string): Promise<void>;
   detail(id: string): Promise<z.infer<typeof fileDetailSchema>>;

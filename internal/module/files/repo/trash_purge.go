@@ -35,6 +35,9 @@ func (r *Repository) RemoveTrash(ctx context.Context, owner string, limit int, p
 			}
 			pinsRemoved := false
 			for batch := range slices.Chunk(ids, trashRemovalBatchSize) {
+				if err := db.Where("owner_id = ? AND entry_id IN ?", owner, batch).Delete(&directLinkRecord{}).Error; err != nil {
+					return err
+				}
 				deleted := db.Where("owner_id = ? AND id IN ?", owner, batch).Delete(&entryRecord{})
 				if deleted.Error != nil {
 					return deleted.Error

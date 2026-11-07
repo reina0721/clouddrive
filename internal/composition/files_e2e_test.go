@@ -205,6 +205,8 @@ func TestFilesHTTPConcurrentUploadsOwnershipRestartAndStorageGuard(t *testing.T)
 		}
 	}
 	download()
+	issued := owner.request(t, "POST", "/native/files/direct-links", map[string]any{"ids": []string{entries[0].ID}}, 200)
+	retainedLink := issued["results"].([]any)[0].(map[string]any)["link"].(map[string]any)["token"].(string)
 	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
 	if err := coordinator.Stop(ctx); err != nil {
 		cancel()
@@ -217,6 +219,9 @@ func TestFilesHTTPConcurrentUploadsOwnershipRestartAndStorageGuard(t *testing.T)
 	}
 	owner.base = "http://" + coordinator.Diagnostics().BoundAddress
 	download()
+	if data, _ := directLinkRequest(t, owner.base, retainedLink, "GET", "", nil, 200); data != "verified bytes" {
+		t.Fatal("重启后持久直链不可读取")
+	}
 	changed := strings.Replace(payload, filepath.ToSlash(filepath.Join(directory, "storage")), filepath.ToSlash(filepath.Join(directory, "different-storage")), 1)
 	if changed == payload {
 		t.Fatal("storage configuration anchor missing")
@@ -228,6 +233,16 @@ func TestFilesHTTPConcurrentUploadsOwnershipRestartAndStorageGuard(t *testing.T)
 	download()
 	other.base = owner.base
 	t.Run("回收站事务删除", func(t *testing.T) { verifyTrashPurge(t, owner, other) })
+	t.Run("直链授权与内容", func(t *testing.T) { verifyDirectLinks(t, owner, other) })
+	t.Run("直链复核拥有者当前权限", func(t *testing.T) {
+		const files = "/native/files"
+		source := other.request(t, "POST", files+"/text", map[string]string{"parentId": "", "name": "owner-read.txt", "key": "direct-owner-read-fixture", "text": "owner permission"}, 200)["id"].(string)
+		result := other.request(t, "POST", files+"/direct-links", map[string]any{"ids": []string{source}}, 200)
+		token := result["results"].([]any)[0].(map[string]any)["link"].(map[string]any)["token"].(string)
+		directLinkRequest(t, owner.base, token, "GET", "", nil, 200)
+		owner.request(t, "PUT", "/native/iam/roles/"+roleID+"/permissions", map[string]any{"expectedRoleVersion": 2, "permissionKeys": []string{"files:write"}}, 200)
+		directLinkRequest(t, owner.base, token, "GET", "", nil, 404)
+	})
 }
 
 func verifyTrashPurge(t *testing.T, owner, other *consoleTestClient) {

@@ -11,6 +11,9 @@ import {
   shareListingSchema,
   trashPurgePreviewSchema,
   trashRetentionSchema,
+  directLinkIssueSchema,
+  directLinkPageSchema,
+  directLinkTokenPattern,
   type FileListing,
   type FilesErrorCode,
   type FileShortcut,
@@ -401,6 +404,32 @@ export function createFilesRuntime(
       fileShareSchema.parse(
         await call(`/shares/${encodeURIComponent(id)}/revoke`, { method: 'POST' }),
       ),
+    issueDirectLinks: async (ids, signal) =>
+      directLinkIssueSchema.parse(
+        await call('/direct-links', { method: 'POST', body: { ids }, signal }),
+      ).results,
+    listDirectLinks: async (page, signal) =>
+      directLinkPageSchema.parse(await call('/direct-links?page=' + page, { signal })),
+    revokeDirectLink: async (id, signal) => {
+      await call('/direct-links/' + encodeURIComponent(id), { method: 'DELETE', signal });
+    },
+    directLink: (token, delivery) => {
+      if (!directLinkTokenPattern.test(token)) throw new FilesError('missing');
+      return (
+        location.origin +
+        '/api/v1/file-direct-links/' +
+        token +
+        (delivery === 'download' ? '?download=true' : '')
+      );
+    },
+    copyDirectLinks: async (urls) => {
+      assertCurrent();
+      try {
+        await navigator.clipboard.writeText(urls.join('\n'));
+      } catch (error) {
+        throw new FilesError('unavailable', { cause: error });
+      }
+    },
     shareLink,
     copyShareLink: async (token) => {
       try {

@@ -1,0 +1,21 @@
+schema_version: 1
+change: 150-file-direct-links
+areas:
+  - id: startup
+    decision: updated
+    documents: [README.md]
+    reason: 记录文件直链。
+  - id: webui
+    decision: updated
+    documents: [README.md]
+    reason: 文件菜单和我的分享新增直链入口。
+  - id: frontend
+    decision: updated
+    documents: [docs/repository-scope.md]
+    reason: 记录单文件直链范围。
+  - id: module
+    decision: reviewed-no-change
+    reason: 复用文件权限和内容服务边界。
+  - id: api
+    decision: reviewed-no-change
+    reason: 新接口由生成契约和操作清单声明。

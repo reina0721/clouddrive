@@ -150,6 +150,7 @@ const zh = {
   empty: '拖拽文件至此',
   emptyDescription: '或点击“上传文件”，开始整理你的云端空间。',
   emptyTrash: '回收站为空',
+  directLinks: { get: '获取直链', manage: '管理直链' },
   trashRetention: {
     title: '保留规则',
     loading: '正在读取保留规则…',
@@ -391,6 +392,7 @@ const en: typeof zh = {
   empty: 'Drop files here',
   emptyDescription: 'Or choose Upload files to start organizing your cloud space.',
   emptyTrash: 'Trash is empty',
+  directLinks: { get: 'Get direct link', manage: 'Manage direct links' },
   trashRetention: {
     title: 'Retention',
     loading: 'Loading retention…',

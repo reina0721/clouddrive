@@ -154,6 +154,10 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
+	boundary.DirectLinks, err = service.NewDirectLinks(useCases, repository, deps.ShareAuthority)
+	if err != nil {
+		return Module{}, err
+	}
 	boundary.BackgroundTasks, err = service.NewBackgroundTasks(repository, archiveTasks)
 	if err != nil {
 		return Module{}, err

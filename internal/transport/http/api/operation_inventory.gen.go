@@ -44,6 +44,9 @@ const (
 	OperationFilesContentHead               OperationID = "files.content.head"
 	OperationFilesCopy                      OperationID = "files.copy"
 	OperationFilesDetail                    OperationID = "files.detail"
+	OperationFilesDirectLinksIssue          OperationID = "files.direct-links.issue"
+	OperationFilesDirectLinksList           OperationID = "files.direct-links.list"
+	OperationFilesDirectLinksRevoke         OperationID = "files.direct-links.revoke"
 	OperationFilesDownloadsBatchControl     OperationID = "files.downloads.batch-control"
 	OperationFilesDownloadsBatchCreate      OperationID = "files.downloads.batch-create"
 	OperationFilesDownloadsCancel           OperationID = "files.downloads.cancel"
@@ -70,6 +73,8 @@ const (
 	OperationFilesPublicArchive             OperationID = "files.public.archive"
 	OperationFilesPublicContent             OperationID = "files.public.content"
 	OperationFilesPublicContentHead         OperationID = "files.public.content.head"
+	OperationFilesPublicDirectLinksContent  OperationID = "files.public.direct-links.content"
+	OperationFilesPublicDirectLinksHead     OperationID = "files.public.direct-links.head"
 	OperationFilesPublicDownloadContent     OperationID = "files.public.download.content"
 	OperationFilesPublicDownloadCreate      OperationID = "files.public.download.create"
 	OperationFilesPublicDownloadHead        OperationID = "files.public.download.head"
@@ -227,6 +232,9 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesContentHead, Method: "HEAD", Path: "/api/v1/files/{id}/content", Policy: "protected", Scope: "files:read", Action: "files.content.head"},
 	{ID: OperationFilesCopy, Method: "POST", Path: "/api/v1/files/{id}/copy", Policy: "protected", Scope: "files:write", Action: "files.copy"},
 	{ID: OperationFilesDetail, Method: "GET", Path: "/api/v1/files/{id}", Policy: "protected", Scope: "files:read", Action: "files.detail"},
+	{ID: OperationFilesDirectLinksIssue, Method: "POST", Path: "/api/v1/files/direct-links", Policy: "protected", Scope: "files:write", Action: "files.direct-links.issue"},
+	{ID: OperationFilesDirectLinksList, Method: "GET", Path: "/api/v1/files/direct-links", Policy: "protected", Scope: "files:read", Action: "files.direct-links.list"},
+	{ID: OperationFilesDirectLinksRevoke, Method: "DELETE", Path: "/api/v1/files/direct-links/{id}", Policy: "protected", Scope: "files:write", Action: "files.direct-links.revoke"},
 	{ID: OperationFilesDownloadsBatchControl, Method: "POST", Path: "/api/v1/files/downloads/batch-control", Policy: "protected", Scope: "files:write", Action: "files.downloads.batch-control"},
 	{ID: OperationFilesDownloadsBatchCreate, Method: "POST", Path: "/api/v1/files/downloads/batch-create", Policy: "protected", Scope: "files:write", Action: "files.downloads.batch-create"},
 	{ID: OperationFilesDownloadsCancel, Method: "POST", Path: "/api/v1/files/downloads/{id}/cancel", Policy: "protected", Scope: "files:write", Action: "files.downloads.cancel"},
@@ -253,6 +261,8 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesPublicArchive, Method: "POST", Path: "/api/v1/file-shares/{token}/archive", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicContent, Method: "GET", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicContentHead, Method: "HEAD", Path: "/api/v1/file-shares/{token}/content/{id}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicDirectLinksContent, Method: "GET", Path: "/api/v1/file-direct-links/{token}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicDirectLinksHead, Method: "HEAD", Path: "/api/v1/file-direct-links/{token}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicDownloadContent, Method: "GET", Path: "/api/v1/file-downloads/{ticket}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicDownloadCreate, Method: "POST", Path: "/api/v1/file-shares/{token}/content/{id}/download", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicDownloadHead, Method: "HEAD", Path: "/api/v1/file-downloads/{ticket}", Policy: "public", Scope: "", Action: ""},

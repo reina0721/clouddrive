@@ -34,3 +34,5 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 [147视频外挂字幕](changes/147-external-video-subtitles/README.md)接入本人当前视频的同目录 VTT、SRT 和 ASS 字幕。播放格式仍取决于浏览器，ASS 保留时间和文本，HLS、内嵌字幕、样式设置、公开分享和历史版本外挂字幕不在此次范围。
 
 [148回收站永久移除](changes/148-trash-permanent-removal/README.md)实现本人已回收文件、目录及其后代的永久移除和一键清空。[149回收站保留规则](changes/149-trash-retention/README.md)增加本人可选期限与后台到期清理。两条路径均释放逻辑配额。物理对象保留，通用存储回收独立规划。
+
+[150文件直链](changes/150-file-direct-links/README.md)提供单文件或批量生成、复制、范围下载和本人撤销，支持明确安全类型的浏览器预览。目录直链、直通存储和跨账号管理独立规划。

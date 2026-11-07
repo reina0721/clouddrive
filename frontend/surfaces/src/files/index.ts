@@ -16,6 +16,7 @@ export * from './archives';
 export * from './background-tasks';
 export * from './trash-purge';
 export * from './trash-retention';
+export * from './direct-links';
 export * from './pdf-contract';
 
 export * from './access';

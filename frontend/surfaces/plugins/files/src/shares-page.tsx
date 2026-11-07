@@ -7,7 +7,7 @@ import { Action } from '@clouddrive/ui-adapter/action';
 import { SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import {
   FilesError,
   type FileShare,
@@ -17,6 +17,8 @@ import {
 import { useFiles } from '../../../src/files/runtime';
 import { sharePermissionPreset } from '../../../src/files/sharing';
 import { ShareDetailDrawer, ShareSettingsDialog } from './share-settings-dialog';
+
+const DirectLinksDialog = lazy(() => import('./direct-links-dialog'));
 
 export function MySharesPage() {
   const port = useFiles(),
@@ -35,6 +37,7 @@ export function MySharesPage() {
     [notice, setNotice] = useState(''),
     [revision, setRevision] = useState(0);
   const [opening, setOpening] = useState(false);
+  const [directLinks, setDirectLinks] = useState(false);
   const [editing, setEditing] = useState<FileShare>(),
     [detail, setDetail] = useState<FileShare>(),
     [confirmation, setConfirmation] =
@@ -72,13 +75,23 @@ export function MySharesPage() {
   }, [port, query, revision, t]);
   return (
     <>
+      {directLinks ? (
+        <Suspense>
+          <DirectLinksDialog onClose={() => setDirectLinks(false)} />
+        </Suspense>
+      ) : null}
       <Page>
         <PageHeader
           title={t('files.myShares')}
           actions={
-            <Action variant="secondary" disabled={loading} onPress={refresh}>
-              {t('files.refresh')}
-            </Action>
+            <>
+              <Action variant="secondary" disabled={loading} onPress={refresh}>
+                {t('files.refresh')}
+              </Action>
+              <Action variant="secondary" onPress={() => setDirectLinks(true)}>
+                {t('files.directLinks.manage')}
+              </Action>
+            </>
           }
           description={t('files.collaboration.managementHint')}
         />

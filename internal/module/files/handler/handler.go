@@ -33,6 +33,7 @@ type Handler struct {
 	BackgroundTasks      *service.BackgroundTasks
 	TrashPurge           *service.TrashPurge
 	TrashRetention       *service.TrashRetention
+	DirectLinks          *service.DirectLinks
 	Downloads            *service.OfflineDownloads
 	Torrents             *service.TorrentDownloads
 	Service              *service.Service

@@ -16,14 +16,32 @@ import (
 
 // contentResponse 在租约内写原始内容；发送后失败中止连接，不能追加 JSON 冒充成功文件。
 func contentResponse(ctx context.Context, h *handler.Handler, download func(context.Context, func(model.Entry, io.ReadSeeker) error) error) *contentOutput {
+	return contentWithDelivery(ctx, h, contentAttachment, download)
+}
+
+type contentDelivery string
+
+const (
+	contentAttachment contentDelivery = "attachment"
+	contentInline     contentDelivery = "inline"
+)
+
+func contentWithDelivery(ctx context.Context, h *handler.Handler, delivery contentDelivery, download func(context.Context, func(model.Entry, io.ReadSeeker) error) error) *contentOutput {
 	return &contentOutput{Body: func(raw huma.Context) {
 		started := false
 		request, _ := humabinding.UnwrapHTTP(raw)
 		err := download(ctx, func(entry model.Entry, reader io.ReadSeeker) error {
 			_, writer := humabinding.BeginRawHTTP(raw)
 			started = true
-			writer.Header().Set("Content-Type", "application/octet-stream")
-			writer.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": entry.Name}))
+			mediaType, disposition := "application/octet-stream", contentAttachment
+			if delivery == contentInline {
+				if safeType := inlineDirectMedia(entry.MediaType); safeType != "" {
+					mediaType, disposition = safeType, contentInline
+					writer.Header().Set("Content-Security-Policy", "sandbox; default-src 'none'")
+				}
+			}
+			writer.Header().Set("Content-Type", mediaType)
+			writer.Header().Set("Content-Disposition", mime.FormatMediaType(string(disposition), map[string]string{"filename": entry.Name}))
 			writer.Header().Set("ETag", `"`+entry.ContentSHA+`"`)
 			writer.Header().Set("X-Content-Type-Options", "nosniff")
 			writer.Header().Set("Cache-Control", "private, no-store")
@@ -45,6 +63,23 @@ func contentResponse(ctx context.Context, h *handler.Handler, download func(cont
 		// 资源回调已经退出并关闭 reader；net/http sentinel 会中止不完整响应。
 		panic(http.ErrAbortHandler)
 	}}
+}
+
+func inlineDirectMedia(value string) string {
+	mediaType, _, err := mime.ParseMediaType(value)
+	if err != nil {
+		return ""
+	}
+	switch mediaType {
+	case "text/plain":
+		return "text/plain; charset=utf-8"
+	case "image/png", "image/jpeg", "image/gif", "image/webp", "image/avif",
+		"audio/mpeg", "audio/ogg", "audio/wav", "audio/flac", "audio/mp4",
+		"video/mp4", "video/webm", "video/ogg":
+		return mediaType
+	default:
+		return ""
+	}
 }
 
 // contentReader 保存 ServeContent 内部未向调用方返回的源读取错误。

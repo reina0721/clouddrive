@@ -63,6 +63,7 @@ import { AnnotationPanel } from './annotation-panel';
 import { FileItem, FileListHeader, type FileSelectionGesture } from './file-item';
 import { PinDialog } from './pinned-links';
 import { ShareDialog } from './share-dialog';
+import { directLinkBatchLimit } from '../../../src/files/direct-links';
 import { SaveShortcutDialog, ShortcutActionDialog } from './shortcut-dialogs';
 import { TagsBatchDialog } from './tags-batch-dialog';
 import { TextDialog, type TextRequest } from './text-dialog';
@@ -80,6 +81,7 @@ const ArchiveDialog = lazy(() =>
 const ArchiveCreateDialog = lazy(() =>
   import('./archive-create-dialog').then((module) => ({ default: module.ArchiveCreateDialog })),
 );
+const DirectLinksDialog = lazy(() => import('./direct-links-dialog'));
 const archiveFile = (entry: FileEntry) =>
   entry.kind === 'file' &&
   (/\.(zip|7z)$/i.test(entry.name) ||
@@ -163,6 +165,7 @@ export function FilesPage({
   const [selected, setSelected] = useState<string[]>([]);
   const [dialog, setDialog] = useState<Dialog>();
   const [shareTarget, setShareTarget] = useState<FileEntry>();
+  const [directTargets, setDirectTargets] = useState<readonly FileEntry[]>();
   const [accessTarget, setAccessTarget] = useState<FileEntry>();
   const [textRequest, setTextRequest] = useState<TextRequest>();
   const [pdfEntry, setPdfEntry] = useState<FileEntry>();
@@ -1114,6 +1117,16 @@ export function FilesPage({
                     >
                       {t('files.archives.createZIP.title')}
                     </Action>
+                    {targets.every((entry) => entry.kind === 'file') ? (
+                      <Action
+                        size="sm"
+                        variant="secondary"
+                        disabled={targets.length > directLinkBatchLimit}
+                        onPress={() => setDirectTargets(targets)}
+                      >
+                        {t('files.directLinks.get')}
+                      </Action>
+                    ) : null}
                   </>
                 ) : null}
                 {!trash ? (
@@ -1396,6 +1409,7 @@ export function FilesPage({
                               ...(entry.kind === 'file'
                                 ? [
                                     { id: 'download', label: t('files.download') },
+                                    { id: 'direct-link', label: t('files.directLinks.get') },
                                     ...(archiveFile(entry)
                                       ? [{ id: 'browse-archive', label: t('files.archives.title') }]
                                       : []),
@@ -1445,6 +1459,7 @@ export function FilesPage({
                         )
                           setPinTarget({ targetKind: entry.kind, targetId: entry.id });
                         else if (action === 'download') void download(entry);
+                        else if (action === 'direct-link') setDirectTargets([entry]);
                         else if (action === 'share') setShareTarget(entry);
                         else if (action === 'access') setAccessTarget(entry);
                         else if (action === 'edit') setTextRequest({ mode: 'edit', entry });
@@ -1719,6 +1734,11 @@ export function FilesPage({
       ) : null}
       {shareTarget ? (
         <ShareDialog entry={shareTarget} onClose={() => setShareTarget(undefined)} />
+      ) : null}
+      {directTargets ? (
+        <Suspense>
+          <DirectLinksDialog entries={directTargets} onClose={() => setDirectTargets(undefined)} />
+        </Suspense>
       ) : null}
       {saveShortcut ? (
         <SaveShortcutDialog

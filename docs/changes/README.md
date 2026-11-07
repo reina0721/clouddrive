@@ -136,3 +136,4 @@
 - [147 视频外挂字幕](147-external-video-subtitles/README.md)：本人视频自动匹配、手动切换及关闭同目录 VTT、SRT 和 ASS 字幕。
 - [148 回收站永久移除](148-trash-permanent-removal/README.md)：单项、多选、清空及确认范围校验。
 - [149 回收站保留规则](149-trash-retention/README.md)：本人设置、期限快照和限量后台清理。
+- [150 文件直链](150-file-direct-links/README.md)：批量获取、免登录读取和本人撤销。
