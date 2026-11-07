@@ -38,3 +38,5 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 [150文件直链](changes/150-file-direct-links/README.md)提供单文件或批量生成、复制、范围下载和本人撤销，支持明确安全类型的浏览器预览。目录直链、直通存储和跨账号管理独立规划。
 
 [151管理端文件清单](changes/151-admin-file-inventory/README.md)允许单独授权跨账号查阅已发布条目、逻辑占用、链接关联和版本摘要。[152管理端文件 Blob](changes/152-admin-blob-catalog/README.md)提供已引用对象、历史及副本引用和主存储存在性。[153文件 Blob 回收](changes/153-blob-reclamation/README.md)允许处理本版本开始登记的无引用已发布对象。导入、未发布传输、历史孤立对象和跨账号内容访问独立规划。
+
+[154文件系统参数](changes/154-filesystem-settings/README.md)提供七项文件策略的持久管理覆盖及生效状态。通用部署配置、文件分页模式及 Office 设置独立规划。

@@ -9,6 +9,8 @@ const (
 	InventoryRead permissioncatalog.Key = "files:inventory:read"
 	BlobRead      permissioncatalog.Key = "files:blob:read"
 	BlobReclaim   permissioncatalog.Key = "files:blob:reclaim"
+	SettingsRead  permissioncatalog.Key = "files:settings:read"
+	SettingsWrite permissioncatalog.Key = "files:settings:write"
 )
 
 func Definitions() []permissioncatalog.Definition {
@@ -18,5 +20,7 @@ func Definitions() []permissioncatalog.Definition {
 		{Key: InventoryRead, OwnerModuleID: "files", DescriptionMessageID: "permission.files.inventory.read", Risk: permissioncatalog.RiskElevated},
 		{Key: BlobRead, OwnerModuleID: "files", DescriptionMessageID: "permission.files.blob.read", Risk: permissioncatalog.RiskElevated},
 		{Key: BlobReclaim, OwnerModuleID: "files", DescriptionMessageID: "permission.files.blob.reclaim", Risk: permissioncatalog.RiskCritical},
+		{Key: SettingsRead, OwnerModuleID: "files", DescriptionMessageID: "permission.files.settings.read", Risk: permissioncatalog.RiskElevated},
+		{Key: SettingsWrite, OwnerModuleID: "files", DescriptionMessageID: "permission.files.settings.write", Risk: permissioncatalog.RiskCritical},
 	}
 }

@@ -23,6 +23,7 @@ import (
 	"github.com/reina0721/clouddrive/pkg/schedule"
 	"github.com/reina0721/clouddrive/pkg/supervisor"
 	"path/filepath"
+	"time"
 )
 
 // ValidateStorage 将存储身份校验放在候选准入，不混入纯内存构造器。
@@ -49,6 +50,9 @@ type Dependencies struct {
 	BlobProbe                service.BlobObjectProbe
 	BlobReclamationPolicy    service.BlobReclamationPolicy
 	BlobReclamationAccess    handler.BlobReclamationAuthority
+	FilesystemSettings       *service.FilesystemSettings
+	FilesystemSettingsAccess handler.FilesystemSettingsAuthority
+	TrashScanInterval        time.Duration
 	TransferContent          service.TransferContent
 	TransferPolicy           service.TransferPolicy
 	StagingPath              string
@@ -74,7 +78,8 @@ type Module struct {
 }
 
 func New(deps Dependencies) (Module, error) {
-	if deps.Actors == nil || deps.Logger == nil || deps.PublicAuthentication == nil || deps.BlobReclamationAccess == nil {
+	if deps.Actors == nil || deps.Logger == nil || deps.PublicAuthentication == nil || deps.BlobReclamationAccess == nil ||
+		deps.FilesystemSettings == nil || deps.FilesystemSettingsAccess == nil {
 		return Module{}, fmt.Errorf("files boundary dependencies missing")
 	}
 	repository, err := repo.New(deps.Database, deps.StorageIdentity, deps.Clock)
@@ -149,6 +154,8 @@ func New(deps Dependencies) (Module, error) {
 	boundary := &handler.Handler{PublicAuthentication: deps.PublicAuthentication, Service: useCases, Sharing: sharing, ShareTransfers: shareTransfers, Navigation: navigation, Preferences: preferences, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
 	boundary.Archives = archives
 	boundary.ArchiveTasks = archiveTasks
+	boundary.FilesystemSettings = deps.FilesystemSettings
+	boundary.FilesystemSettingsAccess = deps.FilesystemSettingsAccess
 	boundary.TrashPurge, err = service.NewTrashPurge(repository, deps.Policy)
 	if err != nil {
 		return Module{}, err
@@ -248,7 +255,7 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	trashTrigger, err := schedule.FixedDelay(service.TrashExpiryInterval, service.TrashExpiryInterval)
+	trashTrigger, err := schedule.FixedDelay(deps.TrashScanInterval, deps.TrashScanInterval)
 	if err != nil {
 		return Module{}, err
 	}
@@ -265,6 +272,21 @@ func New(deps Dependencies) (Module, error) {
 		return Module{}, err
 	}
 	return Module{Handler: boundary, Contribution: module.Contribution{ID: "files", Participants: participants, Schedules: []schedule.Binding{binding, torrentBinding, archiveBinding, trashBinding, blobBinding}}}, nil
+}
+
+// PrepareFilesystemSettings 在新应用实例构造前只读取一次覆盖，令文件服务与调度使用同一版本。
+func PrepareFilesystemSettings(ctx context.Context, access repo.Access, storageIdentity string, currentClock clock.Clock, defaults service.FilesystemRuntime) (*service.FilesystemSettings, service.FilesystemRuntime, error) {
+	repository, err := repo.New(access, storageIdentity, currentClock)
+	if err != nil {
+		return nil, service.FilesystemRuntime{}, err
+	}
+	stored, err := repository.ReadFilesystemSettings(ctx)
+	if err != nil {
+		return nil, service.FilesystemRuntime{}, fmt.Errorf("load filesystem settings: %w", err)
+	}
+	active := defaults.Resolve(stored.Overrides)
+	settings, err := service.NewFilesystemSettings(repository, defaults, active)
+	return settings, active, err
 }
 
 func stagingIdentity(root string) (string, error) {

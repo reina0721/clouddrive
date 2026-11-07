@@ -9,6 +9,10 @@ permission.files.read:
   other: "查看和下载自己的文件"
 permission.files.write:
   other: "上传和整理自己的文件"
+permission.files.settings.read:
+  other: "查看文件系统参数和生效状态"
+permission.files.settings.write:
+  other: "修改文件系统参数和回收计划"
 
 todo.error.todo_invalid_argument:
   other: "Todo 输入无效"

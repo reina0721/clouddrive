@@ -16,6 +16,7 @@ import type { TrashRetention } from './trash-retention';
 import type { DirectLinkDelivery, DirectLinkPage, DirectLinkResult } from './direct-links';
 import type { InventoryItem, InventoryPage, InventoryQuery } from './inventory';
 import type { BlobCandidatePage, BlobDetail, BlobPage, BlobQuery } from './blobs';
+import type { FilesystemSettings, FilesystemSettingsInput } from './filesystem-settings';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
@@ -173,6 +174,8 @@ export type FilesPort = Readonly<{
   readBlob(id: string, page: number, signal: AbortSignal): Promise<BlobDetail>;
   listBlobCandidates(page: number, signal: AbortSignal): Promise<BlobCandidatePage>;
   reclaimBlob(id: string): Promise<void>;
+  readFilesystemSettings(signal: AbortSignal): Promise<FilesystemSettings>;
+  saveFilesystemSettings(input: FilesystemSettingsInput): Promise<FilesystemSettings>;
   folder(parentId: string, name: string): Promise<FileEntry>;
   update(
     id: string,

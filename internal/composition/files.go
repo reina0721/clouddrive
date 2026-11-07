@@ -23,6 +23,13 @@ type filesConnectionAuthority struct {
 	audience iam.CollaborationDirectory
 }
 
+func (a filesConnectionAuthority) AuthorizeFilesystemSettingsWrite(ctx context.Context, owner string) (bool, error) {
+	if a.access == nil {
+		return false, fmt.Errorf("filesystem settings authorization unavailable")
+	}
+	return a.access.AuthorizeAccount(ctx, owner, filespermission.SettingsWrite)
+}
+
 func (a filesConnectionAuthority) AuthorizeBlobReclamation(ctx context.Context, owner string) (bool, error) {
 	if a.access == nil {
 		return false, fmt.Errorf("blob reclamation authorization unavailable")

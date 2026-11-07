@@ -400,6 +400,16 @@
     "Manageable": true
   },
   {
+    "ID": "system-tools.filesystem",
+    "ModuleID": "system-tools",
+    "RouteID": "system-tools.filesystem",
+    "TitleMessageID": "systemTools.nav.filesystem",
+    "IconID": "resource",
+    "DefaultParentID": "group:administration",
+    "DefaultOrder": 44,
+    "Manageable": true
+  },
+  {
     "ID": "system-tools.blobs",
     "ModuleID": "system-tools",
     "RouteID": "system-tools.blobs",

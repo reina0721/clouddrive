@@ -140,3 +140,4 @@
 - [151 管理端文件清单](151-admin-file-inventory/README.md)：跨账号过滤、排序、分页和只读详情。
 - [152 管理端文件 Blob](152-admin-blob-catalog/README.md)：已引用对象、版本归属与主存储存在性。
 - [153 文件 Blob 回收](153-blob-reclamation/README.md)：持久候选、保护期与实际主存储回收。
+- [154 文件系统参数](154-filesystem-settings/README.md)：有界管理覆盖、重启生效及实际策略校验。

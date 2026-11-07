@@ -485,6 +485,21 @@ func (f *applicationGenerationFactory) Prepare(
 	if err := files.ValidateStorage(ctx, databaseAccess, storageIdentity, clock.System()); err != nil {
 		return abort(err)
 	}
+	trashScheduled, err := scheduleapp.TaskConfiguredEnabled(snapshot, filesservice.TrashExpiryTaskID)
+	if err != nil {
+		return abort(err)
+	}
+	blobScheduled, err := scheduleapp.TaskConfiguredEnabled(snapshot, filesservice.BlobReclamationTaskID)
+	if err != nil {
+		return abort(err)
+	}
+	filesystemSettings, activeFilesystem, err := files.PrepareFilesystemSettings(ctx, databaseAccess, storageIdentity, clock.System(), filesservice.FilesystemRuntime{
+		Policy: filesPolicy.Policy(), Blob: filesPolicy.BlobReclamation, TrashInterval: filesservice.TrashExpiryInterval,
+		TrashScheduled: trashScheduled, BlobScheduled: blobScheduled,
+	})
+	if err != nil {
+		return abort(err)
+	}
 	if err := files.PrepareTransfers(ctx, databaseAccess, storageIdentity, filesPolicy.Transfers.StagingPath, clock.System()); err != nil {
 		return abort(err)
 	}
@@ -512,7 +527,22 @@ func (f *applicationGenerationFactory) Prepare(
 		return abort(err)
 	}
 	fileContent := filesContentAdapter{access: generation.storage.value()}
-	filesModule, err := files.New(files.Dependencies{PublicAuthentication: fileOptionalSessionAuth{session: filesSessionAuth}, ArchiveProcessor: archiveProcessor, ArchiveAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization}, ArchiveDispatcherEnabled: archiveEnabled, ShareAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization, audience: generation.iamModule.Collaboration}, OfflinePolicy: filesPolicy.Offline, OfflineDispatcherEnabled: offlineEnabled, TorrentDispatcherEnabled: torrentEnabled, OfflineAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization}, NavigationPolicy: filesPolicy.NavigationPolicy(), ConnectionOrigin: filesPolicy.Connections.PublicOrigin, ConnectionPolicy: filesPolicy.ConnectionPolicy(), ConnectionAuthority: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization}, TransferContent: fileContent, TransferPolicy: filesPolicy.TransferPolicy(), StagingPath: filesPolicy.Transfers.StagingPath, Passwords: iam.NewCredentialDigests(), SharePolicy: filesPolicy.SharePolicy(), PublicOrigins: httpConfig.CORS.AllowedOrigins, StorageIdentity: storageIdentity, Database: databaseAccess, Content: fileContent, BlobProbe: fileContent, BlobReclamationPolicy: filesPolicy.BlobReclamation, BlobReclamationAccess: filesConnectionAuthority{access: generation.iamModule.AccountAuthorization}, Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: filesPolicy.Policy()})
+	fileAuthority := filesConnectionAuthority{access: generation.iamModule.AccountAuthorization, audience: generation.iamModule.Collaboration}
+	blobPolicy := activeFilesystem.Blob
+	blobPolicy.Automatic = blobPolicy.Automatic && activeFilesystem.BlobScheduled
+	filesModule, err := files.New(files.Dependencies{
+		PublicAuthentication: fileOptionalSessionAuth{session: filesSessionAuth},
+		ArchiveProcessor:     archiveProcessor, ArchiveAuthority: fileAuthority, ArchiveDispatcherEnabled: archiveEnabled,
+		ShareAuthority: fileAuthority, SharePolicy: filesPolicy.SharePolicy(), Passwords: iam.NewCredentialDigests(),
+		OfflinePolicy: filesPolicy.Offline, OfflineDispatcherEnabled: offlineEnabled, TorrentDispatcherEnabled: torrentEnabled, OfflineAuthority: fileAuthority,
+		NavigationPolicy: filesPolicy.NavigationPolicy(), ConnectionOrigin: filesPolicy.Connections.PublicOrigin,
+		ConnectionPolicy: filesPolicy.ConnectionPolicy(), ConnectionAuthority: fileAuthority, PublicOrigins: httpConfig.CORS.AllowedOrigins,
+		StorageIdentity: storageIdentity, Database: databaseAccess, Content: fileContent, BlobProbe: fileContent,
+		TransferContent: fileContent, TransferPolicy: filesPolicy.TransferPolicy(), StagingPath: filesPolicy.Transfers.StagingPath,
+		BlobReclamationPolicy: blobPolicy, BlobReclamationAccess: fileAuthority, TrashScanInterval: activeFilesystem.TrashInterval,
+		FilesystemSettings: filesystemSettings, FilesystemSettingsAccess: fileAuthority,
+		Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: activeFilesystem.Policy,
+	})
 	if err != nil {
 		return abort(err)
 	}

@@ -100,6 +100,8 @@ const (
 	OperationFilesPublicTransfersRead       OperationID = "files.public.transfers.read"
 	OperationFilesPublicUnlock              OperationID = "files.public.unlock"
 	OperationFilesRestore                   OperationID = "files.restore"
+	OperationFilesSettingsRead              OperationID = "files.settings.read"
+	OperationFilesSettingsSave              OperationID = "files.settings.save"
 	OperationFilesSharesCreate              OperationID = "files.shares.create"
 	OperationFilesSharesList                OperationID = "files.shares.list"
 	OperationFilesSharesRead                OperationID = "files.shares.read"
@@ -294,6 +296,8 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesPublicTransfersRead, Method: "GET", Path: "/api/v1/file-shares/{token}/transfers/{id}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicUnlock, Method: "POST", Path: "/api/v1/file-shares/{token}/unlock", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesRestore, Method: "POST", Path: "/api/v1/files/{id}/restore", Policy: "protected", Scope: "files:write", Action: "files.restore"},
+	{ID: OperationFilesSettingsRead, Method: "GET", Path: "/api/v1/files/settings", Policy: "protected", Scope: "files:settings:read", Action: "files.settings.read"},
+	{ID: OperationFilesSettingsSave, Method: "PUT", Path: "/api/v1/files/settings", Policy: "protected", Scope: "files:settings:write", Action: "files.settings.save"},
 	{ID: OperationFilesSharesCreate, Method: "POST", Path: "/api/v1/files/shares", Policy: "protected", Scope: "files:write", Action: "files.shares.create"},
 	{ID: OperationFilesSharesList, Method: "GET", Path: "/api/v1/files/shares", Policy: "protected", Scope: "files:read", Action: "files.shares.list"},
 	{ID: OperationFilesSharesRead, Method: "GET", Path: "/api/v1/files/shares/{shareId}", Policy: "protected", Scope: "files:read", Action: "files.shares.read"},

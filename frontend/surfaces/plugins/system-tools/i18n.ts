@@ -7,6 +7,7 @@ export const pluginI18nResources = {
           icons: 'Icon 大全',
           files: '文件清单',
           blobs: '文件 Blob',
+          filesystem: '文件系统',
         },
         icons: {
           title: 'Icon 大全',
@@ -24,6 +25,7 @@ export const pluginI18nResources = {
           icons: 'Icon Gallery',
           files: 'File inventory',
           blobs: 'File blobs',
+          filesystem: 'File system',
         },
         icons: {
           title: 'Icon Gallery',

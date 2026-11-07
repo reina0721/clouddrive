@@ -19,6 +19,10 @@ type BlobReclamationAuthority interface {
 	AuthorizeBlobReclamation(context.Context, string) (bool, error)
 }
 
+type FilesystemSettingsAuthority interface {
+	AuthorizeFilesystemSettingsWrite(context.Context, string) (bool, error)
+}
+
 // TransferProtocol 只处理已经经 service 加锁并授权的核心续传请求。
 type TransferProtocol interface {
 	Handle(http.ResponseWriter, *http.Request, string)
@@ -30,33 +34,35 @@ type PublicAuthenticator interface {
 }
 
 type Handler struct {
-	WriteLocks            *service.WriteLocks
-	PublicAuthentication  PublicAuthenticator
-	Archives              *service.Archives
-	ArchiveTasks          *service.ArchiveTasks
-	BackgroundTasks       *service.BackgroundTasks
-	TrashPurge            *service.TrashPurge
-	TrashRetention        *service.TrashRetention
-	DirectLinks           *service.DirectLinks
-	Inventory             *service.Inventory
-	Blobs                 *service.BlobCatalog
-	BlobReclamation       *service.BlobReclamation
-	BlobReclamationAccess BlobReclamationAuthority
-	Downloads             *service.OfflineDownloads
-	Torrents              *service.TorrentDownloads
-	Service               *service.Service
-	Sharing               *service.Sharing
-	ShareTransfers        *service.ShareTransfers
-	Connections           *service.Connections
-	ConnectionOrigin      string
-	Navigation            *service.Navigation
-	Preferences           *service.Preferences
-	WebDAV                http.Handler
-	Transfers             *service.Transfers
-	TransferProtocol      TransferProtocol
-	PublicOrigins         []string
-	Actors                ActorAccess
-	Logger                logger.Logger
+	WriteLocks               *service.WriteLocks
+	PublicAuthentication     PublicAuthenticator
+	Archives                 *service.Archives
+	ArchiveTasks             *service.ArchiveTasks
+	BackgroundTasks          *service.BackgroundTasks
+	TrashPurge               *service.TrashPurge
+	TrashRetention           *service.TrashRetention
+	DirectLinks              *service.DirectLinks
+	Inventory                *service.Inventory
+	Blobs                    *service.BlobCatalog
+	BlobReclamation          *service.BlobReclamation
+	BlobReclamationAccess    BlobReclamationAuthority
+	FilesystemSettings       *service.FilesystemSettings
+	FilesystemSettingsAccess FilesystemSettingsAuthority
+	Downloads                *service.OfflineDownloads
+	Torrents                 *service.TorrentDownloads
+	Service                  *service.Service
+	Sharing                  *service.Sharing
+	ShareTransfers           *service.ShareTransfers
+	Connections              *service.Connections
+	ConnectionOrigin         string
+	Navigation               *service.Navigation
+	Preferences              *service.Preferences
+	WebDAV                   http.Handler
+	Transfers                *service.Transfers
+	TransferProtocol         TransferProtocol
+	PublicOrigins            []string
+	Actors                   ActorAccess
+	Logger                   logger.Logger
 }
 
 func (h *Handler) Owner(ctx context.Context) (string, error) {

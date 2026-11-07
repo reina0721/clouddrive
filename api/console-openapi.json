@@ -4384,6 +4384,84 @@
         ]
       }
     },
+    "/api/console/v1/native/files/settings": {
+      "get": {
+        "operationId": "files.settings.read",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesystemSettingsOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "put": {
+        "operationId": "files.settings.save",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoredFilesystemSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesystemSettingsOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
     "/api/console/v1/native/files/shares": {
       "get": {
         "operationId": "files.shares.list",
@@ -33094,6 +33172,132 @@
         ],
         "type": "object"
       },
+      "FilesystemOverrides": {
+        "additionalProperties": false,
+        "properties": {
+          "automaticBlob": {
+            "type": "boolean"
+          },
+          "batchEntries": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "blobScanSeconds": {
+            "format": "int64",
+            "maximum": 86400,
+            "minimum": 60,
+            "type": "integer"
+          },
+          "historyEnabled": {
+            "type": "boolean"
+          },
+          "historyPerFile": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "textBytes": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "trashScanSeconds": {
+            "format": "int64",
+            "maximum": 86400,
+            "minimum": 60,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "FilesystemSettingsOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/FilesystemValues"
+          },
+          "blobSchedulerAvailable": {
+            "type": "boolean"
+          },
+          "canSave": {
+            "type": "boolean"
+          },
+          "configured": {
+            "$ref": "#/components/schemas/FilesystemValues"
+          },
+          "defaults": {
+            "$ref": "#/components/schemas/FilesystemValues"
+          },
+          "overrides": {
+            "$ref": "#/components/schemas/FilesystemOverrides"
+          },
+          "pendingRestart": {
+            "type": "boolean"
+          },
+          "revision": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "trashSchedulerAvailable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "canSave",
+          "defaults",
+          "configured",
+          "active",
+          "pendingRestart",
+          "trashSchedulerAvailable",
+          "blobSchedulerAvailable",
+          "revision",
+          "overrides"
+        ],
+        "type": "object"
+      },
+      "FilesystemValues": {
+        "additionalProperties": false,
+        "properties": {
+          "automaticBlob": {
+            "type": "boolean"
+          },
+          "batchEntries": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "blobScanSeconds": {
+            "format": "double",
+            "type": "number"
+          },
+          "historyEnabled": {
+            "type": "boolean"
+          },
+          "historyPerFile": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "textBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "trashScanSeconds": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "textBytes",
+          "batchEntries",
+          "historyEnabled",
+          "historyPerFile",
+          "trashScanSeconds",
+          "blobScanSeconds",
+          "automaticBlob"
+        ],
+        "type": "object"
+      },
       "FolderInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -35596,6 +35800,24 @@
         },
         "required": [
           "status"
+        ],
+        "type": "object"
+      },
+      "StoredFilesystemSettings": {
+        "additionalProperties": false,
+        "properties": {
+          "overrides": {
+            "$ref": "#/components/schemas/FilesystemOverrides"
+          },
+          "revision": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "overrides"
         ],
         "type": "object"
       },

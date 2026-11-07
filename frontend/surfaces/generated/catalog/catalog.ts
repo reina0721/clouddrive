@@ -502,6 +502,14 @@ export const generatedRouteCatalog: RouteCatalog = {
       paramNames: [],
     },
     {
+      routeId: 'system-tools.filesystem',
+      pluginId: 'system-tools',
+      path: 'filesystem',
+      segments: ['filesystem'],
+      pattern: '/system-tools/filesystem',
+      paramNames: [],
+    },
+    {
       routeId: 'system-tools.icons',
       pluginId: 'system-tools',
       path: 'icons',
@@ -1041,6 +1049,14 @@ export const generatedRouteCatalog: RouteCatalog = {
       pluginId: 'system-tools',
       contribution: {
         parents: [
+          {
+            navigationId: 'system-tools.filesystem',
+            labelKey: 'systemTools.nav.filesystem',
+            groupId: 'administration',
+            order: 44,
+            iconId: 'resource',
+            routeId: 'system-tools.filesystem',
+          },
           {
             navigationId: 'system-tools.blobs',
             labelKey: 'systemTools.nav.blobs',

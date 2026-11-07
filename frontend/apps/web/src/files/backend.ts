@@ -19,6 +19,7 @@ import {
   blobDetailSchema,
   blobCandidatePageSchema,
   blobPageSchema,
+  filesystemSettingsSchema,
   type FileListing,
   type FilesErrorCode,
   type FileShortcut,
@@ -333,6 +334,10 @@ export function createFilesRuntime(
     reclaimBlob: async (id) => {
       await call('/blob-reclamation/' + encodeURIComponent(id), { method: 'POST' });
     },
+    readFilesystemSettings: async (signal) =>
+      filesystemSettingsSchema.parse(await call('/settings', { signal })),
+    saveFilesystemSettings: async (body) =>
+      filesystemSettingsSchema.parse(await call('/settings', { method: 'PUT', body })),
     folder: async (parentId, name) =>
       fileEntrySchema.parse(await call('/folders', { method: 'POST', body: { parentId, name } })),
     update: async (id, change) =>

@@ -1,0 +1,138 @@
+package composition
+
+import (
+	"context"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/reina0721/clouddrive/pkg/idgen"
+)
+
+func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
+	directory := t.TempDir()
+	configPath := filepath.Join(directory, "config.yaml")
+	generate := func() string {
+		t.Helper()
+		value, err := idgen.UUID().New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		return value
+	}
+	setupToken, password := generate(), generate()
+	config := generationConfig(directory, 120, 32<<20, filepath.Join(directory, "filesystem.db"))
+	config = strings.Replace(config, "mode: development-anonymous", "mode: session", 1)
+	config = strings.Replace(config, "files:\n", "files:\n  maxTextBytes: 64\n  maxBatchEntries: 10\n", 1)
+	writeGenerationConfig(t, configPath, "iam:\n  local:\n    setupToken: "+setupToken+"\n"+config)
+	coordinator, _ := newGenerationTestCoordinator(t, configPath)
+	if err := coordinator.Start(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	stop := func() {
+		t.Helper()
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := coordinator.Stop(ctx); err != nil {
+			t.Fatal(err)
+		}
+	}
+	defer stop()
+	admin := &consoleTestClient{base: "http://" + coordinator.Diagnostics().BoundAddress, cookies: map[string]string{}}
+	admin.request(t, "GET", "/auth/csrf", nil, 200)
+	admin.request(t, "POST", "/auth/setup", map[string]string{"setupToken": setupToken, "email": "settings-admin@clouddrive.test", "name": "参数管理员", "password": password}, 200)
+	const files = "/native/files"
+	const endpoint = files + "/settings"
+	anonymous := &consoleTestClient{base: admin.base, cookies: map[string]string{}}
+	anonymous.request(t, "GET", endpoint, nil, 401)
+	role := admin.request(t, "POST", "/roles", map[string]any{"name": "Settings observer", "permissions": []string{"account.update"}}, 200)["role"].(map[string]any)
+	roleID := role["id"].(string)
+	admin.request(t, "POST", "/users", map[string]any{"email": "settings-observer@clouddrive.test", "name": "参数观察员", "password": password, "roleIds": []string{roleID}, "status": "active"}, 200)
+	observer := &consoleTestClient{base: admin.base, cookies: map[string]string{}}
+	loginObserver := func() {
+		t.Helper()
+		observer.request(t, "GET", "/auth/csrf", nil, 200)
+		observer.request(t, "POST", "/auth/login", map[string]string{"email": "settings-observer@clouddrive.test", "password": password}, 200)
+	}
+	loginObserver()
+	observer.request(t, "GET", endpoint, nil, 403)
+	admin.request(t, "PUT", "/native/iam/roles/"+roleID+"/permissions", map[string]any{"expectedRoleVersion": 1, "permissionKeys": []string{"files:settings:read"}}, 200)
+	loginObserver()
+	observed := observer.request(t, "GET", endpoint, nil, 200)
+	if observed["canSave"] != false || observed["revision"] != float64(0) ||
+		observed["defaults"].(map[string]any)["textBytes"] != float64(64) || observed["pendingRestart"] != false {
+		t.Fatalf("默认值或只读授权错误: %v", observed)
+	}
+	input := func(revision int, overrides map[string]any) map[string]any {
+		return map[string]any{"revision": revision, "overrides": overrides}
+	}
+	observer.request(t, "PUT", endpoint, input(0, map[string]any{}), 403)
+	admin.request(t, "PUT", endpoint, input(0, map[string]any{"textBytes": 65}), 422)
+	admin.request(t, "PUT", endpoint, input(0, map[string]any{"batchEntries": 11}), 422)
+	admin.request(t, "PUT", endpoint, input(0, map[string]any{"blobScanSeconds": 59}), 400)
+	admin.request(t, "PUT", endpoint, input(0, map[string]any{"trashScanSeconds": 86401}), 400)
+	create := func(name, text string, status int) map[string]any {
+		t.Helper()
+		return admin.request(t, "POST", files+"/text", map[string]string{"parentId": "", "name": name + ".txt", "key": generate(), "text": text}, status)
+	}
+	existing := create("history-fixture", "old", 200)["id"].(string)
+	admin.request(t, "PUT", files+"/"+existing+"/text", map[string]any{"expectedRevision": 1, "text": "mid"}, 200)
+	first := create("trash-one", "before", 200)["id"].(string)
+	second := create("trash-two", "before", 200)["id"].(string)
+	for _, id := range []string{first, second} {
+		admin.request(t, "POST", files+"/"+id+"/trash", nil, 200)
+	}
+	selection := map[string]any{"scope": "selection", "ids": []string{first, second}}
+	admin.request(t, "POST", files+"/trash/purge-preview", selection, 200)
+	overrides := map[string]any{
+		"textBytes": 4, "batchEntries": 1, "historyEnabled": false, "historyPerFile": 2,
+		"trashScanSeconds": 80, "blobScanSeconds": 120, "automaticBlob": true,
+	}
+	saved := admin.request(t, "PUT", endpoint, input(0, overrides), 200)
+	if saved["revision"] != float64(1) || saved["pendingRestart"] != true || saved["canSave"] != true ||
+		saved["active"].(map[string]any)["textBytes"] != float64(64) ||
+		saved["configured"].(map[string]any)["textBytes"] != float64(4) {
+		t.Fatalf("保存前后状态边界不一致: %v", saved)
+	}
+	admin.request(t, "PUT", endpoint, input(0, map[string]any{"textBytes": 5}), 409)
+	if persisted := admin.request(t, "GET", endpoint, nil, 200); persisted["revision"] != float64(1) || persisted["pendingRestart"] != true {
+		t.Fatalf("刷新后丢失保存参数: %v", persisted)
+	}
+	create("still-active", "allowed before restart", 200)
+	stop()
+	coordinator, _ = newGenerationTestCoordinator(t, configPath)
+	if err := coordinator.Start(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	admin.base = "http://" + coordinator.Diagnostics().BoundAddress
+	active := admin.request(t, "GET", endpoint, nil, 200)
+	if active["pendingRestart"] != false || active["blobSchedulerAvailable"] != false || active["trashSchedulerAvailable"] != false {
+		t.Fatalf("新实例未应用设置或越过部署调度权限: %v", active)
+	}
+	for name, expected := range overrides {
+		if integer, ok := expected.(int); ok {
+			expected = float64(integer)
+		}
+		if active["active"].(map[string]any)[name] != expected {
+			t.Fatalf("重启后参数 %s 未生效: %v", name, active["active"])
+		}
+	}
+	if blobs := admin.request(t, "GET", files+"/blob-reclamation", nil, 200); blobs["automatic"] != false {
+		t.Fatal("部署已禁用调度，自动清理仍报告开启")
+	}
+	create("limit-reject", "12345", 413)
+	create("limit-accept", "1234", 200)
+	admin.request(t, "POST", files+"/trash/purge-preview", selection, 422)
+	admin.request(t, "POST", files+"/trash/purge-preview", map[string]any{"scope": "selection", "ids": []string{first}}, 200)
+	admin.request(t, "PUT", files+"/"+existing+"/text", map[string]any{"expectedRevision": 2, "text": "new"}, 200)
+	history := admin.request(t, "GET", files+"/"+existing+"/versions", nil, 200)
+	if history["historyEnabled"] != false || history["perFile"] != float64(2) || history["total"] != float64(2) {
+		t.Fatalf("旧历史或版本保留规则不符: %v", history)
+	}
+	reset := admin.request(t, "PUT", endpoint, input(1, map[string]any{}), 200)
+	if reset["revision"] != float64(2) || reset["pendingRestart"] != true ||
+		len(reset["overrides"].(map[string]any)) != 0 || reset["configured"].(map[string]any)["textBytes"] != float64(64) {
+		t.Fatalf("未恢复继承: %v", reset)
+	}
+}
