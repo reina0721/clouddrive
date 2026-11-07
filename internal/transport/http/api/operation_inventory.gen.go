@@ -33,6 +33,7 @@ const (
 	OperationFilesArchiveInspect            OperationID = "files.archive.inspect"
 	OperationFilesArchiveMember             OperationID = "files.archive.member"
 	OperationFilesAudienceLookup            OperationID = "files.audience.lookup"
+	OperationFilesBackgroundTasksList       OperationID = "files.background-tasks.list"
 	OperationFilesConnectionsCreate         OperationID = "files.connections.create"
 	OperationFilesConnectionsList           OperationID = "files.connections.list"
 	OperationFilesConnectionsRead           OperationID = "files.connections.read"
@@ -211,6 +212,7 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesArchiveInspect, Method: "POST", Path: "/api/v1/files/{id}/archive/inspect", Policy: "protected", Scope: "files:read", Action: "files.archive.inspect"},
 	{ID: OperationFilesArchiveMember, Method: "POST", Path: "/api/v1/files/{id}/archive/member", Policy: "protected", Scope: "files:read", Action: "files.archive.member"},
 	{ID: OperationFilesAudienceLookup, Method: "POST", Path: "/api/v1/files/audience/lookup", Policy: "protected", Scope: "files:write", Action: "files.audience.lookup"},
+	{ID: OperationFilesBackgroundTasksList, Method: "GET", Path: "/api/v1/files/background-tasks", Policy: "protected", Scope: "files:read", Action: "files.background-tasks.list"},
 	{ID: OperationFilesConnectionsCreate, Method: "POST", Path: "/api/v1/files/connections", Policy: "protected", Scope: "files:write", Action: "files.connections.create"},
 	{ID: OperationFilesConnectionsList, Method: "GET", Path: "/api/v1/files/connections", Policy: "protected", Scope: "files:read", Action: "files.connections.list"},
 	{ID: OperationFilesConnectionsRead, Method: "GET", Path: "/api/v1/files/connections/{connectionId}", Policy: "protected", Scope: "files:read", Action: "files.connections.read"},

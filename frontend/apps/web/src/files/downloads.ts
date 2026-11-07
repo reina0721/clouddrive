@@ -31,7 +31,7 @@ export function createDownloadsRuntime(
     assertActive();
     return value;
   };
-  const path = (task: OfflineDownload) => '/downloads/' + encodeURIComponent(task.id);
+  const path = (task: Pick<OfflineDownload, 'id'>) => '/downloads/' + encodeURIComponent(task.id);
   const port: DownloadsPort = {
     newClientKey: () => {
       assertActive();

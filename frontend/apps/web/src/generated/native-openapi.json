@@ -1259,6 +1259,138 @@
         ],
         "type": "object"
       },
+      "BackgroundTask": {
+        "additionalProperties": false,
+        "properties": {
+          "cleanupPending": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "declaredBytes": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "destinationId": {
+            "type": "string"
+          },
+          "failureCode": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "zip",
+              "extract",
+              "http",
+              "bittorrent"
+            ],
+            "type": "string"
+          },
+          "rateBytesPerSecond": {
+            "format": "double",
+            "type": "number"
+          },
+          "receivedBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "renamedCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "resultEntryId": {
+            "type": "string"
+          },
+          "skippedCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sourceName": {
+            "type": "string"
+          },
+          "sourceStatus": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "state": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "sourceName",
+          "state",
+          "failureCode",
+          "createdAt",
+          "updatedAt",
+          "declaredBytes",
+          "receivedBytes",
+          "rateBytesPerSecond",
+          "sourceStatus",
+          "destinationId",
+          "resultEntryId",
+          "createdCount",
+          "skippedCount",
+          "renamedCount",
+          "cleanupPending"
+        ],
+        "type": "object"
+      },
+      "BackgroundTaskListing": {
+        "additionalProperties": false,
+        "properties": {
+          "archiveAvailable": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BackgroundTask"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "page": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "unfilteredTotal": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "archiveAvailable",
+          "total",
+          "unfilteredTotal",
+          "page",
+          "pageSize"
+        ],
+        "type": "object"
+      },
       "BatchAccountInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -8427,6 +8559,97 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AudienceTarget"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/background-tasks": {
+      "get": {
+        "operationId": "files.background-tasks.list",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "kind",
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "zip",
+                "extract",
+                "http",
+                "bittorrent"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "active",
+                "completed",
+                "failed",
+                "canceled",
+                "expired"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "format": "int64",
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackgroundTaskListing"
                 }
               }
             },

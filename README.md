@@ -48,6 +48,8 @@ Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Veri
 
 文件和目录菜单以及多选工具栏支持后台创建 ZIP。指定文件名和保存目录后，可在任务页定位或下载结果。详见[145变更](docs/changes/145-background-zip-creation/README.md)。
 
+后台任务页汇总本人 ZIP 创建、解压、HTTP 和 BitTorrent 下载，支持类型、状态及名称筛选。下载卡片可跳到对应详情。详见[146变更](docs/changes/146-unified-background-tasks/README.md)。
+
 当前会话密码解锁已补齐，输错可重试、共享账号失败预算，详见[142变更](docs/changes/142-session-password-unlock/README.md)。本批20项使用行为不增加20个独立功能计数；客户端遮挡仍不是服务端授权边界。
 
 WebDAV持久独占写锁已接入真实协议、所有文件保存及上传最终发布；连接页可查看和按版本解除占用，详见[141变更](docs/changes/141-webdav-write-locks/README.md)。本批20项按使用行为验收，不等同Office服务或系统驱动全量兼容。

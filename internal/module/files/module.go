@@ -146,6 +146,10 @@ func New(deps Dependencies) (Module, error) {
 	boundary := &handler.Handler{PublicAuthentication: deps.PublicAuthentication, Service: useCases, Sharing: sharing, ShareTransfers: shareTransfers, Navigation: navigation, Preferences: preferences, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
 	boundary.Archives = archives
 	boundary.ArchiveTasks = archiveTasks
+	boundary.BackgroundTasks, err = service.NewBackgroundTasks(repository, archiveTasks)
+	if err != nil {
+		return Module{}, err
+	}
 	boundary.WriteLocks = writeLocks
 	boundary.WebDAV, err = webdavbinding.New(boundary, davFiles, deps.ConnectionPolicy, deps.Policy.MaxFileBytes)
 	if err != nil {

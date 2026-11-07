@@ -16,8 +16,26 @@ type archiveTaskCreateInput struct {
 type zipTaskCreateInput struct{ Body service.ZIPTaskInput }
 type archiveTaskOutput struct{ Body service.ArchiveTask }
 type archiveTaskListOutput struct{ Body service.ArchiveTaskListing }
+type backgroundTaskInput struct {
+	Kind   service.BackgroundTaskKind   `query:"kind" default:"all" enum:"all,zip,extract,http,bittorrent"`
+	Status service.BackgroundTaskStatus `query:"status" default:"all" enum:"all,active,completed,failed,canceled,expired"`
+	Search string                       `query:"search" maxLength:"120"`
+	Page   int                          `query:"page" default:"1" minimum:"1" maximum:"1000"`
+}
+type backgroundTaskOutput struct{ Body service.BackgroundTaskListing }
 
 func registerArchiveTasks(api huma.API, h *handler.Handler, operation func(string, string, string, string, bool) huma.Operation) {
+	huma.Register(api, operation("files.background-tasks.list", http.MethodGet, "/background-tasks", "files:read", false), func(ctx context.Context, input *backgroundTaskInput) (*backgroundTaskOutput, error) {
+		owner, err := h.Owner(ctx)
+		if err != nil {
+			return nil, h.Present(ctx, err)
+		}
+		result, err := h.BackgroundTasks.List(ctx, owner, service.BackgroundTaskQuery{Kind: input.Kind, Status: input.Status, Search: input.Search, Page: input.Page})
+		if err != nil {
+			return nil, h.Present(ctx, err)
+		}
+		return &backgroundTaskOutput{Body: result}, nil
+	})
 	create := operation("files.archive-tasks.create", http.MethodPost, "/{id}/archive/tasks", "files:write", true)
 	create.DefaultStatus = http.StatusAccepted
 	create.MaxBodyBytes = service.ArchiveTaskRequestBytes

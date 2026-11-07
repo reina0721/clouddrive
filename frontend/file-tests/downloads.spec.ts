@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Locator, type Page, type Route } from '@playwright/test';
 import { createServer, type Server } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -123,6 +123,98 @@ async function api(
   return result.value;
 }
 
+async function chooseDownloadFolder(dialog: Locator, name: string) {
+  const folder = dialog.getByRole('button', { name: name + '/', exact: true });
+  const next = dialog.getByRole('button', { name: '下一页', exact: true });
+  // 共享的 QA 根目录会累积夹具，沿目录选择器自己的分页查找。
+  await expect
+    .poll(async () => {
+      if (await folder.isVisible()) return true;
+      if (await next.isEnabled()) await next.click();
+      return false;
+    })
+    .toBe(true);
+  await folder.click();
+}
+
+test('F501–F520：汇总列表筛选、刷新、下载详情及结果', async ({ page }, info) => {
+  await login(page);
+  const suffix = randomUUID().slice(0, 8);
+  const name = 'Task-Feed-' + suffix + '.txt';
+  const folder = await api(page, '/folders', 'POST', { parentId: '', name: '任务汇总-' + suffix });
+  const created = await api(page, '/downloads', 'POST', {
+    uri: origin + '/file?signature=browser-private',
+    parentId: folder.id,
+    name,
+    clientKey: randomUUID(),
+  });
+  const taskID = String(created.id);
+  await page.getByRole('link', { name: '后台任务', exact: true }).click();
+  await expect(page).toHaveURL(/\/home\/tasks$/);
+  const auto = page.getByRole('switch', { name: '自动刷新', exact: true });
+  const autoLabel = page.getByText('自动刷新', { exact: true });
+  await expect(auto).toBeChecked();
+  await autoLabel.click();
+  await expect(auto).not.toBeChecked();
+  await expect.poll(async () => (await api(page, '/downloads/' + taskID)).state).toBe('completed');
+  const refresh = page.getByRole('button', { name: '刷新任务', exact: true });
+  await refresh.click();
+  const row = page.getByRole('listitem').filter({
+    has: page.getByRole('heading', { name, exact: true }),
+  });
+  await expect(row).toContainText('HTTP 下载');
+  await expect(row.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
+  await expect(row).not.toContainText('browser-private');
+  const choose = async (label: string, option: string) => {
+    await page.getByRole('button', { name: new RegExp(label) }).click();
+    await page.getByRole('option', { name: option, exact: true }).click();
+  };
+  await choose('任务类型', 'HTTP 下载');
+  await choose('任务状态', '已完成');
+  const search = page.getByRole('textbox', { name: '搜索任务名称' });
+  await search.fill(name.toUpperCase());
+  await page.getByRole('button', { name: '搜索', exact: true }).click();
+  await expect(row).toBeVisible();
+  await expect(page.getByRole('list', { name: '后台任务' }).getByRole('listitem')).toHaveCount(1);
+  await page.setViewportSize({ width: 375, height: 812 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({
+    path: info.outputPath('background-tasks-mobile.png'),
+    animations: 'disabled',
+  });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const feedPattern = '**/native/files/background-tasks?*';
+  const fail = async (route: Route) => route.fulfill({ status: 503, json: {} });
+  await page.route(feedPattern, fail);
+  await refresh.click();
+  const refreshError = page.getByRole('alert').filter({ hasText: '服务暂时不可用' });
+  await expect(refreshError).toBeVisible();
+  await expect(row).toBeVisible();
+  await page.unroute(feedPattern, fail);
+  await autoLabel.click();
+  await expect(refreshError).toHaveCount(0, { timeout: 15_000 });
+  await autoLabel.click();
+  await search.fill('no-task-' + suffix);
+  await search.press('Enter');
+  await expect(page.getByRole('heading', { name: '没有符合条件的任务' })).toBeVisible();
+  await page.getByRole('button', { name: '清除筛选' }).click();
+  await expect(row).toBeVisible();
+  await page.screenshot({
+    path: info.outputPath('background-tasks-desktop.png'),
+    animations: 'disabled',
+  });
+  await row.getByRole('link', { name: '查看下载详情' }).click();
+  await expect(page).toHaveURL(new RegExp('/home/downloads\\?task=' + taskID));
+  const drawer = page.getByRole('dialog', { name, exact: true });
+  await expect(drawer).toBeVisible();
+  await drawer.getByRole('button', { name: '关闭', exact: true }).click();
+  await expect(page.locator('[data-download-id="' + taskID + '"]')).toHaveCount(1);
+  await page.getByRole('link', { name: '后台任务', exact: true }).click();
+  await row.getByRole('button', { name: '查看下载文件', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp('parent=' + String(folder.id)));
+  await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
+});
+
 test('离线入口、目录选择、实际服务器下载、详情复制、查看结果和保留文件清理', async ({
   page,
   context,
@@ -155,7 +247,7 @@ test('离线入口、目录选择、实际服务器下载、详情复制、查�
   await dialog.getByRole('button', { name: '设置保存名称', exact: true }).click();
   await dialog.getByLabel('保存名称（可选）', { exact: true }).fill('云端-' + suffix + '.txt');
   await dialog.getByRole('button', { name: /^下载至/ }).click();
-  await dialog.getByRole('button', { name: folderName + '/', exact: true }).click();
+  await chooseDownloadFolder(dialog, folderName);
   await page.screenshot({ path: '../.data/129-downloads-create.png' });
   expect(
     (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
@@ -314,7 +406,7 @@ test('不可靠前缀显式从头下载、真实进度和批量暂停继续取�
   await retryRow.getByRole('button', { name: '修改保存目标', exact: true }).click();
   const targetDialog = page.getByRole('dialog', { name: '修改保存目标', exact: true });
   await targetDialog.getByLabel('保存名称', { exact: true }).fill('fixed-' + suffix + '.txt');
-  await targetDialog.getByRole('button', { name: targetName + '/', exact: true }).click();
+  await chooseDownloadFolder(targetDialog, targetName);
   await targetDialog.getByRole('button', { name: '确定', exact: true }).click();
   await expect(targetDialog).toHaveCount(0);
   await expect(retryRow).toContainText('/' + targetName);

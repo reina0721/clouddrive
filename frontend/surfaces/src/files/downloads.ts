@@ -146,7 +146,7 @@ export function downloadBatchError(code: string): FilesErrorCode {
 export type DownloadsPort = Readonly<{
   newClientKey(): string;
   list(filter: DownloadFilter, signal?: AbortSignal): Promise<DownloadListing>;
-  read(task: OfflineDownload, signal?: AbortSignal): Promise<OfflineDownload>;
+  read(task: Pick<OfflineDownload, 'id'>, signal?: AbortSignal): Promise<OfflineDownload>;
   create(items: readonly DownloadCreate[], signal?: AbortSignal): Promise<DownloadBatch>;
   pickTorrent(maxBytes: number): Promise<Readonly<{ name: string; base64: string }> | undefined>;
   createTorrent(input: TorrentCreate): Promise<OfflineDownload>;

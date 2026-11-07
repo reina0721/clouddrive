@@ -3,25 +3,43 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
-import { SwitchField } from '@clouddrive/ui-adapter/form-field';
+import { SelectField, SwitchField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { IconAction } from '@clouddrive/ui-adapter/icon-action';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
-import type { ArchiveTask, ArchiveTaskListing } from '../../../src/files/archives';
+import type { ArchiveTask } from '../../../src/files/archives';
+import {
+  backgroundTaskKinds,
+  backgroundTaskStatuses,
+  isBackgroundDownload,
+  type BackgroundDownload,
+  type BackgroundTaskListing,
+  type BackgroundTaskQuery,
+} from '../../../src/files/background-tasks';
 import { Info, Package, RefreshCw } from '../../../src/files/icons';
 import { FilesError } from '../../../src/files/model';
-import { useArchives, useFiles } from '../../../src/files/runtime';
+import { useArchives, useDownloads, useFiles } from '../../../src/files/runtime';
+import { DownloadTaskProgress } from './download-task-progress';
+import { openDownloadResult } from './download-result';
 import { FileLink } from './file-link';
 import { useFileTime } from './use-file-time';
 
 type TaskAction = Readonly<{ type: 'cancel' | 'remove'; task: ArchiveTask }>;
+const initialQuery: BackgroundTaskQuery = { kind: 'all', status: 'all', search: '', page: 1 };
 
 export function ArchiveTasksPage() {
   const port = useArchives();
+  const downloads = useDownloads();
   const files = useFiles();
   const { t } = useFrontendTranslation();
   const time = useFileTime();
-  const [listing, setListing] = useState<ArchiveTaskListing>();
+  const [query, setQuery] = useState(initialQuery);
+  const [search, setSearch] = useState('');
+  const [response, setResponse] = useState<{
+    query: BackgroundTaskQuery;
+    listing: BackgroundTaskListing;
+  }>();
+  const listing = response?.query === query ? response.listing : undefined;
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [loadFailure, setLoadFailure] = useState('');
@@ -41,12 +59,12 @@ export function ArchiveTasksPage() {
     const controller = new AbortController();
     read.current = controller;
     setLoading(true);
-    void port
-      .listTasks(controller.signal)
+    void files
+      .listBackgroundTasks(query, controller.signal)
       .then(
         (value) => {
           if (controller.signal.aborted) return;
-          setListing(value);
+          setResponse({ query, listing: value });
           setLoadFailure('');
         },
         (error: unknown) => {
@@ -58,15 +76,15 @@ export function ArchiveTasksPage() {
         read.current = undefined;
         setLoading(false);
       });
-  }, [port, errorText]);
+  }, [files, query, errorText]);
   useEffect(() => {
     refresh();
     return () => {
       read.current?.abort();
       read.current = undefined;
-      mutation.current?.abort();
     };
   }, [refresh]);
+  useEffect(() => () => mutation.current?.abort(), []);
   useEffect(
     () => (autoRefresh ? port.watchTasks(refresh) : undefined),
     [autoRefresh, port, refresh],
@@ -109,6 +127,28 @@ export function ArchiveTasksPage() {
     }
   }
 
+  async function visitDownload(task: BackgroundDownload) {
+    setResultFailure('');
+    setResultBusy(true);
+    try {
+      await openDownloadResult(files, downloads, task);
+    } catch (error) {
+      setResultFailure(errorText(error));
+    } finally {
+      setResultBusy(false);
+    }
+  }
+
+  function updateQuery(change: Partial<BackgroundTaskQuery>) {
+    read.current?.abort();
+    read.current = undefined;
+    setLoadFailure('');
+    setQuery((value) => ({ ...value, page: 1, ...change }));
+  }
+
+  const filtered = query.kind !== 'all' || query.status !== 'all' || Boolean(query.search.trim());
+  const pageCount = listing ? Math.ceil(listing.total / listing.pageSize) : 0;
+
   return (
     <section
       className="flex h-full min-w-0 flex-col p-4 sm:p-6"
@@ -138,10 +178,66 @@ export function ArchiveTasksPage() {
           />
         </div>
       </header>
-      {listing && !listing.available ? (
+      {response && !response.listing.archiveAvailable ? (
         <p role="status" className="mt-3 text-sm text-ink-muted">
           {t('files.archives.tasks.unavailable')}
         </p>
+      ) : null}
+      {response?.listing.unfilteredTotal || filtered ? (
+        <form
+          className="my-5 flex flex-wrap items-end gap-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            updateQuery({ search });
+          }}
+        >
+          <div className="w-full sm:w-52">
+            <SelectField
+              label={t('files.archives.tasks.typeFilter')}
+              value={query.kind}
+              options={backgroundTaskKinds.map((kind) => ({
+                value: kind,
+                label: t('files.archives.tasks.kind.' + kind),
+              }))}
+              onValueChange={(value) => updateQuery({ kind: value as BackgroundTaskQuery['kind'] })}
+            />
+          </div>
+          <div className="w-full sm:w-52">
+            <SelectField
+              label={t('files.downloads.statusFilter')}
+              value={query.status}
+              options={backgroundTaskStatuses.map((status) => ({
+                value: status,
+                label: t('files.archives.tasks.status.' + status),
+              }))}
+              onValueChange={(value) =>
+                updateQuery({ status: value as BackgroundTaskQuery['status'] })
+              }
+            />
+          </div>
+          <div className="min-w-48 flex-1">
+            <TextField
+              label={t('files.archives.tasks.search')}
+              value={search}
+              maxLength={120}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </div>
+          <Action type="submit" variant="secondary">
+            {t('files.downloads.searchAction')}
+          </Action>
+          {filtered || search ? (
+            <Action
+              variant="quiet"
+              onPress={() => {
+                setSearch('');
+                updateQuery(initialQuery);
+              }}
+            >
+              {t('files.archives.tasks.clearFilters')}
+            </Action>
+          ) : null}
+        </form>
       ) : null}
       {loadFailure ? (
         <p role="alert" className="mt-3 text-sm text-danger">
@@ -164,19 +260,65 @@ export function ArchiveTasksPage() {
             compact
             state="empty"
             icon={<Package />}
-            title={t('files.archives.tasks.empty')}
-            description={t('files.archives.tasks.emptyHint')}
+            title={t('files.archives.tasks.' + (filtered ? 'noMatches' : 'empty'))}
+            description={t('files.archives.tasks.' + (filtered ? 'noMatchesHint' : 'emptyHint'))}
           />
         </div>
       ) : null}
       {listing?.items.length ? (
         <ul className="mt-4 space-y-3" aria-label={t('files.archives.tasks.title')}>
           {listing.items.map((task) => {
+            if (isBackgroundDownload(task)) {
+              return (
+                <li
+                  key={`${task.kind}:${task.id}`}
+                  className="space-y-2 rounded-panel border border-border bg-surface p-4"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="min-w-0 break-words font-semibold">{task.sourceName}</h2>
+                    <span className="text-sm text-ink-muted">
+                      {t('files.archives.tasks.kind.' + task.kind)} ·{' '}
+                      <span>{t('files.downloads.state.' + task.state)}</span>
+                    </span>
+                  </div>
+                  <time className="text-xs text-ink-muted" dateTime={task.updatedAt}>
+                    {time.full(task.updatedAt)}
+                  </time>
+                  <DownloadTaskProgress task={task} />
+                  {task.failureCode ? (
+                    <p className="flex items-center gap-2 text-sm text-danger">
+                      <Info className="size-4 shrink-0" aria-hidden="true" />
+                      {t('files.downloads.failure.' + task.failureCode)}
+                      {task.sourceStatus ? ` (${task.sourceStatus})` : ''}
+                    </p>
+                  ) : null}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <FileLink
+                      target="downloads"
+                      query={{ task: task.id }}
+                      className="text-sm text-brand underline"
+                    >
+                      {t('files.archives.tasks.downloadDetails')}
+                    </FileLink>
+                    {task.state === 'completed' ? (
+                      <Action
+                        size="sm"
+                        variant="quiet"
+                        disabled={resultBusy}
+                        onPress={() => void visitDownload(task)}
+                      >
+                        {t('files.downloads.openResult')}
+                      </Action>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            }
             const canRemove =
               !task.cleanupPending && ['failed', 'canceled', 'completed'].includes(task.state);
             return (
               <li
-                key={task.id}
+                key={`${task.kind}:${task.id}`}
                 className="space-y-2 rounded-panel border border-border bg-surface p-4"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -270,6 +412,30 @@ export function ArchiveTasksPage() {
             );
           })}
         </ul>
+      ) : null}
+      {listing && pageCount > 1 ? (
+        <nav
+          aria-label={t('files.archives.tasks.pagination')}
+          className="mt-6 flex flex-wrap items-center justify-between gap-3"
+        >
+          <Action
+            variant="quiet"
+            disabled={loading || listing.page === 1}
+            onPress={() => updateQuery({ page: listing.page - 1 })}
+          >
+            {t('files.downloads.previous')}
+          </Action>
+          <span className="text-sm text-ink-muted">
+            {t('files.archives.tasks.page', { page: listing.page, count: pageCount })}
+          </span>
+          <Action
+            variant="quiet"
+            disabled={loading || listing.page === pageCount}
+            onPress={() => updateQuery({ page: listing.page + 1 })}
+          >
+            {t('files.downloads.next')}
+          </Action>
+        </nav>
       ) : null}
       {action ? (
         <DialogSurface

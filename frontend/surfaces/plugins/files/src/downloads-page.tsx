@@ -10,7 +10,6 @@ import {
   TextField,
 } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface, DrawerSurface } from '@clouddrive/ui-adapter/overlays';
-import { ProgressMeter } from '@clouddrive/ui-adapter/progress-meter';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import {
@@ -28,6 +27,8 @@ import { Download, Info, RefreshCw } from '../../../src/files/icons';
 import { FilesError } from '../../../src/files/model';
 import { useDownloads, useFiles } from '../../../src/files/runtime';
 import { DownloadCreateDialog, DownloadTargetDialog } from './download-dialogs';
+import { openDownloadResult } from './download-result';
+import { DownloadTaskProgress } from './download-task-progress';
 const TorrentFiles = lazy(() => import('./torrent-files'));
 
 type Confirmation = Readonly<{
@@ -49,7 +50,7 @@ const statusValues = [
   'expired',
 ] as const;
 
-export function DownloadsPage() {
+export function DownloadsPage({ taskId = '' }: { taskId?: string }) {
   const port = useDownloads(),
     files = useFiles(),
     { t } = useFrontendTranslation();
@@ -74,6 +75,9 @@ export function DownloadsPage() {
   const [detail, setDetail] = useState<OfflineDownload>(),
     [target, setTarget] = useState<OfflineDownload>(),
     [confirmation, setConfirmation] = useState<Confirmation>();
+  const [focusedTask, setFocusedTask] = useState<OfflineDownload>(),
+    [focusFailure, setFocusFailure] = useState(''),
+    [showFocusedDetail, setShowFocusedDetail] = useState(Boolean(taskId));
   const [batchFailures, setBatchFailures] = useState<
     readonly { id: string; name: string; message: string }[]
   >([]);
@@ -99,11 +103,35 @@ export function DownloadsPage() {
       });
     return () => controller.abort();
   }, [port, query, revision, t]);
+  useEffect(() => {
+    if (!taskId) return;
+    const controller = new AbortController();
+    void port.read({ id: taskId }, controller.signal).then(
+      (task) => {
+        if (controller.signal.aborted) return;
+        setFocusedTask(task);
+        setFocusFailure('');
+      },
+      (error: unknown) => {
+        if (controller.signal.aborted) return;
+        if (error instanceof FilesError && error.code === 'missing') setFocusedTask(undefined);
+        setFocusFailure(
+          t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`),
+        );
+      },
+    );
+    return () => controller.abort();
+  }, [port, revision, t, taskId]);
   useEffect(() => (auto ? port.watch(refresh) : undefined), [port, auto, refresh]);
-  const selectedTasks = page?.items.filter((task) => selected.includes(task.id)) ?? [];
+  const listedTasks = page?.items.filter((task) => task.id !== taskId) ?? [];
+  const selectedTasks = listedTasks.filter((task) => selected.includes(task.id));
   const currentDetail = detail
-    ? (page?.items.find((task) => task.id === detail.id) ?? detail)
-    : undefined;
+    ? detail.id === focusedTask?.id
+      ? focusedTask
+      : (page?.items.find((task) => task.id === detail.id) ?? detail)
+    : showFocusedDetail
+      ? focusedTask
+      : undefined;
   function filter(change: Partial<DownloadFilter>) {
     setLoading(true);
     setSelected([]);
@@ -116,6 +144,7 @@ export function DownloadsPage() {
     try {
       const changed = await port.command(task, action);
       if (detail?.id === task.id) setDetail(changed);
+      if (focusedTask?.id === task.id) setFocusedTask(changed);
       setNotice(t('files.downloads.changed'));
       refresh();
     } catch (error) {
@@ -151,10 +180,7 @@ export function DownloadsPage() {
   async function showResult(task: OfflineDownload) {
     setBusy(true);
     try {
-      const current = await port.read(task);
-      if (!current.resultAvailable || !current.entryId) throw new FilesError('missing');
-      const detail = await files.detail(current.entryId);
-      files.openFolder(current.resultIsFolder ? detail.entry.id : detail.entry.parentId);
+      await openDownloadResult(files, port, task);
     } catch (error) {
       setNotice(errorText(error));
     } finally {
@@ -165,19 +191,11 @@ export function DownloadsPage() {
   const canDownload = Boolean(
     (page?.available || page?.torrent.available) && !page?.metadataLimited,
   );
-  function card(task: OfflineDownload) {
+  function card(task: OfflineDownload, selectable = true) {
     const canRun = Boolean(
       !page?.metadataLimited &&
       (task.kind === 'bittorrent' ? page?.torrent.available : page?.available),
     );
-    const percentage =
-      task.declaredBytes === null
-        ? undefined
-        : task.declaredBytes === 0
-          ? task.state === 'completed'
-            ? 100
-            : 0
-          : Math.min(100, (task.receivedBytes / task.declaredBytes) * 100);
     return (
       <li
         key={task.id}
@@ -185,21 +203,23 @@ export function DownloadsPage() {
         className="rounded-panel border border-border bg-surface p-4"
       >
         <div className="flex flex-wrap items-start gap-3">
-          <div className="w-fit">
-            <CheckboxField
-              label={t('files.downloads.select', { name: task.name })}
-              presentation="control-only"
-              checked={selected.includes(task.id)}
-              disabled={controlsDisabled}
-              onCheckedChange={(checked) =>
-                setSelected((value) =>
-                  checked
-                    ? [...new Set([...value, task.id])]
-                    : value.filter((id) => id !== task.id),
-                )
-              }
-            />
-          </div>
+          {selectable ? (
+            <div className="w-fit">
+              <CheckboxField
+                label={t('files.downloads.select', { name: task.name })}
+                presentation="control-only"
+                checked={selected.includes(task.id)}
+                disabled={controlsDisabled}
+                onCheckedChange={(checked) =>
+                  setSelected((value) =>
+                    checked
+                      ? [...new Set([...value, task.id])]
+                      : value.filter((id) => id !== task.id),
+                  )
+                }
+              />
+            </div>
+          ) : null}
           <Download className="size-7 shrink-0 text-brand" />
           <div className="min-w-0 flex-1">
             <button
@@ -231,19 +251,8 @@ export function DownloadsPage() {
             {t(`files.downloads.state.${task.state}`)}
           </span>
         </div>
-        <div className="mt-4 space-y-2">
-          <div className="flex flex-wrap justify-between gap-2 text-xs text-ink-muted">
-            <span>
-              {bytes(task.receivedBytes)} /{' '}
-              {task.declaredBytes === null
-                ? t('files.downloads.unknownSize')
-                : bytes(task.declaredBytes)}
-            </span>
-            <span>{bytes(Math.round(task.rateBytesPerSecond))}/s</span>
-          </div>
-          {percentage === undefined ? null : (
-            <ProgressMeter value={Math.round(percentage)} label={t('files.downloads.received')} />
-          )}
+        <div className="mt-4">
+          <DownloadTaskProgress task={task} />
         </div>
         {task.failureCode ? (
           <p className="mt-3 text-sm text-danger">
@@ -486,15 +495,15 @@ export function DownloadsPage() {
                 announcement="polite"
               />
             ) : null}
-            {page?.items.length ? (
+            {listedTasks.length ? (
               <div className="my-4 flex flex-wrap items-center gap-2">
                 <div className="w-fit">
                   <CheckboxField
                     label={t('files.downloads.selectAll')}
-                    checked={page.items.every((task) => selected.includes(task.id))}
+                    checked={listedTasks.every((task) => selected.includes(task.id))}
                     disabled={controlsDisabled}
                     onCheckedChange={(checked) =>
-                      setSelected(checked ? page.items.map((task) => task.id) : [])
+                      setSelected(checked ? listedTasks.map((task) => task.id) : [])
                     }
                   />
                 </div>
@@ -557,11 +566,25 @@ export function DownloadsPage() {
                 ) : null}
               </div>
             ) : null}
+            {taskId ? (
+              <Section title={t('files.archives.tasks.selectedDownload')} appearance="embedded">
+                {focusFailure ? (
+                  <p role="alert" className="text-sm text-danger">
+                    {focusFailure}
+                  </p>
+                ) : null}
+                {focusedTask ? (
+                  <ul className="grid gap-3 xl:grid-cols-2">{card(focusedTask, false)}</ul>
+                ) : !focusFailure ? (
+                  <p role="status">{t('files.downloads.loading')}</p>
+                ) : null}
+              </Section>
+            ) : null}
             {(['active', 'finished'] as const).map((section) => {
               if (query.section !== 'all' && query.section !== section) return null;
-              const tasks =
-                page?.items.filter((task) => downloadFinished(task) === (section === 'finished')) ??
-                [];
+              const tasks = listedTasks.filter(
+                (task) => downloadFinished(task) === (section === 'finished'),
+              );
               return (
                 <Section
                   key={section}
@@ -569,7 +592,7 @@ export function DownloadsPage() {
                   appearance="embedded"
                 >
                   {tasks.length ? (
-                    <ul className="grid gap-3 xl:grid-cols-2">{tasks.map(card)}</ul>
+                    <ul className="grid gap-3 xl:grid-cols-2">{tasks.map((task) => card(task))}</ul>
                   ) : !loading && !failure ? (
                     <StateSurface
                       compact
@@ -643,7 +666,10 @@ export function DownloadsPage() {
           closeLabel={t('files.downloads.close')}
           isOpen
           onOpenChange={(open) => {
-            if (!open) setDetail(undefined);
+            if (!open) {
+              setDetail(undefined);
+              setShowFocusedDetail(false);
+            }
           }}
         >
           <div className="space-y-4 break-words">
@@ -734,6 +760,10 @@ export function DownloadsPage() {
                 if (confirmation.action === 'remove') {
                   await port.remove(task);
                   if (detail?.id === task.id) setDetail(undefined);
+                  if (focusedTask?.id === task.id) {
+                    setFocusedTask(undefined);
+                    setShowFocusedDetail(false);
+                  }
                   setNotice(t('files.downloads.removeDone'));
                 } else await port.command(task, confirmation.action);
                 refresh();

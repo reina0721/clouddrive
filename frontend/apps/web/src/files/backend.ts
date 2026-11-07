@@ -2,6 +2,7 @@ import { createFileAccessPort } from './access';
 import { createDocumentReader } from './document-reader';
 import { createArchivesRuntime } from './archives';
 import {
+  backgroundTaskListingSchema,
   fileDetailSchema,
   fileEntrySchema,
   fileListingSchema,
@@ -282,6 +283,17 @@ export function createFilesRuntime(
     navigate,
     openFolder,
     destinationHref: fileDestinationHref,
+    listBackgroundTasks: async (query, signal) => {
+      const params = new URLSearchParams({
+        kind: query.kind,
+        status: query.status,
+        search: query.search,
+        page: String(query.page),
+      });
+      return backgroundTaskListingSchema.parse(
+        await call(`/background-tasks?${params}`, { signal }),
+      );
+    },
     list: async (query, signal) => {
       const params = fileListParameters(query);
       const listing = fileListingSchema.parse(await call(`?${params}`, signal ? { signal } : {}));

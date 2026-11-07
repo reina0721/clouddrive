@@ -10,6 +10,7 @@ import type { FileShare, ShareCreate, ShareListing, ShareQuery, ShareUpdate } fr
 import type { VersionsPort } from './versions';
 import type { FilePreferenceSnapshot } from './preferences';
 import type { FileSidebarPreferences } from './sidebar-preferences';
+import type { BackgroundTaskListing, BackgroundTaskQuery } from './background-tasks';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
@@ -129,6 +130,7 @@ export type FileShortcut =
   | 'extendFirst'
   | 'extendLast';
 export type FileBrowseQuery = Readonly<{
+  task?: string;
   parent?: string;
   category?: string;
   trash?: string;
@@ -154,6 +156,10 @@ export type FilesPort = Readonly<{
   navigate(destination: FilesDestination, query?: FileBrowseQuery): void;
   destinationHref(destination: FilesDestination, query?: FileBrowseQuery): string;
   openFolder(parentId: string): void;
+  listBackgroundTasks(
+    query: BackgroundTaskQuery,
+    signal: AbortSignal,
+  ): Promise<BackgroundTaskListing>;
   list(query: FileQuery, signal?: AbortSignal): Promise<FileListing>;
   folder(parentId: string, name: string): Promise<FileEntry>;
   update(

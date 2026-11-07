@@ -23,13 +23,18 @@ import (
 
 func waitDownloadState(t *testing.T, owner *consoleTestClient, path, state string) map[string]any {
 	t.Helper()
+	return waitDownloadStateWhen(t, owner, path, state, func(map[string]any) bool { return true })
+}
+
+func waitDownloadStateWhen(t *testing.T, owner *consoleTestClient, path, state string, ready func(map[string]any) bool) map[string]any {
+	t.Helper()
 	deadline := time.NewTimer(15 * time.Second)
 	defer deadline.Stop()
 	ticker := time.NewTicker(25 * time.Millisecond)
 	defer ticker.Stop()
 	for {
 		value := owner.request(t, "GET", path, nil, 200)
-		if value["state"] == state {
+		if value["state"] == state && ready(value) {
 			return value
 		}
 		if value["state"] == "failed" && state != "failed" {
@@ -37,7 +42,7 @@ func waitDownloadState(t *testing.T, owner *consoleTestClient, path, state strin
 		}
 		select {
 		case <-deadline.C:
-			t.Fatalf("离线任务未进入 %s，当前 %v", state, value["state"])
+			t.Fatalf("离线任务未就绪，预期状态 %s，当前 %v，待清理 %v", state, value["state"], value["cleanupPending"])
 		case <-ticker.C:
 		}
 	}
@@ -151,6 +156,18 @@ func TestOfflineDownloadPersistentPauseResumePublicationAndRecordRemoval(t *test
 	other.request(t, "GET", path, nil, 404)
 	other.request(t, "GET", path+"/source", nil, 404)
 	other.request(t, "POST", path+"/cancel", map[string]any{"revision": 1}, 404)
+	feed := owner.request(t, "GET", "/native/files/background-tasks?kind=http&search=SAVED.BIN", nil, 200)
+	tasks := feed["items"].([]any)
+	if len(tasks) != 1 || tasks[0].(map[string]any)["id"] != created["id"] || tasks[0].(map[string]any)["sourceName"] != "saved.bin" {
+		t.Fatal("后台任务汇总未返回本人的 HTTP 下载")
+	}
+	if encoded, err := json.Marshal(feed); err != nil || strings.Contains(string(encoded), "never-log") || strings.Contains(string(encoded), "leaseToken") {
+		t.Fatal("后台任务汇总响应泄露私有来源或租约，或无法序列化")
+	}
+	otherFeed := other.request(t, "GET", "/native/files/background-tasks", nil, 200)
+	if len(otherFeed["items"].([]any)) != 0 {
+		t.Fatal("后台任务汇总暴露他人下载")
+	}
 	privateSource, sourceHeaders := transferBytes(t, owner, "GET", "/files/downloads/"+created["id"].(string)+"/source", nil, nil, 200)
 	if sourceHeaders.Get("Cache-Control") != "no-store" || !bytes.Contains(privateSource, []byte("never-log")) {
 		t.Fatal("显式原始来源读取未隔离缓存或丢失私有来源")

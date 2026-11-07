@@ -20,6 +20,8 @@ export function fileDestinationHref(
 ): string {
   const params = new URLSearchParams();
   if (destination === 'files' && query)
-    for (const [key, value] of Object.entries(query)) if (value) params.set(key, value);
+    for (const [key, value] of Object.entries(query))
+      if (key !== 'task' && value) params.set(key, value);
+  if (destination === 'downloads' && query?.task) params.set('task', query.task);
   return fileDestinationHrefs[destination] + (params.size ? '?' + params.toString() : '');
 }

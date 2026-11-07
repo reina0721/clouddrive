@@ -267,6 +267,20 @@ func TestTorrentProductSelectionIsolationAndAtomicPublication(t *testing.T) {
 	if first["id"] == second["id"] || first["state"] != "selecting" {
 		t.Fatal("同hash账号任务没有独立身份或虚构下载阶段")
 	}
+	const feedPath = "/native/files/background-tasks?kind=bittorrent&status=active"
+	for _, account := range []struct {
+		client *consoleTestClient
+		task   map[string]any
+	}{{owner, first}, {other, second}} {
+		tasks := account.client.request(t, "GET", feedPath, nil, 200)["items"].([]any)
+		if len(tasks) != 1 {
+			t.Fatal("BitTorrent 汇总未按账号隔离")
+		}
+		item := tasks[0].(map[string]any)
+		if item["id"] != account.task["id"] || item["kind"] != "bittorrent" || item["sourceName"] != account.task["name"] || item["state"] != "selecting" {
+			t.Fatal("BitTorrent 汇总未保留真实任务名称、类型、身份或状态")
+		}
+	}
 	path := "/native/files/downloads/" + first["id"].(string)
 	selectionPath := "/native/files/torrent-downloads/" + first["id"].(string)
 	other.request(t, "GET", selectionPath, nil, 404)
@@ -302,7 +316,11 @@ func TestTorrentProductSelectionIsolationAndAtomicPublication(t *testing.T) {
 		t.Fatal("最终Storage字节与候选不一致")
 	}
 	other.request(t, "GET", "/native/files/"+resultID, nil, 404)
-	owner.request(t, "POST", path+"/remove", map[string]any{"revision": completed["revision"]}, 200)
+	// 发布完成后，调度器仍需清理节点任务和候选文件，清除记录使用清理后的版本。
+	removable := waitDownloadStateWhen(t, owner, path, "completed", func(task map[string]any) bool {
+		return task["cleanupPending"] == false
+	})
+	owner.request(t, "POST", path+"/remove", map[string]any{"revision": removable["revision"]}, 200)
 	after, _ := transferBytes(t, owner, "GET", "/files/"+entryID+"/content", nil, nil, 200)
 	if !bytes.Equal(actual, after) {
 		t.Fatal("删除记录破坏已发布文件")

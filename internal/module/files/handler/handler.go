@@ -30,6 +30,7 @@ type Handler struct {
 	PublicAuthentication PublicAuthenticator
 	Archives             *service.Archives
 	ArchiveTasks         *service.ArchiveTasks
+	BackgroundTasks      *service.BackgroundTasks
 	Downloads            *service.OfflineDownloads
 	Torrents             *service.TorrentDownloads
 	Service              *service.Service

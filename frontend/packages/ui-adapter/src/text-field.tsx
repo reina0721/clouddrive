@@ -12,6 +12,7 @@ export type TextFieldProps = FieldTextProps &
     name?: string;
     ref?: Ref<HTMLInputElement>;
     placeholder?: string;
+    maxLength?: number;
     disabled?: boolean;
     purpose?: 'text' | 'email';
     autoComplete?: 'name' | 'email' | 'username' | 'off';

@@ -132,3 +132,4 @@
 - [144 后台解压任务](144-background-archive-tasks/README.md)：独立任务页、ZIP/7Z 后台解压、取消待处理任务及结果，验收见任务清单。
 
 - [145 后台创建 ZIP](145-background-zip-creation/README.md)：文件和目录压缩、保存目标、任务结果与下载，验收见任务清单。
+- [146 后台任务汇总](146-unified-background-tasks/README.md)：统一 ZIP、解压及两类离线下载的查看、筛选和分页。
