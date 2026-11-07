@@ -79,10 +79,10 @@ func TestAdminTasksRetainPublishedFiles(t *testing.T) {
 	}
 	itemPath := catalog + "/zip/" + job.ID
 	item := audienceTyped[service.AdminTask](t, admin, "GET", console+itemPath, nil, 200)
-	if item.Kind != service.BackgroundTaskZIP || !item.Cleanable || item.OwnerID == "" || item.NodeID != "" {
+	if item.Kind != service.BackgroundTaskZIP || !item.Cleanable || item.OwnerID == "" || item.NodeID != "" || item.DurationMS != nil {
 		t.Fatal("管理任务投影错误")
 	}
-	query := catalog + "?ownerId=" + url.QueryEscape(item.OwnerID) + "&taskId=" + job.ID + "&kind=zip&status=completed&sort=id&direction=asc"
+	query := catalog + "?ownerId=" + url.QueryEscape(item.OwnerID) + "&taskId=" + job.ID + "&kind=zip&origin=user&status=completed&sort=id&direction=asc"
 	page := audienceTyped[service.AdminTaskPage](t, admin, "GET", console+query, nil, 200)
 	if page.Total != 1 || len(page.Items) != 1 || page.Items[0].ID != job.ID {
 		t.Fatal("组合筛选不正确")

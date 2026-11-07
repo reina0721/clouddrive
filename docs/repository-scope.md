@@ -45,4 +45,4 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 
 [156管理端分享](changes/156-admin-share-management/README.md)提供独立授权的跨账号清单、浏览与下载授权计数及批量撤销。活动计数从升级后累计。
 
-[157管理端后台任务](changes/157-admin-background-tasks/README.md)提供 ZIP、解压、HTTP 与 BT 跨账号查询、诊断详情及终态清理。定时系统任务运行历史和跨请求关联独立规划。
+[157管理端后台任务](changes/157-admin-background-tasks/README.md)提供 ZIP、解压、HTTP 与 BT 跨账号查询、诊断详情及终态清理。[158文件维护运行历史](changes/158-maintenance-run-history/README.md)增加回收站到期扫描和定时 Blob 回收的终态记录。运行中跟踪和跨请求关联仍在本范围之外。

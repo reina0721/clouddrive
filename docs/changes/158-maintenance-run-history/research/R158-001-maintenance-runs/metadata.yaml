@@ -1,0 +1,23 @@
+schema_version: 1
+id: R158-001
+title: 系统维护运行与任务历史边界
+question: 如何以实际文件维护执行生成可查询的系统任务历史？
+research_type: current-project-and-external-primary-source
+topics: [files, maintenance, scheduling, administration]
+status: active
+summary: 保留现有调度和维护逻辑，记录终结的文件维护运行并接入现有管理清单。
+applicable_scenarios: [Blob 回收, 回收站到期, 管理查询和终态清理]
+non_applicable_scenarios: [全平台调度历史, 进程崩溃前未提交执行, 历史回填]
+evidence:
+  primary_sources:
+    - title: Cloudreve 管理端任务契约
+      locator: https://raw.githubusercontent.com/cloudreve/frontend/master/src/api/dashboard.ts
+      snapshot: TaskPublicState 与 Task
+    - title: 参考站视觉和项目现状
+      locator: report.md
+      snapshot: 78c82b0
+verified_at: 2026-11-07
+validity:
+  mode: snapshot
+  refresh_triggers: [维护任务注册变化, 调度执行边界变化, 文件仓储变更]
+report: report.md

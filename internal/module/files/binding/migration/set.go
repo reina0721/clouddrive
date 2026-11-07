@@ -10,11 +10,18 @@ import (
 //go:embed sqlite/*.sql postgres/*.sql mysql/*.sql
 var sqlFiles embed.FS
 
-const CurrentVersion uint = 25
+const CurrentVersion uint = 26
 const TableName = "files_schema_migrations"
 
 func Set() dbmigrate.Set {
 	return dbmigrate.Set{Name: "files", FS: sqlFiles, CurrentVersion: CurrentVersion, MigrationsTable: TableName, DriverPaths: map[database.Driver]string{database.DriverSQLite: "sqlite", database.DriverPostgres: "postgres", database.DriverMySQL: "mysql"}, SHA256ByFile: map[string]string{
+		"sqlite/000026_maintenance_runs.up.sql":     "56d28cdfbd1d7764abc76fbc34f4cfe79993585ac50862e7ebac1460d12abb48",
+		"sqlite/000026_maintenance_runs.down.sql":   "592be1d95ed06d36941355ad1c60897766224b0dc005361871ec9655c1922b7f",
+		"postgres/000026_maintenance_runs.up.sql":   "8c99ce752496106c22f6d77292a76d3af1fca6fbbd0f2793f5a7c49f1238ea98",
+		"postgres/000026_maintenance_runs.down.sql": "592be1d95ed06d36941355ad1c60897766224b0dc005361871ec9655c1922b7f",
+		"mysql/000026_maintenance_runs.up.sql":      "fd3912b7c857d5b0f70e9de97c87cc1e1e535463eecdbbb10bd7b2e4a0eb9cd6",
+		"mysql/000026_maintenance_runs.down.sql":    "592be1d95ed06d36941355ad1c60897766224b0dc005361871ec9655c1922b7f",
+
 		"sqlite/000025_admin_shares.up.sql":     "508a61c4d9a85c862c06966d89f88b7282c1c6a398bdaa8a44bc61e3353eb6f9",
 		"sqlite/000025_admin_shares.down.sql":   "c224d8513b2c5070027ed1ef0ee065d61f25bd34d7eb1fcaf11e5d2e948707de",
 		"postgres/000025_admin_shares.up.sql":   "508a61c4d9a85c862c06966d89f88b7282c1c6a398bdaa8a44bc61e3353eb6f9",

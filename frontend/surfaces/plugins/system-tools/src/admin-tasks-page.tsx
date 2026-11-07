@@ -11,21 +11,23 @@ import { DatePickerField } from '@clouddrive/ui-adapter/date-picker-field';
 import { CheckboxField, SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { Panel } from '@clouddrive/ui-adapter/panel';
-import type {
-  AdminTask,
-  AdminTaskCleanup,
-  AdminTaskFilters,
-  AdminTaskPreviewQuery,
-  AdminTaskQuery,
+import {
+  adminTaskKinds,
+  adminTaskOrigins,
+  type AdminTask,
+  type AdminTaskCleanup,
+  type AdminTaskFilters,
+  type AdminTaskPreviewQuery,
+  type AdminTaskQuery,
 } from '../../../src/files/admin-tasks';
-import { backgroundTaskKinds, backgroundTaskStatuses } from '../../../src/files/background-tasks';
+import { backgroundTaskStatuses } from '../../../src/files/background-tasks';
 import { maxInventoryPage } from '../../../src/files/inventory';
 import { useFiles } from '../../../src/files/runtime';
 import type { Preferences } from '../../../src/preferences-model';
 import { CatalogFailure } from './catalog-failure';
 import { useCatalogRequest } from './use-catalog-request';
 
-const filters: AdminTaskFilters = { ownerId: '', kind: 'all', status: 'all' };
+const filters: AdminTaskFilters = { ownerId: '', kind: 'all', origin: 'all', status: 'all' };
 const initial: AdminTaskQuery = {
   ...filters,
   taskId: '',
@@ -36,11 +38,14 @@ const initial: AdminTaskQuery = {
 const taskKey = ({ kind, id }: AdminTask) => `${kind}:${id}`;
 type TaskRow = { id: string; task: AdminTask };
 const zh = {
-  description: '跨账号查看归档和下载任务，并清理已结束的任务记录。',
+  description: '查看跨账号任务和系统维护记录，并清理已结束的任务记录。',
   filter: '过滤',
   apply: '应用',
   reset: '重置',
   owner: '创建者 ID',
+  origin: '来源',
+  origins: { all: '全部来源', user: '用户', system: '系统' },
+  maintenance: { 'trash-expiry': '回收站到期扫描', 'blob-reclaim': '定时扫描回收文件 Blob' },
   taskId: '任务 ID',
   name: '内容',
   kind: '类型',
@@ -48,6 +53,9 @@ const zh = {
   node: '处理节点',
   created: '创建于',
   updated: '更新于',
+  started: '开始时间',
+  finished: '结束时间',
+  duration: '运行耗时（毫秒）',
   empty: '没有符合条件的任务',
   detail: '任务详情',
   detailHint: '查看任务状态和可披露的诊断。',
@@ -67,12 +75,17 @@ const zh = {
     `第 ${page} / ${pages} 页，共 ${total} 项`,
 };
 const en: typeof zh = {
-  description:
-    'Review archive and download tasks across accounts and clean up finished task records.',
+  description: 'Review user tasks and system maintenance, and clean up finished task records.',
   filter: 'Filter',
   apply: 'Apply',
   reset: 'Reset',
   owner: 'Creator ID',
+  origin: 'Source',
+  origins: { all: 'All sources', user: 'User', system: 'System' },
+  maintenance: {
+    'trash-expiry': 'Trash expiry scan',
+    'blob-reclaim': 'Scheduled Blob reclamation',
+  },
   taskId: 'Task ID',
   name: 'Content',
   kind: 'Type',
@@ -80,6 +93,9 @@ const en: typeof zh = {
   node: 'Worker node',
   created: 'Created',
   updated: 'Updated',
+  started: 'Started',
+  finished: 'Finished',
+  duration: 'Duration (ms)',
   empty: 'No tasks match the filters',
   detail: 'Task details',
   detailHint: 'Review task state and available diagnostics.',
@@ -97,6 +113,14 @@ const en: typeof zh = {
   result: (removed, failed) => `${removed} tasks removed, ${failed} not removed.`,
   pagination: (page, pages, total) => `Page ${page} of ${pages}, ${total} items`,
 };
+
+function isMaintenanceKind(kind: AdminTaskFilters['kind']): kind is keyof typeof zh.maintenance {
+  return kind === 'trash-expiry' || kind === 'blob-reclaim';
+}
+
+function taskName(task: AdminTask, labels: typeof zh) {
+  return isMaintenanceKind(task.kind) ? labels.maintenance[task.kind] : task.name;
+}
 
 function FilterFields({
   value,
@@ -119,14 +143,27 @@ function FilterFields({
         onChange={(event) => change({ ...value, ownerId: event.target.value })}
       />
       <SelectField
+        label={labels.origin}
+        value={value.origin}
+        options={adminTaskOrigins.map((origin) => ({
+          value: origin,
+          label: labels.origins[origin],
+        }))}
+        onValueChange={(origin) =>
+          change({ ...value, origin: adminTaskOrigins.find((item) => item === origin) ?? 'all' })
+        }
+      />
+      <SelectField
         label={labels.kind}
         value={value.kind}
-        options={backgroundTaskKinds.map((kind) => ({
+        options={adminTaskKinds.map((kind) => ({
           value: kind,
-          label: t('files.archives.tasks.kind.' + kind),
+          label: isMaintenanceKind(kind)
+            ? labels.maintenance[kind]
+            : t('files.archives.tasks.kind.' + kind),
         }))}
         onValueChange={(kind) =>
-          change({ ...value, kind: backgroundTaskKinds.find((item) => item === kind) ?? 'all' })
+          change({ ...value, kind: adminTaskKinds.find((item) => item === kind) ?? 'all' })
         }
       />
       <SelectField
@@ -148,12 +185,14 @@ function FilterFields({
 
 function useTaskStateLabel() {
   const { t } = useFrontendTranslation();
-  return (item: AdminTask) =>
-    t(
-      (item.kind === 'zip' || item.kind === 'extract'
+  return (item: AdminTask) => {
+    if (isMaintenanceKind(item.kind)) return t('files.archives.tasks.status.' + item.state);
+    const prefix =
+      item.kind === 'zip' || item.kind === 'extract'
         ? 'files.archives.tasks.state.'
-        : 'files.downloads.state.') + item.state,
-    );
+        : 'files.downloads.state.';
+    return t(prefix + item.state);
+  };
 }
 
 function TaskDetail({
@@ -177,6 +216,7 @@ function TaskDetail({
     ),
   );
   const item = state.result && 'value' in state.result ? state.result.value : undefined;
+  const maintenance = item && isMaintenanceKind(item.kind);
   return (
     <DialogSurface
       isOpen
@@ -196,12 +236,13 @@ function TaskDetail({
         <dl className="space-y-2 text-sm">
           {[
             [labels.taskId, item.id],
-            [labels.name, item.name],
-            [labels.owner, item.ownerId],
+            [labels.name, taskName(item, labels)],
+            [labels.owner, item.ownerId || labels.origins.system],
             [labels.state, labelState(item)],
             [labels.node, item.nodeId || '—'],
-            [labels.created, time(item.createdAt)],
-            [labels.updated, time(item.updatedAt)],
+            [maintenance ? labels.started : labels.created, time(item.createdAt)],
+            [maintenance ? labels.finished : labels.updated, time(item.updatedAt)],
+            ...(item.durationMs === null ? [] : [[labels.duration, item.durationMs]]),
             [labels.failure, item.failureCode || '—'],
           ].map(([label, value]) => (
             <div key={label}>
@@ -261,7 +302,7 @@ function CleanupDialog({
       <ul className="space-y-2 text-sm">
         {targets.map((row) => (
           <li className="break-all" key={taskKey(row)}>
-            {row.name} · {row.id}
+            {taskName(row, labels)} · {row.id}
           </li>
         ))}
       </ul>
@@ -431,7 +472,7 @@ export function AdminTasksPage() {
                     render: ({ task }) => (
                       <div className="flex flex-wrap gap-2">
                         <Action size="sm" variant="quiet" onPress={() => setDetail(task)}>
-                          {task.name}
+                          {taskName(task, labels)}
                         </Action>
                         {page.canCleanup && task.cleanable ? (
                           <Action
@@ -448,14 +489,19 @@ export function AdminTasksPage() {
                   {
                     id: 'kind',
                     label: labels.kind,
-                    render: ({ task }) => t('files.archives.tasks.kind.' + task.kind),
+                    render: ({ task }) =>
+                      isMaintenanceKind(task.kind)
+                        ? labels.maintenance[task.kind]
+                        : t('files.archives.tasks.kind.' + task.kind),
                   },
                   { id: 'state', label: labels.state, render: ({ task }) => labelState(task) },
                   {
                     id: 'owner',
                     label: labels.owner,
                     render: ({ task }) => (
-                      <span title={task.ownerId}>{task.ownerId.slice(0, 8)}</span>
+                      <span title={task.ownerId}>
+                        {task.ownerId.slice(0, 8) || labels.origins.system}
+                      </span>
                     ),
                   },
                   { id: 'node', label: labels.node, render: ({ task }) => task.nodeId || '—' },

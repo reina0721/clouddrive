@@ -27,6 +27,8 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 管理端 `GET /api/v1/files/admin-tasks` 及 `GET /api/v1/files/admin-tasks/{kind}/{id}` 要求 `files:task-admin:read`。`GET /admin-tasks/cleanup-preview` 与 `POST /admin-tasks/cleanup` 另需 `files:task-admin:cleanup`，变更需要 CSRF。清理接受最多 20 个任务快照，返回逐项状态。过期或已变化的选择以详情及结果为准。
 
+列表和清理预览支持 `origin=all|user|system`，默认 `all`。系统类型为 `trash-expiry` 和 `blob-reclaim`。系统记录的 `createdAt` 和 `updatedAt` 分别表示开始和结束，`durationMs` 为毫秒数，用户任务的 `durationMs` 为 `null`。
+
 管理端使用 `GET /api/v1/files/admin-shares` 和 `GET /api/v1/files/admin-shares/{id}` 查询分享，要求 `files:share-admin:read`。`POST /api/v1/files/admin-shares/revoke` 要求 `files:share-admin:revoke` 及 CSRF，接受最多 20 个 ID 与修订号。任一目标版本冲突时返回 409，整批保持原状。响应不含分享或访问凭据。
 
 全局属性定义使用 `GET/PUT /api/v1/files/property-definitions`，分别要求 `files:settings:read` 和 `files:settings:write`。PUT 要求会话及 CSRF，提交完整清单和修订号，修订冲突返回 409。文件所有者的属性详情返回可用定义，定义变更立即用于后续文件属性写入。详见[文件管理](../docs/operations/file-management.md)。

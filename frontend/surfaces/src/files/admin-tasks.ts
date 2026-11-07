@@ -1,7 +1,13 @@
 import { z } from 'zod';
-import type { BackgroundTaskQuery } from './background-tasks';
+import { backgroundTaskKinds, type BackgroundTaskQuery } from './background-tasks';
 
-export type AdminTaskFilters = Pick<BackgroundTaskQuery, 'kind' | 'status'> & { ownerId: string };
+export const adminTaskKinds = [...backgroundTaskKinds, 'trash-expiry', 'blob-reclaim'] as const;
+export const adminTaskOrigins = ['all', 'user', 'system'] as const;
+export type AdminTaskFilters = Pick<BackgroundTaskQuery, 'status'> & {
+  ownerId: string;
+  kind: (typeof adminTaskKinds)[number];
+  origin: (typeof adminTaskOrigins)[number];
+};
 export type AdminTaskQuery = AdminTaskFilters & {
   taskId: string;
   sort: 'id' | 'created';
@@ -11,7 +17,7 @@ export type AdminTaskQuery = AdminTaskFilters & {
 export type AdminTaskPreviewQuery = AdminTaskFilters & { before: string };
 
 const target = z.object({
-  kind: z.enum(['zip', 'extract', 'http', 'bittorrent']),
+  kind: z.enum(adminTaskKinds).exclude(['all']),
   id: z.string().uuid(),
   revision: z.number().int().nonnegative(),
   updatedAt: z.string(),
@@ -23,6 +29,7 @@ export const adminTaskSchema = target.extend({
   failureCode: z.string(),
   nodeId: z.string(),
   createdAt: z.string(),
+  durationMs: z.number().int().nonnegative().nullable(),
   cleanable: z.boolean(),
 });
 export const adminTaskPageSchema = z.object({

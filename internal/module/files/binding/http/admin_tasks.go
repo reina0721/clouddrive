@@ -16,7 +16,8 @@ import (
 
 type AdminTaskFilters struct {
 	OwnerID string                       `query:"ownerId" maxLength:"128"`
-	Kind    service.BackgroundTaskKind   `query:"kind" enum:"all,zip,extract,http,bittorrent" default:"all"`
+	Kind    service.BackgroundTaskKind   `query:"kind" enum:"all,zip,extract,http,bittorrent,trash-expiry,blob-reclaim" default:"all"`
+	Origin  service.AdminTaskOrigin      `query:"origin" enum:"all,user,system" default:"all"`
 	Status  service.BackgroundTaskStatus `query:"status" enum:"all,active,completed,failed,canceled,expired" default:"all"`
 }
 
@@ -36,7 +37,7 @@ type adminTaskListOutput struct {
 }
 
 type adminTaskReadInput struct {
-	Kind service.BackgroundTaskKind `path:"kind" enum:"zip,extract,http,bittorrent"`
+	Kind service.BackgroundTaskKind `path:"kind" enum:"zip,extract,http,bittorrent,trash-expiry,blob-reclaim"`
 	ID   string                     `path:"id" minLength:"36" maxLength:"36"`
 }
 
@@ -81,7 +82,7 @@ func registerAdminTasks(api huma.API, h *handler.Handler, operation func(string,
 			return nil, h.Present(ctx, err)
 		}
 		page, err := h.AdminTasks.List(ctx, service.AdminTaskQuery{OwnerID: input.OwnerID, TaskID: input.TaskID, Kind: input.Kind,
-			Status: input.Status, Sort: input.Sort, Direction: input.Direction, Page: input.Page})
+			Origin: input.Origin, Status: input.Status, Sort: input.Sort, Direction: input.Direction, Page: input.Page})
 		if err != nil {
 			return nil, h.Present(ctx, err)
 		}
@@ -104,7 +105,7 @@ func registerAdminTasks(api huma.API, h *handler.Handler, operation func(string,
 		if input.Before.IsZero() {
 			return nil, h.Present(ctx, model.ErrInvalid)
 		}
-		page, err := h.AdminTasks.List(ctx, service.AdminTaskQuery{OwnerID: input.OwnerID, Kind: input.Kind, Status: input.Status,
+		page, err := h.AdminTasks.List(ctx, service.AdminTaskQuery{OwnerID: input.OwnerID, Kind: input.Kind, Origin: input.Origin, Status: input.Status,
 			Sort: service.AdminTaskByCreated, Direction: service.InventoryAscending, Page: 1, CleanupBefore: input.Before})
 		if err != nil {
 			return nil, h.Present(ctx, err)

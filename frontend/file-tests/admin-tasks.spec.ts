@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 type Access = { url: string; username: string; password: string };
 type Job = { id: string; state: string; resultEntryId: string };
+type MaintenanceList = { items: { id: string; ownerId: string; durationMs: number }[] };
 
 async function login(page: Page, account: Access, path: string) {
   const origin = new URL(account.url).origin;
@@ -135,4 +136,65 @@ test('管理员过滤并清理成员的终态归档任务，保留发布文件',
   } finally {
     await memberContext.close();
   }
+});
+
+test('管理员可以筛选调度器生成的系统维护记录', async ({ page }, info) => {
+  test.setTimeout(100000);
+  const accessPath = process.env.CLOUDDRIVE_FILE_TEST_ACCESS;
+  test.skip(!accessPath, '维护验收使用已启用调度器的隔离 QA。');
+  const account = JSON.parse(
+    (await readFile(resolve(__dirname, accessPath!), 'utf8')).replace(/^\uFEFF/, ''),
+  ) as Access;
+  expect(new URL(account.url).origin).toBe('http://127.0.0.1:4194');
+  await login(page, account, '/system-tools/tasks');
+  let run: MaintenanceList['items'][number] | undefined;
+  await expect
+    .poll(
+      async () => {
+        const result = await fileRequest<MaintenanceList>(
+          page,
+          '/admin-tasks?origin=system&kind=trash-expiry&status=completed',
+        );
+        [run] = result.items;
+        return run?.id;
+      },
+      { timeout: 75000, intervals: [500, 2000, 5000] },
+    )
+    .toBeTruthy();
+  expect(run!.ownerId).toBe('');
+  expect(run!.durationMs).toBeGreaterThanOrEqual(0);
+  await page.getByRole('button', { name: '过滤', exact: true }).click();
+  const filters = page.getByRole('dialog', { name: '过滤', exact: true });
+  await filters.getByLabel('任务 ID', { exact: true }).fill(run!.id);
+  await filters.getByRole('button', { name: '来源', exact: false }).click();
+  await page.getByRole('option', { name: '系统', exact: true }).click();
+  await filters.getByRole('button', { name: '应用', exact: true }).click();
+  const grid = page.getByRole('grid', { name: '后台任务管理', exact: true });
+  const row = grid.getByRole('row').filter({ hasText: run!.id.slice(0, 8) });
+  await expect(row.getByText('系统', { exact: true })).toBeVisible();
+  await page.screenshot({
+    path: info.outputPath('maintenance-desktop.png'),
+    animations: 'disabled',
+  });
+  await row.getByRole('button', { name: '回收站到期扫描', exact: true }).click();
+  const detail = page.getByRole('dialog', { name: '任务详情', exact: true });
+  for (const label of ['开始时间', '结束时间', '运行耗时（毫秒）']) {
+    await expect(detail.getByText(label, { exact: true })).toBeVisible();
+  }
+  await page.setViewportSize({ width: 320, height: 760 });
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+    .toBe(true);
+  await page.screenshot({
+    path: info.outputPath('maintenance-mobile.png'),
+    animations: 'disabled',
+  });
+  await detail.getByRole('button', { name: '关闭', exact: true }).click();
+  await row.getByRole('checkbox').press('Space');
+  await page.getByRole('button', { name: '清理选中任务 (1)', exact: true }).click();
+  const confirmation = page.getByRole('dialog', { name: '清理任务', exact: true });
+  await expect(confirmation.getByText(run!.id, { exact: false })).toBeVisible();
+  await confirmation.getByRole('button', { name: '清理任务', exact: true }).click();
+  await expect(page.getByText('已清理 1 条，未清理 0 条。', { exact: true })).toBeVisible();
+  await expect(grid.getByText('没有符合条件的任务', { exact: true })).toBeVisible();
 });

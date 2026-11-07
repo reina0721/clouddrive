@@ -275,7 +275,13 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	trashBinding, err := schedule.Bind(schedule.Spec{ID: service.TrashExpiryTaskID, Trigger: trashTrigger, Concurrency: archiveConcurrency, Coordination: schedule.Local()}, boundary.TrashRetention.Dispatch)
+	maintenance, err := service.NewMaintenanceRuns(repository, deps.Clock, deps.IDs)
+	if err != nil {
+		return Module{}, err
+	}
+	trashBinding, err := schedule.Bind(schedule.Spec{ID: service.TrashExpiryTaskID, Trigger: trashTrigger, Concurrency: archiveConcurrency, Coordination: schedule.Local()}, func(ctx context.Context) error {
+		return maintenance.Record(ctx, service.MaintenanceTrashExpiry, boundary.TrashRetention.Dispatch)
+	})
 	if err != nil {
 		return Module{}, err
 	}
@@ -283,7 +289,12 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	blobBinding, err := schedule.Bind(schedule.Spec{ID: service.BlobReclamationTaskID, Trigger: blobTrigger, Concurrency: archiveConcurrency, Coordination: schedule.Local()}, boundary.BlobReclamation.Dispatch)
+	blobBinding, err := schedule.Bind(schedule.Spec{ID: service.BlobReclamationTaskID, Trigger: blobTrigger, Concurrency: archiveConcurrency, Coordination: schedule.Local()}, func(ctx context.Context) error {
+		if !deps.BlobReclamationPolicy.Automatic {
+			return nil
+		}
+		return maintenance.Record(ctx, service.MaintenanceBlobReclaim, boundary.BlobReclamation.Dispatch)
+	})
 	if err != nil {
 		return Module{}, err
 	}

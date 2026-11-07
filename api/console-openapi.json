@@ -2110,7 +2110,23 @@
                 "zip",
                 "extract",
                 "http",
-                "bittorrent"
+                "bittorrent",
+                "trash-expiry",
+                "blob-reclaim"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "origin",
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "user",
+                "system"
               ],
               "type": "string"
             }
@@ -2281,7 +2297,23 @@
                 "zip",
                 "extract",
                 "http",
-                "bittorrent"
+                "bittorrent",
+                "trash-expiry",
+                "blob-reclaim"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "origin",
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "user",
+                "system"
               ],
               "type": "string"
             }
@@ -2359,7 +2391,9 @@
                 "zip",
                 "extract",
                 "http",
-                "bittorrent"
+                "bittorrent",
+                "trash-expiry",
+                "blob-reclaim"
               ],
               "type": "string"
             }
@@ -30917,6 +30951,12 @@
             "format": "date-time",
             "type": "string"
           },
+          "durationMs": {
+            "format": "int64",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
           "failureCode": {
             "type": "string"
           },
@@ -30930,7 +30970,9 @@
               "zip",
               "extract",
               "http",
-              "bittorrent"
+              "bittorrent",
+              "trash-expiry",
+              "blob-reclaim"
             ],
             "type": "string"
           },
@@ -30964,6 +31006,7 @@
           "failureCode",
           "nodeId",
           "createdAt",
+          "durationMs",
           "cleanable",
           "kind",
           "id",
@@ -31057,7 +31100,9 @@
               "zip",
               "extract",
               "http",
-              "bittorrent"
+              "bittorrent",
+              "trash-expiry",
+              "blob-reclaim"
             ],
             "type": "string"
           },
@@ -31129,7 +31174,9 @@
               "zip",
               "extract",
               "http",
-              "bittorrent"
+              "bittorrent",
+              "trash-expiry",
+              "blob-reclaim"
             ],
             "type": "string"
           },

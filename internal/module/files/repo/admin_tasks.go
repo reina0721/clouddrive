@@ -14,16 +14,22 @@ import (
 
 // 管理投影不读取请求体、下载地址、节点凭据或文件存储位置。
 const adminTaskProjection = `
+SELECT id, '' AS owner_id, kind,
+       CASE WHEN kind = ? THEN 'Blob reclamation' ELSE 'Trash expiry' END AS name,
+       state, failure_code, '' AS node_id, created_at, updated_at, NULL AS lease_until,
+       0 AS revision, 0 AS cleanup_pending, duration_ms
+FROM files_maintenance_runs
+UNION ALL
 SELECT id, owner_id, kind, source_name AS name, state, failure_code,
        '' AS node_id, created_at, updated_at, lease_until, 0 AS revision,
-       CASE WHEN candidates <> '' THEN 1 ELSE 0 END AS cleanup_pending
+       CASE WHEN candidates <> '' THEN 1 ELSE 0 END AS cleanup_pending, NULL
 FROM files_archive_tasks
 UNION ALL
 SELECT d.id, d.owner_id, d.kind,
        CASE WHEN d.kind = ? THEN COALESCE(NULLIF(tr.name, ''), NULLIF(d.requested_name, ''), 'HTTP')
             ELSE COALESCE(NULLIF(d.requested_name, ''), NULLIF(bt.name, ''), 'BitTorrent') END,
        d.state, d.failure_code, COALESCE(bt.node_id, ''), d.created_at, d.updated_at, d.lease_until,
-       d.revision, 0
+       d.revision, 0, NULL
 FROM files_download_tasks d
 LEFT JOIN files_transfers tr ON d.kind = ? AND tr.owner_id = d.owner_id AND tr.download_id = d.id AND tr.source = ?
 LEFT JOIN files_torrent_tasks bt ON d.kind = ? AND bt.owner_id = d.owner_id AND bt.task_id = d.id`
@@ -41,7 +47,8 @@ func (row adminTaskRecord) item(now time.Time) service.AdminTask {
 }
 
 func adminTaskTable(db *gorm.DB) *gorm.DB {
-	return db.Table("(?) AS task", db.Raw(adminTaskProjection, model.DownloadHTTP, model.DownloadHTTP, model.TransferSourceOffline, model.DownloadBitTorrent))
+	return db.Table("(?) AS task", db.Raw(adminTaskProjection, service.MaintenanceBlobReclaim,
+		model.DownloadHTTP, model.DownloadHTTP, model.TransferSourceOffline, model.DownloadBitTorrent))
 }
 
 func adminTerminalTaskStates() []model.DownloadState {
@@ -56,6 +63,12 @@ func (r *Repository) QueryAdminTasks(ctx context.Context, query service.AdminTas
 				return err
 			}
 			base := adminTaskTable(db)
+			switch query.Origin {
+			case service.AdminTaskOriginUser:
+				base = base.Where("task.owner_id <> ''")
+			case service.AdminTaskOriginSystem:
+				base = base.Where("task.owner_id = ''")
+			}
 			if query.OwnerID != "" {
 				base = base.Where("task.owner_id = ?", query.OwnerID)
 			}

@@ -281,6 +281,11 @@ components:
         createdAt:
           format: date-time
           type: string
+        durationMs:
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
         failureCode:
           type: string
         id:
@@ -293,6 +298,8 @@ components:
             - extract
             - http
             - bittorrent
+            - trash-expiry
+            - blob-reclaim
           type: string
         name:
           type: string
@@ -317,6 +324,7 @@ components:
         - failureCode
         - nodeId
         - createdAt
+        - durationMs
         - cleanable
         - kind
         - id
@@ -388,6 +396,8 @@ components:
             - extract
             - http
             - bittorrent
+            - trash-expiry
+            - blob-reclaim
           type: string
         revision:
           format: int64
@@ -443,6 +453,8 @@ components:
             - extract
             - http
             - bittorrent
+            - trash-expiry
+            - blob-reclaim
           type: string
         revision:
           format: int64
@@ -6980,6 +6992,18 @@ paths:
               - extract
               - http
               - bittorrent
+              - trash-expiry
+              - blob-reclaim
+            type: string
+        - explode: false
+          in: query
+          name: origin
+          schema:
+            default: all
+            enum:
+              - all
+              - user
+              - system
             type: string
         - explode: false
           in: query
@@ -7091,6 +7115,18 @@ paths:
               - extract
               - http
               - bittorrent
+              - trash-expiry
+              - blob-reclaim
+            type: string
+        - explode: false
+          in: query
+          name: origin
+          schema:
+            default: all
+            enum:
+              - all
+              - user
+              - system
             type: string
         - explode: false
           in: query
@@ -7142,6 +7178,8 @@ paths:
               - extract
               - http
               - bittorrent
+              - trash-expiry
+              - blob-reclaim
             type: string
         - in: path
           name: id

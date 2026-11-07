@@ -16,16 +16,21 @@ const (
 )
 
 type AdminTaskSort string
+type AdminTaskOrigin string
 
 const (
-	AdminTaskByID      AdminTaskSort = "id"
-	AdminTaskByCreated AdminTaskSort = "created"
+	AdminTaskByID         AdminTaskSort   = "id"
+	AdminTaskByCreated    AdminTaskSort   = "created"
+	AdminTaskOriginAll    AdminTaskOrigin = "all"
+	AdminTaskOriginUser   AdminTaskOrigin = "user"
+	AdminTaskOriginSystem AdminTaskOrigin = "system"
 )
 
 type AdminTaskQuery struct {
 	OwnerID       string
 	TaskID        string
 	Kind          BackgroundTaskKind
+	Origin        AdminTaskOrigin
 	Status        BackgroundTaskStatus
 	Sort          AdminTaskSort
 	Direction     InventoryDirection
@@ -34,7 +39,7 @@ type AdminTaskQuery struct {
 }
 
 type AdminTaskTarget struct {
-	Kind      BackgroundTaskKind `json:"kind" enum:"zip,extract,http,bittorrent"`
+	Kind      BackgroundTaskKind `json:"kind" enum:"zip,extract,http,bittorrent,trash-expiry,blob-reclaim"`
 	ID        string             `json:"id" minLength:"36" maxLength:"36"`
 	UpdatedAt time.Time          `json:"updatedAt"`
 	Revision  int64              `json:"revision" minimum:"0" maximum:"9007199254740991"`
@@ -49,6 +54,7 @@ type AdminTask struct {
 	FailureCode string    `json:"failureCode"`
 	NodeID      string    `json:"nodeId"`
 	CreatedAt   time.Time `json:"createdAt"`
+	DurationMS  *int64    `json:"durationMs" minimum:"0"`
 	Cleanable   bool      `json:"cleanable"`
 }
 
@@ -63,6 +69,7 @@ type AdminTaskRepository interface {
 	QueryAdminTasks(context.Context, AdminTaskQuery, time.Time) (AdminTaskPage, error)
 	ReadAdminTask(context.Context, BackgroundTaskKind, string, time.Time) (AdminTask, error)
 	RemoveArchiveTaskIfUnchanged(context.Context, string, string, time.Time) error
+	RemoveMaintenanceRunIfUnchanged(context.Context, MaintenanceKind, string, time.Time) error
 }
 
 type AdminTaskDownloadRemoval interface {
@@ -88,7 +95,11 @@ func NewAdminTasks(store AdminTaskRepository, downloads AdminTaskDownloadRemoval
 }
 
 func validAdminTaskKind(kind BackgroundTaskKind) bool {
-	return kind == BackgroundTaskZIP || kind == BackgroundTaskExtract || kind == BackgroundTaskHTTP || kind == BackgroundTaskBitTorrent
+	return kind == BackgroundTaskZIP || kind == BackgroundTaskExtract || kind == BackgroundTaskHTTP || kind == BackgroundTaskBitTorrent || isMaintenanceKind(kind)
+}
+
+func isMaintenanceKind(kind BackgroundTaskKind) bool {
+	return MaintenanceKind(kind) == MaintenanceTrashExpiry || MaintenanceKind(kind) == MaintenanceBlobReclaim
 }
 
 func (s *AdminTasks) List(ctx context.Context, query AdminTaskQuery) (AdminTaskPage, error) {
@@ -100,6 +111,11 @@ func (s *AdminTasks) List(ctx context.Context, query AdminTaskQuery) (AdminTaskP
 	}
 	switch query.Status {
 	case BackgroundStatusAll, BackgroundStatusActive, BackgroundStatusCompleted, BackgroundStatusFailed, BackgroundStatusCanceled, BackgroundStatusExpired:
+	default:
+		return AdminTaskPage{}, model.ErrInvalid
+	}
+	switch query.Origin {
+	case AdminTaskOriginAll, AdminTaskOriginUser, AdminTaskOriginSystem:
 	default:
 		return AdminTaskPage{}, model.ErrInvalid
 	}
@@ -146,6 +162,9 @@ func (s *AdminTasks) remove(ctx context.Context, target AdminTaskTarget) error {
 	}
 	if target.Kind == BackgroundTaskZIP || target.Kind == BackgroundTaskExtract {
 		return s.store.RemoveArchiveTaskIfUnchanged(ctx, value.OwnerID, target.ID, target.UpdatedAt)
+	}
+	if isMaintenanceKind(target.Kind) {
+		return s.store.RemoveMaintenanceRunIfUnchanged(ctx, MaintenanceKind(target.Kind), target.ID, target.UpdatedAt)
 	}
 	return s.downloads.Remove(ctx, value.OwnerID, target.ID, target.Revision)
 }
