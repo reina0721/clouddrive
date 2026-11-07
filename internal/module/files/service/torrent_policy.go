@@ -49,15 +49,22 @@ type TorrentNodeConfig struct {
 	WorkspaceRoot string `mapstructure:"workspaceRoot"`
 }
 
-// Validate 校验节点的受控配置，不进行DNS、文件系统或RPC I/O。
-func (node TorrentNodeConfig) Validate() error {
-	if node.ID == "" || len(node.ID) > model.MaxDownloadClientKeyBytes || model.ValidateName(node.Name) != nil || node.Secret == "" || len(node.Secret) > model.MaxDownloadURLBytes || !filepath.IsAbs(node.WorkspaceRoot) || len(node.WorkspaceRoot) > MaxTorrentPathBytes {
-		return fmt.Errorf("invalid torrent node configuration")
+func validTorrentNodeID(id string) bool {
+	if len(id) == 0 || len(id) > model.MaxDownloadClientKeyBytes {
+		return false
 	}
-	for _, character := range node.ID {
+	for _, character := range id {
 		if character != '-' && character != '_' && !(character >= 'a' && character <= 'z') && !(character >= '0' && character <= '9') {
-			return fmt.Errorf("invalid torrent node identity")
+			return false
 		}
+	}
+	return true
+}
+
+// Validate 校验节点的受控配置，不进行 DNS、文件系统或 RPC I/O。
+func (node TorrentNodeConfig) Validate() error {
+	if !validTorrentNodeID(node.ID) || model.ValidateName(node.Name) != nil || node.Secret == "" || len(node.Secret) > model.MaxDownloadURLBytes || !filepath.IsAbs(node.WorkspaceRoot) || len(node.WorkspaceRoot) > MaxTorrentPathBytes {
+		return fmt.Errorf("invalid torrent node configuration")
 	}
 	endpoint, err := url.Parse(node.Endpoint)
 	if err != nil {

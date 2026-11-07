@@ -23,6 +23,8 @@ import {
   adminTaskPageSchema,
   adminTaskListSchema,
   adminTaskCleanupSchema,
+  workerNodeCatalogSchema,
+  workerNodeCheckSchema,
   blobDetailSchema,
   blobCandidatePageSchema,
   blobPageSchema,
@@ -346,6 +348,12 @@ export function createFilesRuntime(
     cleanAdminTasks: async (targets) =>
       adminTaskCleanupSchema.parse(
         await call('/admin-tasks/cleanup', { method: 'POST', body: { targets } }),
+      ),
+    listWorkerNodes: async (signal) =>
+      workerNodeCatalogSchema.parse(await call('/worker-nodes', { signal })),
+    checkWorkerNode: async (id, signal) =>
+      workerNodeCheckSchema.parse(
+        await call('/worker-nodes/' + encodeURIComponent(id) + '/check', { signal }),
       ),
     listAdminShares: async (query, signal) => {
       const params = new URLSearchParams();

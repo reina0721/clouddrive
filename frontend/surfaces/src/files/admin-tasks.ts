@@ -5,6 +5,7 @@ export const adminTaskKinds = [...backgroundTaskKinds, 'trash-expiry', 'blob-rec
 export const adminTaskOrigins = ['all', 'user', 'system'] as const;
 export type AdminTaskFilters = Pick<BackgroundTaskQuery, 'status'> & {
   ownerId: string;
+  nodeId: string;
   kind: (typeof adminTaskKinds)[number];
   origin: (typeof adminTaskOrigins)[number];
 };

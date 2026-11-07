@@ -55,6 +55,7 @@ type Dependencies struct {
 	FilesystemSettings       *service.FilesystemSettings
 	FilesystemSettingsAccess handler.FilesystemSettingsAuthority
 	TrashScanInterval        time.Duration
+	TrashSchedulerEnabled    bool
 	TransferContent          service.TransferContent
 	TransferPolicy           service.TransferPolicy
 	StagingPath              string
@@ -215,6 +216,7 @@ func New(deps Dependencies) (Module, error) {
 	}
 	decoder := metainfo.Decoder{}
 	nodes := make([]service.TorrentNode, 0, len(deps.OfflinePolicy.TorrentNodes))
+	nodeBindings := make([]service.WorkerNodeBinding, 0, len(deps.OfflinePolicy.TorrentNodes))
 	participants := []supervisor.Participant{source}
 	for _, configured := range deps.OfflinePolicy.TorrentNodes {
 		client, err := aria2.New(configured, decoder, deps.Logger)
@@ -222,6 +224,12 @@ func New(deps Dependencies) (Module, error) {
 			return Module{}, err
 		}
 		nodes = append(nodes, service.TorrentNode{Config: configured, Engine: client})
+		nodeBindings = append(nodeBindings, service.WorkerNodeBinding{
+			Node: service.WorkerNode{ID: configured.ID, Name: configured.Name,
+				DispatchEnabled: deps.OfflinePolicy.Enabled && deps.TorrentDispatcherEnabled,
+				Concurrency:     deps.OfflinePolicy.TorrentNodeConcurrency, ReservedBytes: deps.OfflinePolicy.TorrentNodeReservedBytes},
+			Inspector: client,
+		})
 		participants = append(participants, client)
 	}
 	torrents, err := service.NewTorrentDownloads(transfers, torrentRepository, decoder, deps.OfflineAuthority, deps.OfflinePolicy, deps.TorrentDispatcherEnabled, nodes, deps.Logger)
@@ -235,6 +243,16 @@ func New(deps Dependencies) (Module, error) {
 	boundary.Downloads = downloads
 	boundary.AdminTaskAccess = deps.AdminTaskAccess
 	boundary.AdminTasks, err = service.NewAdminTasks(repository, downloads, deps.Clock)
+	if err != nil {
+		return Module{}, err
+	}
+	boundary.WorkerNodes, err = service.NewWorkerNodes([]service.WorkerCapability{
+		{Kind: service.BackgroundTaskZIP, Enabled: deps.ArchiveDispatcherEnabled},
+		{Kind: service.BackgroundTaskExtract, Enabled: deps.ArchiveDispatcherEnabled},
+		{Kind: service.BackgroundTaskHTTP, Enabled: deps.OfflinePolicy.Enabled && deps.OfflineDispatcherEnabled},
+		{Kind: service.BackgroundTaskKind(service.MaintenanceTrashExpiry), Enabled: deps.TrashSchedulerEnabled},
+		{Kind: service.BackgroundTaskKind(service.MaintenanceBlobReclaim), Enabled: deps.BlobReclamationPolicy.Automatic},
+	}, nodeBindings, deps.Clock)
 	if err != nil {
 		return Module{}, err
 	}

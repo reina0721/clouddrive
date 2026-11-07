@@ -518,6 +518,14 @@ export const generatedRouteCatalog: RouteCatalog = {
       paramNames: [],
     },
     {
+      routeId: 'system-tools.nodes',
+      pluginId: 'system-tools',
+      path: 'nodes',
+      segments: ['nodes'],
+      pattern: '/system-tools/nodes',
+      paramNames: [],
+    },
+    {
       routeId: 'system-tools.runtime',
       pluginId: 'system-tools',
       path: 'runtime',
@@ -1104,6 +1112,14 @@ export const generatedRouteCatalog: RouteCatalog = {
             order: 49,
             iconId: 'resource',
             routeId: 'system-tools.tasks',
+          },
+          {
+            navigationId: 'system-tools.nodes',
+            labelKey: 'systemTools.nav.nodes',
+            groupId: 'administration',
+            order: 50,
+            iconId: 'resource',
+            routeId: 'system-tools.nodes',
           },
           {
             navigationId: 'system-tools.runtime',

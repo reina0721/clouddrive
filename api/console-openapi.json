@@ -2102,6 +2102,16 @@
           {
             "explode": false,
             "in": "query",
+            "name": "nodeId",
+            "schema": {
+              "maxLength": 64,
+              "pattern": "^[a-z0-9_-]*$",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
             "name": "kind",
             "schema": {
               "default": "all",
@@ -2283,6 +2293,16 @@
             "name": "ownerId",
             "schema": {
               "maxLength": 128,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "nodeId",
+            "schema": {
+              "maxLength": 64,
+              "pattern": "^[a-z0-9_-]*$",
               "type": "string"
             }
           },
@@ -6554,6 +6574,89 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TrashRetention"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/worker-nodes": {
+      "get": {
+        "operationId": "files.worker-nodes.list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkerNodesOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/worker-nodes/{id}/check": {
+      "get": {
+        "operationId": "files.worker-nodes.check",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z0-9_-]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkerNodeCheck"
                 }
               }
             },
@@ -38097,6 +38200,136 @@
         "required": [
           "field",
           "reason"
+        ],
+        "type": "object"
+      },
+      "WorkerCapability": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": [
+              "zip",
+              "extract",
+              "http",
+              "trash-expiry",
+              "blob-reclaim"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "WorkerNode": {
+        "additionalProperties": false,
+        "properties": {
+          "concurrency": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "dispatchEnabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "reservedBytes": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "dispatchEnabled",
+          "concurrency",
+          "reservedBytes"
+        ],
+        "type": "object"
+      },
+      "WorkerNodeCheck": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "checkedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "downloadBytesPerSecond": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "stopped": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "uploadBytesPerSecond": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "version": {
+            "type": "string"
+          },
+          "waiting": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "checkedAt",
+          "downloadBytesPerSecond",
+          "uploadBytesPerSecond",
+          "active",
+          "waiting",
+          "stopped"
+        ],
+        "type": "object"
+      },
+      "WorkerNodesOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "canReadTasks": {
+            "type": "boolean"
+          },
+          "local": {
+            "items": {
+              "$ref": "#/components/schemas/WorkerCapability"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/WorkerNode"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "canReadTasks",
+          "local",
+          "nodes"
         ],
         "type": "object"
       },

@@ -23,11 +23,18 @@ import {
 import { backgroundTaskStatuses } from '../../../src/files/background-tasks';
 import { maxInventoryPage } from '../../../src/files/inventory';
 import { useFiles } from '../../../src/files/runtime';
+import { workerNodeIdPattern } from '../../../src/files/worker-nodes';
 import type { Preferences } from '../../../src/preferences-model';
 import { CatalogFailure } from './catalog-failure';
 import { useCatalogRequest } from './use-catalog-request';
 
-const filters: AdminTaskFilters = { ownerId: '', kind: 'all', origin: 'all', status: 'all' };
+const filters: AdminTaskFilters = {
+  ownerId: '',
+  nodeId: '',
+  kind: 'all',
+  origin: 'all',
+  status: 'all',
+};
 const initial: AdminTaskQuery = {
   ...filters,
   taskId: '',
@@ -51,6 +58,9 @@ const zh = {
   kind: '类型',
   state: '状态',
   node: '处理节点',
+  nodeId: '节点 ID',
+  invalidNodeId: '节点 ID 只能包含小写字母、数字、连字符和下划线。',
+  clearNode: '清除节点筛选',
   created: '创建于',
   updated: '更新于',
   started: '开始时间',
@@ -91,6 +101,9 @@ const en: typeof zh = {
   kind: 'Type',
   state: 'State',
   node: 'Worker node',
+  nodeId: 'Node ID',
+  invalidNodeId: 'Use lowercase letters, digits, hyphens and underscores in the node ID.',
+  clearNode: 'Clear node filter',
   created: 'Created',
   updated: 'Updated',
   started: 'Started',
@@ -122,6 +135,10 @@ function taskName(task: AdminTask, labels: typeof zh) {
   return isMaintenanceKind(task.kind) ? labels.maintenance[task.kind] : task.name;
 }
 
+function validNodeFilter(id: string) {
+  return id === '' || workerNodeIdPattern.test(id);
+}
+
 function FilterFields({
   value,
   change,
@@ -141,6 +158,13 @@ function FilterFields({
         value={value.ownerId}
         maxLength={128}
         onChange={(event) => change({ ...value, ownerId: event.target.value })}
+      />
+      <TextField
+        label={labels.nodeId}
+        value={value.nodeId}
+        maxLength={64}
+        {...(validNodeFilter(value.nodeId) ? {} : { error: labels.invalidNodeId })}
+        onChange={(event) => change({ ...value, nodeId: event.target.value })}
       />
       <SelectField
         label={labels.origin}
@@ -310,7 +334,7 @@ function CleanupDialog({
   );
 }
 
-export function AdminTasksPage() {
+export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
   const files = useFiles();
   const { t, locale } = useFrontendTranslation();
   const labelState = useTaskStateLabel();
@@ -323,7 +347,7 @@ export function AdminTasksPage() {
     preferences.getSnapshot,
   ).localeRegion;
   const time = (value: string) => formatInstant(locale, region, value);
-  const [query, setQuery] = useState(initial);
+  const [query, setQuery] = useState({ ...initial, nodeId });
   const [draft, setDraft] = useState<AdminTaskQuery>();
   const [criteria, setCriteria] = useState<AdminTaskFilters & { day: string; clock: string }>();
   const [cleanup, setCleanup] = useState<{
@@ -375,7 +399,9 @@ export function AdminTasksPage() {
             {page?.canCleanup ? (
               <Action
                 variant="secondary"
-                onPress={() => setCriteria({ ...filters, day: '', clock: '00:00' })}
+                onPress={() =>
+                  setCriteria({ ...filters, nodeId: query.nodeId, day: '', clock: '00:00' })
+                }
               >
                 {labels.cleanup}
               </Action>
@@ -390,6 +416,20 @@ export function AdminTasksPage() {
       />
       <Panel className="surface-route-region overflow-hidden">
         <SectionBody>
+          {query.nodeId ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="break-all text-sm">
+                {labels.nodeId} · {query.nodeId}
+              </p>
+              <Action
+                variant="quiet"
+                size="sm"
+                onPress={() => apply({ ...query, nodeId: '', page: 1 })}
+              >
+                {labels.clearNode}
+              </Action>
+            </div>
+          ) : null}
           {notice ? (
             <div role="status">
               <p>{labels.result(notice.items.length - failed.length, failed.length)}</p>
@@ -544,6 +584,7 @@ export function AdminTasksPage() {
           description={labels.description}
           cancelLabel={t('files.cancel')}
           confirmLabel={labels.apply}
+          confirmDisabled={!validNodeFilter(draft.nodeId)}
           onConfirm={() => apply({ ...draft, page: 1 })}
           onOpenChange={(open) => {
             if (!open) setDraft(undefined);
@@ -581,7 +622,11 @@ export function AdminTasksPage() {
           description={labels.cleanupHint}
           cancelLabel={t('files.cancel')}
           confirmLabel={labels.preview}
-          confirmDisabled={!criteria.day || !/^([01]\d|2[0-3]):[0-5]\d$/.test(criteria.clock)}
+          confirmDisabled={
+            !validNodeFilter(criteria.nodeId) ||
+            !criteria.day ||
+            !/^([01]\d|2[0-3]):[0-5]\d$/.test(criteria.clock)
+          }
           onConfirm={() => {
             const { day, clock, ...filter } = criteria;
             setCriteria(undefined);

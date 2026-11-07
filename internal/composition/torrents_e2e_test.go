@@ -92,6 +92,8 @@ func (f *torrentProtocolFixture) handler(t *testing.T) http.HandlerFunc {
 			result = map[string]string{"sessionId": "1234567890abcdef"}
 		case "aria2.getGlobalOption":
 			result = map[string]string{"save-session": filepath.Join(f.root, "session"), "deferred-input": "false", "check-certificate": "true"}
+		case "aria2.getGlobalStat":
+			result = map[string]string{"downloadSpeed": "1024", "uploadSpeed": "512", "numActive": "2", "numWaiting": "3", "numStopped": "4"}
 		case "aria2.saveSession":
 		case "aria2.addTorrent", "aria2.addUri":
 			var next torrentProtocolJob
@@ -257,6 +259,34 @@ func TestTorrentProductSelectionIsolationAndAtomicPublication(t *testing.T) {
 	other := &consoleTestClient{base: owner.base, cookies: map[string]string{}}
 	other.request(t, "GET", "/auth/csrf", nil, 200)
 	other.request(t, "POST", "/auth/login", map[string]string{"email": "torrent-other@clouddrive.test", "password": password}, 200)
+	const nodePath = "/native/files/worker-nodes"
+	other.request(t, "GET", nodePath, nil, 403)
+	other.request(t, "GET", nodePath+"/local/check", nil, 403)
+	nodes := owner.request(t, "GET", nodePath, nil, 200)
+	if len(nodes["local"].([]any)) != 5 || len(nodes["nodes"].([]any)) != 1 || nodes["canReadTasks"] != true {
+		t.Fatal("节点目录与权限投影不完整")
+	}
+	for _, endpoint := range []string{nodePath, nodePath + "/local/check"} {
+		raw := audienceHTTP(t, owner, "GET", "/api/console/v1"+endpoint, nil, 200)
+		for _, private := range []string{setup, fixture.root, node.URL, "1234567890abcdef"} {
+			if bytes.Contains(raw, []byte(private)) {
+				t.Fatal("节点管理响应披露内部字段")
+			}
+		}
+	}
+	check := owner.request(t, "GET", nodePath+"/local/check", nil, 200)
+	if check["version"] != "1.37.0" || check["active"] != float64(2) || check["waiting"] != float64(3) ||
+		check["stopped"] != float64(4) || check["downloadBytesPerSecond"] != float64(1024) || check["uploadBytesPerSecond"] != float64(512) {
+		t.Fatal("实际 RPC 统计未完整投影")
+	}
+	owner.request(t, "GET", nodePath+"/unknown/check", nil, 404)
+	fixture.mu.Lock()
+	fixture.unavailable = true
+	fixture.mu.Unlock()
+	owner.request(t, "GET", nodePath+"/local/check", nil, 503)
+	fixture.mu.Lock()
+	fixture.unavailable = false
+	fixture.mu.Unlock()
 	capabilities := owner.request(t, "GET", "/native/files/torrent-downloads/capabilities", nil, 200)
 	if capabilities["available"] != true || len(capabilities["nodes"].([]any)) != 1 {
 		t.Fatal("节点能力未真实接入")
@@ -266,6 +296,13 @@ func TestTorrentProductSelectionIsolationAndAtomicPublication(t *testing.T) {
 	second := other.request(t, "POST", "/native/files/torrent-downloads", create, 200)
 	if first["id"] == second["id"] || first["state"] != "selecting" {
 		t.Fatal("同hash账号任务没有独立身份或虚构下载阶段")
+	}
+	const taskCatalog = "/native/files/admin-tasks"
+	if tasks := owner.request(t, "GET", taskCatalog+"?nodeId=local&kind=bittorrent", nil, 200); tasks["total"] != float64(2) {
+		t.Fatal("节点过滤未匹配真实节点任务")
+	}
+	if tasks := owner.request(t, "GET", taskCatalog+"?nodeId=unknown", nil, 200); tasks["total"] != float64(0) {
+		t.Fatal("节点过滤包含其他节点任务")
 	}
 	const feedPath = "/native/files/background-tasks?kind=bittorrent&status=active"
 	for _, account := range []struct {

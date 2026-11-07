@@ -50,6 +50,14 @@ export const navigationContribution = {
       routeId: 'system-tools.tasks',
     },
     {
+      navigationId: 'system-tools.nodes',
+      labelKey: 'systemTools.nav.nodes',
+      groupId: 'administration',
+      order: 50,
+      iconId: 'resource',
+      routeId: 'system-tools.nodes',
+    },
+    {
       navigationId: 'system-tools.runtime',
       labelKey: 'administration.runtime',
       groupId: 'administration',

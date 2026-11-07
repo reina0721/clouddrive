@@ -450,6 +450,16 @@
     "Manageable": true
   },
   {
+    "ID": "system-tools.nodes",
+    "ModuleID": "system-tools",
+    "RouteID": "system-tools.nodes",
+    "TitleMessageID": "systemTools.nav.nodes",
+    "IconID": "resource",
+    "DefaultParentID": "group:administration",
+    "DefaultOrder": 50,
+    "Manageable": true
+  },
+  {
     "ID": "system-tools.runtime",
     "ModuleID": "system-tools",
     "RouteID": "system-tools.runtime",

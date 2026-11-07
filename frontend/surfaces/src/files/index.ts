@@ -20,6 +20,7 @@ export * from './direct-links';
 export * from './inventory';
 export * from './admin-shares';
 export * from './admin-tasks';
+export * from './worker-nodes';
 export * from './blobs';
 export * from './filesystem-settings';
 export * from './property-definitions';

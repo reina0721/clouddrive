@@ -75,6 +75,9 @@ func (r *Repository) QueryAdminTasks(ctx context.Context, query service.AdminTas
 			if query.TaskID != "" {
 				base = base.Where("task.id = ?", query.TaskID)
 			}
+			if query.NodeID != "" {
+				base = base.Where("task.node_id = ?", query.NodeID)
+			}
 			if query.Kind != service.BackgroundTaskAny {
 				base = base.Where("task.kind = ?", query.Kind)
 			}

@@ -15,6 +15,7 @@ const (
 	AdminShareRevoke permissioncatalog.Key = "files:share-admin:revoke"
 	AdminTaskRead    permissioncatalog.Key = "files:task-admin:read"
 	AdminTaskCleanup permissioncatalog.Key = "files:task-admin:cleanup"
+	WorkerNodeRead   permissioncatalog.Key = "files:node:read"
 )
 
 func Definitions() []permissioncatalog.Definition {
@@ -30,5 +31,6 @@ func Definitions() []permissioncatalog.Definition {
 		{Key: AdminShareRevoke, OwnerModuleID: "files", DescriptionMessageID: "permission.files.share-admin.revoke", Risk: permissioncatalog.RiskCritical},
 		{Key: AdminTaskRead, OwnerModuleID: "files", DescriptionMessageID: "permission.files.task-admin.read", Risk: permissioncatalog.RiskElevated},
 		{Key: AdminTaskCleanup, OwnerModuleID: "files", DescriptionMessageID: "permission.files.task-admin.cleanup", Risk: permissioncatalog.RiskCritical},
+		{Key: WorkerNodeRead, OwnerModuleID: "files", DescriptionMessageID: "permission.files.node.read", Risk: permissioncatalog.RiskElevated},
 	}
 }

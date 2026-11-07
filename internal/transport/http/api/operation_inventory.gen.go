@@ -150,6 +150,8 @@ const (
 	OperationFilesVersionsDelete            OperationID = "files.versions.delete"
 	OperationFilesVersionsList              OperationID = "files.versions.list"
 	OperationFilesVersionsRestore           OperationID = "files.versions.restore"
+	OperationFilesWorkerNodesCheck          OperationID = "files.worker-nodes.check"
+	OperationFilesWorkerNodesList           OperationID = "files.worker-nodes.list"
 	OperationFilesWriteLocksList            OperationID = "files.write-locks.list"
 	OperationFilesWriteLocksRelease         OperationID = "files.write-locks.release"
 	OperationGetTodo                        OperationID = "getTodo"
@@ -355,6 +357,8 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesVersionsDelete, Method: "DELETE", Path: "/api/v1/files/{id}/versions", Policy: "protected", Scope: "files:write", Action: "files.versions.delete"},
 	{ID: OperationFilesVersionsList, Method: "GET", Path: "/api/v1/files/{id}/versions", Policy: "protected", Scope: "files:read", Action: "files.versions.list"},
 	{ID: OperationFilesVersionsRestore, Method: "POST", Path: "/api/v1/files/{id}/versions/{revision}/restore", Policy: "protected", Scope: "files:write", Action: "files.versions.restore"},
+	{ID: OperationFilesWorkerNodesCheck, Method: "GET", Path: "/api/v1/files/worker-nodes/{id}/check", Policy: "protected", Scope: "files:node:read", Action: "files.worker-nodes.check"},
+	{ID: OperationFilesWorkerNodesList, Method: "GET", Path: "/api/v1/files/worker-nodes", Policy: "protected", Scope: "files:node:read", Action: "files.worker-nodes.list"},
 	{ID: OperationFilesWriteLocksList, Method: "GET", Path: "/api/v1/files/write-locks", Policy: "protected", Scope: "files:read", Action: "files.write-locks.list"},
 	{ID: OperationFilesWriteLocksRelease, Method: "POST", Path: "/api/v1/files/write-locks/{id}/release", Policy: "protected", Scope: "files:write", Action: "files.write-locks.release"},
 	{ID: OperationGetTodo, Method: "GET", Path: "/api/v1/todos/{id}", Policy: "protected", Scope: "todos:read", Action: "todo.read"},

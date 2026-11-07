@@ -10,6 +10,7 @@ export const pluginI18nResources = {
           filesystem: '文件系统',
           shares: '分享管理',
           tasks: '后台任务管理',
+          nodes: '节点管理',
         },
         icons: {
           title: 'Icon 大全',
@@ -30,6 +31,7 @@ export const pluginI18nResources = {
           filesystem: 'File system',
           shares: 'Manage shares',
           tasks: 'Manage background tasks',
+          nodes: 'Worker nodes',
         },
         icons: {
           title: 'Icon Gallery',

@@ -145,3 +145,4 @@
 - [156 管理端分享清单与撤销](156-admin-share-management/README.md)：跨账号查询、活动计数及原子撤销。
 - [157 管理端后台任务](157-admin-background-tasks/README.md)：跨账号文件任务查询、清理预览与逐项结果。
 - [158 文件维护运行历史](158-maintenance-run-history/README.md) 记录回收站到期扫描与定时 Blob 回收的执行结果。
+- [159 文件任务节点](159-file-worker-nodes/README.md) 查看节点职责、通信、统计和关联任务。

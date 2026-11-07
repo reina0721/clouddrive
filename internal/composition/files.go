@@ -51,6 +51,13 @@ func (a filesConnectionAuthority) AuthorizeAdminTaskCleanup(ctx context.Context,
 	return a.access.AuthorizeAccount(ctx, actor, filespermission.AdminTaskCleanup)
 }
 
+func (a filesConnectionAuthority) AuthorizeAdminTaskRead(ctx context.Context, actor string) (bool, error) {
+	if a.access == nil {
+		return false, fmt.Errorf("admin task authorization unavailable")
+	}
+	return a.access.AuthorizeAccount(ctx, actor, filespermission.AdminTaskRead)
+}
+
 func (a filesConnectionAuthority) AuthorizeShare(ctx context.Context, owner string, access filesservice.ShareAccountAccess) (bool, error) {
 	if a.access == nil {
 		return false, fmt.Errorf("file share authorization unavailable")

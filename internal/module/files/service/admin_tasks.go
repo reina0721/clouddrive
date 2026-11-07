@@ -29,6 +29,7 @@ const (
 type AdminTaskQuery struct {
 	OwnerID       string
 	TaskID        string
+	NodeID        string
 	Kind          BackgroundTaskKind
 	Origin        AdminTaskOrigin
 	Status        BackgroundTaskStatus
@@ -105,6 +106,7 @@ func isMaintenanceKind(kind BackgroundTaskKind) bool {
 func (s *AdminTasks) List(ctx context.Context, query AdminTaskQuery) (AdminTaskPage, error) {
 	query.OwnerID, query.TaskID = strings.TrimSpace(query.OwnerID), strings.TrimSpace(query.TaskID)
 	if !validInventoryText(query.OwnerID, 128) || (query.TaskID != "" && model.ValidateTransferID(query.TaskID) != nil) ||
+		(query.NodeID != "" && !validTorrentNodeID(query.NodeID)) ||
 		query.Page < 1 || query.Page > MaxInventoryPage || (query.Kind != BackgroundTaskAny && !validAdminTaskKind(query.Kind)) ||
 		(query.Sort != AdminTaskByID && query.Sort != AdminTaskByCreated) || (query.Direction != InventoryAscending && query.Direction != InventoryDescending) {
 		return AdminTaskPage{}, model.ErrInvalid
