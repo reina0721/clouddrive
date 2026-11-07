@@ -16,6 +16,8 @@ import {
   directLinkTokenPattern,
   inventoryItemSchema,
   inventoryPageSchema,
+  blobDetailSchema,
+  blobPageSchema,
   type FileListing,
   type FilesErrorCode,
   type FileShortcut,
@@ -317,6 +319,14 @@ export function createFilesRuntime(
     },
     readInventory: async (id, signal) =>
       inventoryItemSchema.parse(await call('/inventory/' + encodeURIComponent(id), { signal })),
+    listBlobs: async (query, signal) => {
+      const params = new URLSearchParams({ ...query, page: String(query.page) });
+      return blobPageSchema.parse(await call('/blobs?' + params.toString(), { signal }));
+    },
+    readBlob: async (id, page, signal) =>
+      blobDetailSchema.parse(
+        await call('/blobs/' + encodeURIComponent(id) + '?page=' + page, { signal }),
+      ),
     folder: async (parentId, name) =>
       fileEntrySchema.parse(await call('/folders', { method: 'POST', body: { parentId, name } })),
     update: async (id, change) =>

@@ -244,6 +244,7 @@ func TestFilesHTTPConcurrentUploadsOwnershipRestartAndStorageGuard(t *testing.T)
 		directLinkRequest(t, owner.base, token, "GET", "", nil, 404)
 	})
 	t.Run("管理文件清单与独立权限", func(t *testing.T) { verifyFileInventory(t, owner, other, roleID, password) })
+	t.Run("Blob 引用与主存储探测", func(t *testing.T) { verifyBlobCatalog(t, owner, other, roleID, password, directory) })
 }
 
 func verifyTrashPurge(t *testing.T, owner, other *consoleTestClient) {

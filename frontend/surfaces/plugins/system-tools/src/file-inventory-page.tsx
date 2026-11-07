@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useState, useSyncExternalStore } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { formatInstant } from '@clouddrive/i18n/format';
 import { usePreferencesPort } from '@clouddrive/plugin-framework/preferences';
@@ -18,9 +18,10 @@ import {
   type InventoryItem,
   type InventoryQuery,
 } from '../../../src/files/inventory';
-import { FilesError } from '../../../src/files/model';
+import { CatalogFailure } from './catalog-failure';
 import { useFiles } from '../../../src/files/runtime';
 import type { Preferences } from '../../../src/preferences-model';
+import { useCatalogRequest } from './use-catalog-request';
 
 const initialQuery: InventoryQuery = {
   ownerId: '',
@@ -104,30 +105,6 @@ const en: typeof zh = {
     `Page ${page} of ${pages}, ${total} items`,
 };
 
-function useInventoryRequest<T>(load: (signal: AbortSignal) => Promise<T>) {
-  const [revision, setRevision] = useState(0);
-  const [settled, setSettled] = useState<{
-    load: typeof load;
-    revision: number;
-    result: { value: T } | { error: unknown };
-  }>();
-  useEffect(() => {
-    const controller = new AbortController();
-    void load(controller.signal).then(
-      (value) => {
-        if (!controller.signal.aborted) setSettled({ load, revision, result: { value } });
-      },
-      (error: unknown) => {
-        if (!controller.signal.aborted) setSettled({ load, revision, result: { error } });
-      },
-    );
-    return () => controller.abort();
-  }, [load, revision]);
-  const result =
-    settled?.load === load && settled.revision === revision ? settled.result : undefined;
-  return { result, refresh: () => setRevision((value) => value + 1) };
-}
-
 export function FileInventoryPage() {
   const files = useFiles();
   const { t, locale } = useFrontendTranslation();
@@ -143,7 +120,7 @@ export function FileInventoryPage() {
   const [query, setQuery] = useState(initialQuery);
   const [draft, setDraft] = useState<InventoryQuery>();
   const [entry, setEntry] = useState<string>();
-  const state = useInventoryRequest(
+  const state = useCatalogRequest(
     useCallback((signal) => files.listInventory(query, signal), [files, query]),
   );
   const page = state.result && 'value' in state.result ? state.result.value : undefined;
@@ -171,9 +148,7 @@ export function FileInventoryPage() {
       <Panel className="surface-route-region overflow-hidden">
         <SectionBody>
           {!state.result ? <p role="status">{t('administration.loading')}</p> : null}
-          {failure !== undefined ? (
-            <InventoryFailure error={failure} retry={state.refresh} />
-          ) : null}
+          {failure !== undefined ? <CatalogFailure error={failure} retry={state.refresh} /> : null}
           {page ? (
             <>
               <DataTable<InventoryItem>
@@ -345,20 +320,6 @@ export function FileInventoryPage() {
   );
 }
 
-function InventoryFailure({ error, retry }: { error: unknown; retry: () => void }) {
-  const { t } = useFrontendTranslation();
-  return (
-    <div className="space-y-2">
-      <p role="alert">
-        {t('files.errors.' + (error instanceof FilesError ? error.code : 'unavailable'))}
-      </p>
-      <Action variant="secondary" onPress={retry}>
-        {t('administration.retry')}
-      </Action>
-    </div>
-  );
-}
-
 function InventoryDetail({
   id,
   labels,
@@ -372,7 +333,7 @@ function InventoryDetail({
 }) {
   const files = useFiles();
   const { t } = useFrontendTranslation();
-  const state = useInventoryRequest(
+  const state = useCatalogRequest(
     useCallback((signal) => files.readInventory(id, signal), [files, id]),
   );
   const entry = state.result && 'value' in state.result ? state.result.value : undefined;
@@ -408,7 +369,7 @@ function InventoryDetail({
     >
       {!state.result ? <p role="status">{t('administration.loading')}</p> : null}
       {state.result && 'error' in state.result ? (
-        <InventoryFailure error={state.result.error} retry={state.refresh} />
+        <CatalogFailure error={state.result.error} retry={state.refresh} />
       ) : null}
       {entry ? (
         <dl className="space-y-2 text-sm">

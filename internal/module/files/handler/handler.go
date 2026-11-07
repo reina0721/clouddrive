@@ -35,6 +35,7 @@ type Handler struct {
 	TrashRetention       *service.TrashRetention
 	DirectLinks          *service.DirectLinks
 	Inventory            *service.Inventory
+	Blobs                *service.BlobCatalog
 	Downloads            *service.OfflineDownloads
 	Torrents             *service.TorrentDownloads
 	Service              *service.Service

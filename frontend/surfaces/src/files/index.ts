@@ -18,6 +18,7 @@ export * from './trash-purge';
 export * from './trash-retention';
 export * from './direct-links';
 export * from './inventory';
+export * from './blobs';
 export * from './pdf-contract';
 
 export * from './access';

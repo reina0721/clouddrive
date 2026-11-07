@@ -6,6 +6,7 @@ export const pluginI18nResources = {
           root: '系统工具',
           icons: 'Icon 大全',
           files: '文件清单',
+          blobs: '文件 Blob',
         },
         icons: {
           title: 'Icon 大全',
@@ -22,6 +23,7 @@ export const pluginI18nResources = {
           root: 'System Tools',
           icons: 'Icon Gallery',
           files: 'File inventory',
+          blobs: 'File blobs',
         },
         icons: {
           title: 'Icon Gallery',

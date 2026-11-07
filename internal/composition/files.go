@@ -118,3 +118,13 @@ func (a filesContentAdapter) WithReader(ctx context.Context, key string, use fun
 func (a filesContentAdapter) Delete(ctx context.Context, key string) error {
 	return a.access.Use(ctx, storageapp.RoutePrimary, func(client storageapp.Client) error { return client.Delete(ctx, key) })
 }
+
+func (a filesContentAdapter) Exists(ctx context.Context, key string) (bool, error) {
+	var exists bool
+	err := a.access.Use(ctx, storageapp.RoutePrimary, func(client storageapp.Client) error {
+		var err error
+		exists, err = client.Exists(ctx, key)
+		return err
+	})
+	return exists, err
+}

@@ -46,6 +46,7 @@ type Dependencies struct {
 	ShareAuthority           service.ShareAccountAuthority
 	Database                 repo.Access
 	Content                  service.Content
+	BlobProbe                service.BlobObjectProbe
 	TransferContent          service.TransferContent
 	TransferPolicy           service.TransferPolicy
 	StagingPath              string
@@ -159,6 +160,10 @@ func New(deps Dependencies) (Module, error) {
 		return Module{}, err
 	}
 	boundary.Inventory, err = service.NewInventory(repository, unicodename.Normalizer{})
+	if err != nil {
+		return Module{}, err
+	}
+	boundary.Blobs, err = service.NewBlobCatalog(repository, deps.BlobProbe)
 	if err != nil {
 		return Module{}, err
 	}

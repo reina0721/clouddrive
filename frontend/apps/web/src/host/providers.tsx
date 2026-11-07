@@ -20,7 +20,6 @@ import { useNotificationsStore } from '../state/use-notifications-store';
 import { useShellStore } from '../state/use-shell-store';
 import { useWorkbenchStore } from '../state/use-workbench-store';
 import { useWorkspaceStore } from '../state/use-workspace-store';
-import { ApiWorkbenchRuntime } from '../api-workbench/runtime';
 import { AppLoadingSurface } from './app-loading-surface';
 import { createHostCommandsPort } from './commands-port';
 import { GlobalProgressProvider } from './global-progress-provider';
@@ -190,27 +189,25 @@ function RuntimeProviders({ children }: Readonly<{ children: ReactNode }>) {
                       loadingLabel={t('common.feedbackLoading')}
                       toastDurationMs={toastDurationMs}
                     >
-                      <ApiWorkbenchRuntime>
-                        {hydrationIssue ? (
-                          <div className="mx-auto max-w-screen-2xl p-4 sm:p-6 xl:p-8">
-                            <AlertBanner
-                              actionLabel={t('shell.recoverDefaults')}
-                              announcement="urgent"
-                              description={hydrationIssue.reason}
-                              icon={<AlertTriangle className="size-4" aria-hidden="true" />}
-                              onAction={() => {
-                                // 恢复默认：清除损坏记录并重载（不触碰收藏/通知/草稿等
-                                // 独立 Store）。
-                                window.localStorage.removeItem('clouddrive.shell');
-                                window.location.reload();
-                              }}
-                              title={t('shell.hydrationIssueTitle')}
-                              tone="warning"
-                            />
-                          </div>
-                        ) : null}
-                        {children}
-                      </ApiWorkbenchRuntime>
+                      {hydrationIssue ? (
+                        <div className="mx-auto max-w-screen-2xl p-4 sm:p-6 xl:p-8">
+                          <AlertBanner
+                            actionLabel={t('shell.recoverDefaults')}
+                            announcement="urgent"
+                            description={hydrationIssue.reason}
+                            icon={<AlertTriangle className="size-4" aria-hidden="true" />}
+                            onAction={() => {
+                              // 恢复默认：清除损坏记录并重载（不触碰收藏/通知/草稿等
+                              // 独立 Store）。
+                              window.localStorage.removeItem('clouddrive.shell');
+                              window.location.reload();
+                            }}
+                            title={t('shell.hydrationIssueTitle')}
+                            tone="warning"
+                          />
+                        </div>
+                      ) : null}
+                      {children}
                     </FeedbackProvider>
                   </LeaveConfirmationGuard>
                 </LeaveConfirmProvider>

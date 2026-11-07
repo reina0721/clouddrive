@@ -13,7 +13,7 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 		t.Fatal(err)
 	}
 	definitions := blueprint.httpDefinitions
-	if len(definitions) != 187 {
+	if len(definitions) != 189 {
 		t.Fatalf("operation count = %d", len(definitions))
 	}
 	seen := make(map[string]struct{}, len(definitions))
@@ -31,6 +31,7 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 		"files.trash.retention.read": "files:read", "files.trash.retention.write": "files:write",
 		"files.direct-links.list": "files:read", "files.direct-links.issue": "files:write", "files.direct-links.revoke": "files:write",
 		"files.inventory.list": "files:inventory:read", "files.inventory.detail": "files:inventory:read",
+		"files.blobs.list": "files:blob:read", "files.blobs.detail": "files:blob:read",
 		"files.downloads.create": "files:write", "files.downloads.list": "files:read", "files.downloads.read": "files:read", "files.downloads.source": "files:read",
 		"files.downloads.pause": "files:write", "files.downloads.resume": "files:write", "files.downloads.retry": "files:write", "files.downloads.cancel": "files:write",
 		"files.downloads.restart": "files:write", "files.downloads.target": "files:write", "files.downloads.remove": "files:write", "files.downloads.batch-create": "files:write", "files.downloads.batch-control": "files:write",
