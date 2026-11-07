@@ -226,4 +226,63 @@ func TestFilesHTTPConcurrentUploadsOwnershipRestartAndStorageGuard(t *testing.T)
 		t.Fatal("changed storage location accepted with existing files")
 	}
 	download()
+	other.base = owner.base
+	t.Run("回收站事务删除", func(t *testing.T) { verifyTrashPurge(t, owner, other) })
+}
+
+func verifyTrashPurge(t *testing.T, owner, other *consoleTestClient) {
+	t.Helper()
+	const files = "/native/files"
+	const previewPath = files + "/trash/purge-preview"
+	const purgePath = files + "/trash/purge"
+	folder := owner.request(t, "POST", files+"/folders", map[string]string{"parentId": "", "name": "待永久删除目录"}, 200)["id"].(string)
+	owner.request(t, "POST", files+"/pins", map[string]any{"targetKind": "folder", "targetId": folder, "revision": 0}, 200)
+	file := owner.request(t, "POST", files+"/text", map[string]string{"parentId": folder, "name": "original.txt", "key": "purge-fixture-original-text", "text": "original"}, 200)["id"].(string)
+	owner.request(t, "PUT", files+"/"+file+"/text", map[string]any{"expectedRevision": 1, "text": "new"}, 200)
+	copyID := owner.request(t, "POST", files+"/"+file+"/copy", map[string]string{"parentId": "", "name": "retained-copy.txt"}, 200)["id"].(string)
+	originalQuota := owner.request(t, "GET", files, nil, 200)["usedBytes"].(float64)
+	selection := map[string]any{"scope": "selection", "ids": []string{folder, file}}
+	owner.request(t, "POST", previewPath, selection, 409)
+	owner.request(t, "POST", files+"/"+file+"/trash", nil, 200)
+	owner.request(t, "POST", files+"/"+folder+"/trash", nil, 200)
+	other.request(t, "POST", previewPath, selection, 404)
+	owner.request(t, "POST", previewPath, selection, 403, map[string]string{"X-CSRF-Token": ""})
+	owner.request(t, "POST", previewPath, map[string]any{"scope": "selection", "ids": []string{folder, folder}}, 422)
+	preview := owner.request(t, "POST", previewPath, selection, 200)
+	if preview["entryCount"] != float64(2) || preview["rootCount"] != float64(2) || preview["bytes"] != float64(11) {
+		t.Fatal("回收目录的子项去重或历史逻辑字节错误")
+	}
+	all := map[string]any{"scope": "all", "ids": []string{}}
+	allPreview := owner.request(t, "POST", previewPath, all, 200)
+	unrelated := owner.request(t, "POST", files+"/folders", map[string]string{"parentId": "", "name": "后入回收站"}, 200)["id"].(string)
+	owner.request(t, "POST", files+"/"+unrelated+"/trash", nil, 200)
+	all["snapshot"] = allPreview["snapshot"]
+	owner.request(t, "POST", purgePath, all, 409)
+	selection["snapshot"] = preview["snapshot"]
+	owner.request(t, "POST", files+"/"+folder+"/restore", map[string]string{}, 200)
+	owner.request(t, "POST", files+"/"+folder+"/trash", nil, 200)
+	owner.request(t, "POST", purgePath, selection, 409)
+	delete(selection, "snapshot")
+	selection["snapshot"] = owner.request(t, "POST", previewPath, selection, 200)["snapshot"]
+	owner.request(t, "POST", purgePath, selection, 200)
+	owner.request(t, "POST", files+"/"+folder+"/restore", map[string]string{}, 404)
+	owner.request(t, "POST", files+"/"+file+"/restore", map[string]string{}, 404)
+	owner.request(t, "GET", files+"/"+file+"/versions/1/content", nil, 404)
+	data, _ := transferBytes(t, owner, "GET", "/files/"+copyID+"/versions/1/content", nil, nil, 200)
+	if string(data) != "original" {
+		t.Fatal("删除回收站条目破坏副本历史内容")
+	}
+	pins := owner.request(t, "GET", files+"/pins", nil, 200)
+	if pins["revision"] != float64(2) || len(pins["items"].([]any)) != 0 {
+		t.Fatal("永久删除后固定项未同步移除")
+	}
+	owner.request(t, "POST", files+"/"+unrelated+"/restore", map[string]string{}, 200)
+	currentQuota := owner.request(t, "GET", files, nil, 200)["usedBytes"].(float64)
+	if originalQuota-currentQuota != 11 {
+		t.Fatal("账户逻辑配额未释放选中条目及历史关联")
+	}
+	empty := owner.request(t, "POST", previewPath, map[string]any{"scope": "all", "ids": []string{}}, 200)
+	if empty["entryCount"] != float64(0) {
+		t.Fatal("回收站剩余意外条目")
+	}
 }

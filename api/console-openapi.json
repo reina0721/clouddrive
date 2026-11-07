@@ -5021,6 +5021,96 @@
         ]
       }
     },
+    "/api/console/v1/native/files/trash/purge": {
+      "post": {
+        "operationId": "files.trash.purge",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrashPurgeInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashPurgePreview"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/trash/purge-preview": {
+      "post": {
+        "operationId": "files.trash.purge-preview",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrashPurgeSelectionInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashPurgePreview"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
     "/api/console/v1/native/files/write-locks": {
       "get": {
         "operationId": "files.write-locks.list",
@@ -34837,6 +34927,89 @@
         "required": [
           "parentId",
           "name"
+        ],
+        "type": "object"
+      },
+      "TrashPurgeInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "nullable": true,
+            "type": "array"
+          },
+          "scope": {
+            "enum": [
+              "selection",
+              "all"
+            ],
+            "type": "string"
+          },
+          "snapshot": {
+            "maxLength": 64,
+            "minLength": 64,
+            "type": "string"
+          }
+        },
+        "required": [
+          "snapshot",
+          "scope",
+          "ids"
+        ],
+        "type": "object"
+      },
+      "TrashPurgePreview": {
+        "additionalProperties": false,
+        "properties": {
+          "bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "entryCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "rootCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "snapshot": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "rootCount",
+          "entryCount",
+          "bytes",
+          "snapshot"
+        ],
+        "type": "object"
+      },
+      "TrashPurgeSelectionInput": {
+        "additionalProperties": false,
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "nullable": true,
+            "type": "array"
+          },
+          "scope": {
+            "enum": [
+              "selection",
+              "all"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "scope",
+          "ids"
         ],
         "type": "object"
       },

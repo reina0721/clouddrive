@@ -11,6 +11,7 @@ import type { VersionsPort } from './versions';
 import type { FilePreferenceSnapshot } from './preferences';
 import type { FileSidebarPreferences } from './sidebar-preferences';
 import type { BackgroundTaskListing, BackgroundTaskQuery } from './background-tasks';
+import type { TrashPurgePreview, TrashPurgeSelection } from './trash-purge';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
@@ -167,6 +168,11 @@ export type FilesPort = Readonly<{
     change: { name?: string; parentId?: string; expectedRevision?: number },
   ): Promise<FileEntry>;
   trash(id: string): Promise<FileEntry>;
+  previewTrashPurge(
+    selection: TrashPurgeSelection,
+    signal: AbortSignal,
+  ): Promise<TrashPurgePreview>;
+  purgeTrash(selection: TrashPurgeSelection, snapshot: string): Promise<TrashPurgePreview>;
   restore(id: string, parentId?: string): Promise<FileEntry>;
   copy(id: string, parentId: string, name: string): Promise<FileEntry>;
   createText(parentId: string, name: string, text: string): Promise<FileEntry>;

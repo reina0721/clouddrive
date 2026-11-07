@@ -150,6 +150,17 @@ const zh = {
   empty: '拖拽文件至此',
   emptyDescription: '或点击“上传文件”，开始整理你的云端空间。',
   emptyTrash: '回收站为空',
+  trashPurge: {
+    empty: '清空回收站',
+    permanent: '永久删除',
+    allHint: '清空整个回收站，包括其他页和筛选隐藏的项目。删除后无法恢复。',
+    selectionHint: '永久删除所选项目及其子项。删除后无法恢复。',
+    impact: '将删除 {{entries}} 项（{{roots}} 个回收项，含子项），释放 {{bytes}} 账户空间。',
+    storageHint: '此操作释放账户配额。底层内容对象由存储保留。',
+    changed: '回收站内容已经变化，请重新核对删除范围。',
+    recheck: '重新核对',
+    done: '已永久删除 {{entries}} 项，释放 {{bytes}} 账户空间。',
+  },
   emptySearch: '没有找到文件',
   emptySearchDescription: '试试其他名称，或清空搜索和分类。',
   loading: '正在加载文件',
@@ -371,6 +382,20 @@ const en: typeof zh = {
   empty: 'Drop files here',
   emptyDescription: 'Or choose Upload files to start organizing your cloud space.',
   emptyTrash: 'Trash is empty',
+  trashPurge: {
+    empty: 'Empty trash',
+    permanent: 'Delete permanently',
+    allHint:
+      'Empty the entire trash, including items on other pages or hidden by filters. Deleted items cannot be restored.',
+    selectionHint:
+      'Permanently delete the selected items and their descendants. Deleted items cannot be restored.',
+    impact:
+      'Delete {{entries}} items ({{roots}} trash entries and their contents) and free {{bytes}} of account space.',
+    storageHint: 'This frees account quota. Storage retains the underlying content objects.',
+    changed: 'Trash has changed. Review the deletion scope again.',
+    recheck: 'Review again',
+    done: 'Permanently deleted {{entries}} items and freed {{bytes}} of account space.',
+  },
   emptySearch: 'No files found',
   emptySearchDescription: 'Try another name, or clear the search and category.',
   loading: 'Loading files',

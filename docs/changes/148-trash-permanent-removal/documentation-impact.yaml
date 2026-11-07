@@ -1,0 +1,21 @@
+schema_version: 1
+change: 148-trash-permanent-removal
+areas:
+  - id: startup
+    decision: updated
+    documents: [README.md]
+    reason: 文件工作区说明回收站永久删除。
+  - id: webui
+    decision: updated
+    documents: [README.md]
+    reason: 更新文件工作区入口和确认方式。
+  - id: frontend
+    decision: updated
+    documents: [docs/repository-scope.md]
+    reason: 记录永久移除和逻辑配额范围。
+  - id: module
+    decision: reviewed-no-change
+    reason: 沿用文件模块、认证、数据库及存储边界，操作细节在文件手册。
+  - id: api
+    decision: reviewed-no-change
+    reason: 新接口通过生成的契约和操作清单声明。

@@ -68,7 +68,9 @@ import { TagsBatchDialog } from './tags-batch-dialog';
 import { TextDialog, type TextRequest } from './text-dialog';
 import { VersionsPanel } from './versions-panel';
 import { ViewOptionsDialog } from './view-options-dialog';
+import type { TrashPurgeSelection } from '../../../src/files/trash-purge';
 
+const TrashPurgeDialog = lazy(() => import('./trash-purge-dialog'));
 const PdfDialog = lazy(() =>
   import('./pdf-dialog').then((module) => ({ default: module.PdfDialog })),
 );
@@ -141,6 +143,7 @@ export function FilesPage({
   const createInWorkspace = useWorkspaceCreate();
   const [saveShortcut, setSaveShortcut] = useState(false);
   const [purgeTarget, setPurgeTarget] = useState<FileEntry>();
+  const [trashSelection, setTrashSelection] = useState<TrashPurgeSelection>();
   const [pinTarget, setPinTarget] = useState<PinTarget>();
   const [preferences, setPreferences] = useState(() =>
     fileViewPreferencesSchema.parse(defaultFileViewPreferences),
@@ -1176,13 +1179,28 @@ export function FilesPage({
                   </>
                 ) : null}
                 {trash ? (
-                  <Action
-                    variant="secondary"
-                    size="sm"
-                    onPress={() => openDialog('restore', targets)}
-                  >
-                    {t('files.restore')}
-                  </Action>
+                  <>
+                    <Action
+                      variant="secondary"
+                      size="sm"
+                      onPress={() => openDialog('restore', targets)}
+                    >
+                      {t('files.restore')}
+                    </Action>
+                    <Action
+                      variant="danger"
+                      size="sm"
+                      disabled={loading || navigating}
+                      onPress={() =>
+                        setTrashSelection({
+                          scope: 'selection',
+                          ids: targets.map((entry) => entry.id),
+                        })
+                      }
+                    >
+                      {t('files.trashPurge.permanent')}
+                    </Action>
+                  </>
                 ) : (
                   <>
                     <Action
@@ -1352,7 +1370,13 @@ export function FilesPage({
                                       tone: 'danger' as const,
                                     },
                                   ]
-                                : []),
+                                : [
+                                    {
+                                      id: 'purge-file',
+                                      label: t('files.trashPurge.permanent'),
+                                      tone: 'danger' as const,
+                                    },
+                                  ]),
                             ]
                           : [
                               { id: 'details', label: t('files.details') },
@@ -1413,6 +1437,8 @@ export function FilesPage({
                           );
                         else if (action === 'details') void showDetails(entry);
                         else if (action === 'purge') setPurgeTarget(entry);
+                        else if (action === 'purge-file')
+                          setTrashSelection({ scope: 'selection', ids: [entry.id] });
                         else if (
                           action === 'pin' &&
                           (entry.kind === 'folder' || entry.kind === 'shortcut')
@@ -1703,6 +1729,26 @@ export function FilesPage({
             reload();
           }}
         />
+      ) : null}
+      {trash && trashSelection ? (
+        <Suspense>
+          <TrashPurgeDialog
+            selection={trashSelection}
+            onClose={() => setTrashSelection(undefined)}
+            onPurged={(receipt) => {
+              setSelected([]);
+              setNotice(
+                t('files.trashPurge.done', {
+                  entries: receipt.entryCount,
+                  bytes: bytes(receipt.bytes),
+                }),
+              );
+              reload();
+              if (page > 1)
+                navigate({ parent, category, trash: 'true', search, filter: filterKey });
+            }}
+          />
+        </Suspense>
       ) : null}
       {purgeTarget ? (
         <ShortcutActionDialog

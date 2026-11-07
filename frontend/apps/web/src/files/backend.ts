@@ -9,6 +9,7 @@ import {
   FilesError,
   fileShareSchema,
   shareListingSchema,
+  trashPurgePreviewSchema,
   type FileListing,
   type FilesErrorCode,
   type FileShortcut,
@@ -309,6 +310,14 @@ export function createFilesRuntime(
       ),
     trash: async (id) =>
       fileEntrySchema.parse(await call(`/${encodeURIComponent(id)}/trash`, { method: 'POST' })),
+    previewTrashPurge: async (selection, signal) =>
+      trashPurgePreviewSchema.parse(
+        await call('/trash/purge-preview', { method: 'POST', body: selection, signal }),
+      ),
+    purgeTrash: async (selection, snapshot) =>
+      trashPurgePreviewSchema.parse(
+        await call('/trash/purge', { method: 'POST', body: { ...selection, snapshot } }),
+      ),
     restore: async (id, parentId) =>
       fileEntrySchema.parse(
         await call(`/${encodeURIComponent(id)}/restore`, {

@@ -246,13 +246,7 @@ func (r *Navigation) PurgeShortcut(ctx context.Context, owner, id string, revisi
 				return pins.Error
 			}
 			if pins.RowsAffected > 0 {
-				updated := db.Model(&navigationState{}).Where("owner_id = ? AND revision < ?", owner, int64(math.MaxInt64)).Update("revision", gorm.Expr("revision + 1"))
-				if updated.Error != nil {
-					return updated.Error
-				}
-				if updated.RowsAffected != 1 {
-					return fmt.Errorf("file pin cleanup revision invariant")
-				}
+				return bumpPinRevision(db, owner)
 			}
 			return nil
 		})

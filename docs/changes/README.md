@@ -134,3 +134,4 @@
 - [145 后台创建 ZIP](145-background-zip-creation/README.md)：文件和目录压缩、保存目标、任务结果与下载，验收见任务清单。
 - [146 后台任务汇总](146-unified-background-tasks/README.md)：统一 ZIP、解压及两类离线下载的查看、筛选和分页。
 - [147 视频外挂字幕](147-external-video-subtitles/README.md)：本人视频自动匹配、手动切换及关闭同目录 VTT、SRT 和 ASS 字幕。
+- [148 回收站永久移除](148-trash-permanent-removal/README.md)：单项、多选、清空及确认范围校验。

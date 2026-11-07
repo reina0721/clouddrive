@@ -40,6 +40,9 @@ import { ExplorerNavigation } from './explorer-navigation';
 import { FileLink } from './file-link';
 import { PinnedLinks } from './pinned-links';
 import type { CreateAction } from './workspace-create';
+import type { TrashPurgeSelection } from '../../../src/files/trash-purge';
+const TrashPurgeDialog = lazy(() => import('./trash-purge-dialog'));
+const allTrash: TrashPurgeSelection = { scope: 'all', ids: [] };
 const Create = lazy(() =>
   import('./workspace-create').then((module) => ({ default: module.WorkspaceCreate })),
 );
@@ -68,6 +71,7 @@ export function FileWorkspace({
     { t } = useFrontendTranslation();
   const [revision, setRevision] = useWorkspaceRevision();
   const [historySettings, setHistorySettings] = useState(false);
+  const [emptyTrash, setEmptyTrash] = useState(false);
   const [storage, setStorage] = useState<FileListing>(),
     [storageFailure, setStorageFailure] = useState(''),
     [notice, setNotice] = useState(''),
@@ -87,6 +91,7 @@ export function FileWorkspace({
   }>();
   const isFiles = pathname === port.destinationHref('files'),
     isTransfers = pathname === port.destinationHref('transfers');
+  const isTrash = isFiles && query.trash === 'true';
   const collapsed = sidebarSettings.collapsed;
   const directoryParent =
     isFiles && query.trash !== 'true' && !query.category ? (query.parent ?? '') : undefined;
@@ -397,34 +402,47 @@ export function FileWorkspace({
             data-file-workspace-header
             className="flex shrink-0 flex-wrap items-center gap-2 bg-canvas px-3 py-2"
           >
-            <MenuButton
-              ariaLabel={t('files.new')}
-              triggerSize="sm"
-              label={
-                <span className="flex items-center gap-2">
-                  <FolderPlus className="size-5" />
-                  {t('files.new')}
-                </span>
-              }
-              items={[
-                { id: 'upload', label: t('files.upload') },
-                { id: 'directory', label: t('files.uploadDirectory') },
-                { id: 'clipboard', label: t('files.uploadClipboard') },
-                { id: 'folder', label: t('files.newFolder') },
-                { id: 'text', label: t('files.newText') },
-                { id: 'markdown', label: t('files.newMarkdown') },
-              ]
-                .map((item) => ({ ...item, disabled: query.trash === 'true' || !storage }))
-                .concat([{ id: 'downloads', label: t('files.downloads.title'), disabled: false }])}
-              onAction={(action) => {
-                if (action === 'downloads') port.navigate('downloads');
-                else if (action === 'clipboard') {
-                  port.focusFiles();
-                  setNotice(t('files.workspace.clipboard'));
-                } else if (['folder', 'text', 'markdown', 'upload', 'directory'].includes(action))
-                  setCreate({ action: action as CreateAction });
-              }}
-            />
+            {isTrash ? (
+              <Action
+                size="sm"
+                variant="danger"
+                leadingIcon={<Trash2 className="size-4" />}
+                onPress={() => setEmptyTrash(true)}
+              >
+                {t('files.trashPurge.empty')}
+              </Action>
+            ) : (
+              <MenuButton
+                ariaLabel={t('files.new')}
+                triggerSize="sm"
+                label={
+                  <span className="flex items-center gap-2">
+                    <FolderPlus className="size-5" />
+                    {t('files.new')}
+                  </span>
+                }
+                items={[
+                  { id: 'upload', label: t('files.upload') },
+                  { id: 'directory', label: t('files.uploadDirectory') },
+                  { id: 'clipboard', label: t('files.uploadClipboard') },
+                  { id: 'folder', label: t('files.newFolder') },
+                  { id: 'text', label: t('files.newText') },
+                  { id: 'markdown', label: t('files.newMarkdown') },
+                ]
+                  .map((item) => ({ ...item, disabled: !storage }))
+                  .concat([
+                    { id: 'downloads', label: t('files.downloads.title'), disabled: false },
+                  ])}
+                onAction={(action) => {
+                  if (action === 'downloads') port.navigate('downloads');
+                  else if (action === 'clipboard') {
+                    port.focusFiles();
+                    setNotice(t('files.workspace.clipboard'));
+                  } else if (['folder', 'text', 'markdown', 'upload', 'directory'].includes(action))
+                    setCreate({ action: action as CreateAction });
+                }}
+              />
+            )}
             <form
               data-file-workspace-search
               className="order-last flex w-full min-w-0 items-center gap-1 md:order-none md:w-auto max-w-md md:flex-1"
@@ -516,6 +534,24 @@ export function FileWorkspace({
           </main>
         </div>
       </div>
+      {isTrash && emptyTrash ? (
+        <Suspense>
+          <TrashPurgeDialog
+            selection={allTrash}
+            onClose={() => setEmptyTrash(false)}
+            onPurged={(receipt) => {
+              setNotice(
+                t('files.trashPurge.done', {
+                  entries: receipt.entryCount,
+                  bytes: formatFileBytes(receipt.bytes),
+                }),
+              );
+              setRevision((value) => value + 1);
+              if (query.page && query.page !== '1') port.navigate('files', { ...query, page: '1' });
+            }}
+          />
+        </Suspense>
+      ) : null}
       {historySettings ? (
         <Suspense fallback={<p role="status">{t('files.retention.loading')}</p>}>
           <HistorySettings onClose={() => setHistorySettings(false)} />

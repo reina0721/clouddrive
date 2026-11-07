@@ -31,6 +31,7 @@ type Handler struct {
 	Archives             *service.Archives
 	ArchiveTasks         *service.ArchiveTasks
 	BackgroundTasks      *service.BackgroundTasks
+	TrashPurge           *service.TrashPurge
 	Downloads            *service.OfflineDownloads
 	Torrents             *service.TorrentDownloads
 	Service              *service.Service
