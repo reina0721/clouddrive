@@ -15,6 +15,12 @@ import type { TrashPurgePreview, TrashPurgeSelection } from './trash-purge';
 import type { TrashRetention } from './trash-retention';
 import type { DirectLinkDelivery, DirectLinkPage, DirectLinkResult } from './direct-links';
 import type { InventoryItem, InventoryPage, InventoryQuery } from './inventory';
+import type {
+  AdminShareItem,
+  AdminSharePage,
+  AdminShareQuery,
+  AdminShareTarget,
+} from './admin-shares';
 import type { BlobCandidatePage, BlobDetail, BlobPage, BlobQuery } from './blobs';
 import type { FilesystemSettings, FilesystemSettingsInput } from './filesystem-settings';
 import type { PropertyDefinitionSet, PropertyDefinitionsView } from './property-definitions';
@@ -170,6 +176,9 @@ export type FilesPort = Readonly<{
   ): Promise<BackgroundTaskListing>;
   list(query: FileQuery, signal?: AbortSignal): Promise<FileListing>;
   listInventory(query: InventoryQuery, signal: AbortSignal): Promise<InventoryPage>;
+  listAdminShares(query: AdminShareQuery, signal: AbortSignal): Promise<AdminSharePage>;
+  readAdminShare(id: string, signal: AbortSignal): Promise<AdminShareItem>;
+  revokeAdminShares(targets: readonly AdminShareTarget[]): Promise<number>;
   readInventory(id: string, signal: AbortSignal): Promise<InventoryItem>;
   listBlobs(query: BlobQuery, signal: AbortSignal): Promise<BlobPage>;
   readBlob(id: string, page: number, signal: AbortSignal): Promise<BlobDetail>;

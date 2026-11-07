@@ -16,6 +16,9 @@ import {
   directLinkTokenPattern,
   inventoryItemSchema,
   inventoryPageSchema,
+  adminShareItemSchema,
+  adminSharePageSchema,
+  adminShareRevokeSchema,
   blobDetailSchema,
   blobCandidatePageSchema,
   blobPageSchema,
@@ -322,6 +325,21 @@ export function createFilesRuntime(
     },
     readInventory: async (id, signal) =>
       inventoryItemSchema.parse(await call('/inventory/' + encodeURIComponent(id), { signal })),
+    listAdminShares: async (query, signal) => {
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(query)) {
+        if (value !== '') params.set(key, String(value));
+      }
+      return adminSharePageSchema.parse(
+        await call('/admin-shares?' + params.toString(), { signal }),
+      );
+    },
+    readAdminShare: async (id, signal) =>
+      adminShareItemSchema.parse(await call('/admin-shares/' + encodeURIComponent(id), { signal })),
+    revokeAdminShares: async (targets) =>
+      adminShareRevokeSchema.parse(
+        await call('/admin-shares/revoke', { method: 'POST', body: { targets } }),
+      ).revoked,
     listBlobs: async (query, signal) => {
       const params = new URLSearchParams({ ...query, page: String(query.page) });
       return blobPageSchema.parse(await call('/blobs?' + params.toString(), { signal }));

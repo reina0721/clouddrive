@@ -8,6 +8,7 @@ export const pluginI18nResources = {
           files: '文件清单',
           blobs: '文件 Blob',
           filesystem: '文件系统',
+          shares: '分享管理',
         },
         icons: {
           title: 'Icon 大全',
@@ -26,6 +27,7 @@ export const pluginI18nResources = {
           files: 'File inventory',
           blobs: 'File blobs',
           filesystem: 'File system',
+          shares: 'Manage shares',
         },
         icons: {
           title: 'Icon Gallery',

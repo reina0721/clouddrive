@@ -526,6 +526,14 @@ export const generatedRouteCatalog: RouteCatalog = {
       paramNames: [],
     },
     {
+      routeId: 'system-tools.shares',
+      pluginId: 'system-tools',
+      path: 'shares',
+      segments: ['shares'],
+      pattern: '/system-tools/shares',
+      paramNames: [],
+    },
+    {
       routeId: 'ui-elements',
       pluginId: 'ui-elements',
       path: '',
@@ -1072,6 +1080,14 @@ export const generatedRouteCatalog: RouteCatalog = {
             order: 46,
             iconId: 'resource',
             routeId: 'system-tools.files',
+          },
+          {
+            navigationId: 'system-tools.shares',
+            labelKey: 'systemTools.nav.shares',
+            groupId: 'administration',
+            order: 48,
+            iconId: 'resource',
+            routeId: 'system-tools.shares',
           },
           {
             navigationId: 'system-tools.runtime',

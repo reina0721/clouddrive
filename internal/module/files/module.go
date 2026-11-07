@@ -45,6 +45,7 @@ type Dependencies struct {
 	TorrentDispatcherEnabled bool
 	OfflineAuthority         service.DownloadAccountAuthority
 	ShareAuthority           service.ShareAccountAuthority
+	AdminShareAccess         handler.AdminShareAuthority
 	Database                 repo.Access
 	Content                  service.Content
 	BlobProbe                service.BlobObjectProbe
@@ -79,7 +80,7 @@ type Module struct {
 
 func New(deps Dependencies) (Module, error) {
 	if deps.Actors == nil || deps.Logger == nil || deps.PublicAuthentication == nil || deps.BlobReclamationAccess == nil ||
-		deps.FilesystemSettings == nil || deps.FilesystemSettingsAccess == nil {
+		deps.FilesystemSettings == nil || deps.FilesystemSettingsAccess == nil || deps.AdminShareAccess == nil {
 		return Module{}, fmt.Errorf("files boundary dependencies missing")
 	}
 	repository, err := repo.New(deps.Database, deps.StorageIdentity, deps.Clock)
@@ -173,6 +174,11 @@ func New(deps Dependencies) (Module, error) {
 		return Module{}, err
 	}
 	boundary.Inventory, err = service.NewInventory(repository, unicodename.Normalizer{})
+	if err != nil {
+		return Module{}, err
+	}
+	boundary.AdminShareAccess = deps.AdminShareAccess
+	boundary.AdminShares, err = service.NewAdminShares(repository, deps.Clock)
 	if err != nil {
 		return Module{}, err
 	}

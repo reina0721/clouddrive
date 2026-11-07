@@ -23,6 +23,10 @@ type FilesystemSettingsAuthority interface {
 	AuthorizeFilesystemSettingsWrite(context.Context, string) (bool, error)
 }
 
+type AdminShareAuthority interface {
+	AuthorizeAdminShareRevoke(context.Context, string) (bool, error)
+}
+
 // TransferProtocol 只处理已经经 service 加锁并授权的核心续传请求。
 type TransferProtocol interface {
 	Handle(http.ResponseWriter, *http.Request, string)
@@ -43,6 +47,8 @@ type Handler struct {
 	TrashRetention           *service.TrashRetention
 	DirectLinks              *service.DirectLinks
 	Inventory                *service.Inventory
+	AdminShares              *service.AdminShares
+	AdminShareAccess         AdminShareAuthority
 	Blobs                    *service.BlobCatalog
 	BlobReclamation          *service.BlobReclamation
 	BlobReclamationAccess    BlobReclamationAuthority

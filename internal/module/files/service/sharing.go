@@ -67,6 +67,7 @@ type ShareRepository interface {
 	PutShareGrant(context.Context, model.ShareGrant, time.Time) error
 	PutDownloadGrant(context.Context, model.ShareGrant, time.Time, int) error
 	ReadDownloadGrant(context.Context, string, int) (ShareSnapshot, error)
+	RecordShareView(context.Context, string, int64, time.Time) error
 }
 type Sharing struct {
 	shared    SharedFileRepository
@@ -130,15 +131,23 @@ type ShareSummary struct {
 	Status          ShareStatus      `json:"status"`
 }
 
-func shareStatus(share model.Share, entries []model.Entry, now time.Time) ShareStatus {
-	if share.RevokedAt != nil {
+// SharePolicyStatus 计算链接自身状态；源文件是否可见由访客路径另行检查。
+func SharePolicyStatus(state model.ShareState, expiresAt time.Time, revokedAt *time.Time, now time.Time) ShareStatus {
+	if revokedAt != nil {
 		return ShareRevoked
 	}
-	if !now.Before(share.ExpiresAt) {
+	if !now.Before(expiresAt) {
 		return ShareExpired
 	}
-	if share.State == model.SharePaused {
+	if state == model.SharePaused {
 		return SharePaused
+	}
+	return ShareActive
+}
+
+func shareStatus(share model.Share, entries []model.Entry, now time.Time) ShareStatus {
+	if status := SharePolicyStatus(share.State, share.ExpiresAt, share.RevokedAt, now); status != ShareActive {
+		return status
 	}
 	root, ok := model.Find(entries, share.RootID)
 	if !ok || !model.Visible(entries, root) {
@@ -332,6 +341,9 @@ func (s *Sharing) Metadata(ctx context.Context, token, ticket string) (PublicSha
 	result.Denied = decision.Permissions == 0
 	result.SignInRequired = result.Denied && viewer.AccountID == ""
 	if !result.Locked && !result.Denied {
+		if err := s.store.RecordShareView(ctx, snapshot.Share.ID, snapshot.Share.Revision, s.files.clock.Now().UTC()); err != nil {
+			return PublicShare{}, err
+		}
 		permissions := sharePermissions(decision.Permissions)
 		result.Title = snapshot.Share.Title
 		revision := snapshot.Share.Revision

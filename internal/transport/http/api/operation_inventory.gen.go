@@ -17,6 +17,9 @@ const (
 	OperationFilesAccessPreview             OperationID = "files.access.preview"
 	OperationFilesAccessRead                OperationID = "files.access.read"
 	OperationFilesAccessUpdate              OperationID = "files.access.update"
+	OperationFilesAdminSharesList           OperationID = "files.admin-shares.list"
+	OperationFilesAdminSharesRead           OperationID = "files.admin-shares.read"
+	OperationFilesAdminSharesRevoke         OperationID = "files.admin-shares.revoke"
 	OperationFilesAnnotationsRead           OperationID = "files.annotations.read"
 	OperationFilesAnnotationsReplace        OperationID = "files.annotations.replace"
 	OperationFilesAnnotationsSummaries      OperationID = "files.annotations.summaries"
@@ -215,6 +218,9 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesAccessPreview, Method: "POST", Path: "/api/v1/files/{id}/access/effective", Policy: "protected", Scope: "files:read", Action: "files.access.preview"},
 	{ID: OperationFilesAccessRead, Method: "GET", Path: "/api/v1/files/{id}/access", Policy: "protected", Scope: "files:read", Action: "files.access.read"},
 	{ID: OperationFilesAccessUpdate, Method: "PUT", Path: "/api/v1/files/{id}/access", Policy: "protected", Scope: "files:write", Action: "files.access.update"},
+	{ID: OperationFilesAdminSharesList, Method: "GET", Path: "/api/v1/files/admin-shares", Policy: "protected", Scope: "files:share-admin:read", Action: "files.admin-shares.list"},
+	{ID: OperationFilesAdminSharesRead, Method: "GET", Path: "/api/v1/files/admin-shares/{id}", Policy: "protected", Scope: "files:share-admin:read", Action: "files.admin-shares.read"},
+	{ID: OperationFilesAdminSharesRevoke, Method: "POST", Path: "/api/v1/files/admin-shares/revoke", Policy: "protected", Scope: "files:share-admin:revoke", Action: "files.admin-shares.revoke"},
 	{ID: OperationFilesAnnotationsRead, Method: "GET", Path: "/api/v1/files/{id}/annotations", Policy: "protected", Scope: "files:read", Action: "files.annotations.read"},
 	{ID: OperationFilesAnnotationsReplace, Method: "PUT", Path: "/api/v1/files/{id}/annotations", Policy: "protected", Scope: "files:write", Action: "files.annotations.replace"},
 	{ID: OperationFilesAnnotationsSummaries, Method: "GET", Path: "/api/v1/files/annotations/summaries", Policy: "protected", Scope: "files:read", Action: "files.annotations.summaries"},

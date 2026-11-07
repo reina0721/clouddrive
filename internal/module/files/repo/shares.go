@@ -191,7 +191,14 @@ func (r *Repository) putGrant(ctx context.Context, grant model.ShareGrant, now t
 				}
 			}
 			record := grantRecord(grant)
-			return db.Create(&record).Error
+			if err := db.Create(&record).Error; err != nil {
+				return err
+			}
+			if downloadLimit == 0 {
+				return nil
+			}
+			return db.Model(&shareRecord{}).Where("id = ? AND download_count < ?", grant.ShareID, service.MaxShareActivity).
+				UpdateColumn("download_count", gorm.Expr("download_count + 1")).Error
 		})
 	})
 }

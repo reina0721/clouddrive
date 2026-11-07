@@ -142,3 +142,4 @@
 - [153 文件 Blob 回收](153-blob-reclamation/README.md)：持久候选、保护期与实际主存储回收。
 - [154 文件系统参数](154-filesystem-settings/README.md)：有界管理覆盖、重启生效及实际策略校验。
 - [155 全局文件属性定义](155-property-definitions/README.md)：属性定义、类型编辑与旧值保留。
+- [156 管理端分享清单与撤销](156-admin-share-management/README.md)：跨账号查询、活动计数及原子撤销。

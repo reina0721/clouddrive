@@ -541,7 +541,8 @@ func (f *applicationGenerationFactory) Prepare(
 		TransferContent: fileContent, TransferPolicy: filesPolicy.TransferPolicy(), StagingPath: filesPolicy.Transfers.StagingPath,
 		BlobReclamationPolicy: blobPolicy, BlobReclamationAccess: fileAuthority, TrashScanInterval: activeFilesystem.TrashInterval,
 		FilesystemSettings: filesystemSettings, FilesystemSettingsAccess: fileAuthority,
-		Clock: clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: activeFilesystem.Policy,
+		AdminShareAccess: fileAuthority,
+		Clock:            clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: activeFilesystem.Policy,
 	})
 	if err != nil {
 		return abort(err)

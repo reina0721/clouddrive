@@ -37,6 +37,13 @@ func (a filesConnectionAuthority) AuthorizeBlobReclamation(ctx context.Context, 
 	return a.access.AuthorizeAccount(ctx, owner, filespermission.BlobReclaim)
 }
 
+func (a filesConnectionAuthority) AuthorizeAdminShareRevoke(ctx context.Context, actor string) (bool, error) {
+	if a.access == nil {
+		return false, fmt.Errorf("admin share authorization unavailable")
+	}
+	return a.access.AuthorizeAccount(ctx, actor, filespermission.AdminShareRevoke)
+}
+
 func (a filesConnectionAuthority) AuthorizeShare(ctx context.Context, owner string, access filesservice.ShareAccountAccess) (bool, error) {
 	if a.access == nil {
 		return false, fmt.Errorf("file share authorization unavailable")

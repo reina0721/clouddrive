@@ -4,13 +4,15 @@ package permission
 import permissioncatalog "github.com/reina0721/clouddrive/internal/permission"
 
 const (
-	Read          permissioncatalog.Key = "files:read"
-	Write         permissioncatalog.Key = "files:write"
-	InventoryRead permissioncatalog.Key = "files:inventory:read"
-	BlobRead      permissioncatalog.Key = "files:blob:read"
-	BlobReclaim   permissioncatalog.Key = "files:blob:reclaim"
-	SettingsRead  permissioncatalog.Key = "files:settings:read"
-	SettingsWrite permissioncatalog.Key = "files:settings:write"
+	Read             permissioncatalog.Key = "files:read"
+	Write            permissioncatalog.Key = "files:write"
+	InventoryRead    permissioncatalog.Key = "files:inventory:read"
+	BlobRead         permissioncatalog.Key = "files:blob:read"
+	BlobReclaim      permissioncatalog.Key = "files:blob:reclaim"
+	SettingsRead     permissioncatalog.Key = "files:settings:read"
+	SettingsWrite    permissioncatalog.Key = "files:settings:write"
+	AdminShareRead   permissioncatalog.Key = "files:share-admin:read"
+	AdminShareRevoke permissioncatalog.Key = "files:share-admin:revoke"
 )
 
 func Definitions() []permissioncatalog.Definition {
@@ -22,5 +24,7 @@ func Definitions() []permissioncatalog.Definition {
 		{Key: BlobReclaim, OwnerModuleID: "files", DescriptionMessageID: "permission.files.blob.reclaim", Risk: permissioncatalog.RiskCritical},
 		{Key: SettingsRead, OwnerModuleID: "files", DescriptionMessageID: "permission.files.settings.read", Risk: permissioncatalog.RiskElevated},
 		{Key: SettingsWrite, OwnerModuleID: "files", DescriptionMessageID: "permission.files.settings.write", Risk: permissioncatalog.RiskCritical},
+		{Key: AdminShareRead, OwnerModuleID: "files", DescriptionMessageID: "permission.files.share-admin.read", Risk: permissioncatalog.RiskElevated},
+		{Key: AdminShareRevoke, OwnerModuleID: "files", DescriptionMessageID: "permission.files.share-admin.revoke", Risk: permissioncatalog.RiskCritical},
 	}
 }

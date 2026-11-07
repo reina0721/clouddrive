@@ -430,6 +430,16 @@
     "Manageable": true
   },
   {
+    "ID": "system-tools.shares",
+    "ModuleID": "system-tools",
+    "RouteID": "system-tools.shares",
+    "TitleMessageID": "systemTools.nav.shares",
+    "IconID": "resource",
+    "DefaultParentID": "group:administration",
+    "DefaultOrder": 48,
+    "Manageable": true
+  },
+  {
     "ID": "system-tools.runtime",
     "ModuleID": "system-tools",
     "RouteID": "system-tools.runtime",
