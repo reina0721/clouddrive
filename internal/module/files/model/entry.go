@@ -20,13 +20,14 @@ const (
 const MaxNameRunes = 255
 
 var (
-	ErrInvalid     = errors.New("invalid file input")
-	ErrMissing     = errors.New("file not accessible")
-	ErrConflict    = errors.New("file conflict")
-	ErrQuota       = errors.New("file quota exceeded")
-	ErrTooLarge    = errors.New("file size exceeded")
-	ErrBusy        = errors.New("file upload busy")
-	ErrUnsupported = errors.New("file operation not supported for this kind")
+	ErrInvalid            = errors.New("invalid file input")
+	ErrMissing            = errors.New("file not accessible")
+	ErrConflict           = errors.New("file conflict")
+	ErrQuota              = errors.New("file quota exceeded")
+	ErrTooLarge           = errors.New("file size exceeded")
+	ErrFilenameRestricted = errors.New("file name rejected by storage policy")
+	ErrBusy               = errors.New("file upload busy")
+	ErrUnsupported        = errors.New("file operation not supported for this kind")
 )
 
 // Entry 保存单个目录项；ObjectKey 和幂等校验信息永不对外输出。

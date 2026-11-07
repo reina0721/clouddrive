@@ -27,3 +27,27 @@ export const storageUsageSchema = z.object({
 export type StoragePolicy = z.infer<typeof storagePolicySchema>;
 export type StoragePolicyInput = z.infer<typeof policyInput>;
 export type StorageUsage = z.infer<typeof storageUsageSchema>;
+
+const ruleMode = z.enum(['allow', 'deny']);
+const storageNameRules = z.object({
+  extensionMode: ruleMode,
+  extensions: z.array(z.string()).max(32),
+  patternMode: ruleMode,
+  pattern: z.string(),
+});
+const storageNameRuleInput = z.object({
+  revision: z.number().int().nonnegative(),
+  rules: storageNameRules,
+});
+export const storageNameRulesViewSchema = storageNameRuleInput.extend({
+  active: storageNameRules,
+  pendingRestart: z.boolean(),
+  canSave: z.boolean(),
+});
+export const storageNameRuleCheckSchema = z.object({
+  decision: z.enum(['allowed', 'extension', 'pattern']),
+});
+export type StorageNameRules = z.infer<typeof storageNameRules>;
+export type StorageNameRuleInput = z.infer<typeof storageNameRuleInput>;
+export type StorageNameRulesView = z.infer<typeof storageNameRulesViewSchema>;
+export type StorageNameRuleCheck = z.infer<typeof storageNameRuleCheckSchema>;

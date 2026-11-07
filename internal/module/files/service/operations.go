@@ -86,6 +86,9 @@ func (s *Service) ReplaceText(ctx context.Context, owner, id string, revision in
 	if detail.Entry.ContentRevision != revision {
 		return model.Entry{}, model.ErrConflict
 	}
+	if err := s.policy.NameAdmission.validate(detail.Entry.Name); err != nil {
+		return model.Entry{}, err
+	}
 	objectID, err := s.ids.New()
 	if err != nil {
 		return model.Entry{}, err
@@ -107,6 +110,9 @@ func (s *Service) ReplaceText(ctx context.Context, owner, id string, revision in
 		}
 		if current.ContentRevision != revision || current.ObjectKey != detail.Entry.ObjectKey {
 			return model.Entry{}, model.ErrConflict
+		}
+		if err := s.policy.NameAdmission.validate(current.Name); err != nil {
+			return model.Entry{}, err
 		}
 		prepared, err := s.prepareReplacement(entries, current, snapshot.HistoryPreferences)
 		if err != nil {

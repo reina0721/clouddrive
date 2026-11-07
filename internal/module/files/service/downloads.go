@@ -183,6 +183,9 @@ func (s *OfflineDownloads) Create(ctx context.Context, owner string, input Downl
 			return err
 		}
 		if input.Name != "" {
+			if err := s.transfers.files.policy.NameAdmission.validate(input.Name); err != nil {
+				return err
+			}
 			if err := model.Available(snapshot.Entries, "", input.ParentID, normalized); err != nil {
 				return err
 			}
@@ -374,7 +377,7 @@ func (s *OfflineDownloads) Retarget(ctx context.Context, owner, id string, revis
 	if err := s.authorize(ctx, owner); err != nil {
 		return DownloadSummary{}, err
 	}
-	normalized, err := s.transfers.files.normalizedName(name)
+	normalized, err := s.transfers.files.newContentName(name)
 	if err != nil {
 		return DownloadSummary{}, err
 	}

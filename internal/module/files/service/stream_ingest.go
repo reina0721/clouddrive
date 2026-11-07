@@ -99,7 +99,7 @@ func (s *Transfers) Ingest(ctx context.Context, connection model.Connection, par
 	if err := s.connections.AuthorizePublication(ctx, connection.ID, connection.Revision); err != nil {
 		return entry, false, err
 	}
-	normalized, err := s.files.normalizedName(name)
+	normalized, err := s.files.newContentName(name)
 	if err != nil {
 		return entry, false, err
 	}

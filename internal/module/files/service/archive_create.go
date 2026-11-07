@@ -52,7 +52,7 @@ func (s *ArchiveTasks) CreateZIP(ctx context.Context, owner string, input ZIPTas
 	if !strings.HasSuffix(strings.ToLower(input.Name), ".zip") {
 		input.Name += ".zip"
 	}
-	normalized, err := files.normalizedName(input.Name)
+	normalized, err := files.newContentName(input.Name)
 	if err != nil {
 		return ArchiveTask{}, err
 	}
@@ -135,7 +135,7 @@ func (s *ArchiveTasks) runZIP(ctx context.Context, claim ArchiveTaskClaim) error
 		return fmt.Errorf("decode ZIP task input: %w", err)
 	}
 	files := s.archives.files
-	normalized, err := files.normalizedName(input.Name)
+	normalized, err := files.newContentName(input.Name)
 	if err != nil {
 		return err
 	}

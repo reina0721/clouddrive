@@ -383,7 +383,7 @@ func (s *OfflineDownloads) allocateSource(ctx context.Context, claim DownloadCla
 				name = headers.SuggestedName
 			}
 		}
-		normalized, err := s.transfers.files.normalizedName(name)
+		normalized, err := s.transfers.files.newContentName(name)
 		if err != nil {
 			return child, nil, err
 		}

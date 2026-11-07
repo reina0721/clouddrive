@@ -249,6 +249,8 @@ func downloadFailure(err error) (model.DownloadFailure, int) {
 		return model.DownloadFailureQuota, 0
 	case errors.Is(err, model.ErrTooLarge):
 		return model.DownloadFailureLarge, 0
+	case errors.Is(err, model.ErrFilenameRestricted):
+		return model.DownloadFailureFilename, 0
 	case errors.Is(err, model.ErrMissing), errors.Is(err, model.ErrConflict):
 		return model.DownloadFailureDestination, 0
 	case errors.Is(err, ErrCleanup):

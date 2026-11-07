@@ -92,6 +92,8 @@ export function createPublicFilesRuntime(
       });
       if (!response.ok) {
         const message = await response.text();
+        if (response.status === 422 && message.includes('files_filename_restricted'))
+          throw new FilesError('filename-restricted');
         const code =
           response.status === 423
             ? 'write-locked'

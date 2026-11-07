@@ -111,6 +111,27 @@ func TestArchiveExtractAtomicHierarchyWrappingAndRealBytes(t *testing.T) {
 	}
 }
 func TestArchiveExtractSelectionAndConflicts(t *testing.T) {
+	t.Run("最终名称规则拒绝整个提取", func(t *testing.T) {
+		policy := DefaultPolicy()
+		rules, err := CompileStorageNameRules(StorageNameRules{
+			ExtensionMode: StorageRuleAllow, PatternMode: StorageRuleDeny, Pattern: `\(`,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		policy.NameAdmission = rules
+		a, files, repo, content, source, target := archiveServiceFixture(t, policy)
+		if _, err := files.CreateText(t.Context(), "owner", target.ID, "b.txt", strings.Repeat("b", 16), "existing"); err != nil {
+			t.Fatal(err)
+		}
+		entries, objects := len(repo.entries), len(content.objects)
+		if _, err := a.Extract(t.Context(), "owner", source.ID, archiveExtractInput(source, target, ArchiveRename)); !errors.Is(err, model.ErrFilenameRestricted) {
+			t.Fatalf("自动改名后的文件名未校验: %v", err)
+		}
+		if len(repo.entries) != entries || len(content.objects) != objects {
+			t.Fatal("规则拒绝后产生了部分目录或对象")
+		}
+	})
 	t.Run("拒绝不部分发布", func(t *testing.T) {
 		a, files, repo, content, source, target := archiveServiceFixture(t, DefaultPolicy())
 		if _, err := files.CreateText(context.Background(), "owner", target.ID, "b.txt", strings.Repeat("b", 16), "existing"); err != nil {

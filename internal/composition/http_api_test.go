@@ -13,7 +13,7 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 		t.Fatal(err)
 	}
 	definitions := blueprint.httpDefinitions
-	if len(definitions) != 207 {
+	if len(definitions) != 210 {
 		t.Fatalf("operation count = %d", len(definitions))
 	}
 	seen := make(map[string]struct{}, len(definitions))
@@ -35,6 +35,7 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 		"files.admin-tasks.list": "files:task-admin:read", "files.admin-tasks.read": "files:task-admin:read", "files.admin-tasks.cleanup-preview": "files:task-admin:cleanup", "files.admin-tasks.cleanup": "files:task-admin:cleanup",
 		"files.worker-nodes.list": "files:node:read", "files.worker-nodes.check": "files:node:read",
 		"files.storage-policy.read": "files:storage-policy:read", "files.storage-policy.usage": "files:storage-policy:read", "files.storage-policy.save": "files:storage-policy:write",
+		"files.storage-name-rules.read": "files:storage-policy:read", "files.storage-name-rules.save": "files:storage-policy:write", "files.storage-name-rules.check": "files:storage-policy:write",
 		"files.blobs.list": "files:blob:read", "files.blobs.detail": "files:blob:read",
 		"files.blob-reclamation.list": "files:blob:read", "files.blob-reclamation.remove": "files:blob:reclaim",
 		"files.settings.read": "files:settings:read", "files.settings.save": "files:settings:write",

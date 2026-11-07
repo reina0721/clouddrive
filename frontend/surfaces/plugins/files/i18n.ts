@@ -223,6 +223,7 @@ const zh = {
   root: '根目录',
   errors: {
     'write-locked': '文件正被外部客户端占用，请等待到期或到连接与挂载中解除文件锁。',
+    'filename-restricted': '文件名或扩展名不符合当前存储策略。',
     locked: '分享访问凭据无效。',
     checksum: '源文件内容不一致，请重新选择正确的文件。',
     expired: '暂存已到期，请重新上传。',
@@ -468,6 +469,7 @@ const en: typeof zh = {
   browse: 'Browse folders',
   root: 'Root',
   errors: {
+    'filename-restricted': 'The file name or extension is blocked by the current storage policy.',
     'write-locked':
       'This file is locked by an external client. Wait for expiry or release it in Connections and mounts.',
     locked: 'The share access grant is invalid.',

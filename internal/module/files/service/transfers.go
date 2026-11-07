@@ -206,6 +206,9 @@ func (s *Transfers) createAuthorized(ctx context.Context, owner string, input Tr
 		if input.SizeBytes > s.policy.MaxFileBytes {
 			return model.Transfer{}, nil, model.ErrTooLarge
 		}
+		if err := s.files.policy.NameAdmission.validate(input.Name); err != nil {
+			return model.Transfer{}, nil, err
+		}
 		if err := model.Parent(snapshot.Entries, input.ParentID); err != nil {
 			return model.Transfer{}, nil, err
 		}
@@ -578,6 +581,11 @@ func (s *Transfers) Retarget(ctx context.Context, owner, id, parent, name string
 			if current.State != model.TransferAttention {
 				return model.ErrConflict
 			}
+			if current.Name != name {
+				if err := s.files.policy.NameAdmission.validate(name); err != nil {
+					return err
+				}
+			}
 			if err := model.Parent(entries, parent); err != nil {
 				return err
 			}
@@ -644,6 +652,9 @@ func (s *Transfers) commitAuthorized(ctx context.Context, owner, id string, sour
 		}
 		if publication != nil {
 			if err := publication.authorize(ctx, s.files.clock.Now()); err != nil {
+				return err
+			}
+			if err := s.files.policy.NameAdmission.validate(transfer.Name); err != nil {
 				return err
 			}
 		}

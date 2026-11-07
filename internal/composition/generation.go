@@ -510,6 +510,11 @@ func (f *applicationGenerationFactory) Prepare(
 	}
 	fileRuntimePolicy := filesPolicy.Policy()
 	fileRuntimePolicy.MaxFileBytes = storageLimits.MaxFileBytes
+	nameRules, nameAdmission, err := files.PrepareStorageNameRules(ctx, databaseAccess, storageIdentity, clock.System())
+	if err != nil {
+		return abort(err)
+	}
+	fileRuntimePolicy.NameAdmission = nameAdmission
 	filesystemSettings, activeFilesystem, err := files.PrepareFilesystemSettings(ctx, databaseAccess, storageIdentity, clock.System(), filesservice.FilesystemRuntime{
 		Policy: fileRuntimePolicy, Blob: filesPolicy.BlobReclamation, TrashInterval: filesservice.TrashExpiryInterval,
 		TrashScheduled: trashScheduled, BlobScheduled: blobScheduled,
@@ -560,6 +565,7 @@ func (f *applicationGenerationFactory) Prepare(
 		TrashSchedulerEnabled: activeFilesystem.TrashScheduled,
 		FilesystemSettings:    filesystemSettings, FilesystemSettingsAccess: fileAuthority,
 		StoragePolicy: storagePolicy, StoragePolicyAccess: fileAuthority,
+		StorageNameRules: nameRules,
 		AdminShareAccess: fileAuthority,
 		AdminTaskAccess:  fileAuthority,
 		Clock:            clock.System(), IDs: idgen.UUID(), Actors: filesActorAdapter{}, Logger: generation.logger.value(), Policy: activeFilesystem.Policy,

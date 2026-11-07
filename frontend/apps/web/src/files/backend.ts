@@ -27,6 +27,8 @@ import {
   workerNodeCheckSchema,
   storagePolicySchema,
   storageUsageSchema,
+  storageNameRuleCheckSchema,
+  storageNameRulesViewSchema,
   blobDetailSchema,
   blobCandidatePageSchema,
   blobPageSchema,
@@ -147,6 +149,8 @@ export function createFilesRuntime(
           code = 'checksum';
         else if (error.status === 422 && payload?.includes('files_archive_checksum'))
           code = 'archive-checksum';
+        else if (error.status === 422 && payload?.includes('files_filename_restricted'))
+          code = 'filename-restricted';
         else if (error.status === 422 && payload?.includes('files_unsupported'))
           code = 'unsupported';
         else if (error.status === 409)
@@ -393,6 +397,20 @@ export function createFilesRuntime(
       storagePolicySchema.parse(await call('/storage-policy', { method: 'PUT', body })),
     readStorageUsage: async (signal) =>
       storageUsageSchema.parse(await call('/storage-policy/usage', { signal })),
+    readStorageNameRules: async (signal) =>
+      storageNameRulesViewSchema.parse(await call('/storage-policy/name-rules', { signal })),
+    saveStorageNameRules: async (body) =>
+      storageNameRulesViewSchema.parse(
+        await call('/storage-policy/name-rules', { method: 'PUT', body }),
+      ),
+    checkStorageNameRules: async (name, rules, signal) =>
+      storageNameRuleCheckSchema.parse(
+        await call('/storage-policy/name-rules/check', {
+          method: 'POST',
+          body: { name, rules },
+          signal,
+        }),
+      ),
     saveFilesystemSettings: async (body) =>
       filesystemSettingsSchema.parse(await call('/settings', { method: 'PUT', body })),
     readPropertyDefinitions: async (signal) =>

@@ -69,6 +69,8 @@ func Status(err error) int {
 		return http.StatusInsufficientStorage
 	case errors.Is(err, model.ErrTooLarge):
 		return http.StatusRequestEntityTooLarge
+	case errors.Is(err, model.ErrFilenameRestricted):
+		return http.StatusUnprocessableEntity
 	case errors.Is(err, model.ErrBusy):
 		return http.StatusTooManyRequests
 	case errors.Is(err, context.Canceled):

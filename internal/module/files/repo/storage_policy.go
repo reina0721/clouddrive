@@ -10,6 +10,21 @@ import (
 )
 
 const storagePolicyID = "storage-policy"
+const storageNameRulesID = "storage-name-rules"
+
+func (r *Repository) ReadStorageNameRules(ctx context.Context) (service.StoredStorageNameRules, error) {
+	revision, rules, err := readFileSettings[service.StorageNameRules](ctx, r, storageNameRulesID)
+	if revision == 0 && err == nil {
+		rules = service.StorageNameRules{ExtensionMode: service.StorageRuleAllow, Extensions: []string{}, PatternMode: service.StorageRuleAllow}
+	}
+	return service.StoredStorageNameRules{Revision: revision, Rules: rules}, err
+}
+
+func (r *Repository) SaveStorageNameRules(ctx context.Context, value service.StoredStorageNameRules) (service.StoredStorageNameRules, error) {
+	expected := value.Revision
+	value.Revision++
+	return value, r.saveFileSettings(ctx, storageNameRulesID, expected, value.Revision, value.Rules)
+}
 
 func (r *Repository) ReadStoragePolicy(ctx context.Context) (service.StoredStoragePolicy, error) {
 	revision, overrides, err := readFileSettings[service.StorageLimitOverrides](ctx, r, storagePolicyID)

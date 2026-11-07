@@ -358,6 +358,8 @@ func archiveTaskFailure(err error) string {
 		return "conflict"
 	case errors.Is(err, model.ErrTooLarge):
 		return "too_large"
+	case errors.Is(err, model.ErrFilenameRestricted):
+		return "filename_restricted"
 	case errors.Is(err, model.ErrUnsupported):
 		return "unsupported"
 	case errors.Is(err, model.ErrInvalid):

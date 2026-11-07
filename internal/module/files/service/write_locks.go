@@ -123,7 +123,7 @@ func (s *WriteLocks) Acquire(ctx context.Context, scope DAVScope, relative strin
 		if err := connectionWriteTarget(connection, entries, parent.ID, name); err != nil {
 			return result, false, err
 		}
-		normalized, err := s.files.normalizedName(name)
+		normalized, err := s.files.newContentName(name)
 		if err != nil {
 			return result, false, err
 		}

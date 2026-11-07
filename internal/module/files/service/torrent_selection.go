@@ -149,7 +149,7 @@ func (s *TorrentDownloads) Select(ctx context.Context, owner, id string, input T
 				}
 			}
 			name := torrentDesiredName(snapshot.Task, file.TorrentFile, len(snapshot.Data.Files))
-			normalized, err := s.transfers.files.normalizedName(name)
+			normalized, err := s.transfers.files.newContentName(name)
 			if err != nil {
 				return mutation, err
 			}

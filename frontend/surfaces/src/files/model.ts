@@ -31,7 +31,15 @@ import type {
   AdminTaskTarget,
 } from './admin-tasks';
 import type { WorkerNodeCatalog, WorkerNodeCheck } from './worker-nodes';
-import type { StoragePolicy, StoragePolicyInput, StorageUsage } from './storage-policy';
+import type {
+  StorageNameRuleCheck,
+  StorageNameRuleInput,
+  StorageNameRules,
+  StorageNameRulesView,
+  StoragePolicy,
+  StoragePolicyInput,
+  StorageUsage,
+} from './storage-policy';
 import type { BlobCandidatePage, BlobDetail, BlobPage, BlobQuery } from './blobs';
 import type { FilesystemSettings, FilesystemSettingsInput } from './filesystem-settings';
 import type { PropertyDefinitionSet, PropertyDefinitionsView } from './property-definitions';
@@ -40,6 +48,7 @@ export type { FileViewPreferences } from './view-options';
 
 export type FilesErrorCode =
   | 'write-locked'
+  | 'filename-restricted'
   | 'archive-password'
   | 'archive-checksum'
   | 'archive-worker'
@@ -202,6 +211,13 @@ export type FilesPort = Readonly<{
   readStoragePolicy(signal: AbortSignal): Promise<StoragePolicy>;
   saveStoragePolicy(input: StoragePolicyInput): Promise<StoragePolicy>;
   readStorageUsage(signal: AbortSignal): Promise<StorageUsage>;
+  readStorageNameRules(signal: AbortSignal): Promise<StorageNameRulesView>;
+  saveStorageNameRules(input: StorageNameRuleInput): Promise<StorageNameRulesView>;
+  checkStorageNameRules(
+    name: string,
+    rules: StorageNameRules,
+    signal: AbortSignal,
+  ): Promise<StorageNameRuleCheck>;
   readInventory(id: string, signal: AbortSignal): Promise<InventoryItem>;
   listBlobs(query: BlobQuery, signal: AbortSignal): Promise<BlobPage>;
   readBlob(id: string, page: number, signal: AbortSignal): Promise<BlobDetail>;

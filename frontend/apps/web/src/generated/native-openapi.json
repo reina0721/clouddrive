@@ -6435,6 +6435,110 @@
         ],
         "type": "object"
       },
+      "StorageNameCheckInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/StorageNameRules"
+          }
+        },
+        "required": [
+          "name",
+          "rules"
+        ],
+        "type": "object"
+      },
+      "StorageNameCheckOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "decision": {
+            "enum": [
+              "allowed",
+              "extension",
+              "pattern"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision"
+        ],
+        "type": "object"
+      },
+      "StorageNameRules": {
+        "additionalProperties": false,
+        "properties": {
+          "extensionMode": {
+            "enum": [
+              "allow",
+              "deny"
+            ],
+            "type": "string"
+          },
+          "extensions": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32,
+            "nullable": true,
+            "type": "array"
+          },
+          "pattern": {
+            "maxLength": 256,
+            "type": "string"
+          },
+          "patternMode": {
+            "enum": [
+              "allow",
+              "deny"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "extensionMode",
+          "extensions",
+          "patternMode",
+          "pattern"
+        ],
+        "type": "object"
+      },
+      "StorageNameRulesOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/StorageNameRules"
+          },
+          "canSave": {
+            "type": "boolean"
+          },
+          "pendingRestart": {
+            "type": "boolean"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/StorageNameRules"
+          }
+        },
+        "required": [
+          "canSave",
+          "active",
+          "pendingRestart",
+          "revision",
+          "rules"
+        ],
+        "type": "object"
+      },
       "StoragePolicyOutputBody": {
         "additionalProperties": false,
         "properties": {
@@ -6548,6 +6652,25 @@
         "required": [
           "revision",
           "overrides"
+        ],
+        "type": "object"
+      },
+      "StoredStorageNameRules": {
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/StorageNameRules"
+          }
+        },
+        "required": [
+          "revision",
+          "rules"
         ],
         "type": "object"
       },
@@ -13626,6 +13749,129 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StoragePolicyOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/storage-policy/name-rules": {
+      "get": {
+        "operationId": "files.storage-name-rules.read",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageNameRulesOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "put": {
+        "operationId": "files.storage-name-rules.save",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoredStorageNameRules"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageNameRulesOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/storage-policy/name-rules/check": {
+      "post": {
+        "operationId": "files.storage-name-rules.check",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorageNameCheckInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageNameCheckOutputBody"
                 }
               }
             },

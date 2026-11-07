@@ -16,6 +16,7 @@ import type { StoragePolicy, StoragePolicyInput } from '../../../src/files/stora
 import type { Preferences } from '../../../src/preferences-model';
 import { CatalogFailure } from './catalog-failure';
 import { useCatalogRequest } from './use-catalog-request';
+import { StorageNameRulesPanel } from './storage-name-rules-panel';
 
 const fields = ['maxFileBytes', 'chunkBytes'] as const;
 const zh = {
@@ -287,7 +288,10 @@ export function StoragePolicyPage() {
         <CatalogFailure error={policy.result.error} retry={policy.refresh} />
       ) : null}
       {policy.result && 'value' in policy.result ? (
-        <PolicyCards initial={policy.result.value} labels={labels} refresh={policy.refresh} />
+        <>
+          <PolicyCards initial={policy.result.value} labels={labels} refresh={policy.refresh} />
+          <StorageNameRulesPanel />
+        </>
       ) : null}
     </Page>
   );

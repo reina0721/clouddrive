@@ -121,6 +121,9 @@ const (
 	OperationFilesShortcutsList             OperationID = "files.shortcuts.list"
 	OperationFilesShortcutsOpen             OperationID = "files.shortcuts.open"
 	OperationFilesShortcutsPurge            OperationID = "files.shortcuts.purge"
+	OperationFilesStorageNameRulesCheck     OperationID = "files.storage-name-rules.check"
+	OperationFilesStorageNameRulesRead      OperationID = "files.storage-name-rules.read"
+	OperationFilesStorageNameRulesSave      OperationID = "files.storage-name-rules.save"
 	OperationFilesStoragePolicyRead         OperationID = "files.storage-policy.read"
 	OperationFilesStoragePolicySave         OperationID = "files.storage-policy.save"
 	OperationFilesStoragePolicyUsage        OperationID = "files.storage-policy.usage"
@@ -331,6 +334,9 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesShortcutsList, Method: "GET", Path: "/api/v1/files/shortcuts", Policy: "protected", Scope: "files:read", Action: "files.shortcuts.list"},
 	{ID: OperationFilesShortcutsOpen, Method: "GET", Path: "/api/v1/files/shortcuts/{shortcutId}/open", Policy: "protected", Scope: "files:read", Action: "files.shortcuts.open"},
 	{ID: OperationFilesShortcutsPurge, Method: "DELETE", Path: "/api/v1/files/shortcuts/{shortcutId}", Policy: "protected", Scope: "files:write", Action: "files.shortcuts.purge"},
+	{ID: OperationFilesStorageNameRulesCheck, Method: "POST", Path: "/api/v1/files/storage-policy/name-rules/check", Policy: "protected", Scope: "files:storage-policy:write", Action: "files.storage-name-rules.check"},
+	{ID: OperationFilesStorageNameRulesRead, Method: "GET", Path: "/api/v1/files/storage-policy/name-rules", Policy: "protected", Scope: "files:storage-policy:read", Action: "files.storage-name-rules.read"},
+	{ID: OperationFilesStorageNameRulesSave, Method: "PUT", Path: "/api/v1/files/storage-policy/name-rules", Policy: "protected", Scope: "files:storage-policy:write", Action: "files.storage-name-rules.save"},
 	{ID: OperationFilesStoragePolicyRead, Method: "GET", Path: "/api/v1/files/storage-policy", Policy: "protected", Scope: "files:storage-policy:read", Action: "files.storage-policy.read"},
 	{ID: OperationFilesStoragePolicySave, Method: "PUT", Path: "/api/v1/files/storage-policy", Policy: "protected", Scope: "files:storage-policy:write", Action: "files.storage-policy.save"},
 	{ID: OperationFilesStoragePolicyUsage, Method: "GET", Path: "/api/v1/files/storage-policy/usage", Policy: "protected", Scope: "files:storage-policy:read", Action: "files.storage-policy.usage"},

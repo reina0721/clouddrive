@@ -55,6 +55,7 @@ type Dependencies struct {
 	FilesystemSettings       *service.FilesystemSettings
 	FilesystemSettingsAccess handler.FilesystemSettingsAuthority
 	StoragePolicy            *service.StoragePolicy
+	StorageNameRules         *service.StorageNameRuleSettings
 	StoragePolicyAccess      handler.StoragePolicyAuthority
 	TrashScanInterval        time.Duration
 	TrashSchedulerEnabled    bool
@@ -85,7 +86,7 @@ type Module struct {
 func New(deps Dependencies) (Module, error) {
 	if deps.Actors == nil || deps.Logger == nil || deps.PublicAuthentication == nil || deps.BlobReclamationAccess == nil ||
 		deps.FilesystemSettings == nil || deps.FilesystemSettingsAccess == nil || deps.AdminShareAccess == nil || deps.AdminTaskAccess == nil ||
-		deps.StoragePolicy == nil || deps.StoragePolicyAccess == nil {
+		deps.StoragePolicy == nil || deps.StorageNameRules == nil || deps.StoragePolicyAccess == nil {
 		return Module{}, fmt.Errorf("files boundary dependencies missing")
 	}
 	repository, err := repo.New(deps.Database, deps.StorageIdentity, deps.Clock)
@@ -161,6 +162,7 @@ func New(deps Dependencies) (Module, error) {
 	boundary := &handler.Handler{PublicAuthentication: deps.PublicAuthentication, Service: useCases, Sharing: sharing, ShareTransfers: shareTransfers, Navigation: navigation, Preferences: preferences, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
 	boundary.Archives = archives
 	boundary.StoragePolicy, boundary.StoragePolicyAccess = deps.StoragePolicy, deps.StoragePolicyAccess
+	boundary.StorageNameRules = deps.StorageNameRules
 	boundary.ArchiveTasks = archiveTasks
 	boundary.FilesystemSettings = deps.FilesystemSettings
 	boundary.FilesystemSettingsAccess = deps.FilesystemSettingsAccess
@@ -352,6 +354,14 @@ func PrepareStoragePolicy(ctx context.Context, access repo.Access, identity stri
 	active := defaults.Resolve(stored.Overrides)
 	settings, err := service.NewStoragePolicy(repository, source, backend, defaults, active)
 	return settings, active, err
+}
+
+func PrepareStorageNameRules(ctx context.Context, access repo.Access, identity string, source clock.Clock) (*service.StorageNameRuleSettings, service.FileNameAdmission, error) {
+	repository, err := repo.New(access, identity, source)
+	if err != nil {
+		return nil, service.FileNameAdmission{}, err
+	}
+	return service.NewStorageNameRuleSettings(ctx, repository)
 }
 
 func stagingIdentity(root string) (string, error) {

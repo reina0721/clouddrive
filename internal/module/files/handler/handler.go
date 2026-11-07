@@ -67,6 +67,7 @@ type Handler struct {
 	FilesystemSettings       *service.FilesystemSettings
 	FilesystemSettingsAccess FilesystemSettingsAuthority
 	StoragePolicy            *service.StoragePolicy
+	StorageNameRules         *service.StorageNameRuleSettings
 	StoragePolicyAccess      StoragePolicyAuthority
 	PropertyDefinitions      *service.PropertyDefinitions
 	Downloads                *service.OfflineDownloads
@@ -155,6 +156,8 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 		status, code = 404, "files_not_found"
 	case errors.Is(err, model.ErrInvalid):
 		status, code = 422, "files_invalid"
+	case errors.Is(err, model.ErrFilenameRestricted):
+		status, code = 422, "files_filename_restricted"
 	case errors.Is(err, model.ErrConflict):
 		status, code = 409, "files_conflict"
 	case errors.Is(err, model.ErrQuota):

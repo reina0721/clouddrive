@@ -27,6 +27,8 @@ func torrentFailure(err error) model.DownloadFailure {
 		return model.DownloadFailureDestination
 	case errors.Is(err, model.ErrTooLarge):
 		return model.DownloadFailureLarge
+	case errors.Is(err, model.ErrFilenameRestricted):
+		return model.DownloadFailureFilename
 	case errors.Is(err, model.ErrBusy):
 		return model.DownloadFailureQuota
 	case errors.Is(err, model.ErrMissing), errors.Is(err, model.ErrConflict):

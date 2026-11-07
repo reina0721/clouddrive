@@ -102,6 +102,7 @@ const (
 	DownloadFailureResume      DownloadFailure = "resume-unsupported"
 	DownloadFailureBlocked     DownloadFailure = "source-blocked"
 	DownloadFailureLarge       DownloadFailure = "too-large"
+	DownloadFailureFilename    DownloadFailure = "filename-restricted"
 	DownloadFailureQuota       DownloadFailure = "quota"
 	DownloadFailureDestination DownloadFailure = "destination"
 	DownloadFailurePermission  DownloadFailure = "permission"
@@ -118,7 +119,7 @@ const (
 
 func (f DownloadFailure) Valid() bool {
 	switch f {
-	case DownloadFailureNone, DownloadFailureNetwork, DownloadFailureTimeout, DownloadFailureStatus, DownloadFailureChanged, DownloadFailureResume, DownloadFailureBlocked, DownloadFailureLarge, DownloadFailureQuota, DownloadFailureDestination, DownloadFailurePermission, DownloadFailureStorage, DownloadFailureLease, DownloadFailureCleanup, DownloadFailureAttempts, DownloadFailureExpired, DownloadFailureIncomplete, DownloadFailureMetadata, DownloadFailureNode, DownloadFailureWriteLocked:
+	case DownloadFailureNone, DownloadFailureNetwork, DownloadFailureTimeout, DownloadFailureStatus, DownloadFailureChanged, DownloadFailureResume, DownloadFailureBlocked, DownloadFailureLarge, DownloadFailureFilename, DownloadFailureQuota, DownloadFailureDestination, DownloadFailurePermission, DownloadFailureStorage, DownloadFailureLease, DownloadFailureCleanup, DownloadFailureAttempts, DownloadFailureExpired, DownloadFailureIncomplete, DownloadFailureMetadata, DownloadFailureNode, DownloadFailureWriteLocked:
 		return true
 	default:
 		return false

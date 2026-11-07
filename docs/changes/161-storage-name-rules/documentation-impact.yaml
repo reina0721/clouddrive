@@ -1,0 +1,22 @@
+schema_version: 1
+change: 161-storage-name-rules
+areas:
+  - id: startup
+    decision: updated
+    documents: [README.md]
+    reason: 说明名称规则入口。
+  - id: webui
+    decision: updated
+    documents: [docs/operations/file-management.md]
+    reason: 说明规则语法与入口边界。
+  - id: frontend
+    decision: updated
+    documents: [docs/repository-scope.md]
+    reason: 更新存储策略范围。
+  - id: module
+    decision: reviewed-no-change
+    reason: 复用当前存储和文件用例。
+  - id: api
+    decision: updated
+    documents: [api/README.md]
+    reason: 记录独立规则修订和试测契约。

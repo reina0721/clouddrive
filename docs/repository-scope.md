@@ -49,4 +49,4 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 
 [159文件任务节点](changes/159-file-worker-nodes/README.md)提供主机文件职责、已装配 aria2 节点、通信及负载检查、关联任务筛选。节点接入由部署配置管理。Cloudreve 从机注册、远端归档和从机存储仍为后续范围。
 
-[160默认存储策略](changes/160-storage-policy/README.md)提供发布后端摘要、引用去重统计及单文件和分片限额。仍使用单一发布位置，多策略分配、迁移、扩展名限制、CDN 与加密为后续范围。
+[160默认存储策略](changes/160-storage-policy/README.md)提供发布后端摘要、引用去重统计及单文件和分片限额。[161文件名规则](changes/161-storage-name-rules/README.md)增加扩展名与 RE2 正则的允许及拒绝模式、试测与新内容准入。仍使用单一发布位置，多策略分配、迁移、CDN 与加密为后续范围。

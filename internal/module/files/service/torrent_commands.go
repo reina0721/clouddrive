@@ -191,6 +191,9 @@ func (s *TorrentDownloads) Retarget(ctx context.Context, owner, id string, revis
 				return mutation, model.ErrConflict
 			}
 			if len(mutation.Data.Folders) == 0 {
+				if err := s.transfers.files.policy.NameAdmission.validate(name); err != nil {
+					return mutation, err
+				}
 				child.ParentID, child.Name, child.NormalizedName = parent, name, normalized
 			}
 			child.UpdatedAt = now

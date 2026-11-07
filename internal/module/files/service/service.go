@@ -34,6 +34,7 @@ const (
 type Policy struct {
 	PDFReader              PDFReaderPolicy
 	MaxFileBytes           int64
+	NameAdmission          FileNameAdmission
 	QuotaBytes             int64
 	ConcurrentUploads      int
 	MaxTextBytes           int64
@@ -130,6 +131,14 @@ func (s *Service) normalizedName(name string) (string, error) {
 	return strings.ToLower(s.names.Normalize(name)), nil
 }
 
+func (s *Service) newContentName(name string) (string, error) {
+	normalized, err := s.normalizedName(name)
+	if err != nil {
+		return "", err
+	}
+	return normalized, s.policy.NameAdmission.validate(name)
+}
+
 func (s *Service) read(ctx context.Context, owner string) ([]model.Entry, error) {
 	if owner == "" {
 		return nil, model.ErrMissing
@@ -192,6 +201,9 @@ func (s *Service) createSmallContent(ctx context.Context, owner, parent, name, k
 	}
 	if entry, ok, err := previousUpload(entries, key, parent, normalized, hash); ok || err != nil {
 		return entry, err
+	}
+	if err := s.policy.NameAdmission.validate(name); err != nil {
+		return model.Entry{}, err
 	}
 	if err := model.Parent(entries, parent); err != nil {
 		return model.Entry{}, err

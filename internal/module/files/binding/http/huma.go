@@ -113,6 +113,7 @@ func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 	registerBlobReclamation(api, h, operation)
 	registerFilesystemSettings(api, h, operation)
 	registerStoragePolicy(api, h, operation)
+	registerStorageNameRules(api, h, operation)
 	registerPropertyDefinitions(api, h, operation)
 	registerArchives(api, h, operation)
 	registerArchiveTasks(api, h, operation)

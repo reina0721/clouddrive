@@ -123,6 +123,11 @@ func (a *Archives) plan(ctx context.Context, owner string, entries []model.Entry
 				return model.Entry{}, false, model.ErrInvalid
 			}
 		}
+		if kind == model.File {
+			if err := a.files.policy.NameAdmission.validate(name); err != nil {
+				return model.Entry{}, false, err
+			}
+		}
 		id, err := a.files.ids.New()
 		if err != nil {
 			return model.Entry{}, false, err

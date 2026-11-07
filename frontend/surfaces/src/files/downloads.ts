@@ -132,6 +132,7 @@ export function downloadBatchError(code: string): FilesErrorCode {
     files_offline_resume_unsupported: 'unsupported',
     files_offline_node_unavailable: 'unavailable',
     files_offline_torrent_invalid: 'invalid',
+    files_filename_restricted: 'filename-restricted',
     files_not_found: 'missing',
     files_invalid: 'invalid',
     files_conflict: 'conflict',

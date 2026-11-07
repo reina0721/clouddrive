@@ -111,6 +111,11 @@ func (s *TorrentDownloads) publish(ctx context.Context, claim DownloadClaim, nod
 			return ErrTorrentProtocol
 		}
 		files := map[string]TorrentFile{}
+		for _, child := range snapshot.Transfers {
+			if err := s.transfers.files.policy.NameAdmission.validate(child.Name); err != nil {
+				return err
+			}
+		}
 		for _, file := range snapshot.Data.Files {
 			if file.Selected {
 				files[file.TransferID] = file.TorrentFile
