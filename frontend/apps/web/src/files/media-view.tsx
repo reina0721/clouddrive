@@ -35,6 +35,7 @@ export type VideoToolsProps = Readonly<{
 export function FileMediaView({
   entry,
   mode,
+  alt,
   maxBytes,
   readContent,
   version,
@@ -87,7 +88,7 @@ export function FileMediaView({
         // Go 的字节识别返回 audio/wave；浏览器播放探针使用通行的 WAV 别名。
         const type = rawType === 'audio/wave' ? waveMediaType : rawType;
         const image = type.startsWith('image/');
-        if (!image && (mode === 'thumbnail' || (!audioTypes.has(type) && !videoTypes.has(type))))
+        if (!image && (mode !== 'preview' || (!audioTypes.has(type) && !videoTypes.has(type))))
           throw new FilesError('unsupported');
         if (!image) {
           const probe = document.createElement(videoTypes.has(type) ? 'video' : 'audio');
@@ -139,6 +140,7 @@ export function FileMediaView({
         : current.failure === 'unsupported'
           ? (labels?.unsupported ?? t('files.mediaUnsupported'))
           : t('files.errors.' + current.failure);
+    if (mode === 'inline') return <span title={failure}>{alt || entry.name}</span>;
     return (
       <div className="space-y-2 text-xs text-ink-muted">
         <p role="status">{failure}</p>
@@ -154,21 +156,30 @@ export function FileMediaView({
       </div>
     );
   }
-  if (!url)
+  if (!url) {
+    if (mode === 'inline') return <span role="status">{alt || entry.name}</span>;
     return (
       <p role="status" className="text-xs text-ink-muted">
         {labels?.loading ?? t('files.mediaLoading')}
       </p>
     );
+  }
   if (entry.mediaType.startsWith('image/'))
     return (
       <img
         src={url}
-        alt={entry.name}
+        alt={alt ?? entry.name}
+        style={
+          mode === 'inline'
+            ? { maxWidth: '100%', maxHeight: 'min(28rem, 60vh)', objectFit: 'contain' }
+            : undefined
+        }
         className={
           mode === 'thumbnail'
             ? 'h-40 w-full rounded-control object-contain'
-            : 'max-h-screen w-full object-contain'
+            : mode === 'preview'
+              ? 'max-h-screen w-full object-contain'
+              : undefined
         }
         onError={() =>
           setResult({ key: requestKey, reader: readContent, url: '', failure: 'unsupported' })

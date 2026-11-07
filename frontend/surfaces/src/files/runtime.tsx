@@ -19,7 +19,8 @@ export { loadFileAnnotationMessages, loadPublicFileMessages } from './messages';
 
 export type FileMediaProps = Readonly<{
   entry: Pick<FileEntry, 'id' | 'name' | 'mediaType' | 'sizeBytes' | 'contentRevision'>;
-  mode: 'preview' | 'thumbnail';
+  mode: 'preview' | 'thumbnail' | 'inline';
+  alt?: string;
   maxBytes: number;
   version?: number;
   labels?: Readonly<{ loading: string; unsupported: string; tooLarge: string; retry: string }>;

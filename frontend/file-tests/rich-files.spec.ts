@@ -128,7 +128,9 @@ test('文本与 Markdown、双窗口编辑冲突、独立副本、右键菜单�
   await page.getByRole('dialog').getByRole('button', { name: '保存', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('button', { name, exact: true }).click();
-  await expect(page.getByRole('dialog').locator('pre')).toHaveText('第一窗口已提交');
+  await expect(
+    page.getByRole('dialog').getByRole('article', { name: '预览', exact: true }),
+  ).toHaveText('第一窗口已提交');
   await page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('checkbox', { name: `选择 ${name}`, exact: true }).press('Space');

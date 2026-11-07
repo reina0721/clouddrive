@@ -19,6 +19,7 @@ import {
 import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
 import { isEpubDocument } from '../../../src/files/epub-contract';
 import { fileIconExtension, type FileIconRule } from '../../../src/files/icon-rules';
+import { isMarkdownFile } from '../../../src/files/markdown';
 import { fileClipboardMaxEntries, type FileClipboardMode } from '../../../src/files/clipboard';
 import { formatFileBytes as bytes } from '../../../src/files/format';
 import {
@@ -608,6 +609,10 @@ export function FilesPage({
       }
       if (entry.kind === 'file' && isEpubDocument(entry)) {
         setEpubEntry(entry);
+        return;
+      }
+      if (entry.kind === 'file' && isMarkdownFile(entry)) {
+        setTextRequest({ mode: 'edit', entry, reading: true });
         return;
       }
       if (/^(image|audio|video)\//.test(entry.mediaType)) {
@@ -1534,7 +1539,8 @@ export function FilesPage({
                                     { id: 'versions', label: t('files.versions.title') },
                                     { id: 'upload-version', label: t('files.versions.upload') },
                                     ...(entry.mediaType.startsWith('text/') ||
-                                    /\.(md|txt)$/i.test(entry.name)
+                                    isMarkdownFile(entry) ||
+                                    /\.txt$/i.test(entry.name)
                                       ? [{ id: 'edit', label: t('files.edit') }]
                                       : []),
                                   ]
@@ -1881,6 +1887,9 @@ export function FilesPage({
         <TextDialog
           request={textRequest}
           maxBytes={listing.maxTextBytes}
+          {...(textRequest.mode === 'edit' && isMarkdownFile(textRequest.entry)
+            ? { onDownload: () => void download(textRequest.entry) }
+            : {})}
           onClose={() => setTextRequest(undefined)}
           onSaved={() => {
             setNotice(t('files.operationDone'));

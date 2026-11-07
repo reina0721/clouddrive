@@ -8,6 +8,8 @@ import {
   fileListingSchema,
   FilesError,
   epubLimits,
+  isMarkdownFile,
+  markdownReadTimeoutMs,
   fileShareSchema,
   shareListingSchema,
   trashPurgePreviewSchema,
@@ -459,7 +461,8 @@ export function createFilesRuntime(
           body: parentId === undefined ? {} : { parentId },
         }),
       ),
-    detail: async (id) => fileDetailSchema.parse(await call(`/${encodeURIComponent(id)}`)),
+    detail: async (id, signal) =>
+      fileDetailSchema.parse(await call(`/${encodeURIComponent(id)}`, signal ? { signal } : {})),
     copy: async (id, parentId, name) =>
       fileEntrySchema.parse(
         await call(`/${encodeURIComponent(id)}/copy`, { method: 'POST', body: { parentId, name } }),
@@ -650,18 +653,33 @@ export function createFilesRuntime(
       nativeDownload(base + native + '/' + encodeURIComponent(entry.id) + '/content', entry.name);
     },
     preview: async (entry, signal) => {
+      const markdown = isMarkdownFile(entry);
       if (
         !limits ||
         entry.sizeBytes > limits.maxTextBytes ||
         !(
+          markdown ||
           entry.mediaType.startsWith('text/') ||
-          /\.(md|txt|csv|json|xml|html|css|js|log)$/i.test(entry.name)
+          /\.(txt|csv|json|xml|html|css|js|log)$/i.test(entry.name)
         )
       )
         throw new FilesError('unsupported');
-      const blob = await content(entry.id, signal);
-      if (!limits || blob.size > limits.maxTextBytes) throw new ApiError('http', 413);
-      const bytes = new Uint8Array(await blob.arrayBuffer());
+      let source: ArrayBuffer;
+      if (markdown) {
+        const scoped = AbortSignal.any(signal ? [signal, lifecycle.signal] : [lifecycle.signal]);
+        source = await readFileBytes(
+          {
+            entry,
+            limits: { maxBytes: limits.maxTextBytes, workTimeoutMs: markdownReadTimeoutMs },
+          },
+          scoped,
+        );
+      } else {
+        const blob = await content(entry.id, signal);
+        if (!limits || blob.size > limits.maxTextBytes) throw new ApiError('http', 413);
+        source = await blob.arrayBuffer();
+      }
+      const bytes = new Uint8Array(source);
       if (bytes.includes(0)) throw new FilesError('unsupported');
       try {
         return new TextDecoder('utf-8', { fatal: true }).decode(bytes);

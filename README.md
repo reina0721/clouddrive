@@ -76,6 +76,8 @@ Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Veri
 
 本人文件页可打开 EPUB 电子书，通过目录、章节按钮和包内链接阅读。详见[165变更](docs/changes/165-epub-reader/README.md)。
 
+本人文件页可编辑和预览 Markdown，支持源码、并排视图及同目录图片。详见[166变更](docs/changes/166-markdown-editor/README.md)。
+
 管理区的“分享管理”页可按分享者、源文件和状态查看链接与活动。获准的管理者可单独或批量撤销链接，源文件仍由原所有者管理。详见[156变更](docs/changes/156-admin-share-management/README.md)。
 
 管理区的“后台任务管理”页提供跨账号归档和下载查询。获准的管理者可以预览并清理终态任务，保留已发布文件。详见[157变更](docs/changes/157-admin-background-tasks/README.md)。

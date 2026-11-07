@@ -159,6 +159,14 @@
       "owner": "Host EPUB 阅读器：在延迟加载的适配器中校验 ZIP 并按限额解压；压缩库对象不得穿越 Surface 契约",
       "allowed": ["apps/web"]
     },
+    "react-markdown": {
+      "owner": "文件插件的 Markdown 预览：惰性渲染 CommonMark，限制 HTML 和资源地址",
+      "allowed": ["surfaces"]
+    },
+    "remark-gfm": {
+      "owner": "文件插件的 Markdown 预览：在同一安全渲染边界内启用 GFM 语法",
+      "allowed": ["surfaces"]
+    },
     "subsrt-ts": {
       "owner": "Host 视频字幕 Worker：解析 VTT、SRT、ASS 并只返回有限纯文本时间段",
       "allowed": ["apps/web"]

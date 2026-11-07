@@ -268,7 +268,7 @@ export type FilesPort = Readonly<{
   copyDirectLinks(urls: readonly string[]): Promise<void>;
   shareLink(token: string): string;
   copyShareLink(token: string): Promise<void>;
-  detail(id: string): Promise<z.infer<typeof fileDetailSchema>>;
+  detail(id: string, signal?: AbortSignal): Promise<z.infer<typeof fileDetailSchema>>;
   chooseFiles(): Promise<readonly UploadCandidate[]>;
   chooseDirectory(): Promise<readonly UploadCandidate[]>;
   subscribeShortcuts(

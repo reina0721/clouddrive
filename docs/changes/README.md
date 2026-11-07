@@ -152,3 +152,4 @@
 - [163 文件列表连续浏览](163-continuous-file-list/README.md) 滚动追加、恢复加载和传统跳页。
 - [164 文件图标规则](164-file-icon-rules/README.md) 按扩展名设置图形、主题色及图片。
 - [165 EPUB 阅读器](165-epub-reader/README.md) 支持目录、章节及包内图片。
+- [166 Markdown 编辑器](166-markdown-editor/README.md) 支持源码、渲染和同目录图片。
