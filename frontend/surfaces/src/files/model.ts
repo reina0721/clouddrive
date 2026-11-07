@@ -273,6 +273,7 @@ export type FilesPort = Readonly<{
   focusSearch(): void;
   focusFiles(): void;
   focusEntry(id: string): void;
+  observeListEnd(element: HTMLElement, onVisible: () => void): () => void;
   subscribeDrop(listener: (candidates: readonly UploadCandidate[]) => void): () => void;
   releaseCandidate(id: string): void;
   download(entry: FileEntry): Promise<void>;

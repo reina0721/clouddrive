@@ -41,6 +41,7 @@ import {
   type UploadCandidate,
 } from '@clouddrive/surface/files';
 import { ApiError, createJsonClient, csrfTokenOf } from '../api/json-client';
+import { observeFileListEnd } from '../host/file-list-visibility';
 import { createAnnotationsPort } from './annotations';
 import { createFileClipboard } from './clipboard';
 import { createConnectionsPort } from './connections';
@@ -559,6 +560,7 @@ export function createFilesRuntime(
         ?.focus(),
     focusFiles: () => document.getElementById('main-content')?.focus(),
     focusEntry: (id) => document.getElementById('file-entry-' + id)?.focus(),
+    observeListEnd: observeFileListEnd,
     subscribeShortcuts: (listener, accepted) => {
       const handle = (event: KeyboardEvent) => {
         if (

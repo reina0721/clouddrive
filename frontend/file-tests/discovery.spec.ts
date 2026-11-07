@@ -138,38 +138,185 @@ test('分页、列表列偏好、目录优先及当前页键盘范围选择', as
   await expect(entries(page)).toHaveCount(5);
   await expect(page.getByText('已选择 50 项', { exact: true })).toHaveCount(0);
   await expect(page).toHaveURL(/page=2/);
+  await expect(page.getByText('第 2 / 2 页，共 55 项')).toBeVisible();
+  const jump = page.getByRole('textbox', { name: '跳至页码', exact: true });
+  await jump.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath('numbered-jump.png'), animations: 'disabled' });
+  const desktop = page.viewportSize();
+  await page.setViewportSize({ width: 320, height: 760 });
+  await jump.scrollIntoViewIfNeeded();
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+    .toBe(true);
+  if (desktop) await page.setViewportSize(desktop);
+  await jump.fill('0');
+  await jump.press('Enter');
+  await expect(page.getByText('请输入 1 至 2 的整数')).toBeVisible();
+  await expect(page).toHaveURL(/page=2/);
+  await jump.fill('3');
+  await jump.press('Enter');
+  await expect(page.getByText('请输入 1 至 2 的整数')).toBeVisible();
+  await jump.fill('1');
+  await page.getByRole('button', { name: '跳转', exact: true }).click();
+  await expect(page).toHaveURL(/page=1/);
+  await expect(entries(page)).toHaveCount(50);
+  await page.goBack();
+  await expect(page).toHaveURL(/page=2/);
+  await expect(entries(page)).toHaveCount(5);
+  await page.goto('/home?parent=' + folder.id + '&page=99');
+  await expect(page.getByText('当前页已无项目，可返回上一页或第一页。')).toBeVisible();
+  await page.getByRole('button', { name: '第一页', exact: true }).click();
+  await expect(page).toHaveURL(/page=1/);
+  await expect(entries(page)).toHaveCount(50);
+
   const searchParams = new URLSearchParams({
     parent: folder.id,
     search: 'item-',
     filter: JSON.stringify({ scope: 'folder' }),
   });
-  await page.goto('/home?' + searchParams.toString());
-  const next = page.getByRole('button', { name: '下一页', exact: true });
+  const searchURL = '/home?' + searchParams.toString();
+  const firstResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname.endsWith('/native/files') &&
+      url.searchParams.get('search') === 'item-' &&
+      !url.searchParams.has('cursor') &&
+      response.ok()
+    );
+  });
+  await page.goto(searchURL);
+  const firstBatch = (await (await firstResponse).json()) as {
+    items: unknown[];
+    cursorPage: { next: string };
+  };
+  const loadMore = page.getByRole('button', { name: '加载更多', exact: true });
   const previous = page.getByRole('button', { name: '上一页', exact: true });
   const firstPage = page.getByRole('button', { name: '第一页', exact: true });
   await expect(entries(page)).toHaveCount(50);
-  await expect(previous).toBeDisabled();
-  await next.click();
-  await expect(page).toHaveURL(/cursor=n\./);
-  await expect(entries(page)).toHaveCount(4);
-  await expect(next).toBeDisabled();
-  const endURL = page.url();
+  await page
+    .getByRole('button', { name: 'item-00.txt', exact: true })
+    .click({ modifiers: ['Control'] });
+  await expect(page.getByText('已选择 1 项', { exact: true })).toBeVisible();
+  await loadMore.scrollIntoViewIfNeeded();
+  await expect(entries(page)).toHaveCount(54);
+  await expect(page.getByText('已选择 1 项', { exact: true })).toBeVisible();
+  const endOfList = page.getByRole('status').filter({ hasText: '已到列表末尾' });
+  await expect(endOfList).toContainText('已显示 54 项');
+  await expect(loadMore).toHaveCount(0);
+  await expect(page).not.toHaveURL(/cursor=/);
+  await endOfList.scrollIntoViewIfNeeded();
   await page.screenshot({
-    path: info.outputPath('search-cursor-last-page.png'),
+    path: info.outputPath('search-cursor-feed.png'),
     animations: 'disabled',
   });
+
+  const retryRequests = new RegExp('/native/files\\?.*search=item-.*cursor=');
+  let attempts = 0;
+  await page.route(retryRequests, async (route) => {
+    attempts++;
+    if (attempts === 1) {
+      await route.fulfill({ status: 503, json: { error: { code: 'files_unavailable' } } });
+      return;
+    }
+    const response = await route.fetch();
+    const batch = (await response.json()) as { items: unknown[] };
+    batch.items.unshift(firstBatch.items[0]);
+    await route.fulfill({ response, json: batch });
+  });
+  await page.goto(searchURL);
+  await expect(entries(page)).toHaveCount(50);
+  await loadMore.scrollIntoViewIfNeeded();
+  await expect(page.getByRole('alert').filter({ hasText: '加载更多文件失败。' })).toBeVisible();
+  await expect(entries(page)).toHaveCount(50);
+  expect(attempts).toBe(1);
+  await page.getByRole('button', { name: '重试', exact: true }).press('Enter');
+  await expect(entries(page)).toHaveCount(54);
+  await expect(page.getByRole('button', { name: 'item-00.txt', exact: true })).toHaveCount(1);
+  expect(attempts).toBe(2);
+  await page.unroute(retryRequests);
+
+  await page.route(retryRequests, (route) => route.fulfill({ status: 409 }));
+  await page.goto(searchURL);
+  await expect(entries(page)).toHaveCount(50);
+  await loadMore.scrollIntoViewIfNeeded();
+  await expect(page.getByRole('alert').filter({ hasText: '继续加载的位置已失效' })).toBeVisible();
+  await expect(entries(page)).toHaveCount(50);
+  await expect(loadMore).toHaveCount(0);
+  await page.unroute(retryRequests);
+  await firstPage.click();
+  await expect(page.getByRole('alert').filter({ hasText: '继续加载的位置已失效' })).toHaveCount(0);
+  await expect(entries(page)).toHaveCount(50);
+
+  let beginAppend!: () => void;
+  let finishAppend!: () => void;
+  const appendStarted = new Promise<void>((resolve) => {
+    beginAppend = resolve;
+  });
+  const appendCanFinish = new Promise<void>((resolve) => {
+    finishAppend = resolve;
+  });
+  await page.route(retryRequests, async (route) => {
+    beginAppend();
+    await appendCanFinish;
+    try {
+      await route.fulfill({ status: 409 });
+    } catch (error) {
+      if (!(error instanceof Error) || !error.message.includes('Route is already handled'))
+        throw error;
+    }
+  });
+  try {
+    await page.goto(searchURL);
+    await expect(entries(page)).toHaveCount(50);
+    await loadMore.scrollIntoViewIfNeeded();
+    await appendStarted;
+    await expect(page.getByRole('status').filter({ hasText: '正在加载更多文件' })).toBeVisible();
+    await expect(loadMore).toBeDisabled();
+    const workspaceSearch = page.locator('[data-file-workspace-search] input');
+    await workspaceSearch.fill('item-53');
+    await workspaceSearch.press('Enter');
+    await expect(entries(page)).toHaveCount(1);
+  } finally {
+    finishAppend();
+    await page.unrouteAll({ behavior: 'wait' });
+  }
+  await expect(page.getByRole('alert').filter({ hasText: '继续加载的位置已失效' })).toHaveCount(0);
+  await expect(entries(page)).toHaveCount(1);
+
+  const endURL = new URL(searchURL, page.url());
+  endURL.searchParams.set('cursor', firstBatch.cursorPage.next);
+  await page.goto(endURL.toString());
+  await expect(entries(page)).toHaveCount(4);
   await previous.click();
   await expect(entries(page)).toHaveCount(50);
   await page.goBack();
-  await expect(page).toHaveURL(endURL);
+  await expect(page).toHaveURL(endURL.toString());
   await expect(entries(page)).toHaveCount(4);
   await firstPage.click();
   await expect(page).not.toHaveURL(/cursor=/);
   await expect(entries(page)).toHaveCount(50);
-  await page.goto(endURL.replace('search=item-', 'search=item-53'));
+  endURL.searchParams.set('search', 'item-53');
+  await page.goto(endURL.toString());
   await expect(page.getByText('此翻页位置已失效，请从第一页重新浏览。')).toBeVisible();
   await firstPage.click();
   await expect(entries(page)).toHaveCount(1);
+
+  await page.goto(searchURL);
+  await expect(entries(page)).toHaveCount(50);
+  await page.getByRole('button', { name: '视图', exact: true }).click();
+  await page.getByRole('menuitem', { name: '网格', exact: true }).click();
+  await expect(page.locator('[data-file-content]').getByRole('table')).toHaveCount(0);
+  await loadMore.scrollIntoViewIfNeeded();
+  await expect(entries(page)).toHaveCount(54);
+  await endOfList.scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: info.outputPath('search-cursor-grid.png'),
+    animations: 'disabled',
+  });
+  await page.getByRole('button', { name: '视图', exact: true }).click();
+  await page.getByRole('menuitem', { name: '列表', exact: true }).click();
+  await expect(page.locator('[data-file-content]').getByRole('table')).toHaveCount(1);
+
   await page.goto('/home?parent=' + folder.id + '&page=2');
   await expect(entries(page)).toHaveCount(5);
   await page.getByRole('button', { name: '视图', exact: true }).click();

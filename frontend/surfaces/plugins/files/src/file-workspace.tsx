@@ -187,6 +187,7 @@ export function FileWorkspace({
     ...(isFiles ? query : {}),
     search: value,
     page: '',
+    cursor: '',
   });
   function toggleSidebar() {
     saveSidebar({ ...sidebarSettings, collapsed: !collapsed });

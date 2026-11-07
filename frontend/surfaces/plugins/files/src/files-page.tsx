@@ -33,6 +33,7 @@ import {
   FilesError,
   type FileEntry,
   type FileListing,
+  type FileQuery,
   type FileViewPreferences,
   type UploadCandidate,
 } from '../../../src/files/model';
@@ -61,6 +62,7 @@ import { ActiveFilterChips } from './active-filter-chips';
 import { AdvancedSearchDialog } from './advanced-search-dialog';
 import { AnnotationPanel } from './annotation-panel';
 import { FileItem, FileListHeader, type FileSelectionGesture } from './file-item';
+import { CursorFilePagination, NumberedFilePagination } from './file-pagination';
 import { PinDialog } from './pinned-links';
 import { ShareDialog } from './share-dialog';
 import { directLinkBatchLimit } from '../../../src/files/direct-links';
@@ -69,6 +71,7 @@ import { TagsBatchDialog } from './tags-batch-dialog';
 import { TextDialog, type TextRequest } from './text-dialog';
 import { VersionsPanel } from './versions-panel';
 import { ViewOptionsDialog } from './view-options-dialog';
+import { useCursorFileFeed } from './use-cursor-file-feed';
 import type { TrashPurgeSelection } from '../../../src/files/trash-purge';
 
 const TrashPurgeDialog = lazy(() => import('./trash-purge-dialog'));
@@ -126,7 +129,11 @@ export function FilesPage({
   const transferState = useTransferSnapshot();
   const { t, locale } = useFrontendTranslation();
   const chinese = locale.startsWith('zh');
-  const [listing, setListing] = useState<FileListing>();
+  const [listingSnapshot, setListingSnapshot] = useState<{
+    query: FileQuery;
+    revision: number;
+    value: FileListing;
+  }>();
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
   const navigate = useCallback(
@@ -204,6 +211,7 @@ export function FilesPage({
     [galleryAnnotationFailure, setGalleryAnnotationFailure] = useState('');
   const [preview, setPreview] = useState<{ entry: FileEntry; text: string; loading: boolean }>();
   const previewController = useRef<AbortController | undefined>(undefined);
+  const fileContent = useRef<HTMLElement>(null);
   const errorText = useCallback(
     (error: unknown) =>
       t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`),
@@ -214,6 +222,66 @@ export function FilesPage({
     navigate({ parent, category, trash: trash ? 'true' : '', search, filter: filterKey });
   const preferenceReady = !!preferenceSnapshot || !!preferenceFailure;
   const cursorWaitingForPreferences = !!cursor && !preferenceReady;
+  const listQuery = useMemo<FileQuery>(
+    () => ({
+      parent,
+      category,
+      trash,
+      search,
+      sort: preferences.sort,
+      desc: preferences.desc,
+      filters: decodeFileFilters(filterKey),
+      foldersFirst: preferences.foldersFirst,
+      page: preferences.view === 'gallery' ? 1 : page,
+      pageSize: preferences.view === 'gallery' ? 0 : preferences.pageSize,
+      ...(preferences.view !== 'gallery'
+        ? { pagination: numbered ? ('numbered' as const) : ('auto' as const), cursor }
+        : {}),
+    }),
+    [
+      parent,
+      category,
+      trash,
+      search,
+      preferences.sort,
+      preferences.desc,
+      filterKey,
+      preferences.foldersFirst,
+      preferences.view,
+      preferences.pageSize,
+      page,
+      numbered,
+      cursor,
+    ],
+  );
+  const firstListing =
+    listingSnapshot?.query === listQuery && listingSnapshot.revision === revision
+      ? listingSnapshot.value
+      : undefined;
+  const feed = useCursorFileFeed(
+    !loading && !navigating && !queryInvalid && preferenceReady ? firstListing : undefined,
+    listQuery,
+    port.list,
+  );
+  const listing = feed.listing ?? firstListing;
+
+  function goToNumberedPage(nextPage: number) {
+    fileContent.current?.scrollIntoView({ block: 'start' });
+    fileContent.current?.focus({ preventScroll: true });
+    navigate({
+      parent,
+      category,
+      trash: trash ? 'true' : '',
+      search,
+      filter: filterKey,
+      page: String(nextPage),
+    });
+  }
+  function restartCursor() {
+    fileContent.current?.scrollIntoView({ block: 'start' });
+    if (cursor) firstPage();
+    else reload();
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -241,7 +309,7 @@ export function FilesPage({
     setSelectionAnchor('');
     setFocusedEntry('');
     if (queryInvalid) {
-      setListing(undefined);
+      setListingSnapshot(undefined);
       setFailure(t('files.discovery.invalidLink'));
       setLoading(false);
       setNavigating(false);
@@ -249,30 +317,13 @@ export function FilesPage({
     }
     if (cursorWaitingForPreferences) return () => controller.abort();
     port
-      .list(
-        {
-          parent,
-          category,
-          trash,
-          search,
-          sort: preferences.sort,
-          desc: preferences.desc,
-          filters: decodeFileFilters(filterKey),
-          foldersFirst: preferences.foldersFirst,
-          page: preferences.view === 'gallery' ? 1 : page,
-          pageSize: preferences.view === 'gallery' ? 0 : preferences.pageSize,
-          ...(preferences.view !== 'gallery'
-            ? { pagination: numbered ? ('numbered' as const) : ('auto' as const), cursor }
-            : {}),
-        },
-        controller.signal,
-      )
+      .list(listQuery, controller.signal)
       .then((value) => {
-        if (!controller.signal.aborted) setListing(value);
+        if (!controller.signal.aborted) setListingSnapshot({ query: listQuery, revision, value });
       })
       .catch((error: unknown) => {
         if (!controller.signal.aborted) {
-          setListing(undefined);
+          setListingSnapshot(undefined);
           setFailure(
             cursor && error instanceof FilesError && ['invalid', 'conflict'].includes(error.code)
               ? chinese
@@ -293,18 +344,7 @@ export function FilesPage({
     return () => controller.abort();
   }, [
     port,
-    parent,
-    category,
-    trash,
-    search,
-    preferences.sort,
-    preferences.desc,
-    preferences.foldersFirst,
-    preferences.pageSize,
-    preferences.view,
-    filterKey,
-    page,
-    numbered,
+    listQuery,
     cursor,
     cursorWaitingForPreferences,
     queryInvalid,
@@ -570,7 +610,11 @@ export function FilesPage({
       setNotice(errorText(error));
     }
   }
-  const targets = listing?.items.filter((entry) => selected.includes(entry.id)) ?? [];
+  const selectedIds = useMemo(() => new Set(selected), [selected]);
+  const targets = useMemo(
+    () => listing?.items.filter((entry) => selectedIds.has(entry.id)) ?? [],
+    [listing, selectedIds],
+  );
   const pageCount = listing
     ? Math.max(1, Math.ceil(listing.items.length / listing.maxGalleryEntries))
     : 0;
@@ -681,7 +725,7 @@ export function FilesPage({
   useEffect(
     () =>
       port.subscribeShortcuts((shortcut) => {
-        const chosen = listing?.items.filter((entry) => selected.includes(entry.id)) ?? [];
+        const chosen = targets;
         if (
           shortcut === 'next' ||
           shortcut === 'previous' ||
@@ -744,7 +788,7 @@ export function FilesPage({
     [
       port,
       listing,
-      selected,
+      targets,
       trash,
       navigate,
       openDialog,
@@ -863,7 +907,7 @@ export function FilesPage({
                     else if (action === 'select-all') setSelected([...visibleIds]);
                     else if (action === 'select-none') setSelected([]);
                     else if (action === 'select-invert')
-                      setSelected(visibleIds.filter((id) => !selected.includes(id)));
+                      setSelected(visibleIds.filter((id) => !selectedIds.has(id)));
                     else if (action === 'save-shortcut') setSaveShortcut(true);
                     else if (action === 'pin-folder')
                       setPinTarget({ targetKind: 'folder', targetId: parent });
@@ -1263,6 +1307,8 @@ export function FilesPage({
           </div>
         ) : null}
         <section
+          ref={fileContent}
+          tabIndex={-1}
           aria-label={title}
           aria-busy={loading || navigating}
           data-file-content
@@ -1351,7 +1397,7 @@ export function FilesPage({
                   view={preferences.view}
                   folderClick={preferenceSnapshot?.configuration.folderClick}
                   columns={preferences.columns}
-                  selected={selected.includes(entry.id)}
+                  selected={selectedIds.has(entry.id)}
                   cut={
                     clipboard.mode === 'cut' &&
                     clipboard.entries.some((item) => item.id === entry.id)
@@ -1375,7 +1421,7 @@ export function FilesPage({
                   onContext={() => {
                     setContextEntry(entry.id);
                     setSelectionAnchor(entry.id);
-                    if (!selected.includes(entry.id)) setSelected([entry.id]);
+                    if (!selectedIds.has(entry.id)) setSelected([entry.id]);
                   }}
                   thumbnail={
                     preferences.thumbnails &&
@@ -1473,7 +1519,7 @@ export function FilesPage({
                         else if (action === 'queue-copy' || action === 'queue-cut')
                           queueClipboard(
                             action === 'queue-copy' ? 'copy' : 'cut',
-                            selected.includes(entry.id) ? targets : [entry],
+                            selectedIds.has(entry.id) ? targets : [entry],
                           );
                         else if (action === 'details') void showDetails(entry);
                         else if (action === 'purge') setPurgeTarget(entry);
@@ -1505,122 +1551,37 @@ export function FilesPage({
             </div>
           )}
         </section>
-        {listing?.cursorPage && preferences.view !== 'gallery' ? (
-          <div className="flex flex-wrap items-center gap-3">
-            <Action
-              size="sm"
-              variant="secondary"
-              disabled={loading || navigating || !preferenceReady || !listing.cursorPage.previous}
-              onPress={() =>
-                navigate({
-                  parent,
-                  category,
-                  trash: trash ? 'true' : '',
-                  search,
-                  filter: filterKey,
-                  cursor: listing.cursorPage?.previous ?? '',
-                })
-              }
-            >
-              {t('files.previousPage')}
-            </Action>
-            <span className="text-sm text-ink-muted" role="status">
-              {chinese
-                ? `本页 ${listing.items.length} 项，共 ${listing.total} 项`
-                : `${listing.items.length} on this page, ${listing.total} total`}
-            </span>
-            <Action
-              size="sm"
-              variant="secondary"
-              disabled={loading || navigating || !preferenceReady || !listing.cursorPage.next}
-              onPress={() =>
-                navigate({
-                  parent,
-                  category,
-                  trash: trash ? 'true' : '',
-                  search,
-                  filter: filterKey,
-                  cursor: listing.cursorPage?.next ?? '',
-                })
-              }
-            >
-              {t('files.nextPage')}
-            </Action>
-            {cursor ? (
-              <Action
-                size="sm"
-                variant="quiet"
-                disabled={loading || navigating}
-                onPress={firstPage}
-              >
-                {t('files.discovery.firstPage')}
-              </Action>
-            ) : null}
-          </div>
-        ) : listing && preferences.view !== 'gallery' ? (
-          <div className="flex flex-wrap items-center gap-3">
-            <Action
-              variant="secondary"
-              size="sm"
-              disabled={loading || page <= 1}
-              onPress={() =>
-                navigate({
-                  parent,
-                  category,
-                  trash: trash ? 'true' : '',
-                  search,
-                  filter: filterKey,
-                  page: String(page - 1),
-                })
-              }
-            >
-              {t('files.previousPage')}
-            </Action>
-            <span className="text-sm text-ink-muted">
-              {t('files.discovery.page', {
-                current: page,
-                pages: Math.max(1, Math.ceil(listing.total / listing.pageSize)),
-                total: listing.total,
-              })}
-            </span>
-            <Action
-              variant="secondary"
-              size="sm"
-              disabled={loading || page * listing.pageSize >= listing.total}
-              onPress={() =>
-                navigate({
-                  parent,
-                  category,
-                  trash: trash ? 'true' : '',
-                  search,
-                  filter: filterKey,
-                  page: String(page + 1),
-                })
-              }
-            >
-              {t('files.nextPage')}
-            </Action>
-            {!listing.items.length && page > 1 ? (
-              <>
-                <span className="text-sm text-ink-muted">{t('files.discovery.outOfRange')}</span>
-                <Action
-                  size="sm"
-                  variant="quiet"
-                  onPress={() =>
-                    navigate({
-                      parent,
-                      category,
-                      trash: trash ? 'true' : '',
-                      search,
-                      filter: filterKey,
-                    })
-                  }
-                >
-                  {t('files.discovery.firstPage')}
-                </Action>
-              </>
-            ) : null}
-          </div>
+        {listing && !loading && !navigating && preferences.view !== 'gallery' ? (
+          listing.cursorPage ? (
+            preferenceReady ? (
+              <CursorFilePagination
+                next={!!listing.cursorPage.next}
+                previous={!!listing.cursorPage.previous}
+                phase={feed.phase}
+                count={listing.items.length}
+                bookmarked={!!cursor}
+                onLoad={feed.load}
+                onPrevious={() =>
+                  navigate({
+                    parent,
+                    category,
+                    trash: trash ? 'true' : '',
+                    search,
+                    filter: filterKey,
+                    cursor: listing.cursorPage?.previous ?? '',
+                  })
+                }
+                onRestart={restartCursor}
+              />
+            ) : null
+          ) : (
+            <NumberedFilePagination
+              page={page}
+              pageSize={listing.pageSize}
+              total={listing.total}
+              onPage={goToNumberedPage}
+            />
+          )
         ) : null}
         {listing && preferences.view === 'gallery' ? (
           <p className="text-xs text-ink-muted">
