@@ -10,7 +10,7 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 
 [当前开发入口](getting-started/local-development.md) 与 [部署说明](operations/clouddrive-deployment.md) 优先于源项目历史变更记录。docs/changes 和 frontend/docs/changes 中的旧记录用于追溯，不作为当前启动命令。
 
-第十三批的[133验收](changes/133-archive-browser/verification.md)覆盖受限Windows解析、31个不同的相关浏览器场景、Go全量和前端检查；Linux仅交叉构建，不支持加密ZIP、分卷、自解压、公开分享内压缩浏览或持久后台解压。未重跑全站423例，不把局部通过扩大为全站一致或完整Cloudreve对齐。
+第十三批的[133验收](changes/133-archive-browser/verification.md)覆盖受限Windows解析、31个不同的相关浏览器场景、Go全量和前端检查。Linux仅交叉构建。当前后台解压由[144变更](changes/144-background-archive-tasks/README.md)提供，格式和任务范围以文件管理运行说明为准。
 
 第十四批的[134验收](changes/134-pdf-reader/verification.md)覆盖私有当前及历史PDF；源字节、页数、画布、图像和工作时限受控。超过单张图像像素预算时PDF.js省略该图像，界面明确提示并可下载原件，不承诺全保真。临时标注只导出副本，不回写原文件；不包含Office、ePub、OCR或公开分享PDF阅读。
 
@@ -28,3 +28,5 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 [140账号版本保留](changes/140-history-preferences/README.md)新增服务器策略、扩展名筛选及最近数量限制，内容覆盖事务读取同一账号规则并核算逻辑空间；v15仅新增独立策略表，不改写原文件或视图偏好。当前验证与交付状态见任务清单，不扩大为无界历史或物理垃圾回收。
 
 [141持久写锁](changes/141-webdav-write-locks/README.md)补齐WebDAV独占锁、条件写入、跨入口事务保护和本人占用管理；20项仍按使用行为验收，不支持共享锁或Office服务。v16追加锁表和传输条件列，原数据保留；完整验证与部署状态以任务清单为准。
+
+[144后台解压](changes/144-background-archive-tasks/README.md)覆盖本人无密码 ZIP/7Z 的持久任务、结果及排队取消，迁移 v18 增加一张任务表。范围按 20 项用户行为验收，在线创建压缩包和跨类型后台任务聚合仍未实现。

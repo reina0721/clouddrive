@@ -1,0 +1,33 @@
+schema_version: 1
+id: R144-001
+title: 后台解压的文件发布与任务记录
+question: 如何把本人解压接入可重访的后台任务页，并保证中断和重试不重复发布？
+research_type: current-project-and-external-primary-source
+topics: [files, archive, scheduling, durable-task, atomic-publication]
+status: active
+summary: 沿用现有受限解码、IAM、数据库和调度；任务状态、候选对象与文件发布由 files 拥有。
+applicable_scenarios: [本人无密码 ZIP 或 7Z, 同账号受控文件树, 当前三驱动数据库和内容存储]
+non_applicable_scenarios: [持久密码, 从中断解码位置续跑, 通用队列, 远程节点解压, 在线压缩]
+evidence:
+  types: [source-code, git-history, observed-reference-ui, official-documentation, official-source]
+  primary_sources:
+    - title: 当前工程
+      locator: report.md
+      snapshot: 1032a1835fcb80d899bb35aecbeb7700620d6b21
+    - title: 用户提供的参考站后台任务页
+      locator: /tasks
+      snapshot: 2026-11-06 只读观察，截图存于本地忽略目录
+    - title: Cloudreve 工作流路由
+      locator: https://github.com/cloudreve/Cloudreve/blob/master/routers/router.go
+      snapshot: 2026-11-06 复核列表、阶段进度、压缩和解压端点
+    - title: Cloudreve 文件应用文档
+      locator: https://docs.cloudreve.org/en/usage/file-apps
+      snapshot: 2026-11-06 复核 ZIP/7Z 结构预览和选择解压
+verified_at: 2026-11-06
+validity:
+  mode: snapshot
+  refresh_triggers: [存储对象写入契约变化, 账号权限投影变化, 文件写锁或原子事务契约变化, 跨节点及密码后台处理]
+relations:
+  extends: [R133-001]
+  related: [R143-002]
+report: report.md

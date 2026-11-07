@@ -29,6 +29,7 @@ type Handler struct {
 	WriteLocks           *service.WriteLocks
 	PublicAuthentication PublicAuthenticator
 	Archives             *service.Archives
+	ArchiveTasks         *service.ArchiveTasks
 	Downloads            *service.OfflineDownloads
 	Torrents             *service.TorrentDownloads
 	Service              *service.Service
@@ -93,6 +94,10 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 		status, code = http.StatusForbidden, "files_archive_password"
 	case errors.Is(err, service.ErrArchiveChecksum):
 		status, code = http.StatusUnprocessableEntity, "files_archive_checksum"
+	case errors.Is(err, service.ErrArchiveTasksUnavailable):
+		status, code = http.StatusServiceUnavailable, "files_archive_tasks_unavailable"
+	case errors.Is(err, service.ErrArchiveTaskForbidden):
+		status, code = http.StatusForbidden, "files_archive_forbidden"
 	case errors.Is(err, service.ErrContentPrecondition):
 		status, code = 412, "files_content_precondition"
 	case errors.Is(err, service.ErrConnectionSystemFile):

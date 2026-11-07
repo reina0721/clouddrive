@@ -22,6 +22,11 @@ const (
 	OperationFilesAnnotationsSummaries      OperationID = "files.annotations.summaries"
 	OperationFilesAnnotationsTagsBatch      OperationID = "files.annotations.tags-batch"
 	OperationFilesArchive                   OperationID = "files.archive"
+	OperationFilesArchiveTasksCancel        OperationID = "files.archive-tasks.cancel"
+	OperationFilesArchiveTasksCreate        OperationID = "files.archive-tasks.create"
+	OperationFilesArchiveTasksList          OperationID = "files.archive-tasks.list"
+	OperationFilesArchiveTasksRead          OperationID = "files.archive-tasks.read"
+	OperationFilesArchiveTasksRemove        OperationID = "files.archive-tasks.remove"
 	OperationFilesArchiveDownload           OperationID = "files.archive.download"
 	OperationFilesArchiveExtract            OperationID = "files.archive.extract"
 	OperationFilesArchiveInspect            OperationID = "files.archive.inspect"
@@ -194,6 +199,11 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesAnnotationsSummaries, Method: "GET", Path: "/api/v1/files/annotations/summaries", Policy: "protected", Scope: "files:read", Action: "files.annotations.summaries"},
 	{ID: OperationFilesAnnotationsTagsBatch, Method: "POST", Path: "/api/v1/files/annotations/tags-batch", Policy: "protected", Scope: "files:write", Action: "files.annotations.tags-batch"},
 	{ID: OperationFilesArchive, Method: "POST", Path: "/api/v1/files/archive", Policy: "protected", Scope: "files:read", Action: "files.archive"},
+	{ID: OperationFilesArchiveTasksCancel, Method: "POST", Path: "/api/v1/files/archive-tasks/{id}/cancel", Policy: "protected", Scope: "files:write", Action: "files.archive-tasks.cancel"},
+	{ID: OperationFilesArchiveTasksCreate, Method: "POST", Path: "/api/v1/files/{id}/archive/tasks", Policy: "protected", Scope: "files:write", Action: "files.archive-tasks.create"},
+	{ID: OperationFilesArchiveTasksList, Method: "GET", Path: "/api/v1/files/archive-tasks", Policy: "protected", Scope: "files:read", Action: "files.archive-tasks.list"},
+	{ID: OperationFilesArchiveTasksRead, Method: "GET", Path: "/api/v1/files/archive-tasks/{id}", Policy: "protected", Scope: "files:read", Action: "files.archive-tasks.read"},
+	{ID: OperationFilesArchiveTasksRemove, Method: "DELETE", Path: "/api/v1/files/archive-tasks/{id}", Policy: "protected", Scope: "files:write", Action: "files.archive-tasks.remove"},
 	{ID: OperationFilesArchiveDownload, Method: "POST", Path: "/api/v1/files/{id}/archive/download", Policy: "protected", Scope: "files:read", Action: "files.archive.download"},
 	{ID: OperationFilesArchiveExtract, Method: "POST", Path: "/api/v1/files/{id}/archive/extract", Policy: "protected", Scope: "files:write", Action: "files.archive.extract"},
 	{ID: OperationFilesArchiveInspect, Method: "POST", Path: "/api/v1/files/{id}/archive/inspect", Policy: "protected", Scope: "files:read", Action: "files.archive.inspect"},

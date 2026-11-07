@@ -1941,6 +1941,166 @@
         ]
       }
     },
+    "/api/console/v1/native/files/archive-tasks": {
+      "get": {
+        "operationId": "files.archive-tasks.list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveTaskListing"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/archive-tasks/{id}": {
+      "delete": {
+        "operationId": "files.archive-tasks.remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "get": {
+        "operationId": "files.archive-tasks.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveTask"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/archive-tasks/{id}/cancel": {
+      "post": {
+        "operationId": "files.archive-tasks.cancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
     "/api/console/v1/native/files/audience/lookup": {
       "post": {
         "operationId": "files.audience.lookup",
@@ -5388,6 +5548,63 @@
               }
             },
             "description": "包内单个成员的有界字节"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/console/v1/native/files/{id}/archive/tasks": {
+      "post": {
+        "operationId": "files.archive-tasks.create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveTaskInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveTask"
+                }
+              }
+            },
+            "description": "Accepted"
           },
           "default": {
             "content": {
@@ -29578,6 +29795,126 @@
         "required": [
           "mode",
           "paths"
+        ],
+        "type": "object"
+      },
+      "ArchiveTask": {
+        "additionalProperties": false,
+        "properties": {
+          "cleanupPending": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "destinationId": {
+            "type": "string"
+          },
+          "failureCode": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "renamedCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "skippedCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sourceName": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sourceName",
+          "destinationId",
+          "state",
+          "failureCode",
+          "createdCount",
+          "skippedCount",
+          "renamedCount",
+          "cleanupPending",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "ArchiveTaskInput": {
+        "additionalProperties": false,
+        "properties": {
+          "clientKey": {
+            "maxLength": 36,
+            "minLength": 36,
+            "type": "string"
+          },
+          "conflict": {
+            "enum": [
+              "reject",
+              "skip",
+              "rename"
+            ],
+            "type": "string"
+          },
+          "expectedRevision": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "folderName": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "parentId": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/ArchiveSelection"
+          }
+        },
+        "required": [
+          "clientKey",
+          "expectedRevision",
+          "selection",
+          "parentId",
+          "folderName",
+          "conflict"
+        ],
+        "type": "object"
+      },
+      "ArchiveTaskListing": {
+        "additionalProperties": false,
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ArchiveTask"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "available",
+          "items"
         ],
         "type": "object"
       },

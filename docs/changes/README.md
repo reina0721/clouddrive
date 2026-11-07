@@ -127,4 +127,6 @@
 
 - [140 账号版本保留设置](140-history-preferences/README.md)：20项使用行为，服务器策略、扩展名、数量限制和原子覆盖；验证与交付以任务清单为准。
 
-- [143 BitTorrent下载与节点接入](143-bittorrent-downloads/README.md)：研究中；已复核当前单文件约束、参考视觉及候选源码，运行接入证据与多文件发布设计未完成，不代表BT已实现。
+- [143 BitTorrent下载与节点接入](143-bittorrent-downloads/README.md)：已交付受信节点 BT v1 磁力、种子、文件选择和转存。
+
+- [144 后台解压任务](144-background-archive-tasks/README.md)：独立任务页、ZIP/7Z 后台解压、取消待处理任务及结果，验收见任务清单。

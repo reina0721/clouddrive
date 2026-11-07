@@ -94,6 +94,13 @@ func (r *Repository) ValidateStorage(ctx context.Context, identity string) error
 			if transfers > 0 {
 				return fmt.Errorf("file storage location change requires transfer migration")
 			}
+			var archives int64
+			if err := db.Model(&archiveTaskRecord{}).Where("state IN ? OR candidates <> ?", []service.ArchiveTaskState{service.ArchiveTaskQueued, service.ArchiveTaskRunning, service.ArchiveTaskPublishing}, "").Count(&archives).Error; err != nil {
+				return err
+			}
+			if archives > 0 {
+				return fmt.Errorf("file storage location change requires archive task migration")
+			}
 			return db.Model(&binding).Update("identity", identity).Error
 		})
 	})

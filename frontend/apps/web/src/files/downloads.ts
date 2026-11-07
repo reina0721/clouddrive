@@ -9,8 +9,8 @@ import {
 } from '@clouddrive/surface/files';
 import { z } from 'zod';
 import type { createJsonClient } from '../api/json-client';
+import { watchFileTaskRefresh } from './task-refresh';
 
-const downloadRefreshIntervalMs = 5000;
 const downloadRemovedSchema = z.object({ removed: z.literal(true) });
 const downloadSourceSchema = z.object({ uri: z.string().url().max(4096) });
 
@@ -184,31 +184,7 @@ export function createDownloadsRuntime(
         throw new FilesError('unavailable', { cause });
       }
     },
-    watch: (refresh) => {
-      assertActive();
-      let closed = false;
-      const tick = () => {
-        if (closed || disposed || document.visibilityState !== 'visible') return;
-        try {
-          assertCurrent();
-        } catch {
-          cleanup();
-          return;
-        }
-        refresh();
-      };
-      const timer = window.setInterval(tick, downloadRefreshIntervalMs);
-      const cleanup = () => {
-        if (closed) return;
-        closed = true;
-        window.clearInterval(timer);
-        document.removeEventListener('visibilitychange', tick);
-        cleanups.delete(cleanup);
-      };
-      document.addEventListener('visibilitychange', tick);
-      cleanups.add(cleanup);
-      return cleanup;
-    },
+    watch: (refresh) => watchFileTaskRefresh(assertActive, cleanups, refresh),
   };
   return {
     port,

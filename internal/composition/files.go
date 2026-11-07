@@ -44,6 +44,13 @@ func (a filesConnectionAuthority) AuthorizeDownload(ctx context.Context, owner s
 	return a.access.AuthorizeAccount(ctx, owner, filespermission.Write)
 }
 
+func (a filesConnectionAuthority) AuthorizeArchiveTask(ctx context.Context, owner string) (bool, error) {
+	if a.access == nil {
+		return false, fmt.Errorf("archive task authorization unavailable")
+	}
+	return a.access.AuthorizeAccount(ctx, owner, filespermission.Write)
+}
+
 func (a filesConnectionAuthority) AuthorizeConnection(ctx context.Context, owner string, mode filesservice.ConnectionAccess) (bool, error) {
 	if a.access == nil {
 		return false, fmt.Errorf("file connection authorization unavailable")

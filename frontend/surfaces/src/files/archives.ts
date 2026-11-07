@@ -33,6 +33,43 @@ export type ArchiveExtract = Readonly<{
   folderName: string;
   conflict: ArchiveConflict;
 }>;
+const archiveTaskCount = z.number().int().nonnegative().max(500);
+export const archiveTaskSchema = z.object({
+  id: z.string().uuid(),
+  sourceName: z.string(),
+  destinationId: z.string(),
+  state: z.enum(['queued', 'running', 'publishing', 'completed', 'failed', 'canceled']),
+  failureCode: z.enum([
+    '',
+    'archive_interrupted',
+    'timeout',
+    'archive_forbidden',
+    'archive_password',
+    'archive_checksum',
+    'archive_worker_unavailable',
+    'not_found',
+    'quota',
+    'write_locked',
+    'conflict',
+    'too_large',
+    'unsupported',
+    'invalid',
+    'unavailable',
+  ]),
+  createdCount: archiveTaskCount,
+  skippedCount: archiveTaskCount,
+  renamedCount: archiveTaskCount,
+  cleanupPending: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export const archiveTaskListingSchema = z.object({
+  available: z.boolean(),
+  items: z.array(archiveTaskSchema).max(50),
+});
+export type ArchiveTask = z.infer<typeof archiveTaskSchema>;
+export type ArchiveTaskListing = z.infer<typeof archiveTaskListingSchema>;
+export type ArchiveTaskSource = Readonly<{ id: string; expectedRevision: number }>;
 // ArchiveImageLease 的浏览器资源只由Host创建，调用方在关闭预览时归还。
 export type ArchiveImageLease = Readonly<{ url: string; release: () => void }>;
 export type ArchivesPort = Readonly<{
@@ -60,4 +97,15 @@ export type ArchivesPort = Readonly<{
     input: ArchiveExtract,
     signal?: AbortSignal,
   ): Promise<ArchiveReceipt>;
+  newTaskKey(): string;
+  queue(
+    source: ArchiveTaskSource,
+    input: ArchiveExtract,
+    key: string,
+    signal?: AbortSignal,
+  ): Promise<ArchiveTask>;
+  listTasks(signal: AbortSignal): Promise<ArchiveTaskListing>;
+  cancelTask(id: string, signal: AbortSignal): Promise<void>;
+  removeTask(id: string, signal: AbortSignal): Promise<void>;
+  watchTasks(refresh: () => void): () => void;
 }>;

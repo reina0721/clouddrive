@@ -142,6 +142,7 @@ export type FilesDestination =
   | 'shared'
   | 'transfers'
   | 'downloads'
+  | 'tasks'
   | 'connections'
   | 'workspace'
   | 'account';

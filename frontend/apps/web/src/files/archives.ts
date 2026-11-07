@@ -1,6 +1,8 @@
 import {
   archiveManifestSchema,
   archiveReceiptSchema,
+  archiveTaskListingSchema,
+  archiveTaskSchema,
   FilesError,
   type ArchiveAccess,
   type ArchivesPort,
@@ -9,6 +11,7 @@ import {
 import type { createJsonClient } from '../api/json-client';
 import { downloadBlob } from './native-download';
 import { rasterType } from './media-signatures';
+import { watchFileTaskRefresh } from './task-refresh';
 
 /** createArchivesRuntime 复用现有客户端和账号围栏，拥有所有包内预览URL。 */
 export function createArchivesRuntime(
@@ -16,8 +19,15 @@ export function createArchivesRuntime(
   assertCurrent: () => void,
 ) {
   const urls = new Set<string>();
-  const endpoint = (access: ArchiveAccess, operation: string) =>
+  const taskWatchers = new Set<() => void>();
+  const endpoint = (access: { id: string }, operation: string) =>
     '/' + encodeURIComponent(access.id) + '/archive/' + operation;
+  const activeCall: typeof call = async (path, options) => {
+    assertCurrent();
+    const value = await call(path, options);
+    assertCurrent();
+    return value;
+  };
   const input = (access: ArchiveAccess) => ({
     expectedRevision: access.expectedRevision,
     password: access.password,
@@ -121,12 +131,37 @@ export function createArchivesRuntime(
       if (signal?.aborted) throw new FilesError('canceled');
       return receipt;
     },
+    newTaskKey: () => {
+      assertCurrent();
+      return crypto.randomUUID();
+    },
+    queue: async (source, request, clientKey, signal) =>
+      archiveTaskSchema.parse(
+        await activeCall(endpoint(source, 'tasks'), {
+          method: 'POST',
+          body: { ...request, expectedRevision: source.expectedRevision, clientKey },
+          ...(signal ? { signal } : {}),
+        }),
+      ),
+    listTasks: async (signal) =>
+      archiveTaskListingSchema.parse(await activeCall('/archive-tasks', { signal })),
+    cancelTask: async (id, signal) => {
+      await activeCall('/archive-tasks/' + encodeURIComponent(id) + '/cancel', {
+        method: 'POST',
+        signal,
+      });
+    },
+    removeTask: async (id, signal) => {
+      await activeCall('/archive-tasks/' + encodeURIComponent(id), { method: 'DELETE', signal });
+    },
+    watchTasks: (refresh) => watchFileTaskRefresh(assertCurrent, taskWatchers, refresh),
   };
   return {
     port,
     dispose: () => {
       for (const url of urls) URL.revokeObjectURL(url);
       urls.clear();
+      for (const cleanup of taskWatchers) cleanup();
     },
   };
 }

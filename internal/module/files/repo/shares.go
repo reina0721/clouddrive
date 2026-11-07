@@ -31,16 +31,20 @@ func (r *Repository) lockOwner(db *gorm.DB, owner string) error {
 	if owner == "" {
 		return model.ErrMissing
 	}
-	if err := db.Model(&storageBinding{}).Where("id = ?", primaryStorageID).UpdateColumn("identity", gorm.Expr("identity")).Error; err != nil {
-		return err
-	}
-	if err := r.checkStorage(db); err != nil {
+	if err := r.lockStorage(db); err != nil {
 		return err
 	}
 	if err := db.Clauses(clause.OnConflict{DoNothing: true}).Create(&ownerLock{OwnerID: owner}).Error; err != nil {
 		return err
 	}
 	return db.Model(&ownerLock{}).Where("owner_id = ?", owner).UpdateColumn("revision", gorm.Expr("revision + 1")).Error
+}
+
+func (r *Repository) lockStorage(db *gorm.DB) error {
+	if err := db.Model(&storageBinding{}).Where("id = ?", primaryStorageID).UpdateColumn("identity", gorm.Expr("identity")).Error; err != nil {
+		return err
+	}
+	return r.checkStorage(db)
 }
 
 func (r *Repository) ReadShare(ctx context.Context, digest, grantDigest string, treeLimit int) (service.ShareSnapshot, error) {

@@ -193,41 +193,72 @@ func (a *Archives) plan(ctx context.Context, owner string, entries []model.Entry
 
 // Extract 先构造完整候选，再用单次owner事务发布；任何失败都不留下部分目录项。
 func (a *Archives) Extract(ctx context.Context, owner, id string, q ArchiveExtractRequest) (ArchiveReceipt, error) {
+	source, plan, payloads, err := a.prepareExtraction(ctx, owner, id, q)
+	if err != nil {
+		return ArchiveReceipt{}, err
+	}
+	staged, err := a.stageExtraction(ctx, &plan, payloads)
+	if err != nil {
+		return ArchiveReceipt{}, a.compensate(ctx, owner, staged, err)
+	}
+	changed, err := a.files.repo.ChangeManyBounded(ctx, owner, a.files.policy.SearchTreeEntries, a.archivePublication(source, plan, q))
+	if err != nil {
+		return ArchiveReceipt{}, a.compensate(ctx, owner, staged, err)
+	}
+	plan.receipt.Created = changed
+	if plan.receipt.Created == nil {
+		plan.receipt.Created = []model.Entry{}
+	}
+	return plan.receipt, nil
+}
+
+func (a *Archives) validateExtraction(q ArchiveExtractRequest) error {
 	if q.Conflict != ArchiveReject && q.Conflict != ArchiveSkip && q.Conflict != ArchiveRename {
-		return ArchiveReceipt{}, model.ErrInvalid
+		return model.ErrInvalid
 	}
 	if q.FolderName != "" {
 		if _, err := a.files.normalizedName(q.FolderName); err != nil {
-			return ArchiveReceipt{}, err
+			return err
 		}
+	}
+	return a.validateSelection(q.Selection)
+}
+
+func (a *Archives) prepareExtraction(ctx context.Context, owner, id string, q ArchiveExtractRequest) (model.Entry, archivePlan, map[string][]byte, error) {
+	if err := a.validateExtraction(q); err != nil {
+		return model.Entry{}, archivePlan{}, nil, err
 	}
 	source, parsed, err := a.parse(ctx, owner, id, q.ExpectedRevision, q.Password, q.Selection)
 	if err != nil {
-		return ArchiveReceipt{}, err
+		return model.Entry{}, archivePlan{}, nil, err
 	}
 	entries, err := a.files.repo.ReadBounded(ctx, owner, a.files.policy.SearchTreeEntries)
 	if err != nil {
-		return ArchiveReceipt{}, err
+		return model.Entry{}, archivePlan{}, nil, err
 	}
 	plan, err := a.plan(ctx, owner, entries, archiveMembersForSelection(parsed.Members, q.Selection), q)
 	if err != nil {
-		return ArchiveReceipt{}, err
+		return model.Entry{}, archivePlan{}, nil, err
 	}
 	payloads := map[string][]byte{}
 	for _, payload := range parsed.Payloads {
 		payloads[payload.Path] = payload.Content
 	}
+	return source, plan, payloads, nil
+}
+
+func (a *Archives) stageExtraction(ctx context.Context, plan *archivePlan, payloads map[string][]byte) ([]string, error) {
 	staged := []string{}
 	for i, entry := range plan.receipt.Created {
 		if err := ctx.Err(); err != nil {
-			return ArchiveReceipt{}, a.compensate(ctx, owner, staged, err)
+			return staged, err
 		}
 		if entry.Kind != model.File {
 			continue
 		}
 		content, ok := payloads[plan.sourcePath[entry.ID]]
 		if !ok {
-			return ArchiveReceipt{}, a.compensate(ctx, owner, staged, model.ErrInvalid)
+			return staged, model.ErrInvalid
 		}
 		entry.MediaType = mime.TypeByExtension(strings.ToLower(path.Ext(entry.Name)))
 		if entry.MediaType == "" {
@@ -238,11 +269,15 @@ func (a *Archives) Extract(ctx context.Context, owner, id string, q ArchiveExtra
 		plan.receipt.Created[i] = entry
 		staged = append(staged, entry.ObjectKey)
 		if err := a.files.content.Put(ctx, entry.ObjectKey, content, entry.MediaType); err != nil {
-			return ArchiveReceipt{}, a.compensate(ctx, owner, staged, fmt.Errorf("write archive candidate: %w", err))
+			return staged, fmt.Errorf("write archive candidate: %w", err)
 		}
 	}
-	changed, err := a.files.repo.ChangeManyBounded(ctx, owner, a.files.policy.SearchTreeEntries, func(current []model.Entry) ([]model.Entry, error) {
-		latest, ok := model.Find(current, id)
+	return staged, nil
+}
+
+func (a *Archives) archivePublication(source model.Entry, plan archivePlan, q ArchiveExtractRequest) func([]model.Entry) ([]model.Entry, error) {
+	return func(current []model.Entry) ([]model.Entry, error) {
+		latest, ok := model.Find(current, source.ID)
 		if !ok || !model.Visible(current, latest) {
 			return nil, model.ErrMissing
 		}
@@ -276,15 +311,7 @@ func (a *Archives) Extract(ctx context.Context, owner, id string, q ArchiveExtra
 			return nil, model.ErrTooLarge
 		}
 		return plan.receipt.Created, nil
-	})
-	if err != nil {
-		return ArchiveReceipt{}, a.compensate(ctx, owner, staged, err)
 	}
-	plan.receipt.Created = changed
-	if plan.receipt.Created == nil {
-		plan.receipt.Created = []model.Entry{}
-	}
-	return plan.receipt, nil
 }
 func (a *Archives) compensate(ctx context.Context, owner string, keys []string, cause error) error {
 	cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), cleanupTimeout)

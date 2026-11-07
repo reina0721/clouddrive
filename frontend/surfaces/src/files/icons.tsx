@@ -20,6 +20,7 @@ import {
   ArrowUpDown,
   Menu,
   HardDrive,
+  Package,
   Info,
   X,
   Link,
@@ -40,6 +41,7 @@ export {
   ArrowUpDown,
   Menu,
   HardDrive,
+  Package,
   Info,
   X,
 };

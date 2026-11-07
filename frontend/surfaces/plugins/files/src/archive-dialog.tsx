@@ -19,6 +19,7 @@ import type {
   ArchiveMember,
   ArchiveReceipt,
   ArchiveSelection,
+  ArchiveTask,
 } from '../../../src/files/archives';
 import { useArchives, useFiles } from '../../../src/files/runtime';
 import { formatFileBytes as bytes } from '../../../src/files/format';
@@ -108,12 +109,14 @@ function ArchiveExtractDialog({
   initialParent,
   onClose,
   onSaved,
+  onQueued,
 }: {
   access: ArchiveAccess;
   selection: ArchiveSelection;
   initialParent: string;
   onClose: () => void;
   onSaved: (receipt: ArchiveReceipt) => void;
+  onQueued: (task: ArchiveTask) => void;
 }) {
   const port = useArchives(),
     { t } = useFrontendTranslation();
@@ -121,8 +124,10 @@ function ArchiveExtractDialog({
     [listing, setListing] = useState<FileListing>(),
     [folderName, setFolderName] = useState(''),
     [conflict, setConflict] = useState<ArchiveConflict>('reject'),
+    [background, setBackground] = useState(false),
     [failure, setFailure] = useState('');
   const controller = useRef<AbortController | undefined>(undefined);
+  const submission = useRef<{ request: string; key: string } | undefined>(undefined);
   useEffect(() => () => controller.current?.abort(), []);
   return (
     <DialogSurface
@@ -131,7 +136,7 @@ function ArchiveExtractDialog({
       title={t('files.archives.extract')}
       description={t('files.archives.targetHint')}
       cancelLabel={t('files.cancel')}
-      confirmLabel={t('files.archives.confirm')}
+      confirmLabel={t(background ? 'files.archives.tasks.queue' : 'files.archives.confirm')}
       confirmDisabled={!listing}
       failureMessage={failure}
       onOpenChange={(open) => {
@@ -143,11 +148,18 @@ function ArchiveExtractDialog({
         controller.current = pending;
         setFailure('');
         try {
-          const receipt = await port.extract(
-            access,
-            { selection, parentId: parent, folderName, conflict },
-            pending.signal,
-          );
+          const input = { selection, parentId: parent, folderName, conflict };
+          if (background && !access.password) {
+            const source = { id: access.id, expectedRevision: access.expectedRevision };
+            const request = JSON.stringify([source, input]);
+            if (submission.current?.request !== request) {
+              submission.current = { request, key: port.newTaskKey() };
+            }
+            const task = await port.queue(source, input, submission.current.key, pending.signal);
+            if (!pending.signal.aborted) onQueued(task);
+            return;
+          }
+          const receipt = await port.extract(access, input, pending.signal);
           if (!pending.signal.aborted) onSaved(receipt);
         } catch (error) {
           if (!pending.signal.aborted)
@@ -176,7 +188,16 @@ function ArchiveExtractDialog({
             label: t('files.archives.' + value),
           }))}
         />
-        <p className="text-sm text-ink-muted">{t('files.archives.noAutomaticRetry')}</p>
+        {access.password ? null : (
+          <CheckboxField
+            label={t('files.archives.tasks.background')}
+            checked={background}
+            onCheckedChange={setBackground}
+          />
+        )}
+        <p className="text-sm text-ink-muted">
+          {t(background ? 'files.archives.tasks.queueHint' : 'files.archives.noAutomaticRetry')}
+        </p>
       </div>
     </DialogSurface>
   );
@@ -206,6 +227,7 @@ export function ArchiveDialog({
     [notice, setNotice] = useState(''),
     [extract, setExtract] = useState<ArchiveSelection>(),
     [receipt, setReceipt] = useState<ArchiveReceipt>(),
+    [queued, setQueued] = useState<ArchiveTask>(),
     [preview, setPreview] = useState<{ member: ArchiveMember; kind: 'text' | 'image' }>();
   const pending = useRef<AbortController | undefined>(undefined);
   const access = useMemo<ArchiveAccess>(
@@ -514,6 +536,22 @@ export function ArchiveDialog({
               </div>
             </>
           ) : null}
+          {queued ? (
+            <section className="mt-4 space-y-2 rounded-panel border border-border p-3">
+              <p role="status">
+                {t('files.archives.tasks.submitted', { name: queued.sourceName })}
+              </p>
+              <Action
+                variant="secondary"
+                onPress={() => {
+                  files.navigate('tasks');
+                  onClose();
+                }}
+              >
+                {t('files.archives.tasks.open')}
+              </Action>
+            </section>
+          ) : null}
           {receipt ? (
             <section
               aria-label={t('files.archives.receipt')}
@@ -551,8 +589,14 @@ export function ArchiveDialog({
           initialParent={entry.parentId}
           onClose={() => setExtract(undefined)}
           onSaved={(result) => {
+            setQueued(undefined);
             setReceipt(result);
             onChanged();
+            setExtract(undefined);
+          }}
+          onQueued={(task) => {
+            setReceipt(undefined);
+            setQueued(task);
             setExtract(undefined);
           }}
         />

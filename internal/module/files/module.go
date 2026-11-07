@@ -37,6 +37,8 @@ func ValidateStorage(ctx context.Context, access repo.Access, identity string, c
 type Dependencies struct {
 	PublicAuthentication     handler.PublicAuthenticator
 	ArchiveProcessor         service.ArchiveProcessor
+	ArchiveAuthority         service.ArchiveAccountAuthority
+	ArchiveDispatcherEnabled bool
 	OfflinePolicy            service.DownloadPolicy
 	OfflineDispatcherEnabled bool
 	TorrentDispatcherEnabled bool
@@ -81,6 +83,10 @@ func New(deps Dependencies) (Module, error) {
 		return Module{}, err
 	}
 	archives, err := service.NewArchives(useCases, deps.ArchiveProcessor)
+	if err != nil {
+		return Module{}, err
+	}
+	archiveTasks, err := service.NewArchiveTasks(archives, repository, deps.ArchiveAuthority, deps.ArchiveDispatcherEnabled, deps.Logger)
 	if err != nil {
 		return Module{}, err
 	}
@@ -139,6 +145,7 @@ func New(deps Dependencies) (Module, error) {
 	}
 	boundary := &handler.Handler{PublicAuthentication: deps.PublicAuthentication, Service: useCases, Sharing: sharing, ShareTransfers: shareTransfers, Navigation: navigation, Preferences: preferences, Connections: connections, ConnectionOrigin: deps.ConnectionOrigin, Transfers: transfers, TransferProtocol: staging, Actors: deps.Actors, Logger: deps.Logger, PublicOrigins: append([]string(nil), deps.PublicOrigins...)}
 	boundary.Archives = archives
+	boundary.ArchiveTasks = archiveTasks
 	boundary.WriteLocks = writeLocks
 	boundary.WebDAV, err = webdavbinding.New(boundary, davFiles, deps.ConnectionPolicy, deps.Policy.MaxFileBytes)
 	if err != nil {
@@ -197,7 +204,19 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
-	return Module{Handler: boundary, Contribution: module.Contribution{ID: "files", Participants: participants, Schedules: []schedule.Binding{binding, torrentBinding}}}, nil
+	archiveTrigger, err := schedule.FixedDelay(service.ArchiveDispatchInterval, service.ArchiveDispatchInterval)
+	if err != nil {
+		return Module{}, err
+	}
+	archiveConcurrency, err := schedule.Concurrency(1, schedule.CongestionSkip, 0)
+	if err != nil {
+		return Module{}, err
+	}
+	archiveBinding, err := schedule.Bind(schedule.Spec{ID: service.ArchiveDispatchTaskID, Trigger: archiveTrigger, Concurrency: archiveConcurrency, Coordination: schedule.Local(), ExecutionPolicy: execution.PersistentTaskPolicyName}, archiveTasks.Dispatch)
+	if err != nil {
+		return Module{}, err
+	}
+	return Module{Handler: boundary, Contribution: module.Contribution{ID: "files", Participants: participants, Schedules: []schedule.Binding{binding, torrentBinding, archiveBinding}}}, nil
 }
 
 func stagingIdentity(root string) (string, error) {

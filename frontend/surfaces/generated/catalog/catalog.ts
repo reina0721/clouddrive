@@ -166,6 +166,14 @@ export const generatedRouteCatalog: RouteCatalog = {
       paramNames: [],
     },
     {
+      routeId: 'files.tasks',
+      pluginId: 'files',
+      path: 'tasks',
+      segments: ['tasks'],
+      pattern: '/home/tasks',
+      paramNames: [],
+    },
+    {
       routeId: 'files.transfers',
       pluginId: 'files',
       path: 'transfers',

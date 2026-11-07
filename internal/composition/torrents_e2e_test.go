@@ -52,7 +52,7 @@ func newTorrentProtocolFixture(t *testing.T) *torrentProtocolFixture {
 		t.Fatal(err)
 	}
 	digest := sha1.Sum(info)
-	return &torrentProtocolFixture{jobs: map[string]*torrentProtocolJob{}, metadata: raw, hash: hex.EncodeToString(digest[:]), root: t.TempDir()}
+	return &torrentProtocolFixture{jobs: map[string]*torrentProtocolJob{}, metadata: raw, hash: hex.EncodeToString(digest[:]), root: filepath.Clean(t.TempDir())}
 }
 
 func (f *torrentProtocolFixture) handler(t *testing.T) http.HandlerFunc {

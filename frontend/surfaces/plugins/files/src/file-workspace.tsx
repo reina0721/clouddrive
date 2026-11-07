@@ -16,6 +16,7 @@ import {
   HardDrive,
   Home,
   Menu,
+  Package,
   Settings,
   Search,
   Trash2,
@@ -160,6 +161,7 @@ export function FileWorkspace({
     { target: 'connections', label: 'files.connections.title', icon: <HardDrive /> },
     { target: 'transfers', label: 'files.transferCenter', icon: <Upload /> },
     { target: 'downloads', label: 'files.downloads.title', icon: <HardDrive /> },
+    { target: 'tasks', label: 'files.archives.tasks.title', icon: <Package /> },
     { target: 'workspace', label: 'files.management', icon: <Settings /> },
     { target: 'account', label: 'files.account', icon: <Settings /> },
   ] as const;
