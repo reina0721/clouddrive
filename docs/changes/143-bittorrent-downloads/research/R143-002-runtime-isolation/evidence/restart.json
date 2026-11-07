@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-07T00:21:43.112Z",
+  "engineSessionChangesOnRestart": true,
+  "persistedGIDsRestored": 2,
+  "pausedIntentRestored": true,
+  "jobs": [
+    {
+      "gid": "36d53c15e1339245",
+      "paused": true,
+      "ownDirectory": true,
+      "selected": [
+        "true",
+        "false"
+      ]
+    },
+    {
+      "gid": "2eb93c4f75bfc9de",
+      "paused": true,
+      "ownDirectory": true,
+      "selected": [
+        "false",
+        "true"
+      ]
+    }
+  ]
+}

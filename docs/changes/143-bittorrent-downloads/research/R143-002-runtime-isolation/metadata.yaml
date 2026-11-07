@@ -1,0 +1,44 @@
+schema_version: 1
+id: R143-002
+title: aria2元数据隔离、同hash任务与重启的实证
+question: 哪个下载器可以先获得元数据而不下载内容，并隔离同hash任务、选择与重启身份？
+research_type: runtime-and-external-primary-source
+topics: [bittorrent, aria2, rpc, download-node, metadata, isolation]
+keywords: [metadata-only, GID, MSYS2, TLS, bencode, Transmission]
+applicable_scenarios: [配置受控aria2节点并共享暂存目录, 当前files多文件下载扩展]
+non_applicable_scenarios: [任意用户RPC节点, 不共享目录的远程代理, 宣称产品已完成BT, BitTorrent-v2]
+status: active
+summary: 实际peer交换证明aria2元数据阶段不生成payload，选择、独立GID和重启持久化可用；选择受控外部aria2及固定安全修复版bencode，产品接入尚待实施。
+evidence:
+  types: [runtime-probe, official-source, official-documentation, official-package-registry]
+  primary_sources:
+    - title: aria2官方手册
+      locator: https://aria2.github.io/manual/en/html/aria2c.html
+      snapshot: 1.37.0，2026-11-06复核
+    - title: MSYS2官方aria2包
+      locator: https://packages.msys2.org/packages/mingw-w64-ucrt-x86_64-aria2
+      snapshot: 1.37.0-8，官方ucrt64数据库及15个包SHA256，2026-11-06
+    - title: 实际磁力元数据与peer字节
+      locator: .data/143-aria2-peer-receipt.json
+      snapshot: 2026-11-07T00:14:05Z，205字节元数据、34字节所选内容
+    - title: 同hash隔离和引擎重启
+      locator: .data/143-aria2-restart-receipt.json
+      snapshot: 2026-11-07T00:21:43Z，两个GID及各自选择恢复
+    - title: 证书校验实证
+      locator: .data/143-aria2-tls-receipt.json
+      snapshot: 2026-11-07，拒绝自签名、接受可信公开站点
+    - title: 有界bencode解码源码
+      locator: https://github.com/anacrolix/torrent/blob/7d22f0ea40bd0206c8b1777e367ea13d4f140b2e/bencode/decode.go
+      snapshot: v1.61.1-0.20261106080042-7d22f0ea40bd，MaxDepth与MaxStrLen
+researched_at: '2026-11-06'
+verified_at: '2026-11-07'
+validity:
+  mode: snapshot
+  review_after: '2026-11-14'
+  refresh_triggers: [aria2协议或安全公告改变, 包依赖或解码器修复改变, 节点暂存目录改变, 非共享目录需求, 文件发布或预算契约改变]
+relations:
+  extends: [R143-001]
+  related: [R129-001, R141-001]
+  supersedes: []
+  superseded_by: []
+report: report.md
