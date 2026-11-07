@@ -105,6 +105,7 @@ func Register(api huma.API, h *handler.Handler, guard MutationGuard) {
 	registerTrashPurge(api, h, operation)
 	registerTrashRetention(api, h, operation)
 	registerDirectLinks(api, h, operation)
+	registerInventory(api, h, operation)
 	registerArchives(api, h, operation)
 	registerArchiveTasks(api, h, operation)
 	registerSharing(api, h, operation)

@@ -61,6 +61,8 @@ const (
 	OperationFilesDownloadsSource           OperationID = "files.downloads.source"
 	OperationFilesDownloadsTarget           OperationID = "files.downloads.target"
 	OperationFilesFolder                    OperationID = "files.folder"
+	OperationFilesInventoryDetail           OperationID = "files.inventory.detail"
+	OperationFilesInventoryList             OperationID = "files.inventory.list"
 	OperationFilesList                      OperationID = "files.list"
 	OperationFilesPinsCreate                OperationID = "files.pins.create"
 	OperationFilesPinsList                  OperationID = "files.pins.list"
@@ -249,6 +251,8 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesDownloadsSource, Method: "GET", Path: "/api/v1/files/downloads/{id}/source", Policy: "protected", Scope: "files:read", Action: "files.downloads.source"},
 	{ID: OperationFilesDownloadsTarget, Method: "PUT", Path: "/api/v1/files/downloads/{id}/target", Policy: "protected", Scope: "files:write", Action: "files.downloads.target"},
 	{ID: OperationFilesFolder, Method: "POST", Path: "/api/v1/files/folders", Policy: "protected", Scope: "files:write", Action: "files.folder"},
+	{ID: OperationFilesInventoryDetail, Method: "GET", Path: "/api/v1/files/inventory/{id}", Policy: "protected", Scope: "files:inventory:read", Action: "files.inventory.detail"},
+	{ID: OperationFilesInventoryList, Method: "GET", Path: "/api/v1/files/inventory", Policy: "protected", Scope: "files:inventory:read", Action: "files.inventory.list"},
 	{ID: OperationFilesList, Method: "GET", Path: "/api/v1/files", Policy: "protected", Scope: "files:read", Action: "files.list"},
 	{ID: OperationFilesPinsCreate, Method: "POST", Path: "/api/v1/files/pins", Policy: "protected", Scope: "files:write", Action: "files.pins.create"},
 	{ID: OperationFilesPinsList, Method: "GET", Path: "/api/v1/files/pins", Policy: "protected", Scope: "files:read", Action: "files.pins.list"},

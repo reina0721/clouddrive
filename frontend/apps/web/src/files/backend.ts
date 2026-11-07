@@ -14,6 +14,8 @@ import {
   directLinkIssueSchema,
   directLinkPageSchema,
   directLinkTokenPattern,
+  inventoryItemSchema,
+  inventoryPageSchema,
   type FileListing,
   type FilesErrorCode,
   type FileShortcut,
@@ -306,6 +308,15 @@ export function createFilesRuntime(
       limits = listing;
       return listing;
     },
+    listInventory: async (query, signal) => {
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(query)) {
+        if (value !== '' && value !== false) params.set(key, String(value));
+      }
+      return inventoryPageSchema.parse(await call('/inventory?' + params.toString(), { signal }));
+    },
+    readInventory: async (id, signal) =>
+      inventoryItemSchema.parse(await call('/inventory/' + encodeURIComponent(id), { signal })),
     folder: async (parentId, name) =>
       fileEntrySchema.parse(await call('/folders', { method: 'POST', body: { parentId, name } })),
     update: async (id, change) =>

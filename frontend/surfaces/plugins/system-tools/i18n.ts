@@ -5,6 +5,7 @@ export const pluginI18nResources = {
         nav: {
           root: '系统工具',
           icons: 'Icon 大全',
+          files: '文件清单',
         },
         icons: {
           title: 'Icon 大全',
@@ -20,6 +21,7 @@ export const pluginI18nResources = {
         nav: {
           root: 'System Tools',
           icons: 'Icon Gallery',
+          files: 'File inventory',
         },
         icons: {
           title: 'Icon Gallery',

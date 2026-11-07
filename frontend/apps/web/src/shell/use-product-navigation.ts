@@ -27,6 +27,7 @@ function requiredPermission(id: string, backend: boolean): string | null {
     'account.security': 'iam:account:self:read',
     'account.tokens': 'iam:api-token:read',
     'system-tools.runtime': 'management:read',
+    'system-tools.files': 'files:inventory:read',
     'workspace.root': 'todos:read',
     'api-workbench.root': 'console:workbench:read',
     'users.administration': 'iam:account:write',
@@ -61,6 +62,7 @@ export function useProductNavigation() {
           'departments.positions',
           'roles.catalog',
           'system-tools.runtime',
+          'system-tools.files',
           'users.administration',
         ].includes(node.id)
       )

@@ -36,3 +36,5 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 [148回收站永久移除](changes/148-trash-permanent-removal/README.md)实现本人已回收文件、目录及其后代的永久移除和一键清空。[149回收站保留规则](changes/149-trash-retention/README.md)增加本人可选期限与后台到期清理。两条路径均释放逻辑配额。物理对象保留，通用存储回收独立规划。
 
 [150文件直链](changes/150-file-direct-links/README.md)提供单文件或批量生成、复制、范围下载和本人撤销，支持明确安全类型的浏览器预览。目录直链、直通存储和跨账号管理独立规划。
+
+[151管理端文件清单](changes/151-admin-file-inventory/README.md)允许单独授权跨账号查阅已发布条目、逻辑占用、链接关联和版本摘要。导入、未发布传输、Blob 管理及跨账号内容操作独立规划。

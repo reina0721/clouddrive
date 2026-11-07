@@ -158,6 +158,10 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
+	boundary.Inventory, err = service.NewInventory(repository, unicodename.Normalizer{})
+	if err != nil {
+		return Module{}, err
+	}
 	boundary.BackgroundTasks, err = service.NewBackgroundTasks(repository, archiveTasks)
 	if err != nil {
 		return Module{}, err

@@ -14,6 +14,7 @@ import type { BackgroundTaskListing, BackgroundTaskQuery } from './background-ta
 import type { TrashPurgePreview, TrashPurgeSelection } from './trash-purge';
 import type { TrashRetention } from './trash-retention';
 import type { DirectLinkDelivery, DirectLinkPage, DirectLinkResult } from './direct-links';
+import type { InventoryItem, InventoryPage, InventoryQuery } from './inventory';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
 
@@ -165,6 +166,8 @@ export type FilesPort = Readonly<{
     signal: AbortSignal,
   ): Promise<BackgroundTaskListing>;
   list(query: FileQuery, signal?: AbortSignal): Promise<FileListing>;
+  listInventory(query: InventoryQuery, signal: AbortSignal): Promise<InventoryPage>;
+  readInventory(id: string, signal: AbortSignal): Promise<InventoryItem>;
   folder(parentId: string, name: string): Promise<FileEntry>;
   update(
     id: string,

@@ -2308,6 +2308,93 @@ components:
         - mustChangePassword
         - securityRevision
       type: object
+    InventoryItem:
+      additionalProperties: false
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        expiresAt:
+          format: date-time
+          nullable: true
+          type: string
+        hasDirectLink:
+          type: boolean
+        hasShare:
+          type: boolean
+        historyCount:
+          format: int64
+          type: integer
+        id:
+          type: string
+        kind:
+          enum:
+            - file
+            - folder
+            - shortcut
+          type: string
+        name:
+          type: string
+        ownerId:
+          type: string
+        parentId:
+          type: string
+        quotaBytes:
+          format: int64
+          type: integer
+        revision:
+          format: int64
+          type: integer
+        sizeBytes:
+          format: int64
+          type: integer
+        trashedAt:
+          format: date-time
+          nullable: true
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - id
+        - ownerId
+        - parentId
+        - kind
+        - name
+        - sizeBytes
+        - quotaBytes
+        - revision
+        - historyCount
+        - createdAt
+        - updatedAt
+        - trashedAt
+        - expiresAt
+        - hasShare
+        - hasDirectLink
+      type: object
+    InventoryPage:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/InventoryItem"
+          nullable: true
+          type: array
+        page:
+          format: int64
+          type: integer
+        pageSize:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+      required:
+        - items
+        - total
+        - page
+        - pageSize
+      type: object
     ListResponseAccountResponse:
       additionalProperties: false
       properties:
@@ -7108,6 +7195,125 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Entry"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/inventory:
+    get:
+      operationId: files.inventory.list
+      parameters:
+        - explode: false
+          in: query
+          name: ownerId
+          schema:
+            maxLength: 128
+            type: string
+        - explode: false
+          in: query
+          name: name
+          schema:
+            maxLength: 255
+            type: string
+        - explode: false
+          in: query
+          name: kind
+          schema:
+            enum:
+              - file
+              - folder
+              - shortcut
+            type: string
+        - explode: false
+          in: query
+          name: trash
+          schema:
+            default: any
+            enum:
+              - any
+              - direct
+              - unmarked
+            type: string
+        - explode: false
+          in: query
+          name: hasShare
+          schema:
+            type: boolean
+        - explode: false
+          in: query
+          name: hasDirectLink
+          schema:
+            type: boolean
+        - explode: false
+          in: query
+          name: sort
+          schema:
+            default: created
+            enum:
+              - id
+              - name
+              - size
+              - created
+            type: string
+        - explode: false
+          in: query
+          name: direction
+          schema:
+            default: desc
+            enum:
+              - asc
+              - desc
+            type: string
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            maximum: 10000
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryPage"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/inventory/{id}:
+    get:
+      operationId: files.inventory.detail
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
           description: OK
         default:
           content:

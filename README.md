@@ -58,6 +58,8 @@ Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Veri
 
 文件菜单和多选工具栏可获取直链，同一文件复用已有地址。“我的分享”提供直链管理和撤销。详见[150变更](docs/changes/150-file-direct-links/README.md)。
 
+管理面板提供只读文件清单，持有独立权限的用户可跨账号过滤、排序和查阅文件详情。详见[151变更](docs/changes/151-admin-file-inventory/README.md)。
+
 当前会话密码解锁已补齐，输错可重试、共享账号失败预算，详见[142变更](docs/changes/142-session-password-unlock/README.md)。本批20项使用行为不增加20个独立功能计数；客户端遮挡仍不是服务端授权边界。
 
 WebDAV持久独占写锁已接入真实协议、所有文件保存及上传最终发布；连接页可查看和按版本解除占用，详见[141变更](docs/changes/141-webdav-write-locks/README.md)。本批20项按使用行为验收，不等同Office服务或系统驱动全量兼容。

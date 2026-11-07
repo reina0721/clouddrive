@@ -243,6 +243,7 @@ func TestFilesHTTPConcurrentUploadsOwnershipRestartAndStorageGuard(t *testing.T)
 		owner.request(t, "PUT", "/native/iam/roles/"+roleID+"/permissions", map[string]any{"expectedRoleVersion": 2, "permissionKeys": []string{"files:write"}}, 200)
 		directLinkRequest(t, owner.base, token, "GET", "", nil, 404)
 	})
+	t.Run("管理文件清单与独立权限", func(t *testing.T) { verifyFileInventory(t, owner, other, roleID, password) })
 }
 
 func verifyTrashPurge(t *testing.T, owner, other *consoleTestClient) {

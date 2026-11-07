@@ -10,6 +10,14 @@ import type { NavigationContribution } from '@clouddrive/plugin-framework/naviga
 export const navigationContribution = {
   parents: [
     {
+      navigationId: 'system-tools.files',
+      labelKey: 'systemTools.nav.files',
+      groupId: 'administration',
+      order: 46,
+      iconId: 'resource',
+      routeId: 'system-tools.files',
+    },
+    {
       navigationId: 'system-tools.runtime',
       labelKey: 'administration.runtime',
       groupId: 'administration',
