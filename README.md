@@ -84,6 +84,8 @@ Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Veri
 
 文本和 Markdown 应用支持配置文件工作区“新建”菜单的名称、扩展名和顺序。详见[169变更](docs/changes/169-file-creation-mappings/README.md)。
 
+“文件浏览应用”支持配置 HTTPS 网页阅读器。文件所有者确认接收站点后，可在页面内或新标签预览当前版本。详见[170变更](docs/changes/170-web-file-viewers/README.md)。
+
 管理区的“分享管理”页可按分享者、源文件和状态查看链接与活动。获准的管理者可单独或批量撤销链接，源文件仍由原所有者管理。详见[156变更](docs/changes/156-admin-share-management/README.md)。
 
 管理区的“后台任务管理”页提供跨账号归档和下载查询。获准的管理者可以预览并清理终态任务，保留已发布文件。详见[157变更](docs/changes/157-admin-background-tasks/README.md)。

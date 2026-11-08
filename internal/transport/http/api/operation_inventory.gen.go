@@ -31,6 +31,7 @@ const (
 	OperationFilesApplicationsActive        OperationID = "files.applications.active"
 	OperationFilesApplicationsRead          OperationID = "files.applications.read"
 	OperationFilesApplicationsSave          OperationID = "files.applications.save"
+	OperationFilesApplicationsWebLaunch     OperationID = "files.applications.web-launch"
 	OperationFilesArchive                   OperationID = "files.archive"
 	OperationFilesArchiveTasksCancel        OperationID = "files.archive-tasks.cancel"
 	OperationFilesArchiveTasksCreate        OperationID = "files.archive-tasks.create"
@@ -114,6 +115,8 @@ const (
 	OperationFilesPublicTransfersOffset     OperationID = "files.public.transfers.offset"
 	OperationFilesPublicTransfersRead       OperationID = "files.public.transfers.read"
 	OperationFilesPublicUnlock              OperationID = "files.public.unlock"
+	OperationFilesPublicWebPreviewsContent  OperationID = "files.public.web-previews.content"
+	OperationFilesPublicWebPreviewsHead     OperationID = "files.public.web-previews.head"
 	OperationFilesRestore                   OperationID = "files.restore"
 	OperationFilesSettingsRead              OperationID = "files.settings.read"
 	OperationFilesSettingsSave              OperationID = "files.settings.save"
@@ -250,6 +253,7 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesApplicationsActive, Method: "GET", Path: "/api/v1/files/applications/active", Policy: "protected", Scope: "files:read", Action: "files.applications.active"},
 	{ID: OperationFilesApplicationsRead, Method: "GET", Path: "/api/v1/files/applications", Policy: "protected", Scope: "files:settings:read", Action: "files.applications.read"},
 	{ID: OperationFilesApplicationsSave, Method: "PUT", Path: "/api/v1/files/applications", Policy: "protected", Scope: "files:settings:write", Action: "files.applications.save"},
+	{ID: OperationFilesApplicationsWebLaunch, Method: "POST", Path: "/api/v1/files/{id}/web-preview", Policy: "protected", Scope: "files:read", Action: "files.applications.web-launch"},
 	{ID: OperationFilesArchive, Method: "POST", Path: "/api/v1/files/archive", Policy: "protected", Scope: "files:read", Action: "files.archive"},
 	{ID: OperationFilesArchiveTasksCancel, Method: "POST", Path: "/api/v1/files/archive-tasks/{id}/cancel", Policy: "protected", Scope: "files:write", Action: "files.archive-tasks.cancel"},
 	{ID: OperationFilesArchiveTasksCreate, Method: "POST", Path: "/api/v1/files/{id}/archive/tasks", Policy: "protected", Scope: "files:write", Action: "files.archive-tasks.create"},
@@ -333,6 +337,8 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesPublicTransfersOffset, Method: "HEAD", Path: "/api/v1/file-shares/{token}/transfers/{id}/data", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicTransfersRead, Method: "GET", Path: "/api/v1/file-shares/{token}/transfers/{id}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicUnlock, Method: "POST", Path: "/api/v1/file-shares/{token}/unlock", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicWebPreviewsContent, Method: "GET", Path: "/api/v1/file-web-previews/{token}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicWebPreviewsHead, Method: "HEAD", Path: "/api/v1/file-web-previews/{token}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesRestore, Method: "POST", Path: "/api/v1/files/{id}/restore", Policy: "protected", Scope: "files:write", Action: "files.restore"},
 	{ID: OperationFilesSettingsRead, Method: "GET", Path: "/api/v1/files/settings", Policy: "protected", Scope: "files:settings:read", Action: "files.settings.read"},
 	{ID: OperationFilesSettingsSave, Method: "PUT", Path: "/api/v1/files/settings", Policy: "protected", Scope: "files:settings:write", Action: "files.settings.save"},

@@ -65,6 +65,11 @@ async function restoreApplications(page: Page, initial: FileApplicationView) {
       }),
     ),
     defaults: initial.defaults,
+    webApps: initial.webApps.map((app) => {
+      const input = { ...app };
+      delete input.origin;
+      return input;
+    }),
   });
 }
 
@@ -434,6 +439,140 @@ test('新建文件映射按配置创建真实文件并保留后缀', async ({ pa
     await savePolicy();
     await openMenu();
     await expect(page.getByRole('menuitem', { name: '新建 Markdown', exact: true })).toBeVisible();
+  } finally {
+    await restoreApplications(page, initial);
+  }
+});
+
+test('网页应用配置和临时文件预览', async ({ page }, info) => {
+  await loginQA(page);
+  const initial = await filesAPI<FileApplicationView>(page, '/applications');
+  await openReadingFixtureFolder(page, '网页验收-');
+  const folder = new URL(page.url());
+  const name = '外部阅读 中文.MD';
+  await filesAPI(page, '/text', 'POST', {
+    parentId: folder.searchParams.get('parent')!,
+    name,
+    text: 'web-preview-fixture',
+    key: randomUUID(),
+  });
+  const viewerName = '文档网页阅读器';
+  const origin = 'https://viewer.example.test';
+  const add = page.getByRole('button', { name: '添加网页应用', exact: true });
+  const draft = page.getByRole('button', { name: '应用到草稿', exact: true });
+  const edit = page.getByRole('button', { name: '编辑 ' + viewerName, exact: true });
+  const save = page.getByRole('button', { name: '保存文件应用', exact: true });
+  const settings = () => page.getByRole('dialog', { name: /^(添加|编辑)网页应用$/ });
+  const viewer = page.getByRole('dialog', { name: viewerName, exact: true });
+  const allow = viewer.getByRole('button', { name: '允许并继续', exact: true });
+  const currentFile = page.getByRole('button', { name, exact: true });
+  let requests = 0;
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname.endsWith('/web-preview'))
+      requests++;
+  });
+  await page.context().route(origin + '/read?*', async (route) => {
+    const url = new URL(route.request().url());
+    const source = new URL(url.searchParams.get('file')!);
+    expect(source.origin).toBe('http://127.0.0.1:4194');
+    expect(source.pathname).toMatch(/^\/api\/v1\/file-web-previews\/[A-Za-z0-9_-]+$/);
+    expect(url.searchParams.get('name')).toBe(name);
+    const response = await page.request.get(source.href, { headers: { Origin: origin } });
+    expect(response.ok()).toBe(true);
+    expect(response.headers()['access-control-allow-origin']).toBe(origin);
+    expect(await response.text()).toBe('web-preview-fixture');
+    await route.fulfill({
+      contentType: 'text/html; charset=utf-8',
+      body: '<h1>阅读器收到文件正文</h1>',
+    });
+  });
+  async function savePolicy() {
+    await save.click();
+    await expect(page.getByRole('status').filter({ hasText: '文件应用设置已保存' })).toBeVisible();
+  }
+  async function goFile() {
+    await page.goto(folder.pathname + folder.search);
+    await currentFile.click();
+  }
+  try {
+    await openApplications(page);
+    await add.click();
+    await expect(draft).toBeDisabled();
+    await settings().getByLabel('名称', { exact: true }).fill('未保存');
+    await settings().getByRole('button', { name: '取消', exact: true }).click();
+    await expect(page.getByText('未保存', { exact: true })).toHaveCount(0);
+    await add.click();
+    await settings().getByLabel('名称', { exact: true }).fill(viewerName);
+    const icon = settings().getByLabel('图标地址', { exact: true });
+    await icon.fill('http://viewer.example.test/icon.png');
+    await expect(settings().getByText('请输入受支持的 HTTPS 图片地址。')).toBeVisible();
+    await icon.fill('');
+    const extensions = settings().getByLabel('扩展名列表', { exact: true });
+    await extensions.fill('md, .MD');
+    await expect(settings().getByText('请检查扩展名格式或重复项。')).toBeVisible();
+    await extensions.fill('.MD');
+    const address = settings().getByLabel('应用 URL', { exact: true });
+    await address.fill('http://viewer.example.test/read?file={$src}');
+    await expect(settings().getByText('请输入含文件地址变量的 HTTPS 模板。')).toBeVisible();
+    await address.fill(origin + '/read?file={$src}&name={$name}');
+    await settings().getByLabel('最大文件大小（字节）', { exact: true }).fill('512');
+    await settings().getByRole('button', { name: /平台/ }).click();
+    await page.getByRole('option', { name: '桌面端', exact: true }).click();
+    await page.screenshot({ path: info.outputPath('web-app-form.png'), animations: 'disabled' });
+    await draft.click();
+    const defaults = page.getByRole('region', { name: '默认打开方式', exact: true });
+    await defaults.getByRole('button', { name: /\.md 的默认应用/ }).click();
+    await page.getByRole('option', { name: viewerName, exact: true }).click();
+    await savePolicy();
+
+    await goFile();
+    await expect(viewer).toContainText(origin);
+    await expect(viewer).toContainText('五分钟');
+    await expect(page.locator('iframe[title="' + viewerName + '"]')).toHaveCount(0);
+    await viewer.getByRole('button', { name: '关闭', exact: true }).click();
+    expect(requests).toBe(0);
+    await currentFile.click();
+    await allow.click();
+    await expect(
+      page
+        .frameLocator('iframe[title="' + viewerName + '"]')
+        .getByRole('heading', { name: '阅读器收到文件正文' }),
+    ).toBeVisible();
+    await page.screenshot({ path: info.outputPath('web-app-preview.png'), animations: 'disabled' });
+    expect(requests).toBe(1);
+    await page.setViewportSize({ width: 390, height: 760 });
+    await goFile();
+    const choices = page.getByRole('dialog', { name: '打开方式', exact: true });
+    await expect(
+      choices.getByRole('button', { name: 'Markdown 编辑器', exact: true }),
+    ).toBeVisible();
+    await expect(choices.getByRole('button', { name: viewerName, exact: true })).toHaveCount(0);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await openApplications(page);
+    await edit.click();
+    await settings().getByRole('checkbox', { name: '在新标签页打开', exact: true }).press('Space');
+    await draft.click();
+    await savePolicy();
+    await goFile();
+    await allow.click();
+    const link = viewer.getByRole('link', { name: '在新标签页打开', exact: true });
+    await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    await expect(page.locator('iframe[title="' + viewerName + '"]')).toHaveCount(0);
+    const popupPromise = page.waitForEvent('popup');
+    await link.click();
+    const popup = await popupPromise;
+    await expect(popup.getByRole('heading', { name: '阅读器收到文件正文' })).toBeVisible();
+    await popup.close();
+
+    await openApplications(page);
+    await page.getByRole('checkbox', { name: '启用 ' + viewerName, exact: true }).press('Space');
+    await savePolicy();
+    await goFile();
+    await expect(choices.getByRole('button', { name: viewerName, exact: true })).toHaveCount(0);
+    await openApplications(page);
+    await page.getByRole('button', { name: '移除 ' + viewerName, exact: true }).click();
+    await savePolicy();
+    await expect(edit).toHaveCount(0);
   } finally {
     await restoreApplications(page, initial);
   }

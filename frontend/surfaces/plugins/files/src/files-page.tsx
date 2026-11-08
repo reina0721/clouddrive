@@ -24,6 +24,7 @@ import {
   fileApplicationName,
   isTextPreview,
   type FileApplicationID,
+  type WebFileApplicationItem,
 } from '../../../src/files/file-applications';
 import { fileIconExtension, type FileIconRule } from '../../../src/files/icon-rules';
 import { isMarkdownFile } from '../../../src/files/markdown';
@@ -98,6 +99,9 @@ const ArchiveCreateDialog = lazy(() =>
   import('./archive-create-dialog').then((module) => ({ default: module.ArchiveCreateDialog })),
 );
 const DirectLinksDialog = lazy(() => import('./direct-links-dialog'));
+const WebFilePreviewDialog = lazy(() =>
+  import('./web-file-preview-dialog').then((module) => ({ default: module.WebFilePreviewDialog })),
+);
 const archiveFile = (entry: FileEntry) =>
   entry.kind === 'file' &&
   (/\.(zip|7z)$/i.test(entry.name) ||
@@ -125,6 +129,7 @@ function configuredFileApplications(entry: FileEntry): FileApplicationID[] {
 type FileApplicationPicker = Readonly<{
   entry: FileEntry;
   options?: readonly FileApplicationID[];
+  webOptions?: readonly WebFileApplicationItem[];
   error?: string;
 }>;
 
@@ -255,6 +260,10 @@ export function FilesPage({
     [galleryAnnotationFailure, setGalleryAnnotationFailure] = useState('');
   const [preview, setPreview] = useState<{ entry: FileEntry; text: string; loading: boolean }>();
   const [applicationPicker, setApplicationPicker] = useState<FileApplicationPicker>();
+  const [webPreview, setWebPreview] = useState<{
+    entry: FileEntry;
+    application: WebFileApplicationItem;
+  }>();
   const previewController = useRef<AbortController | undefined>(undefined);
   const fileContent = useRef<HTMLElement>(null);
   const errorText = useCallback(
@@ -685,22 +694,49 @@ export function FilesPage({
       try {
         const policy = await port.readActiveFileApplications(controller.signal);
         if (controller.signal.aborted) return;
+        const extension = fileIconExtension(entry.name);
+        const device = fileApplicationDevice(window.innerWidth);
         const choice = fileApplicationChoice(
           policy,
           compatibleFileApplications(entry),
           configuredFileApplications(entry),
-          fileIconExtension(entry.name),
-          fileApplicationDevice(window.innerWidth),
+          extension,
+          device,
         );
+        const webOptions =
+          requested === 'archive'
+            ? []
+            : policy.webItems.filter(
+                (app) =>
+                  app.enabled &&
+                  app.origin &&
+                  app.extensions.includes(extension) &&
+                  (app.platform === 'all' || app.platform === device),
+              );
+        const selectedWeb = requested
+          ? undefined
+          : (webOptions.find((app) => app.id === choice.defaultApp) ??
+            (webOptions.length === 1 && choice.options.length === 0 ? webOptions[0] : undefined));
+        if (selectedWeb) {
+          setApplicationPicker(undefined);
+          setWebPreview({ entry, application: selectedWeb });
+          return;
+        }
         const selected =
           requested === 'archive'
             ? choice.options.find((id) => id === requested)
             : requested === 'choose'
               ? undefined
-              : choice.automatic;
+              : webOptions.length
+                ? choice.options.find((id) => id === choice.defaultApp)
+                : choice.automatic;
         if (selected) await launchApplication(entry, selected, controller.signal);
         else
-          setApplicationPicker({ entry, options: requested === 'archive' ? [] : choice.options });
+          setApplicationPicker({
+            entry,
+            options: requested === 'archive' ? [] : choice.options,
+            webOptions,
+          });
       } catch (error) {
         if (!controller.signal.aborted) setApplicationPicker({ entry, error: errorText(error) });
       }
@@ -2089,7 +2125,7 @@ export function FilesPage({
               <p role="alert">{applicationPicker.error}</p>
             ) : !applicationPicker.options ? (
               <p role="status">{t('files.previewLoading')}</p>
-            ) : applicationPicker.options.length === 0 ? (
+            ) : applicationPicker.options.length === 0 && !applicationPicker.webOptions?.length ? (
               <p role="status">{noApplicationLabel}</p>
             ) : (
               <div className="flex flex-wrap gap-2">
@@ -2104,6 +2140,18 @@ export function FilesPage({
                     }}
                   >
                     {fileApplicationName(id, chinese)}
+                  </Action>
+                ))}
+                {applicationPicker.webOptions?.map((application) => (
+                  <Action
+                    key={application.id}
+                    variant="secondary"
+                    onPress={() => {
+                      setWebPreview({ entry: applicationPicker.entry, application });
+                      setApplicationPicker(undefined);
+                    }}
+                  >
+                    {application.name}
                   </Action>
                 ))}
               </div>
@@ -2123,6 +2171,15 @@ export function FilesPage({
             </div>
           </div>
         </DialogSurface>
+      ) : null}
+      {webPreview ? (
+        <Suspense fallback={<p role="status">{t('files.previewLoading')}</p>}>
+          <WebFilePreviewDialog
+            entry={webPreview.entry}
+            application={webPreview.application}
+            onClose={() => setWebPreview(undefined)}
+          />
+        </Suspense>
       ) : null}
       {preview ? (
         <DialogSurface

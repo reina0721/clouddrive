@@ -25,18 +25,52 @@ const item = rule.extend({
   customNewFiles: z.boolean(),
   canCreate: z.boolean(),
 });
-const defaultRule = z.object({ extension: z.string(), app: applicationID });
+const webApplicationID = z.custom<`web-${string}`>(
+  (value) => typeof value === 'string' && /^web-[a-f0-9]{32}$/.test(value),
+);
+const webItem = z.object({
+  id: webApplicationID,
+  enabled: z.boolean(),
+  platform,
+  extensions: z.array(z.string()).min(1).max(maxFileApplicationExtensions),
+  name: z.string(),
+  origin: z.string().optional(),
+  iconUrl: z.string().optional(),
+  maxBytes: z.number().int().nonnegative(),
+  newTab: z.boolean(),
+});
+const webApp = webItem.extend({ urlTemplate: z.string() });
+const defaultRule = z.object({
+  extension: z.string(),
+  app: z.union([applicationID, webApplicationID]),
+});
 
 export const fileApplicationPolicySchema = z.object({
   items: z.array(item).max(8),
   defaults: z.array(defaultRule).max(32),
+  webItems: z.array(webItem).max(8),
 });
 export const fileApplicationViewSchema = fileApplicationPolicySchema.extend({
   revision: z.number().int().nonnegative(),
   builtInDefaults: z.array(defaultRule),
   builtInItems: z.array(item).max(8),
+  webApps: z.array(webApp).max(8),
   canSave: z.boolean(),
 });
+
+export const webFilePreviewSchema = z.object({
+  urlTemplate: z.string(),
+  origin: z.string(),
+  name: z.string(),
+  newTab: z.boolean(),
+  token: z.string().regex(/^[A-Za-z0-9_-]+$/),
+});
+
+export const maxWebFileApplications = 8;
+export const maxWebApplicationBytes = 1024 ** 4;
+export type WebFileApplication = z.infer<typeof webApp>;
+export type WebFileApplicationItem = z.infer<typeof webItem>;
+export type WebFilePreview = z.infer<typeof webFilePreviewSchema>;
 
 export type FileApplicationID = z.infer<typeof applicationID>;
 export type FileApplicationPlatform = z.infer<typeof platform>;
@@ -54,6 +88,7 @@ export type FileApplicationSettings = {
   revision: number;
   apps: FileApplicationRule[];
   defaults: FileApplicationDefault[];
+  webApps?: Omit<WebFileApplication, 'origin'>[];
 };
 
 const names: Record<FileApplicationID, readonly [string, string]> = {
@@ -127,11 +162,7 @@ export function fileApplicationChoice(
   const defaultApp = policy.defaults.find((value) => value.extension === extension)?.app;
   return {
     options,
-    automatic:
-      options.length === 1
-        ? options[0]
-        : defaultApp && options.includes(defaultApp)
-          ? defaultApp
-          : undefined,
+    defaultApp,
+    automatic: options.length === 1 ? options[0] : options.find((id) => id === defaultApp),
   };
 }

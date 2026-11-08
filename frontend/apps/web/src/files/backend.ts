@@ -41,6 +41,7 @@ import {
   fileIconRulesViewSchema,
   fileApplicationViewSchema,
   fileApplicationPolicySchema,
+  webFilePreviewSchema,
   propertyDefinitionsViewSchema,
   type FileListing,
   type FilesErrorCode,
@@ -413,6 +414,18 @@ export function createFilesRuntime(
       fileApplicationViewSchema.parse(await call('/applications', { method: 'PUT', body })),
     readActiveFileApplications: async (signal) =>
       fileApplicationPolicySchema.parse(await call('/applications/active', { signal })),
+    launchWebFilePreview: async (entry, application, signal) =>
+      webFilePreviewSchema.parse(
+        await call('/' + encodeURIComponent(entry.id) + '/web-preview', {
+          method: 'POST',
+          body: {
+            application: application.id,
+            origin: application.origin,
+            contentRevision: entry.contentRevision,
+          },
+          signal,
+        }),
+      ),
     readStoragePolicy: async (signal) =>
       storagePolicySchema.parse(await call('/storage-policy', { signal })),
     saveStoragePolicy: async (body) =>

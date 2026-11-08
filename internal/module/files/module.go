@@ -174,6 +174,10 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
+	boundary.WebFilePreviews, err = service.NewWebFilePreviews(useCases, boundary.FileApplications, deps.ShareAuthority)
+	if err != nil {
+		return Module{}, err
+	}
 	boundary.PropertyDefinitions, err = service.NewPropertyDefinitions(repository, unicodename.Normalizer{})
 	if err != nil {
 		return Module{}, err

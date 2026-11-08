@@ -77,7 +77,7 @@ type FileApplicationItem struct {
 // FileApplicationDefault 对具有多个候选的扩展名指定默认应用。
 type FileApplicationDefault struct {
 	Extension string            `json:"extension" minLength:"1" maxLength:"32"`
-	App       FileApplicationID `json:"app" enum:"image,audio,video,pdf,epub,archive,markdown,text"`
+	App       FileApplicationID `json:"app" maxLength:"36"`
 }
 
 // FileApplicationSettings 保存完整草稿，应用规则可以省略采用内置可用性的条目。
@@ -85,12 +85,14 @@ type FileApplicationSettings struct {
 	Revision int64                    `json:"revision" minimum:"0"`
 	Apps     []FileApplicationRule    `json:"apps" maxItems:"8"`
 	Defaults []FileApplicationDefault `json:"defaults" maxItems:"32"`
+	WebApps  []WebFileApplication     `json:"webApps,omitempty" maxItems:"8"`
 }
 
 // FileApplicationPolicy 是本人文件页读取的有效策略。
 type FileApplicationPolicy struct {
 	Items    []FileApplicationItem    `json:"items"`
 	Defaults []FileApplicationDefault `json:"defaults"`
+	WebItems []WebFileApplicationItem `json:"webItems"`
 }
 
 // FileApplicationView 包含管理员恢复内置设置及并发保存所需信息。
@@ -99,6 +101,7 @@ type FileApplicationView struct {
 	Revision        int64                    `json:"revision"`
 	BuiltInDefaults []FileApplicationDefault `json:"builtInDefaults"`
 	BuiltInItems    []FileApplicationItem    `json:"builtInItems"`
+	WebApps         []WebFileApplication     `json:"webApps"`
 }
 
 // FileApplicationsRepository 负责在文件设置存储中按修订替换策略。
@@ -235,21 +238,35 @@ func (v FileApplicationSettings) effective() (FileApplicationView, error) {
 			extensionCount[extension]++
 		}
 	}
+	webApps, webItems, err := normalizeWebFileApplications(v.WebApps)
+	if err != nil {
+		return FileApplicationView{}, err
+	}
+	webByID := make(map[FileApplicationID]WebFileApplication, len(webApps))
+	for _, app := range webApps {
+		webByID[app.ID] = app
+		for _, extension := range app.Extensions {
+			extensionCount[extension]++
+		}
+	}
 	defaults := make([]FileApplicationDefault, 0, len(v.Defaults))
 	seenExtensions := make(map[string]bool, len(v.Defaults))
 	for _, rule := range v.Defaults {
 		extension := normalizeFileApplicationExtension(rule.Extension)
 		index, exists := byID[rule.App]
-		if !exists || seenExtensions[extension] || extensionCount[extension] < 2 ||
-			!items[index].Enabled || !slices.Contains(items[index].Extensions, extension) {
+		enabled := exists && items[index].Enabled && slices.Contains(items[index].Extensions, extension)
+		if external, found := webByID[rule.App]; found {
+			enabled = external.Enabled && slices.Contains(external.Extensions, extension)
+		}
+		if !enabled || seenExtensions[extension] || extensionCount[extension] < 2 {
 			return FileApplicationView{}, model.ErrInvalid
 		}
 		seenExtensions[extension] = true
 		defaults = append(defaults, FileApplicationDefault{Extension: extension, App: rule.App})
 	}
 	return FileApplicationView{
-		FileApplicationPolicy: FileApplicationPolicy{Items: items, Defaults: defaults},
-		Revision:              v.Revision, BuiltInDefaults: builtInFileApplicationDefaults(), BuiltInItems: builtIns,
+		FileApplicationPolicy: FileApplicationPolicy{Items: items, Defaults: defaults, WebItems: webItems},
+		Revision:              v.Revision, BuiltInDefaults: builtInFileApplicationDefaults(), BuiltInItems: builtIns, WebApps: webApps,
 	}, nil
 }
 
@@ -267,6 +284,13 @@ func (s *FileApplications) Read(ctx context.Context) (FileApplicationView, error
 
 // Save 校验完整草稿，保留底层并发错误及原始原因。
 func (s *FileApplications) Save(ctx context.Context, value FileApplicationSettings) (FileApplicationView, error) {
+	if value.WebApps == nil {
+		stored, err := s.repository.ReadFileApplications(ctx)
+		if err != nil {
+			return FileApplicationView{}, err
+		}
+		value.WebApps = stored.WebApps
+	}
 	view, err := value.effective()
 	if err != nil {
 		return FileApplicationView{}, err
@@ -275,6 +299,7 @@ func (s *FileApplications) Save(ctx context.Context, value FileApplicationSettin
 		return FileApplicationView{}, model.ErrConflict
 	}
 	value.Defaults = view.Defaults
+	value.WebApps = view.WebApps
 	value.Apps = make([]FileApplicationRule, 0, len(view.Items))
 	for _, item := range view.Items {
 		if item.Enabled && item.Platform == FileAppAll && !item.CustomExtensions && !item.CustomNewFiles {

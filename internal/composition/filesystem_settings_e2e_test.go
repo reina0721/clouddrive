@@ -251,6 +251,7 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	admin.base = "http://" + coordinator.Diagnostics().BoundAddress
+	observer.base = admin.base
 	active := admin.request(t, "GET", endpoint, nil, 200)
 	appView = admin.request(t, "GET", apps, nil, 200)
 	appDefault := appView["defaults"].([]any)[0].(map[string]any)
@@ -324,4 +325,7 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 		len(reset["overrides"].(map[string]any)) != 0 || reset["configured"].(map[string]any)["textBytes"] != float64(64) {
 		t.Fatalf("未恢复继承: %v", reset)
 	}
+	t.Run("网页应用与临时文件读取", func(t *testing.T) {
+		verifyWebFilePreview(t, admin, observer)
+	})
 }

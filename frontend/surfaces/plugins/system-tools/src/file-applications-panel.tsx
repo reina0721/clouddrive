@@ -8,22 +8,29 @@ import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { Panel } from '@clouddrive/ui-adapter/panel';
 import {
   fileApplicationName,
+  maxWebFileApplications,
   maxFileApplicationExtensions,
   parseFileApplicationExtensions,
   type FileApplicationDefault,
   type FileApplicationID,
   type FileApplicationItem,
   type FileApplicationView,
+  type WebFileApplication,
 } from '../../../src/files/file-applications';
 import { FilesError } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
 import { CatalogFailure } from './catalog-failure';
 import { useCatalogRequest } from './use-catalog-request';
 import { FileCreationMappingsDialog } from './file-creation-mappings-dialog';
+import { WebFileApplicationDialog } from './web-file-application-dialog';
 
 const zh = {
   catalog: '应用列表',
-  explanation: '设置内置应用的扩展名和可用平台。此设置应用于本人文件的打开方式。',
+  explanation: '设置本人文件的内置和网页应用。',
+  addWeb: '添加网页应用',
+  editWeb: (name: string) => `编辑 ${name}`,
+  removeWeb: (name: string) => `移除 ${name}`,
+  webKind: '网页应用',
   app: '应用',
   extensions: '扩展名',
   inheritedExtensions: '内置关联',
@@ -65,8 +72,11 @@ const zh = {
 };
 const en: typeof zh = {
   catalog: 'Applications',
-  explanation:
-    'Set extensions and availability for built-in applications when users open their files.',
+  explanation: 'Manage built-in and web applications for personal files.',
+  addWeb: 'Add web application',
+  editWeb: (name) => `Edit ${name}`,
+  removeWeb: (name) => `Remove ${name}`,
+  webKind: 'Web application',
   app: 'Application',
   extensions: 'Extensions',
   inheritedExtensions: 'Built-in associations',
@@ -122,6 +132,8 @@ function FileApplicationsForm({
   const labels = chinese ? zh : en;
   const [view, setView] = useState(initial);
   const [items, setItems] = useState(initial.items);
+  const [webApps, setWebApps] = useState(initial.webApps);
+  const [webEdit, setWebEdit] = useState<WebFileApplication | 'new'>();
   const [defaults, setDefaults] = useState(initial.defaults);
   const [extension, setExtension] = useState('');
   const [extensionEdit, setExtensionEdit] = useState<{ id: FileApplicationID; value: string }>();
@@ -137,10 +149,12 @@ function FileApplicationsForm({
   const parsedExtensions = extensionEdit && parseFileApplicationExtensions(extensionEdit.value);
   const modified =
     JSON.stringify(items) !== JSON.stringify(view.items) ||
+    JSON.stringify(webApps) !== JSON.stringify(view.webApps) ||
     JSON.stringify(defaults) !== JSON.stringify(view.defaults);
+  const applications = [...items, ...webApps];
   const enabledFor = (suffix: string) =>
-    items.filter((item) => item.enabled && item.extensions.includes(suffix));
-  const available = [...new Set(items.flatMap((item) => item.extensions))]
+    applications.filter((item) => item.enabled && item.extensions.includes(suffix));
+  const available = [...new Set(applications.flatMap((item) => item.extensions))]
     .filter(
       (suffix) =>
         enabledFor(suffix).length > 1 && !defaults.some((rule) => rule.extension === suffix),
@@ -160,6 +174,11 @@ function FileApplicationsForm({
       newFiles: mappings.filter((mapping) => item.extensions.includes(mapping.extension)),
     };
     const next = items.map((candidate) => (candidate.id === item.id ? item : candidate));
+    setItems(next);
+    reconcileDefaults([...next, ...webApps]);
+  }
+
+  function reconcileDefaults(next: typeof applications) {
     const valid = defaults.filter((rule) => {
       const associated = next.filter((candidate) => candidate.extensions.includes(rule.extension));
       return (
@@ -167,12 +186,24 @@ function FileApplicationsForm({
         associated.some((candidate) => candidate.id === rule.app && candidate.enabled)
       );
     });
-    setItems(next);
     if (valid.length !== defaults.length) {
       setDefaults(valid);
       setRemovedDefaults(true);
     }
     setSaved(false);
+  }
+
+  function changeWebApps(next: WebFileApplication[]) {
+    setWebApps(next);
+    reconcileDefaults([...items, ...next]);
+  }
+
+  function applyWebApp(app: WebFileApplication) {
+    changeWebApps(
+      webEdit === 'new'
+        ? [...webApps, app]
+        : webApps.map((candidate) => (candidate.id === app.id ? app : candidate)),
+    );
   }
 
   function changeDefaults(next: FileApplicationDefault[]) {
@@ -202,9 +233,15 @@ function FileApplicationsForm({
                 ],
         ),
         defaults,
+        webApps: webApps.map((app) => {
+          const input = { ...app };
+          delete input.origin;
+          return input;
+        }),
       });
       setView(next);
       setItems(next.items);
+      setWebApps(next.webApps);
       setDefaults(next.defaults);
       setRemovedDefaults(false);
       setSaved(true);
@@ -224,6 +261,14 @@ function FileApplicationsForm({
           <h2 className="text-lg font-semibold">{labels.catalog}</h2>
           <p className="text-sm text-ink-muted">{labels.explanation}</p>
         </div>
+        <Action
+          variant="secondary"
+          size="sm"
+          disabled={locked || webApps.length >= maxWebFileApplications}
+          onPress={() => setWebEdit('new')}
+        >
+          {labels.addWeb}
+        </Action>
         <div className="overflow-auto">
           <table
             className="w-full text-sm"
@@ -353,6 +398,66 @@ function FileApplicationsForm({
                   </tr>
                 );
               })}
+              {webApps.map((app) => (
+                <tr key={app.id} className="border-b border-border">
+                  <th className="p-2 text-left" scope="row">
+                    <div className="flex items-center gap-2">
+                      {app.iconUrl ? (
+                        <img
+                          src={app.iconUrl}
+                          alt=""
+                          width={20}
+                          height={20}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : null}
+                      {app.name}
+                    </div>
+                    <p className="text-xs text-ink-muted">{labels.webKind}</p>
+                  </th>
+                  <td className="p-2 text-ink-muted">
+                    <p>{app.extensions.map((suffix) => `.${suffix}`).join(', ')}</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Action
+                        variant="quiet"
+                        size="sm"
+                        disabled={locked}
+                        onPress={() => setWebEdit(app)}
+                      >
+                        {labels.editWeb(app.name)}
+                      </Action>
+                      <Action
+                        variant="quiet"
+                        size="sm"
+                        disabled={locked}
+                        onPress={() =>
+                          changeWebApps(webApps.filter((candidate) => candidate.id !== app.id))
+                        }
+                      >
+                        {labels.removeWeb(app.name)}
+                      </Action>
+                    </div>
+                  </td>
+                  <td className="p-2">{labels[app.platform]}</td>
+                  <td className="p-2">{labels.mappingUnavailable}</td>
+                  <td className="p-2">
+                    <CheckboxField
+                      label={labels.enabledApp(app.name)}
+                      checked={app.enabled}
+                      presentation="control-only"
+                      disabled={locked}
+                      onCheckedChange={(enabled) =>
+                        changeWebApps(
+                          webApps.map((candidate) =>
+                            candidate.id === app.id ? { ...app, enabled } : candidate,
+                          ),
+                        )
+                      }
+                    />
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -372,7 +477,7 @@ function FileApplicationsForm({
                 disabled={locked}
                 options={enabledFor(rule.extension).map((item) => ({
                   value: item.id,
-                  label: fileApplicationName(item.id, chinese),
+                  label: 'name' in item ? item.name : fileApplicationName(item.id, chinese),
                 }))}
                 onValueChange={(id) => {
                   const item = enabledFor(rule.extension).find((candidate) => candidate.id === id);
@@ -454,6 +559,14 @@ function FileApplicationsForm({
           item={mappingItem}
           onClose={() => setMappingID(undefined)}
           onApply={(newFiles) => changeItem({ ...mappingItem, newFiles, customNewFiles: true })}
+        />
+      ) : null}
+      {webEdit ? (
+        <WebFileApplicationDialog
+          application={webEdit === 'new' ? undefined : webEdit}
+          platforms={platforms}
+          onClose={() => setWebEdit(undefined)}
+          onApply={applyWebApp}
         />
       ) : null}
       {editedItem && extensionEdit && parsedExtensions ? (

@@ -156,3 +156,4 @@
 - [167 文件浏览应用](167-file-applications/README.md) 管理内置应用、平台和默认打开方式。
 - [168 文件应用扩展名](168-file-app-extensions/README.md) 编辑、清空和恢复应用关联。
 - [169 新建文件映射](169-file-creation-mappings/README.md) 配置文本和 Markdown 的新建菜单。
+- [170 网页式文件应用](170-web-file-viewers/README.md) 配置外部阅读器和当前文件限时预览。

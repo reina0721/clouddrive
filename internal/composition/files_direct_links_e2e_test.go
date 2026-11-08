@@ -10,7 +10,12 @@ import (
 
 func directLinkRequest(t *testing.T, base, token, method, query string, headers http.Header, status int) (string, http.Header) {
 	t.Helper()
-	req, err := http.NewRequestWithContext(t.Context(), method, base+"/api/v1/file-direct-links/"+token+query, nil)
+	return publicFileContentRequest(t, base+"/api/v1/file-direct-links/"+token+query, method, headers, status)
+}
+
+func publicFileContentRequest(t *testing.T, address, method string, headers http.Header, status int) (string, http.Header) {
+	t.Helper()
+	req, err := http.NewRequestWithContext(t.Context(), method, address, nil)
 	if err != nil {
 		t.Fatal("不能构造直链请求")
 	}

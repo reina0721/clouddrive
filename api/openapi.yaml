@@ -2619,15 +2619,7 @@ components:
       additionalProperties: false
       properties:
         app:
-          enum:
-            - image
-            - audio
-            - video
-            - pdf
-            - epub
-            - archive
-            - markdown
-            - text
+          maxLength: 36
           type: string
         extension:
           maxLength: 32
@@ -2713,13 +2705,25 @@ components:
         revision:
           format: int64
           type: integer
+        webApps:
+          items:
+            $ref: "#/components/schemas/WebFileApplication"
+          nullable: true
+          type: array
+        webItems:
+          items:
+            $ref: "#/components/schemas/WebFileApplicationItem"
+          nullable: true
+          type: array
       required:
         - canSave
         - revision
         - builtInDefaults
         - builtInItems
+        - webApps
         - items
         - defaults
+        - webItems
       type: object
     FileApplicationPolicy:
       additionalProperties: false
@@ -2734,9 +2738,15 @@ components:
             $ref: "#/components/schemas/FileApplicationItem"
           nullable: true
           type: array
+        webItems:
+          items:
+            $ref: "#/components/schemas/WebFileApplicationItem"
+          nullable: true
+          type: array
       required:
         - items
         - defaults
+        - webItems
       type: object
     FileApplicationRule:
       additionalProperties: false
@@ -2794,6 +2804,12 @@ components:
           format: int64
           minimum: 0
           type: integer
+        webApps:
+          items:
+            $ref: "#/components/schemas/WebFileApplication"
+          maxItems: 8
+          nullable: true
+          type: array
       required:
         - revision
         - apps
@@ -6094,6 +6110,140 @@ components:
         - field
         - reason
       type: object
+    WebFileApplication:
+      additionalProperties: false
+      properties:
+        enabled:
+          type: boolean
+        extensions:
+          items:
+            type: string
+          maxItems: 48
+          minItems: 1
+          nullable: true
+          type: array
+        iconUrl:
+          maxLength: 2048
+          type: string
+        id:
+          pattern: ^web-[a-f0-9]{32}$
+          type: string
+        maxBytes:
+          format: int64
+          maximum: 1099511627776
+          minimum: 0
+          type: integer
+        name:
+          maxLength: 64
+          type: string
+        newTab:
+          type: boolean
+        origin:
+          readOnly: true
+          type: string
+        platform:
+          enum:
+            - all
+            - desktop
+            - mobile
+          type: string
+        urlTemplate:
+          maxLength: 2048
+          type: string
+      required:
+        - urlTemplate
+        - id
+        - enabled
+        - platform
+        - extensions
+        - name
+        - maxBytes
+        - newTab
+      type: object
+    WebFileApplicationItem:
+      additionalProperties: false
+      properties:
+        enabled:
+          type: boolean
+        extensions:
+          items:
+            type: string
+          maxItems: 48
+          minItems: 1
+          nullable: true
+          type: array
+        iconUrl:
+          maxLength: 2048
+          type: string
+        id:
+          pattern: ^web-[a-f0-9]{32}$
+          type: string
+        maxBytes:
+          format: int64
+          maximum: 1099511627776
+          minimum: 0
+          type: integer
+        name:
+          maxLength: 64
+          type: string
+        newTab:
+          type: boolean
+        origin:
+          readOnly: true
+          type: string
+        platform:
+          enum:
+            - all
+            - desktop
+            - mobile
+          type: string
+      required:
+        - id
+        - enabled
+        - platform
+        - extensions
+        - name
+        - maxBytes
+        - newTab
+      type: object
+    WebFilePreview:
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+        newTab:
+          type: boolean
+        origin:
+          type: string
+        token:
+          type: string
+        urlTemplate:
+          type: string
+      required:
+        - urlTemplate
+        - origin
+        - name
+        - newTab
+        - token
+      type: object
+    WebFilePreviewRequest:
+      additionalProperties: false
+      properties:
+        application:
+          pattern: ^web-[a-f0-9]{32}$
+          type: string
+        contentRevision:
+          format: int64
+          minimum: 1
+          type: integer
+        origin:
+          maxLength: 512
+          type: string
+      required:
+        - application
+        - origin
+        - contentRevision
+      type: object
     WorkerCapability:
       additionalProperties: false
       properties:
@@ -7267,6 +7417,59 @@ paths:
       security: []
       tags:
         - File Shares
+  /api/v1/file-web-previews/{token}:
+    get:
+      operationId: files.public.web-previews.content
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/octet-stream:
+              schema:
+                format: binary
+                type: string
+                x-contentMediaType: application/octet-stream
+          description: 有效临时授权的原始文件、条件请求及字节范围
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security: []
+      tags:
+        - File Web Previews
+    head:
+      operationId: files.public.web-previews.head
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/octet-stream:
+              schema:
+                format: binary
+                type: string
+                x-contentMediaType: application/octet-stream
+          description: 有效临时授权的原始文件、条件请求及字节范围
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security: []
+      tags:
+        - File Web Previews
   /api/v1/files:
     get:
       operationId: files.list
@@ -11526,6 +11729,40 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Entry"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/{id}/web-preview:
+    post:
+      operationId: files.applications.web-launch
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            maxLength: 36
+            minLength: 36
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebFilePreviewRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebFilePreview"
           description: OK
         default:
           content:

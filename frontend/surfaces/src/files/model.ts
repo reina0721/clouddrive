@@ -47,6 +47,8 @@ import type {
   FileApplicationPolicy,
   FileApplicationSettings,
   FileApplicationView,
+  WebFileApplicationItem,
+  WebFilePreview,
 } from './file-applications';
 import type { EpubBook, EpubEntry } from './epub-contract';
 import type { PropertyDefinitionSet, PropertyDefinitionsView } from './property-definitions';
@@ -241,6 +243,11 @@ export type FilesPort = Readonly<{
   readFileApplications(signal: AbortSignal): Promise<FileApplicationView>;
   saveFileApplications(input: FileApplicationSettings): Promise<FileApplicationView>;
   readActiveFileApplications(signal: AbortSignal): Promise<FileApplicationPolicy>;
+  launchWebFilePreview(
+    entry: FileEntry,
+    application: WebFileApplicationItem,
+    signal: AbortSignal,
+  ): Promise<WebFilePreview>;
   saveFilesystemSettings(input: FilesystemSettingsInput): Promise<FilesystemSettings>;
   readPropertyDefinitions(signal: AbortSignal): Promise<PropertyDefinitionsView>;
   savePropertyDefinitions(input: PropertyDefinitionSet): Promise<PropertyDefinitionsView>;

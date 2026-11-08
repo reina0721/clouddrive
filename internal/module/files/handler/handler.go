@@ -72,6 +72,7 @@ type Handler struct {
 	PropertyDefinitions      *service.PropertyDefinitions
 	FileIconRules            *service.FileIconRules
 	FileApplications         *service.FileApplications
+	WebFilePreviews          *service.WebFilePreviews
 	Downloads                *service.OfflineDownloads
 	Torrents                 *service.TorrentDownloads
 	Service                  *service.Service
