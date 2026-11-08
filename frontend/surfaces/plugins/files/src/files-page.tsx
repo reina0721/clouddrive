@@ -20,6 +20,7 @@ import type { FileAnnotationSummary } from '../../../src/files/annotation-values
 import { isEpubDocument } from '../../../src/files/epub-contract';
 import {
   fileApplicationChoice,
+  fileApplicationDevice,
   fileApplicationName,
   isTextPreview,
   type FileApplicationID,
@@ -102,8 +103,6 @@ const archiveFile = (entry: FileEntry) =>
   (/\.(zip|7z)$/i.test(entry.name) ||
     entry.mediaType === 'application/zip' ||
     entry.mediaType === 'application/x-7z-compressed');
-
-const mobileFileApplicationWidth = 768;
 
 function compatibleFileApplications(entry: FileEntry): FileApplicationID[] {
   if (archiveFile(entry)) return ['archive'];
@@ -691,7 +690,7 @@ export function FilesPage({
           compatibleFileApplications(entry),
           configuredFileApplications(entry),
           fileIconExtension(entry.name),
-          window.innerWidth < mobileFileApplicationWidth ? 'mobile' : 'desktop',
+          fileApplicationDevice(window.innerWidth),
         );
         const selected =
           requested === 'archive'

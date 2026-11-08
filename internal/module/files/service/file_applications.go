@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/reina0721/clouddrive/internal/module/files/model"
 )
@@ -36,6 +38,8 @@ const (
 const (
 	maxFileApplicationDefaults   = 32
 	maxFileApplicationExtensions = 48
+	maxFileCreationMappings      = 8
+	maxFileCreationLabelRunes    = 48
 )
 
 var fileApplicationExtension = regexp.MustCompile(`^[a-z0-9][a-z0-9_+-]{0,23}$`)
@@ -50,14 +54,24 @@ type FileApplicationAvailability struct {
 // FileApplicationRule 追加可选的扩展名覆盖，空数组表示没有关联。
 type FileApplicationRule struct {
 	FileApplicationAvailability
-	Extensions *[]string `json:"extensions,omitempty" maxItems:"48"`
+	Extensions *[]string              `json:"extensions,omitempty" maxItems:"48"`
+	NewFiles   *[]FileCreationMapping `json:"newFiles,omitempty" maxItems:"8"`
+}
+
+// FileCreationMapping 定义新建菜单项。内置项以空名称使用界面翻译。
+type FileCreationMapping struct {
+	Extension string `json:"extension" maxLength:"32"`
+	Label     string `json:"label" maxLength:"48"`
 }
 
 // FileApplicationItem 声明应用有效设置及扩展名来源。
 type FileApplicationItem struct {
 	FileApplicationAvailability
-	Extensions       []string `json:"extensions"`
-	CustomExtensions bool     `json:"customExtensions"`
+	Extensions       []string              `json:"extensions"`
+	CustomExtensions bool                  `json:"customExtensions"`
+	NewFiles         []FileCreationMapping `json:"newFiles"`
+	CustomNewFiles   bool                  `json:"customNewFiles"`
+	CanCreate        bool                  `json:"canCreate"`
 }
 
 // FileApplicationDefault 对具有多个候选的扩展名指定默认应用。
@@ -107,7 +121,7 @@ func NewFileApplications(repository FileApplicationsRepository) (*FileApplicatio
 }
 
 func builtInFileApplications() []FileApplicationItem {
-	return []FileApplicationItem{
+	items := []FileApplicationItem{
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppImage, true, FileAppAll}, Extensions: []string{"png", "jpg", "jpeg", "gif", "webp", "avif"}},
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppAudio, true, FileAppAll}, Extensions: []string{"mp3", "ogg", "wav", "flac", "m4a", "aac"}},
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppVideo, true, FileAppAll}, Extensions: []string{"mp4", "webm", "ogv"}},
@@ -117,6 +131,19 @@ func builtInFileApplications() []FileApplicationItem {
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppMarkdown, true, FileAppAll}, Extensions: []string{"md", "markdown"}},
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppText, true, FileAppAll}, Extensions: []string{"txt", "md", "markdown", "csv", "json", "xml", "html", "css", "js", "log"}},
 	}
+	for index := range items {
+		item := &items[index]
+		item.NewFiles = []FileCreationMapping{}
+		switch item.ID {
+		case FileAppText:
+			item.CanCreate = true
+			item.NewFiles = append(item.NewFiles, FileCreationMapping{Extension: "txt"})
+		case FileAppMarkdown:
+			item.CanCreate = true
+			item.NewFiles = append(item.NewFiles, FileCreationMapping{Extension: "md"})
+		}
+	}
+	return items
 }
 
 func builtInFileApplicationDefaults() []FileApplicationDefault {
@@ -140,6 +167,30 @@ func normalizeFileApplicationExtensions(values []string) ([]string, error) {
 		}
 		seen[extension] = true
 		result = append(result, extension)
+	}
+	return result, nil
+}
+
+func fileCreationMappings(item FileApplicationItem, rules *[]FileCreationMapping) ([]FileCreationMapping, error) {
+	if rules == nil {
+		return slices.DeleteFunc(slices.Clone(item.NewFiles), func(mapping FileCreationMapping) bool {
+			return !slices.Contains(item.Extensions, mapping.Extension)
+		}), nil
+	}
+	if !item.CanCreate || len(*rules) > maxFileCreationMappings {
+		return nil, model.ErrInvalid
+	}
+	result := make([]FileCreationMapping, 0, len(*rules))
+	seen := make(map[string]bool, len(*rules))
+	for _, mapping := range *rules {
+		extension := normalizeFileApplicationExtension(mapping.Extension)
+		label := strings.TrimSpace(mapping.Label)
+		if seen[extension] || !slices.Contains(item.Extensions, extension) || label == "" ||
+			utf8.RuneCountInString(label) > maxFileCreationLabelRunes || strings.ContainsFunc(label, unicode.IsControl) {
+			return nil, model.ErrInvalid
+		}
+		seen[extension] = true
+		result = append(result, FileCreationMapping{Extension: extension, Label: label})
 	}
 	return result, nil
 }
@@ -171,6 +222,12 @@ func (v FileApplicationSettings) effective() (FileApplicationView, error) {
 			items[index].Extensions = extensions
 			items[index].CustomExtensions = true
 		}
+		mappings, err := fileCreationMappings(items[index], rule.NewFiles)
+		if err != nil {
+			return FileApplicationView{}, err
+		}
+		items[index].NewFiles = mappings
+		items[index].CustomNewFiles = rule.NewFiles != nil
 	}
 	extensionCount := make(map[string]int)
 	for _, item := range items {
@@ -220,12 +277,15 @@ func (s *FileApplications) Save(ctx context.Context, value FileApplicationSettin
 	value.Defaults = view.Defaults
 	value.Apps = make([]FileApplicationRule, 0, len(view.Items))
 	for _, item := range view.Items {
-		if item.Enabled && item.Platform == FileAppAll && !item.CustomExtensions {
+		if item.Enabled && item.Platform == FileAppAll && !item.CustomExtensions && !item.CustomNewFiles {
 			continue
 		}
 		rule := FileApplicationRule{FileApplicationAvailability: item.FileApplicationAvailability}
 		if item.CustomExtensions {
 			rule.Extensions = &item.Extensions
+		}
+		if item.CustomNewFiles {
+			rule.NewFiles = &item.NewFiles
 		}
 		value.Apps = append(value.Apps, rule)
 	}

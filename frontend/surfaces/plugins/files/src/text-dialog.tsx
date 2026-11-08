@@ -7,12 +7,13 @@ import { TextField, TextAreaField } from '@clouddrive/ui-adapter/form-field';
 import { FilesError, type FilesErrorCode, type FileEntry } from '../../../src/files/model';
 import { isMarkdownFile } from '../../../src/files/markdown';
 import { useFiles } from '../../../src/files/runtime';
+import type { CreationTemplate } from '../../../src/files/file-applications';
 
 const MarkdownEditor = lazy(() => import('./markdown-editor'));
 
 type Request = Readonly<
   | { mode: 'edit'; entry: FileEntry; reading?: true }
-  | { mode: 'text' | 'markdown'; parentId: string }
+  | { mode: 'text' | 'markdown'; parentId: string; template?: CreationTemplate }
 >;
 export function TextDialog({
   request,
@@ -77,13 +78,14 @@ export function TextDialog({
   const title =
     markdown && request.mode === 'edit'
       ? request.entry.name
-      : t(
+      : ((request.mode !== 'edit' ? request.template?.title : undefined) ??
+        t(
           request.mode === 'edit'
             ? 'files.edit'
             : request.mode === 'markdown'
               ? 'files.newMarkdown'
               : 'files.newText',
-        );
+        ));
   const discardTitle = zh ? '放弃未保存的 Markdown 修改？' : 'Discard unsaved Markdown changes?';
   return (
     <DialogSurface
@@ -125,11 +127,17 @@ export function TextDialog({
             if (!snapshot) throw new FilesError('unavailable');
             await port.replaceText(snapshot.id, snapshot.contentRevision, text);
           } else {
-            const suffix = request.mode === 'markdown' ? '.md' : '.txt';
+            const suffix = request.template
+              ? '.' + request.template.extension
+              : request.mode === 'markdown'
+                ? '.md'
+                : '.txt';
             await port.createText(
               request.parentId,
               name.toLowerCase().endsWith(suffix) ||
-                (markdown && isMarkdownFile({ name, mediaType: '' }))
+                (markdown &&
+                  (!request.template || request.template.builtIn) &&
+                  isMarkdownFile({ name, mediaType: '' }))
                 ? name
                 : name + suffix,
               text,
@@ -150,11 +158,15 @@ export function TextDialog({
           <TextField
             label={t('files.name')}
             hint={
-              request.mode === 'markdown'
+              request.template && !request.template.builtIn
                 ? zh
-                  ? '支持 .md 和 .markdown，其他名称自动补全 .md。'
-                  : 'Use .md or .markdown. Other names get a .md extension.'
-                : t('files.textNameHint')
+                  ? `名称未以 .${request.template.extension} 结尾时会自动补全。`
+                  : `Names without .${request.template.extension} get that extension.`
+                : request.mode === 'markdown'
+                  ? zh
+                    ? '支持 .md 和 .markdown，其他名称自动补全 .md。'
+                    : 'Use .md or .markdown. Other names get a .md extension.'
+                  : t('files.textNameHint')
             }
             value={name}
             disabled={saving}

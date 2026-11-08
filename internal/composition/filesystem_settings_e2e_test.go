@@ -139,6 +139,50 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 	observer.request(t, "PUT", apps, appBody(1, newRules, newDefaults), 403)
 	admin.request(t, "PUT", apps, appBody(1, newRules, newDefaults), 200)
 	admin.request(t, "PUT", apps, appBody(1, noRules, noRules), 409)
+	findApp := func(view map[string]any, id string) map[string]any {
+		t.Helper()
+		for _, raw := range view["items"].([]any) {
+			if item := raw.(map[string]any); item["id"] == id {
+				return item
+			}
+		}
+		t.Fatalf("缺少应用 %s", id)
+		return nil
+	}
+	legacyApps := observer.request(t, "GET", apps+"/active", nil, 200)
+	legacyMarkdown := findApp(legacyApps, "markdown")
+	if legacyMarkdown["customNewFiles"] != false || legacyMarkdown["newFiles"].([]any)[0].(map[string]any)["extension"] != "md" ||
+		len(findApp(legacyApps, "text")["newFiles"].([]any)) != 0 {
+		t.Fatalf("旧策略未按当前关联继承映射: %v", legacyApps)
+	}
+	mapping := func(extension, label string) map[string]string {
+		return map[string]string{"extension": extension, "label": label}
+	}
+	newRules[2]["newFiles"] = []map[string]string{}
+	admin.request(t, "PUT", apps, appBody(2, newRules, newDefaults), 422)
+	delete(newRules[2], "newFiles")
+	for _, invalid := range [][]map[string]string{
+		{mapping("pdf", "文档")},
+		{mapping("note", "会议纪要"), mapping(" .NOTE ", "重复")},
+		{mapping("note", "  ")},
+		{mapping("note", "会\n议")},
+	} {
+		newRules[0]["newFiles"] = invalid
+		admin.request(t, "PUT", apps, appBody(2, newRules, newDefaults), 422)
+	}
+	extraExtensions := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i"}
+	extraMappings := make([]map[string]string, 0, len(extraExtensions))
+	for _, extension := range extraExtensions {
+		extraMappings = append(extraMappings, mapping(extension, "草稿"))
+	}
+	admin.request(t, "PUT", apps, appBody(2, []map[string]any{{
+		"id": "markdown", "enabled": true, "platform": "all", "extensions": extraExtensions, "newFiles": extraMappings,
+	}}, noRules), 400)
+	newRules[0]["newFiles"] = []map[string]string{mapping(" .NOTE ", " 会议纪要 "), mapping("md", "草稿")}
+	newRules[1]["newFiles"] = []map[string]string{}
+	observer.request(t, "PUT", apps, appBody(2, newRules, newDefaults), 403)
+	admin.request(t, "PUT", apps, appBody(2, newRules, newDefaults), 200)
+	admin.request(t, "PUT", apps, appBody(2, newRules, newDefaults), 409)
 	archiveRule := map[string]any{"shape": "archive", "extensions": []string{" .CUSTOM ", "other"}, "light": "#123ABC", "dark": "#445566"}
 	admin.request(t, "PUT", icons, iconBody(0, false, archiveRule, archiveRule), 422)
 	admin.request(t, "PUT", icons, iconBody(0, false, map[string]any{
@@ -210,8 +254,17 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 	active := admin.request(t, "GET", endpoint, nil, 200)
 	appView = admin.request(t, "GET", apps, nil, 200)
 	appDefault := appView["defaults"].([]any)[0].(map[string]any)
-	if appView["revision"] != float64(2) || appDefault["app"] != "text" || appDefault["extension"] != "note" {
+	if appView["revision"] != float64(3) || appDefault["app"] != "text" || appDefault["extension"] != "note" {
 		t.Fatalf("重启后未保留默认应用: %v", appView)
+	}
+	markdown := findApp(appView, "markdown")
+	mappings := markdown["newFiles"].([]any)
+	textApp := findApp(appView, "text")
+	if markdown["customNewFiles"] != true || len(mappings) != 2 ||
+		mappings[0].(map[string]any)["extension"] != "note" || mappings[0].(map[string]any)["label"] != "会议纪要" ||
+		mappings[1].(map[string]any)["extension"] != "md" ||
+		textApp["customNewFiles"] != true || len(textApp["newFiles"].([]any)) != 0 {
+		t.Fatalf("重启后未保留映射顺序、名称或显式空列表: %v", appView)
 	}
 	for _, item := range appView["items"].([]any) {
 		view := item.(map[string]any)

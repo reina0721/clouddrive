@@ -55,12 +55,15 @@ async function restoreApplications(page: Page, initial: FileApplicationView) {
   const current = await filesAPI<FileApplicationView>(page, '/applications');
   await filesAPI(page, '/applications', 'PUT', {
     revision: current.revision,
-    apps: initial.items.map(({ id, enabled, platform, customExtensions, extensions }) => ({
-      id,
-      enabled,
-      platform,
-      ...(customExtensions ? { extensions } : {}),
-    })),
+    apps: initial.items.map(
+      ({ id, enabled, platform, customExtensions, extensions, customNewFiles, newFiles }) => ({
+        id,
+        enabled,
+        platform,
+        ...(customExtensions ? { extensions } : {}),
+        ...(customNewFiles ? { newFiles } : {}),
+      }),
+    ),
     defaults: initial.defaults,
   });
 }
@@ -313,6 +316,124 @@ test('扩展名关联编辑、别名打开和清空恢复', async ({ page }, inf
     await expect(markdownRow).toContainText('内置关联');
     await expect(markdownRow).toContainText('桌面端');
     await savePolicy();
+  } finally {
+    await restoreApplications(page, initial);
+  }
+});
+
+test('新建文件映射按配置创建真实文件并保留后缀', async ({ page }, info) => {
+  await loginQA(page);
+  const initial = await filesAPI<FileApplicationView>(page, '/applications');
+  const folderName = '000169-' + randomUUID().slice(0, 8);
+  const folder = await filesAPI<{ id: string }>(page, '/folders', 'POST', {
+    parentId: '',
+    name: folderName,
+  });
+  const row = page.getByRole('row').filter({
+    has: page.getByRole('rowheader', { name: 'Markdown 编辑器', exact: true }),
+  });
+  const edit = row.getByRole('button', { name: '编辑映射', exact: true });
+  const editor = page.getByRole('dialog', { name: 'Markdown 编辑器的新建文件映射', exact: true });
+  const apply = editor.getByRole('button', { name: '应用到草稿', exact: true });
+  const add = editor.getByRole('button', { name: '添加映射', exact: true });
+  const label = (extension: string) =>
+    editor
+      .getByRole('group', { name: extension, exact: true })
+      .getByLabel('菜单名称', { exact: true });
+  const save = page.getByRole('button', { name: '保存文件应用', exact: true });
+  const newMenu = page.getByRole('button', { name: '新建', exact: true });
+  const creation = page.getByRole('menuitem', { name: '会议纪要 (.markdown)', exact: true });
+  const draft = page.getByRole('menuitem', { name: '草稿 (.md)', exact: true });
+  const defaultText = page.getByRole('menuitem', { name: '新建文本', exact: true });
+  const fileName = '周会.MARKDOWN';
+  async function savePolicy() {
+    await save.click();
+    await expect(page.getByRole('status').filter({ hasText: '文件应用设置已保存' })).toBeVisible();
+  }
+  async function openMenu(path = '/home') {
+    await page.goto(path);
+    await newMenu.click();
+    await expect(defaultText).toBeVisible();
+  }
+
+  try {
+    await openApplications(page);
+    await page.getByRole('button', { name: '恢复内置策略', exact: true }).click();
+    await expect(row.getByRole('cell', { name: /1/ })).toBeVisible();
+    await expect(page.getByRole('row').filter({ hasText: 'EPUB 阅读器' })).toContainText('不适用');
+    await edit.click();
+    await expect(label('.md')).toHaveValue('Markdown');
+    await label('.md').fill('取消的修改');
+    await editor.getByRole('button', { name: '取消', exact: true }).click();
+    await edit.click();
+    await expect(label('.md')).toHaveValue('Markdown');
+    await label('.md').fill('草稿');
+    await add.click();
+    await expect(apply).toBeDisabled();
+    await expect(add).toBeDisabled();
+    await label('.markdown').fill(' 会议纪要 ');
+    await editor
+      .getByRole('group', { name: '.markdown', exact: true })
+      .getByRole('button', { name: '上移', exact: true })
+      .click();
+    await expect(editor.locator('legend')).toHaveText(['.markdown', '.md']);
+    await page.screenshot({
+      path: info.outputPath('creation-mappings.png'),
+      animations: 'disabled',
+    });
+    await apply.click();
+    await row.getByRole('button', { name: /平台/ }).click();
+    await page.getByRole('option', { name: '桌面端', exact: true }).click();
+    await savePolicy();
+
+    await page.goto('/home?parent=' + folder.id);
+    await page.getByRole('link', { name: '我的分享', exact: true }).click();
+    await newMenu.click();
+    await expect(creation).toBeVisible();
+    await expect(draft).toBeVisible();
+    const entries = await page.getByRole('menuitem').allTextContents();
+    expect(entries.findIndex((entry) => entry.includes('会议纪要'))).toBeLessThan(
+      entries.findIndex((entry) => entry.includes('草稿')),
+    );
+    await page.screenshot({ path: info.outputPath('creation-menu.png'), animations: 'disabled' });
+    await creation.click();
+    const picker = page.getByRole('dialog');
+    await picker.getByRole('button', { name: '进入 ' + folderName, exact: true }).click();
+    await picker.getByRole('button', { name: '使用此位置', exact: true }).click();
+    const create = page.getByRole('dialog', { name: '会议纪要 (.markdown)', exact: true });
+    await create.getByLabel('名称', { exact: true }).fill(fileName);
+    await create.getByLabel('文件内容', { exact: true }).fill('# 周会正文');
+    await create.getByRole('button', { name: '保存', exact: true }).click();
+    await expect(create).toHaveCount(0);
+    await page.goto('/home?parent=' + folder.id);
+    await page.getByRole('button', { name: fileName, exact: true }).click();
+    await expect(page.getByRole('heading', { name: '周会正文', exact: true })).toBeVisible();
+
+    await page.setViewportSize({ width: 390, height: 760 });
+    await openMenu();
+    await expect(creation).toHaveCount(0);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await openApplications(page);
+    await row.getByRole('checkbox', { name: '启用 Markdown 编辑器', exact: true }).press('Space');
+    await savePolicy();
+    await openMenu();
+    await expect(creation).toHaveCount(0);
+    await openApplications(page);
+    await row.getByRole('checkbox', { name: '启用 Markdown 编辑器', exact: true }).press('Space');
+    await edit.click();
+    await editor.getByRole('button', { name: '移除映射', exact: true }).first().click();
+    await editor.getByRole('button', { name: '移除映射', exact: true }).click();
+    await expect(editor.getByText('暂无新建文件映射。', { exact: true })).toBeVisible();
+    await apply.click();
+    await savePolicy();
+    await openMenu();
+    await expect(creation).toHaveCount(0);
+    await expect(draft).toHaveCount(0);
+    await openApplications(page);
+    await row.getByRole('button', { name: '恢复内置映射', exact: true }).click();
+    await savePolicy();
+    await openMenu();
+    await expect(page.getByRole('menuitem', { name: '新建 Markdown', exact: true })).toBeVisible();
   } finally {
     await restoreApplications(page, initial);
   }

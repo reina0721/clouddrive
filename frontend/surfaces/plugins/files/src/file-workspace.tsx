@@ -6,9 +6,23 @@ import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
 import { DrawerSurface } from '@clouddrive/ui-adapter/overlays';
 import { ProgressMeter } from '@clouddrive/ui-adapter/progress-meter';
 import { SearchBox } from '@clouddrive/ui-adapter/search-box';
-import { Fragment, lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
+import {
+  Fragment,
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { filesAccentStyle } from '../../../src/files/appearance';
 import { formatFileBytes } from '../../../src/files/format';
+import {
+  fileApplicationDevice,
+  type CreationTemplate,
+  type FileApplicationPolicy,
+} from '../../../src/files/file-applications';
 import {
   Cloud,
   FileGlyph,
@@ -69,7 +83,7 @@ export function FileWorkspace({
 }) {
   const port = useFiles(),
     snapshot = useTransferSnapshot(),
-    { t } = useFrontendTranslation();
+    { t, locale } = useFrontendTranslation();
   const [revision, setRevision] = useWorkspaceRevision();
   const [historySettings, setHistorySettings] = useState(false);
   const [emptyTrash, setEmptyTrash] = useState(false);
@@ -90,7 +104,55 @@ export function FileWorkspace({
   const [create, setCreate] = useState<{
     action: CreateAction;
     candidates?: readonly UploadCandidate[];
+    template?: CreationTemplate;
   }>();
+  const [creationPolicy, setCreationPolicy] = useState<
+    | {
+        policy: FileApplicationPolicy;
+        device: ReturnType<typeof fileApplicationDevice>;
+      }
+    | 'error'
+  >();
+  const creationRequest = useRef<AbortController>(null);
+  useEffect(() => () => creationRequest.current?.abort(), [port]);
+  function loadCreationMenu(open: boolean) {
+    creationRequest.current?.abort();
+    if (!open) return;
+    const controller = new AbortController();
+    creationRequest.current = controller;
+    const device = fileApplicationDevice(window.innerWidth);
+    setCreationPolicy(undefined);
+    void port.readActiveFileApplications(controller.signal).then(
+      (policy) => {
+        if (!controller.signal.aborted) setCreationPolicy({ policy, device });
+      },
+      () => {
+        if (!controller.signal.aborted) setCreationPolicy('error');
+      },
+    );
+  }
+  const templates =
+    creationPolicy && creationPolicy !== 'error'
+      ? creationPolicy.policy.items.flatMap((item) => {
+          const action = item.id;
+          if (
+            (action !== 'text' && action !== 'markdown') ||
+            !item.enabled ||
+            !item.canCreate ||
+            (item.platform !== 'all' && item.platform !== creationPolicy.device)
+          )
+            return [];
+          return item.newFiles.map((mapping) => ({
+            id: `new-file:${action}:${mapping.extension}`,
+            action,
+            title: mapping.label
+              ? `${mapping.label} (.${mapping.extension})`
+              : t(action === 'text' ? 'files.newText' : 'files.newMarkdown'),
+            extension: mapping.extension,
+            builtIn: !item.customNewFiles,
+          }));
+        })
+      : [];
   const isFiles = pathname === port.destinationHref('files'),
     isTransfers = pathname === port.destinationHref('transfers');
   const isTrash = isFiles && query.trash === 'true';
@@ -439,20 +501,38 @@ export function FileWorkspace({
                   { id: 'directory', label: t('files.uploadDirectory') },
                   { id: 'clipboard', label: t('files.uploadClipboard') },
                   { id: 'folder', label: t('files.newFolder') },
-                  { id: 'text', label: t('files.newText') },
-                  { id: 'markdown', label: t('files.newMarkdown') },
+                  ...templates.map(({ id, title }) => ({ id, label: title })),
                 ]
                   .map((item) => ({ ...item, disabled: !storage }))
                   .concat([
+                    ...(storage && (!creationPolicy || creationPolicy === 'error')
+                      ? [
+                          {
+                            id: 'creation-status',
+                            label:
+                              creationPolicy === 'error'
+                                ? locale.startsWith('zh')
+                                  ? '无法读取新建文件映射，重新打开可重试。'
+                                  : 'File mappings could not be loaded. Reopen the menu to retry.'
+                                : t('files.previewLoading'),
+                            disabled: true,
+                          },
+                        ]
+                      : []),
                     { id: 'downloads', label: t('files.downloads.title'), disabled: false },
                   ])}
+                onOpenChange={loadCreationMenu}
                 onAction={(action) => {
                   if (action === 'downloads') port.navigate('downloads');
                   else if (action === 'clipboard') {
                     port.focusFiles();
                     setNotice(t('files.workspace.clipboard'));
-                  } else if (['folder', 'text', 'markdown', 'upload', 'directory'].includes(action))
-                    setCreate({ action: action as CreateAction });
+                  } else if (action === 'folder' || action === 'upload' || action === 'directory')
+                    setCreate({ action });
+                  else {
+                    const template = templates.find((item) => item.id === action);
+                    if (template) setCreate({ action: template.action, template });
+                  }
                 }}
               />
             )}
@@ -582,6 +662,7 @@ export function FileWorkspace({
             action={create.action}
             initialParent={isFiles && query.trash !== 'true' ? (query.parent ?? '') : ''}
             {...(create.candidates ? { candidates: create.candidates } : {})}
+            {...(create.template ? { template: create.template } : {})}
             onClose={() => setCreate(undefined)}
             onChanged={(queued) => {
               setCreate(undefined);

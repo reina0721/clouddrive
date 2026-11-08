@@ -2640,7 +2640,11 @@ components:
     FileApplicationItem:
       additionalProperties: false
       properties:
+        canCreate:
+          type: boolean
         customExtensions:
+          type: boolean
+        customNewFiles:
           type: boolean
         enabled:
           type: boolean
@@ -2660,6 +2664,11 @@ components:
             - markdown
             - text
           type: string
+        newFiles:
+          items:
+            $ref: "#/components/schemas/FileCreationMapping"
+          nullable: true
+          type: array
         platform:
           enum:
             - all
@@ -2669,6 +2678,9 @@ components:
       required:
         - extensions
         - customExtensions
+        - newFiles
+        - customNewFiles
+        - canCreate
         - id
         - enabled
         - platform
@@ -2747,6 +2759,11 @@ components:
             - markdown
             - text
           type: string
+        newFiles:
+          items:
+            $ref: "#/components/schemas/FileCreationMapping"
+          maxItems: 8
+          type: array
         platform:
           enum:
             - all
@@ -2781,6 +2798,19 @@ components:
         - revision
         - apps
         - defaults
+      type: object
+    FileCreationMapping:
+      additionalProperties: false
+      properties:
+        extension:
+          maxLength: 32
+          type: string
+        label:
+          maxLength: 48
+          type: string
+      required:
+        - extension
+        - label
       type: object
     FileCursorPage:
       additionalProperties: false

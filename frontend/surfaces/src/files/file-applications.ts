@@ -15,9 +15,15 @@ const applicationID = z.enum([
 const platform = z.enum(['all', 'desktop', 'mobile']);
 const rule = z.object({ id: applicationID, enabled: z.boolean(), platform });
 export const maxFileApplicationExtensions = 48;
+export const maxFileCreationMappings = 8;
+export const maxFileCreationLabelRunes = 48;
+const newFile = z.object({ extension: z.string(), label: z.string() });
 const item = rule.extend({
   extensions: z.array(z.string()).max(maxFileApplicationExtensions),
   customExtensions: z.boolean(),
+  newFiles: z.array(newFile).max(maxFileCreationMappings),
+  customNewFiles: z.boolean(),
+  canCreate: z.boolean(),
 });
 const defaultRule = z.object({ extension: z.string(), app: applicationID });
 
@@ -34,7 +40,12 @@ export const fileApplicationViewSchema = fileApplicationPolicySchema.extend({
 
 export type FileApplicationID = z.infer<typeof applicationID>;
 export type FileApplicationPlatform = z.infer<typeof platform>;
-export type FileApplicationRule = z.infer<typeof rule> & { extensions?: string[] };
+export type FileCreationMapping = z.infer<typeof newFile>;
+export type CreationTemplate = Readonly<{ title: string; extension: string; builtIn: boolean }>;
+export type FileApplicationRule = z.infer<typeof rule> & {
+  extensions?: string[];
+  newFiles?: FileCreationMapping[];
+};
 export type FileApplicationItem = z.infer<typeof item>;
 export type FileApplicationDefault = z.infer<typeof defaultRule>;
 export type FileApplicationPolicy = z.infer<typeof fileApplicationPolicySchema>;
@@ -58,6 +69,17 @@ const names: Record<FileApplicationID, readonly [string, string]> = {
 
 export function fileApplicationName(id: FileApplicationID, chinese: boolean) {
   return names[id][chinese ? 0 : 1];
+}
+
+const mobileFileApplicationWidth = 768;
+
+export function fileApplicationDevice(width: number) {
+  return width < mobileFileApplicationWidth ? 'mobile' : 'desktop';
+}
+
+export function validFileCreationLabel(label: string) {
+  const trimmed = label.trim();
+  return !!trimmed && [...trimmed].length <= maxFileCreationLabelRunes && !/\p{Cc}/u.test(trimmed);
 }
 
 export function isTextPreview(entry: Pick<FileEntry, 'name' | 'mediaType'>) {

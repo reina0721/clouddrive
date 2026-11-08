@@ -19,6 +19,7 @@ import { FilesError } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
 import { CatalogFailure } from './catalog-failure';
 import { useCatalogRequest } from './use-catalog-request';
+import { FileCreationMappingsDialog } from './file-creation-mappings-dialog';
 
 const zh = {
   catalog: '应用列表',
@@ -40,6 +41,11 @@ const zh = {
   removedDefaults: '已从草稿移除不再适用的默认打开方式。',
   applyExtensions: '应用到草稿',
   platform: '平台',
+  newFiles: '新建文件映射',
+  mappingCount: (count: number) => `${count} 个`,
+  mappingUnavailable: '不适用',
+  editMappings: '编辑映射',
+  restoreMappings: '恢复内置映射',
   all: '全平台',
   desktop: '桌面端',
   mobile: '移动端',
@@ -78,6 +84,11 @@ const en: typeof zh = {
   removedDefaults: 'Default applications that no longer apply have been removed from the draft.',
   applyExtensions: 'Apply to draft',
   platform: 'Platform',
+  newFiles: 'New-file mappings',
+  mappingCount: (count) => `${count} mappings`,
+  mappingUnavailable: 'Unavailable',
+  editMappings: 'Edit mappings',
+  restoreMappings: 'Restore built-in mappings',
   all: 'All platforms',
   desktop: 'Desktop',
   mobile: 'Mobile',
@@ -114,6 +125,7 @@ function FileApplicationsForm({
   const [defaults, setDefaults] = useState(initial.defaults);
   const [extension, setExtension] = useState('');
   const [extensionEdit, setExtensionEdit] = useState<{ id: FileApplicationID; value: string }>();
+  const [mappingID, setMappingID] = useState<FileApplicationID>();
   const [removedDefaults, setRemovedDefaults] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -121,6 +133,7 @@ function FileApplicationsForm({
   const [conflict, setConflict] = useState(false);
   const locked = !view.canSave || saving || conflict;
   const editedItem = items.find((item) => item.id === extensionEdit?.id);
+  const mappingItem = items.find((item) => item.id === mappingID);
   const parsedExtensions = extensionEdit && parseFileApplicationExtensions(extensionEdit.value);
   const modified =
     JSON.stringify(items) !== JSON.stringify(view.items) ||
@@ -139,6 +152,13 @@ function FileApplicationsForm({
   }));
 
   function changeItem(item: FileApplicationItem) {
+    const mappings = item.customNewFiles
+      ? item.newFiles
+      : (view.builtInItems.find((candidate) => candidate.id === item.id)?.newFiles ?? []);
+    item = {
+      ...item,
+      newFiles: mappings.filter((mapping) => item.extensions.includes(mapping.extension)),
+    };
     const next = items.map((candidate) => (candidate.id === item.id ? item : candidate));
     const valid = defaults.filter((rule) => {
       const associated = next.filter((candidate) => candidate.extensions.includes(rule.extension));
@@ -167,10 +187,19 @@ function FileApplicationsForm({
     try {
       const next = await files.saveFileApplications({
         revision: view.revision,
-        apps: items.flatMap(({ id, enabled, platform, customExtensions, extensions }) =>
-          enabled && platform === 'all' && !customExtensions
-            ? []
-            : [{ id, enabled, platform, ...(customExtensions ? { extensions } : {}) }],
+        apps: items.flatMap(
+          ({ id, enabled, platform, customExtensions, extensions, customNewFiles, newFiles }) =>
+            enabled && platform === 'all' && !customExtensions && !customNewFiles
+              ? []
+              : [
+                  {
+                    id,
+                    enabled,
+                    platform,
+                    ...(customExtensions ? { extensions } : {}),
+                    ...(customNewFiles ? { newFiles } : {}),
+                  },
+                ],
         ),
         defaults,
       });
@@ -211,6 +240,9 @@ function FileApplicationsForm({
                 </th>
                 <th className="p-2" scope="col">
                   {labels.platform}
+                </th>
+                <th className="p-2" scope="col">
+                  {labels.newFiles}
                 </th>
                 <th className="p-2" scope="col">
                   {labels.enabled}
@@ -279,6 +311,35 @@ function FileApplicationsForm({
                             changeItem({ ...item, platform: value });
                         }}
                       />
+                    </td>
+                    <td className="p-2">
+                      {item.canCreate ? (
+                        <>
+                          <p>{labels.mappingCount(item.newFiles.length)}</p>
+                          <div className="flex flex-wrap gap-2">
+                            <Action
+                              size="sm"
+                              variant="quiet"
+                              disabled={locked}
+                              onPress={() => setMappingID(item.id)}
+                            >
+                              {labels.editMappings}
+                            </Action>
+                            {item.customNewFiles ? (
+                              <Action
+                                size="sm"
+                                variant="quiet"
+                                disabled={locked}
+                                onPress={() => changeItem({ ...item, customNewFiles: false })}
+                              >
+                                {labels.restoreMappings}
+                              </Action>
+                            ) : null}
+                          </div>
+                        </>
+                      ) : (
+                        <p>{labels.mappingUnavailable}</p>
+                      )}
                     </td>
                     <td className="p-2">
                       <CheckboxField
@@ -388,6 +449,13 @@ function FileApplicationsForm({
           {labels.save}
         </Action>
       </div>
+      {mappingItem ? (
+        <FileCreationMappingsDialog
+          item={mappingItem}
+          onClose={() => setMappingID(undefined)}
+          onApply={(newFiles) => changeItem({ ...mappingItem, newFiles, customNewFiles: true })}
+        />
+      ) : null}
       {editedItem && extensionEdit && parsedExtensions ? (
         <DialogSurface
           isOpen

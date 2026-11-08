@@ -5,6 +5,7 @@ import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { TextField } from '@clouddrive/ui-adapter/form-field';
 import { FilesError, type FileListing, type UploadCandidate } from '../../../src/files/model';
 import { useFiles, useTransfers } from '../../../src/files/runtime';
+import type { CreationTemplate } from '../../../src/files/file-applications';
 import { TextDialog } from './text-dialog';
 import { OwnFolderPicker } from './own-folder-picker';
 export type CreateAction = 'folder' | 'text' | 'markdown' | 'upload' | 'directory';
@@ -12,12 +13,14 @@ export function WorkspaceCreate({
   action,
   initialParent,
   candidates,
+  template,
   onClose,
   onChanged,
 }: {
   action: CreateAction;
   initialParent: string;
   candidates?: readonly UploadCandidate[];
+  template?: CreationTemplate;
   onClose: () => void;
   onChanged: (queued: boolean) => void;
 }) {
@@ -37,21 +40,23 @@ export function WorkspaceCreate({
     },
     [candidates, port],
   );
-  const title = t(
-    action === 'folder'
-      ? 'files.newFolder'
-      : action === 'text'
-        ? 'files.newText'
-        : action === 'markdown'
-          ? 'files.newMarkdown'
-          : action === 'directory'
-            ? 'files.uploadDirectory'
-            : 'files.upload',
-  );
+  const title =
+    template?.title ??
+    t(
+      action === 'folder'
+        ? 'files.newFolder'
+        : action === 'text'
+          ? 'files.newText'
+          : action === 'markdown'
+            ? 'files.newMarkdown'
+            : action === 'directory'
+              ? 'files.uploadDirectory'
+              : 'files.upload',
+    );
   if (textTarget && (action === 'text' || action === 'markdown'))
     return (
       <TextDialog
-        request={{ mode: action, parentId: textTarget.parent }}
+        request={{ mode: action, parentId: textTarget.parent, ...(template ? { template } : {}) }}
         maxBytes={textTarget.maxBytes}
         onClose={onClose}
         onSaved={() => onChanged(false)}
