@@ -82,12 +82,43 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 		t.Fatalf("只读视图或内置图标未提供: %v", view)
 	}
 	observer.request(t, "PUT", icons, iconBody(0, true), 403)
+	const apps = files + "/applications"
+	appBody := func(revision int, rules, defaults []map[string]any) map[string]any {
+		return map[string]any{"revision": revision, "apps": rules, "defaults": defaults}
+	}
+	noRules := []map[string]any{}
+	anonymous.request(t, "GET", apps, nil, 401)
+	anonymous.request(t, "GET", apps+"/active", nil, 401)
+	observer.request(t, "GET", apps+"/active", nil, 403)
+	appView := observer.request(t, "GET", apps, nil, 200)
+	if appView["canSave"] != false || len(appView["items"].([]any)) != 8 || len(appView["defaults"].([]any)) != 2 {
+		t.Fatalf("内置应用或只读视图错误: %v", appView)
+	}
+	observer.request(t, "PUT", apps, appBody(0, noRules, noRules), 403)
 	admin.request(t, "PUT", "/native/iam/roles/"+roleID+"/permissions", map[string]any{
 		"expectedRoleVersion": 2, "permissionKeys": []string{"files:read"},
 	}, 200)
 	loginObserver()
 	observer.request(t, "GET", icons, nil, 403)
 	observer.request(t, "GET", icons+"/active", nil, 200)
+	observer.request(t, "GET", apps, nil, 403)
+	observer.request(t, "GET", apps+"/active", nil, 200)
+	observer.request(t, "PUT", apps, appBody(0, noRules, noRules), 403)
+	md := map[string]any{"extension": " .MD ", "app": "text"}
+	mdRule := map[string]any{"id": "markdown", "enabled": true, "platform": "desktop"}
+	admin.request(t, "PUT", apps, appBody(0, []map[string]any{mdRule, mdRule}, noRules), 422)
+	admin.request(t, "PUT", apps, appBody(0, noRules, []map[string]any{md, {"extension": "md", "app": "markdown"}}), 422)
+	admin.request(t, "PUT", apps, appBody(0, noRules, []map[string]any{{"extension": "md", "app": "pdf"}}), 422)
+	admin.request(t, "PUT", apps, appBody(0, []map[string]any{{"id": "text", "enabled": false, "platform": "all"}}, []map[string]any{md}), 422)
+	appView = admin.request(t, "PUT", apps, appBody(0, []map[string]any{mdRule}, []map[string]any{md}), 200)
+	if appView["revision"] != float64(1) || appView["canSave"] != true {
+		t.Fatalf("应用设置未保存: %v", appView)
+	}
+	admin.request(t, "PUT", apps, appBody(0, noRules, noRules), 409)
+	activeApps := observer.request(t, "GET", apps+"/active", nil, 200)
+	if activeApps["defaults"].([]any)[0].(map[string]any)["extension"] != "md" || activeApps["canSave"] != nil {
+		t.Fatalf("活动应用未应用归一规则或暴露管理字段: %v", activeApps)
+	}
 	archiveRule := map[string]any{"shape": "archive", "extensions": []string{" .CUSTOM ", "other"}, "light": "#123ABC", "dark": "#445566"}
 	admin.request(t, "PUT", icons, iconBody(0, false, archiveRule, archiveRule), 422)
 	admin.request(t, "PUT", icons, iconBody(0, false, map[string]any{
@@ -157,6 +188,16 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 	}
 	admin.base = "http://" + coordinator.Diagnostics().BoundAddress
 	active := admin.request(t, "GET", endpoint, nil, 200)
+	appView = admin.request(t, "GET", apps, nil, 200)
+	if appView["revision"] != float64(1) || appView["defaults"].([]any)[0].(map[string]any)["app"] != "text" {
+		t.Fatalf("重启后未保留默认应用: %v", appView)
+	}
+	for _, item := range appView["items"].([]any) {
+		view := item.(map[string]any)
+		if view["id"] == "markdown" && view["platform"] != "desktop" {
+			t.Fatalf("重启后未保留应用平台: %v", view)
+		}
+	}
 	if view := admin.request(t, "GET", icons, nil, 200); view["revision"] != float64(1) ||
 		view["inherit"] != false || len(view["items"].([]any)) != 2 {
 		t.Fatalf("重启后未保留自定义图标: %v", view)

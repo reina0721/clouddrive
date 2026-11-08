@@ -170,6 +170,10 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
+	boundary.FileApplications, err = service.NewFileApplications(repository)
+	if err != nil {
+		return Module{}, err
+	}
 	boundary.PropertyDefinitions, err = service.NewPropertyDefinitions(repository, unicodename.Normalizer{})
 	if err != nil {
 		return Module{}, err

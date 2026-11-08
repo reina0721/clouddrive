@@ -71,6 +71,7 @@ type Handler struct {
 	StoragePolicyAccess      StoragePolicyAuthority
 	PropertyDefinitions      *service.PropertyDefinitions
 	FileIconRules            *service.FileIconRules
+	FileApplications         *service.FileApplications
 	Downloads                *service.OfflineDownloads
 	Torrents                 *service.TorrentDownloads
 	Service                  *service.Service

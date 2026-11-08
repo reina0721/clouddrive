@@ -43,6 +43,11 @@ import type {
 import type { BlobCandidatePage, BlobDetail, BlobPage, BlobQuery } from './blobs';
 import type { FilesystemSettings, FilesystemSettingsInput } from './filesystem-settings';
 import type { FileIconRule, FileIconRuleSet, FileIconRulesView } from './icon-rules';
+import type {
+  FileApplicationPolicy,
+  FileApplicationSettings,
+  FileApplicationView,
+} from './file-applications';
 import type { EpubBook, EpubEntry } from './epub-contract';
 import type { PropertyDefinitionSet, PropertyDefinitionsView } from './property-definitions';
 export * from './sharing';
@@ -233,6 +238,9 @@ export type FilesPort = Readonly<{
   readFileIconRules(signal: AbortSignal): Promise<FileIconRulesView>;
   saveFileIconRules(input: FileIconRuleSet): Promise<FileIconRulesView>;
   readActiveFileIcons(signal: AbortSignal): Promise<FileIconRule[]>;
+  readFileApplications(signal: AbortSignal): Promise<FileApplicationView>;
+  saveFileApplications(input: FileApplicationSettings): Promise<FileApplicationView>;
+  readActiveFileApplications(signal: AbortSignal): Promise<FileApplicationPolicy>;
   saveFilesystemSettings(input: FilesystemSettingsInput): Promise<FilesystemSettings>;
   readPropertyDefinitions(signal: AbortSignal): Promise<PropertyDefinitionsView>;
   savePropertyDefinitions(input: PropertyDefinitionSet): Promise<PropertyDefinitionsView>;

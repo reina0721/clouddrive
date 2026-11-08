@@ -14,6 +14,7 @@ import type {
 import { FilesError } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
 import { CatalogFailure } from './catalog-failure';
+import { FileApplicationsPanel } from './file-applications-panel';
 import { FileIconRulesPanel } from './file-icon-rules-panel';
 import { PropertyDefinitionsPanel } from './property-definitions-panel';
 import { useCatalogRequest } from './use-catalog-request';
@@ -364,8 +365,8 @@ export function FilesystemSettingsPage() {
         title={title}
         description={
           chinese
-            ? '管理文件系统参数与全局属性。'
-            : 'Manage file system settings and global properties.'
+            ? '管理文件系统参数、文件应用与全局属性。'
+            : 'Manage file system settings, file applications, and global properties.'
         }
       />
       <TabsView
@@ -380,6 +381,11 @@ export function FilesystemSettingsPage() {
             id: 'icons',
             label: chinese ? '文件图标' : 'File icons',
             content: <FileIconRulesPanel />,
+          },
+          {
+            id: 'file-applications',
+            label: chinese ? '文件浏览应用' : 'File applications',
+            content: <FileApplicationsPanel />,
           },
           {
             id: 'properties',

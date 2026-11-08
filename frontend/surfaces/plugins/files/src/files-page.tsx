@@ -18,6 +18,12 @@ import {
 } from 'react';
 import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
 import { isEpubDocument } from '../../../src/files/epub-contract';
+import {
+  fileApplicationChoice,
+  fileApplicationName,
+  isTextPreview,
+  type FileApplicationID,
+} from '../../../src/files/file-applications';
 import { fileIconExtension, type FileIconRule } from '../../../src/files/icon-rules';
 import { isMarkdownFile } from '../../../src/files/markdown';
 import { fileClipboardMaxEntries, type FileClipboardMode } from '../../../src/files/clipboard';
@@ -97,6 +103,24 @@ const archiveFile = (entry: FileEntry) =>
     entry.mediaType === 'application/zip' ||
     entry.mediaType === 'application/x-7z-compressed');
 
+const mobileFileApplicationWidth = 768;
+
+function compatibleFileApplications(entry: FileEntry): FileApplicationID[] {
+  if (archiveFile(entry)) return ['archive'];
+  if (isPDFDocument(entry)) return ['pdf'];
+  if (isEpubDocument(entry)) return ['epub'];
+  if (isMarkdownFile(entry)) return ['markdown', 'text'];
+  const media = entry.mediaType.split('/', 1)[0];
+  if (media === 'image' || media === 'audio' || media === 'video') return [media];
+  return isTextPreview(entry) ? ['text'] : [];
+}
+
+type FileApplicationPicker = Readonly<{
+  entry: FileEntry;
+  options?: readonly FileApplicationID[];
+  error?: string;
+}>;
+
 type Props = Readonly<{
   parent: string;
   category: string;
@@ -135,6 +159,10 @@ export function FilesPage({
   const transferState = useTransferSnapshot();
   const { t, locale } = useFrontendTranslation();
   const chinese = locale.startsWith('zh');
+  const openWithLabel = chinese ? '打开方式' : 'Open with';
+  const noApplicationLabel = chinese
+    ? '此文件在当前设备上没有可用的浏览应用。'
+    : 'No viewer is available for this file on this device.';
   const [listingSnapshot, setListingSnapshot] = useState<{
     query: FileQuery;
     revision: number;
@@ -219,6 +247,7 @@ export function FilesPage({
     [galleryAnnotationsLoading, setGalleryAnnotationsLoading] = useState(false),
     [galleryAnnotationFailure, setGalleryAnnotationFailure] = useState('');
   const [preview, setPreview] = useState<{ entry: FileEntry; text: string; loading: boolean }>();
+  const [applicationPicker, setApplicationPicker] = useState<FileApplicationPicker>();
   const previewController = useRef<AbortController | undefined>(undefined);
   const fileContent = useRef<HTMLElement>(null);
   const errorText = useCallback(
@@ -593,43 +622,36 @@ export function FilesPage({
   function showDetails(entry: FileEntry) {
     setDetail(entry);
   }
-  const showPreview = useCallback(
-    async (entry: FileEntry) => {
-      if (archiveFile(entry)) {
-        setArchiveEntry(entry);
-        return;
+  const launchApplication = useCallback(
+    async (entry: FileEntry, application: FileApplicationID, signal: AbortSignal) => {
+      setApplicationPicker(undefined);
+      switch (application) {
+        case 'archive':
+          setArchiveEntry(entry);
+          return;
+        case 'pdf':
+          setPdfEntry(entry);
+          return;
+        case 'epub':
+          setEpubEntry(entry);
+          return;
+        case 'markdown':
+          setTextRequest({ mode: 'edit', entry, reading: true });
+          return;
+        case 'image':
+        case 'audio':
+        case 'video':
+          setMediaEntry(entry);
+          return;
+        case 'text':
+          break;
       }
-      if (entry.kind === 'shortcut') {
-        navigation.openShortcut(entry.id);
-        return;
-      }
-      if (isPDFDocument(entry)) {
-        setPdfEntry(entry);
-        return;
-      }
-      if (entry.kind === 'file' && isEpubDocument(entry)) {
-        setEpubEntry(entry);
-        return;
-      }
-      if (entry.kind === 'file' && isMarkdownFile(entry)) {
-        setTextRequest({ mode: 'edit', entry, reading: true });
-        return;
-      }
-      if (/^(image|audio|video)\//.test(entry.mediaType)) {
-        setPreview(undefined);
-        setMediaEntry(entry);
-        return;
-      }
-      setMediaEntry(undefined);
-      previewController.current?.abort();
-      const controller = new AbortController();
-      previewController.current = controller;
       setPreview({ entry, text: '', loading: true });
       try {
-        const text = await port.preview(entry, controller.signal);
-        if (!controller.signal.aborted) setPreview({ entry, text, loading: false });
+        const text = await port.preview(entry, signal);
+        if (!signal.aborted) setPreview({ entry, text, loading: false });
       } catch (error) {
-        if (!controller.signal.aborted)
+        if (!signal.aborted)
           setPreview({
             entry,
             text:
@@ -640,7 +662,42 @@ export function FilesPage({
           });
       }
     },
-    [port, navigation, t, errorText],
+    [port, t, errorText],
+  );
+  const showPreview = useCallback(
+    async (entry: FileEntry, requested?: 'choose' | 'archive') => {
+      if (entry.kind === 'shortcut') {
+        navigation.openShortcut(entry.id);
+        return;
+      }
+      if (entry.kind !== 'file') return;
+      previewController.current?.abort();
+      const controller = new AbortController();
+      previewController.current = controller;
+      if (requested === 'choose') setApplicationPicker({ entry });
+      try {
+        const policy = await port.readActiveFileApplications(controller.signal);
+        if (controller.signal.aborted) return;
+        const choice = fileApplicationChoice(
+          policy,
+          compatibleFileApplications(entry),
+          fileIconExtension(entry.name),
+          window.innerWidth < mobileFileApplicationWidth ? 'mobile' : 'desktop',
+        );
+        const selected =
+          requested === 'archive'
+            ? choice.options.find((id) => id === requested)
+            : requested === 'choose'
+              ? undefined
+              : choice.automatic;
+        if (selected) await launchApplication(entry, selected, controller.signal);
+        else
+          setApplicationPicker({ entry, options: requested === 'archive' ? [] : choice.options });
+      } catch (error) {
+        if (!controller.signal.aborted) setApplicationPicker({ entry, error: errorText(error) });
+      }
+    },
+    [port, navigation, launchApplication, errorText],
   );
   async function download(entry: FileEntry) {
     try {
@@ -1532,6 +1589,7 @@ export function FilesPage({
                               ...(entry.kind === 'file'
                                 ? [
                                     { id: 'download', label: t('files.download') },
+                                    { id: 'open-with', label: openWithLabel },
                                     { id: 'direct-link', label: t('files.directLinks.get') },
                                     ...(archiveFile(entry)
                                       ? [{ id: 'browse-archive', label: t('files.archives.title') }]
@@ -1563,7 +1621,8 @@ export function FilesPage({
                       }
                       onAction={(action) => {
                         setContextEntry(undefined);
-                        if (action === 'browse-archive') setArchiveEntry(entry);
+                        if (action === 'browse-archive') void showPreview(entry, 'archive');
+                        else if (action === 'open-with') void showPreview(entry, 'choose');
                         else if (action === 'create-zip')
                           setZIPSelection({ entries: [entry], parent: entry.parentId });
                         else if (action === 'versions') setVersionEntry(entry);
@@ -2001,6 +2060,60 @@ export function FilesPage({
             }}
           />
         </Suspense>
+      ) : null}
+      {applicationPicker ? (
+        <DialogSurface
+          triggerLabel={openWithLabel}
+          title={openWithLabel}
+          description={applicationPicker.entry.name}
+          cancelLabel={t('files.close')}
+          isOpen
+          onOpenChange={(open) => {
+            if (!open) {
+              previewController.current?.abort();
+              setApplicationPicker(undefined);
+            }
+          }}
+        >
+          <div className="space-y-4">
+            {applicationPicker.error ? (
+              <p role="alert">{applicationPicker.error}</p>
+            ) : !applicationPicker.options ? (
+              <p role="status">{t('files.previewLoading')}</p>
+            ) : applicationPicker.options.length === 0 ? (
+              <p role="status">{noApplicationLabel}</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {applicationPicker.options.map((id) => (
+                  <Action
+                    key={id}
+                    variant="secondary"
+                    onPress={() => {
+                      const request = previewController.current;
+                      if (request && !request.signal.aborted)
+                        void launchApplication(applicationPicker.entry, id, request.signal);
+                    }}
+                  >
+                    {fileApplicationName(id, chinese)}
+                  </Action>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {applicationPicker.error ? (
+                <Action
+                  variant="secondary"
+                  onPress={() => void showPreview(applicationPicker.entry, 'choose')}
+                >
+                  {t('files.retry')}
+                </Action>
+              ) : null}
+              <Action variant="secondary" onPress={() => void download(applicationPicker.entry)}>
+                {t('files.download')}
+              </Action>
+            </div>
+          </div>
+        </DialogSurface>
       ) : null}
       {preview ? (
         <DialogSurface

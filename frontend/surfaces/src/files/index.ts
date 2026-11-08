@@ -1,5 +1,6 @@
 export * from './model';
 export * from './markdown';
+export * from './file-applications';
 export * from './transfers';
 export * from './connections';
 export * from './navigation';

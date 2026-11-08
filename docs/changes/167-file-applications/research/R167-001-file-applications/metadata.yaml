@@ -1,0 +1,21 @@
+schema_version: 1
+id: R167-001
+title: 内置文件应用的管理与实际打开方式
+question: 如何用现有渲染和文件设置边界实现平台可用性与扩展名默认？
+research_type: current-project-and-external-primary-source
+topics: [files, viewer, settings]
+status: active
+summary: 复用文件设置事务和已有原生阅读器，为当前私有文件提供显式选择与默认规则。
+evidence:
+  primary_sources:
+    - title: Cloudreve 文件浏览应用
+      locator: https://docs.cloudreve.org/en/usage/file-apps
+      snapshot: 内置应用、第三方应用、平台及默认打开方式
+    - title: 文件设置存储和渲染入口
+      locator: report.md
+      snapshot: 982a2c0 的 revision 事务和本人文件详情
+verified_at: 2026-11-07
+validity:
+  mode: snapshot
+  refresh_triggers: [新增文件应用类型, 文件设置事务变化, 文件预览能力变化, 外部应用授权方式变化]
+report: report.md

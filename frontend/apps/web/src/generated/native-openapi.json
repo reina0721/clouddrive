@@ -3546,6 +3546,209 @@
         ],
         "type": "object"
       },
+      "FileApplicationDefault": {
+        "additionalProperties": false,
+        "properties": {
+          "app": {
+            "enum": [
+              "image",
+              "audio",
+              "video",
+              "pdf",
+              "epub",
+              "archive",
+              "markdown",
+              "text"
+            ],
+            "type": "string"
+          },
+          "extension": {
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "extension",
+          "app"
+        ],
+        "type": "object"
+      },
+      "FileApplicationItem": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "extensions": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "id": {
+            "enum": [
+              "image",
+              "audio",
+              "video",
+              "pdf",
+              "epub",
+              "archive",
+              "markdown",
+              "text"
+            ],
+            "type": "string"
+          },
+          "platform": {
+            "enum": [
+              "all",
+              "desktop",
+              "mobile"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "extensions",
+          "id",
+          "enabled",
+          "platform"
+        ],
+        "type": "object"
+      },
+      "FileApplicationOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "builtInDefaults": {
+            "items": {
+              "$ref": "#/components/schemas/FileApplicationDefault"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "canSave": {
+            "type": "boolean"
+          },
+          "defaults": {
+            "items": {
+              "$ref": "#/components/schemas/FileApplicationDefault"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FileApplicationItem"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "revision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "canSave",
+          "revision",
+          "builtInDefaults",
+          "items",
+          "defaults"
+        ],
+        "type": "object"
+      },
+      "FileApplicationPolicy": {
+        "additionalProperties": false,
+        "properties": {
+          "defaults": {
+            "items": {
+              "$ref": "#/components/schemas/FileApplicationDefault"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FileApplicationItem"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "defaults"
+        ],
+        "type": "object"
+      },
+      "FileApplicationRule": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "enum": [
+              "image",
+              "audio",
+              "video",
+              "pdf",
+              "epub",
+              "archive",
+              "markdown",
+              "text"
+            ],
+            "type": "string"
+          },
+          "platform": {
+            "enum": [
+              "all",
+              "desktop",
+              "mobile"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "enabled",
+          "platform"
+        ],
+        "type": "object"
+      },
+      "FileApplicationSettings": {
+        "additionalProperties": false,
+        "properties": {
+          "apps": {
+            "items": {
+              "$ref": "#/components/schemas/FileApplicationRule"
+            },
+            "maxItems": 8,
+            "nullable": true,
+            "type": "array"
+          },
+          "defaults": {
+            "items": {
+              "$ref": "#/components/schemas/FileApplicationDefault"
+            },
+            "maxItems": 32,
+            "nullable": true,
+            "type": "array"
+          },
+          "revision": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "apps",
+          "defaults"
+        ],
+        "type": "object"
+      },
       "FileCursorPage": {
         "additionalProperties": false,
         "properties": {
@@ -10770,6 +10973,119 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AnnotationBatchResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/applications": {
+      "get": {
+        "operationId": "files.applications.read",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileApplicationOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      },
+      "put": {
+        "operationId": "files.applications.save",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileApplicationSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileApplicationOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "webuiSession": []
+          }
+        ],
+        "tags": [
+          "Files"
+        ]
+      }
+    },
+    "/api/v1/files/applications/active": {
+      "get": {
+        "operationId": "files.applications.active",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileApplicationPolicy"
                 }
               }
             },

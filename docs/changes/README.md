@@ -153,3 +153,4 @@
 - [164 文件图标规则](164-file-icon-rules/README.md) 按扩展名设置图形、主题色及图片。
 - [165 EPUB 阅读器](165-epub-reader/README.md) 支持目录、章节及包内图片。
 - [166 Markdown 编辑器](166-markdown-editor/README.md) 支持源码、渲染和同目录图片。
+- [167 文件浏览应用](167-file-applications/README.md) 管理内置应用、平台和默认打开方式。

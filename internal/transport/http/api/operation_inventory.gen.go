@@ -28,6 +28,9 @@ const (
 	OperationFilesAnnotationsReplace        OperationID = "files.annotations.replace"
 	OperationFilesAnnotationsSummaries      OperationID = "files.annotations.summaries"
 	OperationFilesAnnotationsTagsBatch      OperationID = "files.annotations.tags-batch"
+	OperationFilesApplicationsActive        OperationID = "files.applications.active"
+	OperationFilesApplicationsRead          OperationID = "files.applications.read"
+	OperationFilesApplicationsSave          OperationID = "files.applications.save"
 	OperationFilesArchive                   OperationID = "files.archive"
 	OperationFilesArchiveTasksCancel        OperationID = "files.archive-tasks.cancel"
 	OperationFilesArchiveTasksCreate        OperationID = "files.archive-tasks.create"
@@ -244,6 +247,9 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesAnnotationsReplace, Method: "PUT", Path: "/api/v1/files/{id}/annotations", Policy: "protected", Scope: "files:write", Action: "files.annotations.replace"},
 	{ID: OperationFilesAnnotationsSummaries, Method: "GET", Path: "/api/v1/files/annotations/summaries", Policy: "protected", Scope: "files:read", Action: "files.annotations.summaries"},
 	{ID: OperationFilesAnnotationsTagsBatch, Method: "POST", Path: "/api/v1/files/annotations/tags-batch", Policy: "protected", Scope: "files:write", Action: "files.annotations.tags-batch"},
+	{ID: OperationFilesApplicationsActive, Method: "GET", Path: "/api/v1/files/applications/active", Policy: "protected", Scope: "files:read", Action: "files.applications.active"},
+	{ID: OperationFilesApplicationsRead, Method: "GET", Path: "/api/v1/files/applications", Policy: "protected", Scope: "files:settings:read", Action: "files.applications.read"},
+	{ID: OperationFilesApplicationsSave, Method: "PUT", Path: "/api/v1/files/applications", Policy: "protected", Scope: "files:settings:write", Action: "files.applications.save"},
 	{ID: OperationFilesArchive, Method: "POST", Path: "/api/v1/files/archive", Policy: "protected", Scope: "files:read", Action: "files.archive"},
 	{ID: OperationFilesArchiveTasksCancel, Method: "POST", Path: "/api/v1/files/archive-tasks/{id}/cancel", Policy: "protected", Scope: "files:write", Action: "files.archive-tasks.cancel"},
 	{ID: OperationFilesArchiveTasksCreate, Method: "POST", Path: "/api/v1/files/{id}/archive/tasks", Policy: "protected", Scope: "files:write", Action: "files.archive-tasks.create"},

@@ -9,6 +9,7 @@ import {
   FilesError,
   epubLimits,
   isMarkdownFile,
+  isTextPreview,
   markdownReadTimeoutMs,
   fileShareSchema,
   shareListingSchema,
@@ -38,6 +39,8 @@ import {
   filesystemSettingsSchema,
   activeFileIconsSchema,
   fileIconRulesViewSchema,
+  fileApplicationViewSchema,
+  fileApplicationPolicySchema,
   propertyDefinitionsViewSchema,
   type FileListing,
   type FilesErrorCode,
@@ -404,6 +407,12 @@ export function createFilesRuntime(
       fileIconRulesViewSchema.parse(await call('/icon-rules', { method: 'PUT', body })),
     readActiveFileIcons: async (signal) =>
       activeFileIconsSchema.parse(await call('/icon-rules/active', { signal })).items,
+    readFileApplications: async (signal) =>
+      fileApplicationViewSchema.parse(await call('/applications', { signal })),
+    saveFileApplications: async (body) =>
+      fileApplicationViewSchema.parse(await call('/applications', { method: 'PUT', body })),
+    readActiveFileApplications: async (signal) =>
+      fileApplicationPolicySchema.parse(await call('/applications/active', { signal })),
     readStoragePolicy: async (signal) =>
       storagePolicySchema.parse(await call('/storage-policy', { signal })),
     saveStoragePolicy: async (body) =>
@@ -654,15 +663,7 @@ export function createFilesRuntime(
     },
     preview: async (entry, signal) => {
       const markdown = isMarkdownFile(entry);
-      if (
-        !limits ||
-        entry.sizeBytes > limits.maxTextBytes ||
-        !(
-          markdown ||
-          entry.mediaType.startsWith('text/') ||
-          /\.(txt|csv|json|xml|html|css|js|log)$/i.test(entry.name)
-        )
-      )
+      if (!limits || entry.sizeBytes > limits.maxTextBytes || !isTextPreview(entry))
         throw new FilesError('unsupported');
       let source: ArrayBuffer;
       if (markdown) {
