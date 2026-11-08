@@ -290,7 +290,7 @@ export type FilesPort = Readonly<{
   subscribeDrop(listener: (candidates: readonly UploadCandidate[]) => void): () => void;
   releaseCandidate(id: string): void;
   download(entry: FileEntry): Promise<void>;
-  preview(entry: FileEntry, signal?: AbortSignal): Promise<string>;
+  preview(entry: FileEntry, signal?: AbortSignal, source?: 'file-application'): Promise<string>;
   openEpub(entry: EpubEntry, signal: AbortSignal): Promise<EpubBook>;
   loadSidebarPreferences(): FileSidebarPreferences;
   saveSidebarPreferences(value: FileSidebarPreferences): void;

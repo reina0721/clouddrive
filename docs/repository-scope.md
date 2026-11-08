@@ -49,7 +49,7 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 
 [166 Markdown 编辑](changes/166-markdown-editor/README.md)支持本人当前 Markdown 文件的创建、源码编辑、渲染和同目录栅格图片。使用既有文件权限、版本及文本限制。
 
-[167 文件应用](changes/167-file-applications/README.md)提供本人文件的内置应用选择和全局默认规则。外部应用、扩展名关联编辑和新建映射另行对齐。
+[167 文件应用](changes/167-file-applications/README.md)提供本人文件的内置应用选择和全局默认规则。[168 扩展名关联](changes/168-file-app-extensions/README.md)支持编辑或清空内置应用列表及恢复继承。外部应用和新建映射另行对齐。
 
 [156管理端分享](changes/156-admin-share-management/README.md)提供独立授权的跨账号清单、浏览与下载授权计数及批量撤销。活动计数从升级后累计。
 

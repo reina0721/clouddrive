@@ -14,7 +14,11 @@ const applicationID = z.enum([
 ]);
 const platform = z.enum(['all', 'desktop', 'mobile']);
 const rule = z.object({ id: applicationID, enabled: z.boolean(), platform });
-const item = rule.extend({ extensions: z.array(z.string()) });
+export const maxFileApplicationExtensions = 48;
+const item = rule.extend({
+  extensions: z.array(z.string()).max(maxFileApplicationExtensions),
+  customExtensions: z.boolean(),
+});
 const defaultRule = z.object({ extension: z.string(), app: applicationID });
 
 export const fileApplicationPolicySchema = z.object({
@@ -24,12 +28,13 @@ export const fileApplicationPolicySchema = z.object({
 export const fileApplicationViewSchema = fileApplicationPolicySchema.extend({
   revision: z.number().int().nonnegative(),
   builtInDefaults: z.array(defaultRule),
+  builtInItems: z.array(item).max(8),
   canSave: z.boolean(),
 });
 
 export type FileApplicationID = z.infer<typeof applicationID>;
 export type FileApplicationPlatform = z.infer<typeof platform>;
-export type FileApplicationRule = z.infer<typeof rule>;
+export type FileApplicationRule = z.infer<typeof rule> & { extensions?: string[] };
 export type FileApplicationItem = z.infer<typeof item>;
 export type FileApplicationDefault = z.infer<typeof defaultRule>;
 export type FileApplicationPolicy = z.infer<typeof fileApplicationPolicySchema>;
@@ -63,18 +68,40 @@ export function isTextPreview(entry: Pick<FileEntry, 'name' | 'mediaType'>) {
   );
 }
 
+const applicationExtension = /^[a-z0-9][a-z0-9_+-]{0,23}$/;
+
+export function parseFileApplicationExtensions(
+  value: string,
+): { extensions: string[] } | { error: 'count' | 'format' | 'duplicate' } {
+  const extensions = value
+    .split(/[,\s]+/)
+    .filter(Boolean)
+    .map((part) => part.replace(/^\./, '').toLowerCase());
+  if (extensions.length > maxFileApplicationExtensions) return { error: 'count' } as const;
+  if (extensions.some((extension) => !applicationExtension.test(extension)))
+    return { error: 'format' } as const;
+  if (new Set(extensions).size !== extensions.length) return { error: 'duplicate' } as const;
+  return { extensions };
+}
+
 export function fileApplicationChoice(
   policy: FileApplicationPolicy,
-  compatible: readonly FileApplicationID[],
+  inherited: readonly FileApplicationID[],
+  configured: readonly FileApplicationID[],
   extension: string,
   device: Exclude<FileApplicationPlatform, 'all'>,
 ) {
-  const options = compatible.filter((id) =>
-    policy.items.some(
-      (item) =>
-        item.id === id && item.enabled && (item.platform === 'all' || item.platform === device),
-    ),
+  const associated = policy.items.some(
+    (item) => item.customExtensions && item.extensions.includes(extension),
   );
+  const options = policy.items
+    .filter((item) => {
+      if (!item.enabled || (item.platform !== 'all' && item.platform !== device)) return false;
+      return item.customExtensions || associated
+        ? item.extensions.includes(extension) && configured.includes(item.id)
+        : inherited.includes(item.id);
+    })
+    .map((item) => item.id);
   const defaultApp = policy.defaults.find((value) => value.extension === extension)?.app;
   return {
     options,

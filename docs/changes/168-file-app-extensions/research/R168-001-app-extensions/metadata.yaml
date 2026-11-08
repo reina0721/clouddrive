@@ -1,0 +1,24 @@
+schema_version: 1
+id: R168-001
+title: 内置应用扩展名关联的编辑与有效分派
+question: 如何支持可编辑扩展名并保留内容验证、已有策略及默认打开方式？
+research_type: current-project-and-external-primary-source
+topics: [files, file-application, extensions]
+status: active
+summary: 复用独立修订、内置渲染器和文件内容验证，支持显式覆盖及继承。
+evidence:
+  primary_sources:
+    - title: Cloudreve 文件浏览应用
+      locator: report.md
+      snapshot: 运行站的可编辑扩展名列和按扩展名添加默认规则
+    - title: Cloudreve 文件应用手册
+      locator: https://docs.cloudreve.org/en/usage/file-apps
+      snapshot: 内置和外部应用范围
+    - title: 文件应用分派及文件读取
+      locator: report.md
+      snapshot: 4ca222c 的存储修订、内容类型及读取签名校验
+verified_at: 2026-11-08
+validity:
+  mode: snapshot
+  refresh_triggers: [文件应用类型扩展, 读取或版本契约变化, 默认规则模型变化]
+report: report.md

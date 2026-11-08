@@ -31,7 +31,9 @@ export function TextDialog({
   const { t, locale } = useFrontendTranslation();
   const zh = locale.startsWith('zh');
   const markdown =
-    request.mode === 'edit' ? isMarkdownFile(request.entry) : request.mode === 'markdown';
+    request.mode === 'edit'
+      ? request.reading === true || isMarkdownFile(request.entry)
+      : request.mode === 'markdown';
   const [name, setName] = useState(request.mode === 'edit' ? request.entry.name : '');
   const [text, setText] = useState('');
   const [original, setOriginal] = useState('');
@@ -51,7 +53,11 @@ export function TextDialog({
         const detail = await port.detail(request.entry.id, controller.signal);
         if (controller.signal.aborted) return;
         if (markdown && detail.entry.sizeBytes > maxBytes) throw new FilesError('large');
-        const contents = await port.preview(detail.entry, controller.signal);
+        const contents = await port.preview(
+          detail.entry,
+          controller.signal,
+          request.reading ? 'file-application' : undefined,
+        );
         if (!controller.signal.aborted) {
           setSnapshot(detail.entry);
           setOriginal(contents);

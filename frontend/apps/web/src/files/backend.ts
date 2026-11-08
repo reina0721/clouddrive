@@ -661,14 +661,18 @@ export function createFilesRuntime(
       await port.detail(entry.id);
       nativeDownload(base + native + '/' + encodeURIComponent(entry.id) + '/content', entry.name);
     },
-    preview: async (entry, signal) => {
-      const markdown = isMarkdownFile(entry);
-      if (!limits || entry.sizeBytes > limits.maxTextBytes || !isTextPreview(entry))
+    preview: async (entry, signal, source) => {
+      const selectedApplication = source === 'file-application';
+      if (
+        !limits ||
+        entry.sizeBytes > limits.maxTextBytes ||
+        (!selectedApplication && !isTextPreview(entry))
+      )
         throw new FilesError('unsupported');
-      let source: ArrayBuffer;
-      if (markdown) {
+      let contents: ArrayBuffer;
+      if (selectedApplication || isMarkdownFile(entry)) {
         const scoped = AbortSignal.any(signal ? [signal, lifecycle.signal] : [lifecycle.signal]);
-        source = await readFileBytes(
+        contents = await readFileBytes(
           {
             entry,
             limits: { maxBytes: limits.maxTextBytes, workTimeoutMs: markdownReadTimeoutMs },
@@ -678,9 +682,9 @@ export function createFilesRuntime(
       } else {
         const blob = await content(entry.id, signal);
         if (!limits || blob.size > limits.maxTextBytes) throw new ApiError('http', 413);
-        source = await blob.arrayBuffer();
+        contents = await blob.arrayBuffer();
       }
-      const bytes = new Uint8Array(source);
+      const bytes = new Uint8Array(contents);
       if (bytes.includes(0)) throw new FilesError('unsupported');
       try {
         return new TextDecoder('utf-8', { fatal: true }).decode(bytes);

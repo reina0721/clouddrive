@@ -115,6 +115,14 @@ function compatibleFileApplications(entry: FileEntry): FileApplicationID[] {
   return isTextPreview(entry) ? ['text'] : [];
 }
 
+function configuredFileApplications(entry: FileEntry): FileApplicationID[] {
+  const options: FileApplicationID[] = ['pdf', 'epub', 'markdown', 'text'];
+  if (archiveFile(entry)) options.push('archive');
+  const media = entry.mediaType.split('/', 1)[0];
+  if (media === 'image' || media === 'audio' || media === 'video') options.push(media);
+  return options;
+}
+
 type FileApplicationPicker = Readonly<{
   entry: FileEntry;
   options?: readonly FileApplicationID[];
@@ -648,7 +656,7 @@ export function FilesPage({
       }
       setPreview({ entry, text: '', loading: true });
       try {
-        const text = await port.preview(entry, signal);
+        const text = await port.preview(entry, signal, 'file-application');
         if (!signal.aborted) setPreview({ entry, text, loading: false });
       } catch (error) {
         if (!signal.aborted)
@@ -681,6 +689,7 @@ export function FilesPage({
         const choice = fileApplicationChoice(
           policy,
           compatibleFileApplications(entry),
+          configuredFileApplications(entry),
           fileIconExtension(entry.name),
           window.innerWidth < mobileFileApplicationWidth ? 'mobile' : 'desktop',
         );
@@ -1946,7 +1955,8 @@ export function FilesPage({
         <TextDialog
           request={textRequest}
           maxBytes={listing.maxTextBytes}
-          {...(textRequest.mode === 'edit' && isMarkdownFile(textRequest.entry)
+          {...(textRequest.mode === 'edit' &&
+          (textRequest.reading || isMarkdownFile(textRequest.entry))
             ? { onDownload: () => void download(textRequest.entry) }
             : {})}
           onClose={() => setTextRequest(undefined)}

@@ -119,6 +119,26 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 	if activeApps["defaults"].([]any)[0].(map[string]any)["extension"] != "md" || activeApps["canSave"] != nil {
 		t.Fatalf("活动应用未应用归一规则或暴露管理字段: %v", activeApps)
 	}
+	for _, raw := range appView["items"].([]any) {
+		if item := raw.(map[string]any); item["id"] == "markdown" && (item["customExtensions"] != false || item["extensions"].([]any)[0] != "md") {
+			t.Fatalf("旧可用性规则未继承内置扩展名: %v", item)
+		}
+	}
+	association := func(id, platform string, extensions []string) map[string]any {
+		return map[string]any{"id": id, "enabled": true, "platform": platform, "extensions": extensions}
+	}
+	admin.request(t, "PUT", apps, appBody(1, []map[string]any{association("markdown", "desktop", []string{" .NOTE ", "note"})}, noRules), 422)
+	admin.request(t, "PUT", apps, appBody(1, []map[string]any{association("markdown", "desktop", []string{"bad/name"})}, noRules), 422)
+	admin.request(t, "PUT", apps, appBody(1, []map[string]any{association("markdown", "desktop", []string{})}, []map[string]any{md}), 422)
+	newRules := []map[string]any{
+		association("markdown", "desktop", []string{" .NOTE ", "md"}),
+		association("text", "all", []string{"note", "md"}),
+		association("pdf", "all", []string{}),
+	}
+	newDefaults := []map[string]any{{"extension": " .Note ", "app": "text"}}
+	observer.request(t, "PUT", apps, appBody(1, newRules, newDefaults), 403)
+	admin.request(t, "PUT", apps, appBody(1, newRules, newDefaults), 200)
+	admin.request(t, "PUT", apps, appBody(1, noRules, noRules), 409)
 	archiveRule := map[string]any{"shape": "archive", "extensions": []string{" .CUSTOM ", "other"}, "light": "#123ABC", "dark": "#445566"}
 	admin.request(t, "PUT", icons, iconBody(0, false, archiveRule, archiveRule), 422)
 	admin.request(t, "PUT", icons, iconBody(0, false, map[string]any{
@@ -189,13 +209,17 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 	admin.base = "http://" + coordinator.Diagnostics().BoundAddress
 	active := admin.request(t, "GET", endpoint, nil, 200)
 	appView = admin.request(t, "GET", apps, nil, 200)
-	if appView["revision"] != float64(1) || appView["defaults"].([]any)[0].(map[string]any)["app"] != "text" {
+	appDefault := appView["defaults"].([]any)[0].(map[string]any)
+	if appView["revision"] != float64(2) || appDefault["app"] != "text" || appDefault["extension"] != "note" {
 		t.Fatalf("重启后未保留默认应用: %v", appView)
 	}
 	for _, item := range appView["items"].([]any) {
 		view := item.(map[string]any)
-		if view["id"] == "markdown" && view["platform"] != "desktop" {
-			t.Fatalf("重启后未保留应用平台: %v", view)
+		if view["id"] == "markdown" && (view["platform"] != "desktop" || view["customExtensions"] != true || view["extensions"].([]any)[0] != "note") {
+			t.Fatalf("重启后未保留应用平台与自定义关联: %v", view)
+		}
+		if view["id"] == "pdf" && (view["customExtensions"] != true || len(view["extensions"].([]any)) != 0) {
+			t.Fatalf("重启后空列表意外恢复内置关联: %v", view)
 		}
 	}
 	if view := admin.request(t, "GET", icons, nil, 200); view["revision"] != float64(1) ||

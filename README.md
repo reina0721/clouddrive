@@ -80,6 +80,8 @@ Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Veri
 
 “文件系统”的“文件浏览应用”可管理内置阅读器和默认打开方式。本人文件菜单可以另选兼容应用。详见[167变更](docs/changes/167-file-applications/README.md)。
 
+内置文件应用支持编辑或恢复扩展名关联，保存后作用于已有文件。详见[168变更](docs/changes/168-file-app-extensions/README.md)。
+
 管理区的“分享管理”页可按分享者、源文件和状态查看链接与活动。获准的管理者可单独或批量撤销链接，源文件仍由原所有者管理。详见[156变更](docs/changes/156-admin-share-management/README.md)。
 
 管理区的“后台任务管理”页提供跨账号归档和下载查询。获准的管理者可以预览并清理终态任务，保留已发布文件。详见[157变更](docs/changes/157-admin-background-tasks/README.md)。

@@ -3,11 +3,15 @@
 import { useCallback, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
-import { CheckboxField, SelectField } from '@clouddrive/ui-adapter/form-field';
+import { CheckboxField, SelectField, TextAreaField } from '@clouddrive/ui-adapter/form-field';
+import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { Panel } from '@clouddrive/ui-adapter/panel';
 import {
   fileApplicationName,
+  maxFileApplicationExtensions,
+  parseFileApplicationExtensions,
   type FileApplicationDefault,
+  type FileApplicationID,
   type FileApplicationItem,
   type FileApplicationView,
 } from '../../../src/files/file-applications';
@@ -18,9 +22,23 @@ import { useCatalogRequest } from './use-catalog-request';
 
 const zh = {
   catalog: '应用列表',
-  explanation: '选择内置应用的可用平台。此设置应用于本人文件的打开方式。',
+  explanation: '设置内置应用的扩展名和可用平台。此设置应用于本人文件的打开方式。',
   app: '应用',
   extensions: '扩展名',
+  inheritedExtensions: '内置关联',
+  customExtensions: '自定义关联',
+  noExtensions: '无关联扩展名',
+  editExtensions: '编辑扩展名',
+  extensionTitle: (name: string) => `${name}的扩展名`,
+  restoreExtensions: '恢复内置扩展名',
+  extensionHint: `可用逗号或空格分隔，最多 ${maxFileApplicationExtensions} 项。清空后该应用无关联扩展名。`,
+  extensionErrors: {
+    count: '扩展名数量超出限制。',
+    format: '请检查扩展名格式。',
+    duplicate: '同一应用的扩展名不能重复。',
+  },
+  removedDefaults: '已从草稿移除不再适用的默认打开方式。',
+  applyExtensions: '应用到草稿',
   platform: '平台',
   all: '全平台',
   desktop: '桌面端',
@@ -41,9 +59,24 @@ const zh = {
 };
 const en: typeof zh = {
   catalog: 'Applications',
-  explanation: 'Set where built-in applications are available when users open their files.',
+  explanation:
+    'Set extensions and availability for built-in applications when users open their files.',
   app: 'Application',
   extensions: 'Extensions',
+  inheritedExtensions: 'Built-in associations',
+  customExtensions: 'Custom associations',
+  noExtensions: 'No associated extensions',
+  editExtensions: 'Edit extensions',
+  extensionTitle: (name) => `${name} extensions`,
+  restoreExtensions: 'Restore built-in extensions',
+  extensionHint: `Separate up to ${maxFileApplicationExtensions} entries with commas or spaces. Clear the list to remove all associations for this application.`,
+  extensionErrors: {
+    count: 'Too many extensions.',
+    format: 'Check the extension format.',
+    duplicate: 'An extension can appear only once per application.',
+  },
+  removedDefaults: 'Default applications that no longer apply have been removed from the draft.',
+  applyExtensions: 'Apply to draft',
   platform: 'Platform',
   all: 'All platforms',
   desktop: 'Desktop',
@@ -80,11 +113,15 @@ function FileApplicationsForm({
   const [items, setItems] = useState(initial.items);
   const [defaults, setDefaults] = useState(initial.defaults);
   const [extension, setExtension] = useState('');
+  const [extensionEdit, setExtensionEdit] = useState<{ id: FileApplicationID; value: string }>();
+  const [removedDefaults, setRemovedDefaults] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [conflict, setConflict] = useState(false);
   const locked = !view.canSave || saving || conflict;
+  const editedItem = items.find((item) => item.id === extensionEdit?.id);
+  const parsedExtensions = extensionEdit && parseFileApplicationExtensions(extensionEdit.value);
   const modified =
     JSON.stringify(items) !== JSON.stringify(view.items) ||
     JSON.stringify(defaults) !== JSON.stringify(view.defaults);
@@ -102,10 +139,19 @@ function FileApplicationsForm({
   }));
 
   function changeItem(item: FileApplicationItem) {
-    setItems((current) =>
-      current.map((candidate) => (candidate.id === item.id ? item : candidate)),
-    );
-    if (!item.enabled) setDefaults((current) => current.filter((rule) => rule.app !== item.id));
+    const next = items.map((candidate) => (candidate.id === item.id ? item : candidate));
+    const valid = defaults.filter((rule) => {
+      const associated = next.filter((candidate) => candidate.extensions.includes(rule.extension));
+      return (
+        associated.length > 1 &&
+        associated.some((candidate) => candidate.id === rule.app && candidate.enabled)
+      );
+    });
+    setItems(next);
+    if (valid.length !== defaults.length) {
+      setDefaults(valid);
+      setRemovedDefaults(true);
+    }
     setSaved(false);
   }
 
@@ -121,14 +167,17 @@ function FileApplicationsForm({
     try {
       const next = await files.saveFileApplications({
         revision: view.revision,
-        apps: items.flatMap(({ id, enabled, platform }) =>
-          enabled && platform === 'all' ? [] : [{ id, enabled, platform }],
+        apps: items.flatMap(({ id, enabled, platform, customExtensions, extensions }) =>
+          enabled && platform === 'all' && !customExtensions
+            ? []
+            : [{ id, enabled, platform, ...(customExtensions ? { extensions } : {}) }],
         ),
         defaults,
       });
       setView(next);
       setItems(next.items);
       setDefaults(next.defaults);
+      setRemovedDefaults(false);
       setSaved(true);
     } catch (cause) {
       const code = cause instanceof FilesError ? cause.code : 'unavailable';
@@ -177,7 +226,47 @@ function FileApplicationsForm({
                       {name}
                     </th>
                     <td className="p-2 text-ink-muted">
-                      {item.extensions.map((suffix) => `.${suffix}`).join(', ')}
+                      <p>
+                        {item.extensions.map((suffix) => `.${suffix}`).join(', ') ||
+                          labels.noExtensions}
+                      </p>
+                      <p className="text-xs">
+                        {item.customExtensions
+                          ? labels.customExtensions
+                          : labels.inheritedExtensions}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <Action
+                          size="sm"
+                          variant="quiet"
+                          disabled={locked}
+                          onPress={() =>
+                            setExtensionEdit({ id: item.id, value: item.extensions.join(', ') })
+                          }
+                        >
+                          {labels.editExtensions}
+                        </Action>
+                        {item.customExtensions ? (
+                          <Action
+                            size="sm"
+                            variant="quiet"
+                            disabled={locked}
+                            onPress={() => {
+                              const builtIn = view.builtInItems.find(
+                                (candidate) => candidate.id === item.id,
+                              );
+                              if (builtIn)
+                                changeItem({
+                                  ...item,
+                                  extensions: builtIn.extensions,
+                                  customExtensions: false,
+                                });
+                            }}
+                          >
+                            {labels.restoreExtensions}
+                          </Action>
+                        ) : null}
+                      </div>
                     </td>
                     <td className="p-2" style={{ minWidth: '9rem' }}>
                       <SelectField
@@ -207,7 +296,7 @@ function FileApplicationsForm({
           </table>
         </div>
       </Panel>
-      <Panel className="min-w-0 space-y-3 p-3">
+      <Panel className="min-w-0 space-y-3 p-3" aria-label={labels.defaultTitle}>
         <div>
           <h2 className="text-lg font-semibold">{labels.defaultTitle}</h2>
           <p className="text-sm text-ink-muted">{labels.defaultHint}</p>
@@ -278,6 +367,7 @@ function FileApplicationsForm({
         </p>
       ) : null}
       {saved ? <p role="status">{labels.saved}</p> : null}
+      {removedDefaults ? <p role="status">{labels.removedDefaults}</p> : null}
       <div className="flex flex-wrap gap-2">
         <Action variant="secondary" onPress={refresh} disabled={saving}>
           {t('files.refresh')}
@@ -286,8 +376,9 @@ function FileApplicationsForm({
           variant="secondary"
           disabled={locked}
           onPress={() => {
-            setItems(items.map((item) => ({ ...item, enabled: true, platform: 'all' })));
+            setItems(view.builtInItems);
             changeDefaults(view.builtInDefaults);
+            setRemovedDefaults(false);
             setError('');
           }}
         >
@@ -297,6 +388,38 @@ function FileApplicationsForm({
           {labels.save}
         </Action>
       </div>
+      {editedItem && extensionEdit && parsedExtensions ? (
+        <DialogSurface
+          isOpen
+          triggerLabel={labels.editExtensions}
+          title={labels.extensionTitle(fileApplicationName(editedItem.id, chinese))}
+          description={labels.extensionHint}
+          cancelLabel={t('files.cancel')}
+          confirmLabel={labels.applyExtensions}
+          confirmDisabled={'error' in parsedExtensions}
+          onOpenChange={(open) => {
+            if (!open) setExtensionEdit(undefined);
+          }}
+          onConfirm={() => {
+            if ('extensions' in parsedExtensions)
+              changeItem({
+                ...editedItem,
+                extensions: parsedExtensions.extensions,
+                customExtensions: true,
+              });
+          }}
+        >
+          <TextAreaField
+            label={labels.extensions}
+            value={extensionEdit.value}
+            rows={4}
+            {...('error' in parsedExtensions
+              ? { error: labels.extensionErrors[parsedExtensions.error] }
+              : {})}
+            onChange={(event) => setExtensionEdit({ ...extensionEdit, value: event.target.value })}
+          />
+        </DialogSurface>
+      ) : null}
     </div>
   );
 }

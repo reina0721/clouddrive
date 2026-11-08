@@ -34733,6 +34733,9 @@
       "FileApplicationItem": {
         "additionalProperties": false,
         "properties": {
+          "customExtensions": {
+            "type": "boolean"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -34767,6 +34770,7 @@
         },
         "required": [
           "extensions",
+          "customExtensions",
           "id",
           "enabled",
           "platform"
@@ -34779,6 +34783,13 @@
           "builtInDefaults": {
             "items": {
               "$ref": "#/components/schemas/FileApplicationDefault"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "builtInItems": {
+            "items": {
+              "$ref": "#/components/schemas/FileApplicationItem"
             },
             "nullable": true,
             "type": "array"
@@ -34809,6 +34820,7 @@
           "canSave",
           "revision",
           "builtInDefaults",
+          "builtInItems",
           "items",
           "defaults"
         ],
@@ -34843,6 +34855,13 @@
         "properties": {
           "enabled": {
             "type": "boolean"
+          },
+          "extensions": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 48,
+            "type": "array"
           },
           "id": {
             "enum": [

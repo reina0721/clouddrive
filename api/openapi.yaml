@@ -2640,6 +2640,8 @@ components:
     FileApplicationItem:
       additionalProperties: false
       properties:
+        customExtensions:
+          type: boolean
         enabled:
           type: boolean
         extensions:
@@ -2666,6 +2668,7 @@ components:
           type: string
       required:
         - extensions
+        - customExtensions
         - id
         - enabled
         - platform
@@ -2676,6 +2679,11 @@ components:
         builtInDefaults:
           items:
             $ref: "#/components/schemas/FileApplicationDefault"
+          nullable: true
+          type: array
+        builtInItems:
+          items:
+            $ref: "#/components/schemas/FileApplicationItem"
           nullable: true
           type: array
         canSave:
@@ -2697,6 +2705,7 @@ components:
         - canSave
         - revision
         - builtInDefaults
+        - builtInItems
         - items
         - defaults
       type: object
@@ -2722,6 +2731,11 @@ components:
       properties:
         enabled:
           type: boolean
+        extensions:
+          items:
+            type: string
+          maxItems: 48
+          type: array
         id:
           enum:
             - image
