@@ -25,6 +25,7 @@ export default function nextConfig(phase: string): NextConfig {
             const backend = process.env.CLOUDDRIVE_BACKEND_URL ?? 'http://127.0.0.1:8080';
             return Promise.resolve([
               { source: '/api/:path*', destination: backend + '/api/:path*' },
+              { source: '/wopi/:path*', destination: backend + '/wopi/:path*' },
               { source: '/management/:path*', destination: backend + '/management/:path*' },
             ]);
           },
@@ -32,6 +33,10 @@ export default function nextConfig(phase: string): NextConfig {
       : {}),
     headers() {
       return Promise.resolve([
+        {
+          source: '/home/:path*',
+          headers: [{ key: 'Referrer-Policy', value: 'no-referrer' }],
+        },
         {
           source: '/file-viewers/pdf/:path*',
           headers: [

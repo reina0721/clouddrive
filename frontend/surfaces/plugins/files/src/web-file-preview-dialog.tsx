@@ -1,13 +1,71 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
+import { HiddenField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import type { WebFileApplicationItem } from '../../../src/files/file-applications';
 import { FilesError, type FileEntry } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
 import { webFilePreviewURL } from '../../../src/files/web-file-preview';
+
+type PreviewTarget = {
+  url: string;
+  newTab: boolean;
+  wopi?: { token: string; expiresAtMilliseconds: number };
+};
+
+function WOPILaunch({
+  target,
+  title,
+  newTabLabel,
+}: {
+  target: PreviewTarget & { wopi: NonNullable<PreviewTarget['wopi']> };
+  title: string;
+  newTabLabel: string;
+}) {
+  const frameName = useId();
+  const embeddedForm = useRef<HTMLFormElement>(null);
+  const submitted = useRef(false);
+  useEffect(() => {
+    if (embeddedForm.current && !submitted.current) {
+      submitted.current = true;
+      embeddedForm.current.submit();
+    }
+  }, []);
+  const credentials = (
+    <>
+      <HiddenField name="access_token" value={target.wopi.token} />
+      <HiddenField name="access_token_ttl" value={target.wopi.expiresAtMilliseconds} />
+    </>
+  );
+  return (
+    <>
+      <form method="post" action={target.url} target="_blank" rel="noopener noreferrer">
+        {credentials}
+        <Action type="submit" variant="secondary">
+          {newTabLabel}
+        </Action>
+      </form>
+      {!target.newTab ? (
+        <>
+          <iframe
+            name={frameName}
+            title={title}
+            sandbox="allow-forms allow-scripts allow-same-origin"
+            referrerPolicy="no-referrer"
+            className="w-full border-0"
+            style={{ height: '65dvh' }}
+          />
+          <form ref={embeddedForm} method="post" action={target.url} target={frameName}>
+            {credentials}
+          </form>
+        </>
+      ) : null}
+    </>
+  );
+}
 
 export function WebFilePreviewDialog({
   entry,
@@ -21,7 +79,7 @@ export function WebFilePreviewDialog({
   const port = useFiles();
   const { locale, t } = useFrontendTranslation();
   const zh = locale.startsWith('zh');
-  const [target, setTarget] = useState<{ url: string; newTab: boolean }>();
+  const [target, setTarget] = useState<PreviewTarget>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const request = useRef<AbortController>(null);
@@ -38,6 +96,32 @@ export function WebFilePreviewDialog({
         throw new FilesError('unsupported');
       const preview = await port.launchWebFilePreview(entry, application, controller.signal);
       if (preview.origin !== application.origin) throw new FilesError('conflict');
+      if (application.protocol === 'wopi') {
+        if (!preview.wopi) throw new FilesError('unavailable');
+        const action = new URL(preview.wopi.actionUrl);
+        if (
+          action.protocol !== 'https:' ||
+          action.origin !== new URL(preview.origin).origin ||
+          action.username ||
+          action.password
+        )
+          throw new FilesError('unsupported');
+        const source = new URL(
+          '/wopi/files/' + encodeURIComponent(entry.id),
+          window.location.origin,
+        );
+        action.searchParams.set('WOPISrc', source.href);
+        if (!controller.signal.aborted)
+          setTarget({
+            url: action.href,
+            newTab: preview.newTab,
+            wopi: {
+              token: preview.token,
+              expiresAtMilliseconds: preview.wopi.expiresAtMilliseconds,
+            },
+          });
+        return;
+      }
       const url = webFilePreviewURL(
         preview,
         window.location.origin,
@@ -90,6 +174,12 @@ export function WebFilePreviewDialog({
               {zh ? '允许并继续' : 'Allow and continue'}
             </Action>
           </>
+        ) : target.wopi ? (
+          <WOPILaunch
+            target={{ ...target, wopi: target.wopi }}
+            title={application.name}
+            newTabLabel={zh ? '在新标签页打开' : 'Open in a new tab'}
+          />
         ) : (
           <>
             {!target.newTab ? (

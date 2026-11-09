@@ -32,14 +32,23 @@ const webItem = z.object({
   id: webApplicationID,
   enabled: z.boolean(),
   platform,
-  extensions: z.array(z.string()).min(1).max(maxFileApplicationExtensions),
+  extensions: z.array(z.string()).min(1).max(128),
   name: z.string(),
   origin: z.string().optional(),
   iconUrl: z.string().optional(),
   maxBytes: z.number().int().nonnegative(),
   newTab: z.boolean(),
+  protocol: z.literal('wopi').optional(),
 });
-const webApp = webItem.extend({ urlTemplate: z.string() });
+const wopiApplication = z.object({
+  discoveryUrl: z.string(),
+  actions: z
+    .array(z.object({ extension: z.string(), url: z.string() }))
+    .min(1)
+    .max(128),
+});
+export const wopiDiscoverySchema = wopiApplication.extend({ origin: z.string() });
+const webApp = webItem.extend({ urlTemplate: z.string(), wopi: wopiApplication.optional() });
 const defaultRule = z.object({
   extension: z.string(),
   app: z.union([applicationID, webApplicationID]),
@@ -64,6 +73,9 @@ export const webFilePreviewSchema = z.object({
   name: z.string(),
   newTab: z.boolean(),
   token: z.string().regex(/^[A-Za-z0-9_-]+$/),
+  wopi: z
+    .object({ actionUrl: z.string(), expiresAtMilliseconds: z.number().int().positive() })
+    .optional(),
 });
 
 export const maxWebFileApplications = 8;
@@ -71,6 +83,8 @@ export const maxWebApplicationBytes = 1024 ** 4;
 export type WebFileApplication = z.infer<typeof webApp>;
 export type WebFileApplicationItem = z.infer<typeof webItem>;
 export type WebFilePreview = z.infer<typeof webFilePreviewSchema>;
+export type WOPIDiscovery = z.infer<typeof wopiDiscoverySchema>;
+export const maxWOPIExtensions = 128;
 
 export type FileApplicationID = z.infer<typeof applicationID>;
 export type FileApplicationPlatform = z.infer<typeof platform>;
@@ -129,12 +143,13 @@ const applicationExtension = /^[a-z0-9][a-z0-9_+-]{0,23}$/;
 
 export function parseFileApplicationExtensions(
   value: string,
+  limit = maxFileApplicationExtensions,
 ): { extensions: string[] } | { error: 'count' | 'format' | 'duplicate' } {
   const extensions = value
     .split(/[,\s]+/)
     .filter(Boolean)
     .map((part) => part.replace(/^\./, '').toLowerCase());
-  if (extensions.length > maxFileApplicationExtensions) return { error: 'count' } as const;
+  if (extensions.length > limit) return { error: 'count' } as const;
   if (extensions.some((extension) => !applicationExtension.test(extension)))
     return { error: 'format' } as const;
   if (new Set(extensions).size !== extensions.length) return { error: 'duplicate' } as const;

@@ -372,7 +372,8 @@ const native = JSON.parse(
 );
 const paths = {};
 for (const [path, value] of Object.entries(native.paths))
-  paths['/api/console/v1/native' + path.replace('/api/v1', '')] = value;
+  if (path.startsWith('/api/v1/'))
+    paths['/api/console/v1/native' + path.slice('/api/v1'.length)] = value;
 const jsonSchema = (schema) => {
   const result = z.toJSONSchema(schema, { target: 'openapi-3.0', unrepresentable: 'any' });
   delete result.$schema;

@@ -17,6 +17,7 @@
 - service.Connections 拥有独立凭据策略和目录范围，通过 composition 注入的 IAM AccountAuthorizer 复核当前身份/权限；不穿透IAM私有包。
 - 同步WebDAV PUT与浏览器tus共享持久暂存和配额；服务端摘要源不能从浏览器续传接口误用，覆盖使用条目内容版本CAS。
 - 网页式文件应用沿用文件应用策略修订。本人文件预览的短期授权绑定当前内容版本和已确认的外站，读取复用原始内容租约及传输预算。
+- WOPI 发现复用安全出站客户端，导入同源 HTTPS 浏览动作。只读回调额外验证票据用途和文件标识。
 
 service.Navigation 拥有分享引用和固定集合，使用消费方定义的 NavigationRepository / ShortcutTargets 窄契约。repo.Navigation 在同一 storage/owner 事务内执行集合 CAS 与已回收引用移除，删除对应固定项时原子推进集合版本；不创建内容对象、客户端、goroutine 或第二套授权。ShareToken 不参与 JSON 输出。预算与使用方式只在文件管理 authority 维护。
 

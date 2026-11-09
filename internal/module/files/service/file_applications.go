@@ -158,7 +158,11 @@ func normalizeFileApplicationExtension(value string) string {
 }
 
 func normalizeFileApplicationExtensions(values []string) ([]string, error) {
-	if len(values) > maxFileApplicationExtensions {
+	return normalizeApplicationExtensions(values, maxFileApplicationExtensions)
+}
+
+func normalizeApplicationExtensions(values []string, limit int) ([]string, error) {
+	if len(values) > limit {
 		return nil, model.ErrInvalid
 	}
 	result := make([]string, 0, len(values))

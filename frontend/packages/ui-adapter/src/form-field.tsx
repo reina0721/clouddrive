@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
 
 export { type TextFieldProps, TextField } from './text-field';
+
+export function HiddenField({ name, value }: { name: string; value: string | number }) {
+  return <input type="hidden" name={name} value={value} />;
+}
 export { type PasswordFieldProps, PasswordField } from './password-field';
 export { type TextAreaFieldProps, TextAreaField } from './text-area-field';
 export { type SelectOption, type SelectFieldProps, SelectField } from './select-field';

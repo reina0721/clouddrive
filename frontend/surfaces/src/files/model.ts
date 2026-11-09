@@ -49,6 +49,7 @@ import type {
   FileApplicationView,
   WebFileApplicationItem,
   WebFilePreview,
+  WOPIDiscovery,
 } from './file-applications';
 import type { EpubBook, EpubEntry } from './epub-contract';
 import type { PropertyDefinitionSet, PropertyDefinitionsView } from './property-definitions';
@@ -248,6 +249,7 @@ export type FilesPort = Readonly<{
     application: WebFileApplicationItem,
     signal: AbortSignal,
   ): Promise<WebFilePreview>;
+  discoverWOPI(endpoint: string, signal: AbortSignal): Promise<WOPIDiscovery>;
   saveFilesystemSettings(input: FilesystemSettingsInput): Promise<FilesystemSettings>;
   readPropertyDefinitions(signal: AbortSignal): Promise<PropertyDefinitionsView>;
   savePropertyDefinitions(input: PropertyDefinitionSet): Promise<PropertyDefinitionsView>;

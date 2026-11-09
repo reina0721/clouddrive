@@ -328,4 +328,7 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 	t.Run("网页应用与临时文件读取", func(t *testing.T) {
 		verifyWebFilePreview(t, admin, observer)
 	})
+	t.Run("WOPI 应用与只读协议回调", func(t *testing.T) {
+		verifyWOPIView(t, admin, observer)
+	})
 }

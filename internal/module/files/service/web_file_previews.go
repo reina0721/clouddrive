@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -12,6 +13,7 @@ import (
 	"io"
 	"path"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,6 +25,9 @@ const (
 	maxWebPreviewTokenBytes = 2048
 )
 
+// ErrWOPIAccessToken 表示无效、过期或用途不符的 WOPI 访问令牌。
+var ErrWOPIAccessToken = errors.New("invalid WOPI access token")
+
 // WebFilePreviewRequest 确认发起预览时已展示的站点和文件版本。
 type WebFilePreviewRequest struct {
 	Application     FileApplicationID `json:"application" pattern:"^web-[a-f0-9]{32}$"`
@@ -32,11 +37,18 @@ type WebFilePreviewRequest struct {
 
 // WebFilePreview 包含浏览器启动外站所需的短期授权和模板。
 type WebFilePreview struct {
-	URLTemplate string `json:"urlTemplate"`
-	Origin      string `json:"origin"`
-	Name        string `json:"name"`
-	NewTab      bool   `json:"newTab"`
-	Token       string `json:"token"`
+	URLTemplate string             `json:"urlTemplate"`
+	Origin      string             `json:"origin"`
+	Name        string             `json:"name"`
+	NewTab      bool               `json:"newTab"`
+	Token       string             `json:"token"`
+	WOPI        *WOPIPreviewLaunch `json:"wopi,omitempty"`
+}
+
+// WOPIPreviewLaunch 描述一次通过表单 POST 启动的只读会话。
+type WOPIPreviewLaunch struct {
+	ActionURL             string `json:"actionUrl"`
+	ExpiresAtMilliseconds int64  `json:"expiresAtMilliseconds"`
 }
 
 type webPreviewGrant struct {
@@ -46,6 +58,22 @@ type webPreviewGrant struct {
 	PolicyRevision  int64
 	ExpiresAt       int64
 	Origin          string
+	Protocol        FilePreviewProtocol
+}
+
+// WOPIFileInfo 按协议公布最小只读文件属性。
+type WOPIFileInfo struct {
+	BaseFileName            string `json:"BaseFileName"`
+	Size                    int64  `json:"Size"`
+	Version                 string `json:"Version"`
+	OwnerID                 string `json:"OwnerId"`
+	UserID                  string `json:"UserId"`
+	UserFriendlyName        string `json:"UserFriendlyName"`
+	ReadOnly                bool   `json:"ReadOnly"`
+	UserCanWrite            bool   `json:"UserCanWrite"`
+	SupportsLocks           bool   `json:"SupportsLocks"`
+	SupportsUpdate          bool   `json:"SupportsUpdate"`
+	UserCanNotWriteRelative bool   `json:"UserCanNotWriteRelative"`
 }
 
 // WebFilePreviews 签发只能读取一个已确认文件版本的短期授权。
@@ -96,60 +124,130 @@ func (s *WebFilePreviews) Launch(ctx context.Context, owner, entryID string, req
 	if request.Origin != app.Origin || request.ContentRevision != entry.ContentRevision {
 		return WebFilePreview{}, model.ErrConflict
 	}
-	if entry.Kind != model.File || !slices.Contains(app.Extensions, strings.TrimPrefix(strings.ToLower(path.Ext(entry.Name)), ".")) {
+	extension := strings.TrimPrefix(strings.ToLower(path.Ext(entry.Name)), ".")
+	if entry.Kind != model.File || !slices.Contains(app.Extensions, extension) {
 		return WebFilePreview{}, model.ErrUnsupported
 	}
 	if app.MaxBytes > 0 && entry.SizeBytes > app.MaxBytes {
 		return WebFilePreview{}, model.ErrTooLarge
 	}
+	expires := s.files.clock.Now().Add(webPreviewTTL).Truncate(time.Second)
 	grant := webPreviewGrant{
 		Owner: owner, EntryID: entry.ID, ContentRevision: entry.ContentRevision,
-		PolicyRevision: view.Revision, ExpiresAt: s.files.clock.Now().Add(webPreviewTTL).Unix(), Origin: app.Origin,
+		PolicyRevision: view.Revision, ExpiresAt: expires.Unix(), Origin: app.Origin, Protocol: app.Protocol,
 	}
 	encoded, err := json.Marshal(grant)
 	if err != nil {
 		return WebFilePreview{}, fmt.Errorf("encode web preview grant: %w", err)
 	}
 	token := base64.RawURLEncoding.EncodeToString(s.sealer.Seal(nil, nil, encoded, nil))
-	return WebFilePreview{URLTemplate: app.URLTemplate, Origin: app.Origin, Name: entry.Name, NewTab: app.NewTab, Token: token}, nil
+	result := WebFilePreview{URLTemplate: app.URLTemplate, Origin: app.Origin, Name: entry.Name, NewTab: app.NewTab, Token: token}
+	if app.Protocol == FilePreviewWOPI {
+		action := slices.IndexFunc(app.WOPI.Actions, func(action WOPIViewAction) bool { return action.Extension == extension })
+		if action < 0 {
+			return WebFilePreview{}, model.ErrUnsupported
+		}
+		result.WOPI = &WOPIPreviewLaunch{ActionURL: app.WOPI.Actions[action].URL, ExpiresAtMilliseconds: expires.UnixMilli()}
+	}
+	return result, nil
 }
 
-// DownloadTo 验证授权并在现有文件读取租约内传输该版本。
-func (s *WebFilePreviews) DownloadTo(ctx context.Context, token string, use func(model.Entry, io.ReadSeeker, string) error) error {
+func (s *WebFilePreviews) readGrant(ctx context.Context, token string, protocol FilePreviewProtocol, entryID string) (webPreviewGrant, error) {
+	invalid := model.ErrMissing
+	if protocol == FilePreviewWOPI {
+		invalid = ErrWOPIAccessToken
+	}
 	if len(token) > maxWebPreviewTokenBytes {
-		return model.ErrMissing
+		return webPreviewGrant{}, invalid
 	}
 	sealed, err := base64.RawURLEncoding.Strict().DecodeString(token)
 	if err != nil {
-		return model.ErrMissing
+		return webPreviewGrant{}, invalid
 	}
 	encoded, err := s.sealer.Open(nil, nil, sealed, nil)
 	if err != nil {
-		return model.ErrMissing
+		return webPreviewGrant{}, invalid
 	}
 	var grant webPreviewGrant
 	if err := json.Unmarshal(encoded, &grant); err != nil {
-		return fmt.Errorf("decode authenticated web preview grant: %w", err)
+		return webPreviewGrant{}, fmt.Errorf("decode authenticated web preview grant: %w", err)
 	}
-	if grant.ExpiresAt <= s.files.clock.Now().Unix() {
-		return model.ErrMissing
+	if grant.ExpiresAt <= s.files.clock.Now().Unix() || grant.Protocol != protocol {
+		return webPreviewGrant{}, invalid
+	}
+	if protocol == FilePreviewWOPI && grant.EntryID != entryID {
+		return webPreviewGrant{}, model.ErrMissing
 	}
 	allowed, err := s.authority.AuthorizeShare(ctx, grant.Owner, ShareAccountRead)
 	if err != nil {
-		return err
+		return webPreviewGrant{}, err
 	}
 	if !allowed {
+		return webPreviewGrant{}, model.ErrMissing
+	}
+	return grant, nil
+}
+
+func (s *WebFilePreviews) verifyGrantVersion(ctx context.Context, grant webPreviewGrant, entry model.Entry) error {
+	view, err := s.applications.Read(ctx)
+	if err != nil {
+		return err
+	}
+	if entry.Kind != model.File || grant.PolicyRevision != view.Revision || grant.ContentRevision != entry.ContentRevision ||
+		grant.ExpiresAt <= s.files.clock.Now().Unix() {
 		return model.ErrMissing
 	}
-	err = s.files.DownloadTo(ctx, grant.Owner, grant.EntryID, func(entry model.Entry, reader io.ReadSeeker) error {
-		view, err := s.applications.Read(ctx)
-		if err != nil {
+	return nil
+}
+
+// InspectWOPI 返回经本次授权确认的文件版本和只读标记。
+func (s *WebFilePreviews) InspectWOPI(ctx context.Context, token, entryID string) (WOPIFileInfo, error) {
+	grant, err := s.readGrant(ctx, token, FilePreviewWOPI, entryID)
+	if err != nil {
+		return WOPIFileInfo{}, err
+	}
+	detail, err := s.files.Detail(ctx, grant.Owner, grant.EntryID)
+	if err != nil {
+		return WOPIFileInfo{}, err
+	}
+	entry := detail.Entry
+	if err := s.verifyGrantVersion(ctx, grant, entry); err != nil {
+		return WOPIFileInfo{}, err
+	}
+	digest := sha256.Sum256([]byte("wopi-owner:" + grant.Owner))
+	user := base64.RawURLEncoding.EncodeToString(digest[:])
+	return WOPIFileInfo{
+		BaseFileName: entry.Name, Size: entry.SizeBytes, Version: strconv.FormatInt(entry.ContentRevision, 10),
+		OwnerID: user, UserID: user, UserFriendlyName: "Viewer", ReadOnly: true, UserCanNotWriteRelative: true,
+	}, nil
+}
+
+// DownloadWOPITo 读取与 WOPI 文件标识绑定的已确认版本。
+func (s *WebFilePreviews) DownloadWOPITo(ctx context.Context, token, entryID string, use func(model.Entry, io.ReadSeeker) error) error {
+	grant, err := s.readGrant(ctx, token, FilePreviewWOPI, entryID)
+	if err != nil {
+		return err
+	}
+	return s.downloadGrant(ctx, grant, use)
+}
+
+// DownloadTo 验证网页授权并在现有文件读取租约内传输该版本。
+func (s *WebFilePreviews) DownloadTo(ctx context.Context, token string, use func(model.Entry, io.ReadSeeker, string) error) error {
+	grant, err := s.readGrant(ctx, token, "", "")
+	if err != nil {
+		return err
+	}
+	return s.downloadGrant(ctx, grant, func(entry model.Entry, reader io.ReadSeeker) error {
+		return use(entry, reader, grant.Origin)
+	})
+}
+
+func (s *WebFilePreviews) downloadGrant(ctx context.Context, grant webPreviewGrant, use func(model.Entry, io.ReadSeeker) error) error {
+	err := s.files.DownloadTo(ctx, grant.Owner, grant.EntryID, func(entry model.Entry, reader io.ReadSeeker) error {
+		if err := s.verifyGrantVersion(ctx, grant, entry); err != nil {
 			return err
 		}
-		if grant.PolicyRevision != view.Revision || grant.ContentRevision != entry.ContentRevision || grant.ExpiresAt <= s.files.clock.Now().Unix() {
-			return model.ErrMissing
-		}
-		return use(entry, reader, grant.Origin)
+		return use(entry, reader)
 	})
 	if errors.Is(err, model.ErrConflict) || errors.Is(err, model.ErrInvalid) || errors.Is(err, model.ErrUnsupported) {
 		return errors.Join(model.ErrMissing, err)

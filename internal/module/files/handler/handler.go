@@ -73,6 +73,7 @@ type Handler struct {
 	FileIconRules            *service.FileIconRules
 	FileApplications         *service.FileApplications
 	WebFilePreviews          *service.WebFilePreviews
+	WOPIDiscovery            *service.WOPIDiscovery
 	Downloads                *service.OfflineDownloads
 	Torrents                 *service.TorrentDownloads
 	Service                  *service.Service
@@ -147,6 +148,8 @@ func (h *Handler) Present(ctx context.Context, err error) error {
 		status, code = 403, "files_connection_system_file"
 	case errors.Is(err, service.ErrConnectionCredentials):
 		status, code = 401, "files_connection_credentials"
+	case errors.Is(err, service.ErrWOPIAccessToken):
+		status, code = http.StatusUnauthorized, "files_wopi_token_invalid"
 	case errors.Is(err, service.ErrConnectionReadOnly):
 		status, code = 403, "files_connection_read_only"
 	case errors.Is(err, service.ErrConnectionUnavailable):

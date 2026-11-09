@@ -1,0 +1,24 @@
+schema_version: 1
+id: R171-001
+title: WOPI 发现与文档只读操作
+question: 如何根据服务发现导入兼容格式，并把协议请求限制到本人已确认的文件？
+research_type: current-project-and-external-primary-source
+topics: [files, wopi, security]
+status: active
+summary: 复用 HTTPS 安全出站、文件应用配置与读取租约，接入协议发现、文件元数据和只读内容。
+evidence:
+  primary_sources:
+    - title: Cloudreve 导入界面与官方说明
+      locator: https://docs.cloudreve.org/zh/usage/wopi
+      snapshot: 参考站导入对话框含单个发现地址输入
+    - title: Microsoft WOPI 发现与读取规范
+      locator: https://learn.microsoft.com/en-us/microsoft-365/cloud-storage-partner-program/online/discovery
+      snapshot: view 需要 CheckFileInfo 与 GetFile
+    - title: 当前出站与文件应用实现
+      locator: report.md
+      snapshot: e27ebe2
+verified_at: 2026-11-08
+validity:
+  mode: snapshot
+  refresh_triggers: [出站信任策略变更, WOPI 编辑协议引入, 文件能力票据变更]
+report: report.md

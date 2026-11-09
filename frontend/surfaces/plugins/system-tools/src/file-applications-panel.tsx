@@ -23,11 +23,14 @@ import { CatalogFailure } from './catalog-failure';
 import { useCatalogRequest } from './use-catalog-request';
 import { FileCreationMappingsDialog } from './file-creation-mappings-dialog';
 import { WebFileApplicationDialog } from './web-file-application-dialog';
+import { WOPIDiscoveryDialog } from './wopi-discovery-dialog';
 
 const zh = {
   catalog: '应用列表',
   explanation: '设置本人文件的内置和网页应用。',
   addWeb: '添加网页应用',
+  addWOPI: '添加 WOPI 应用',
+  wopiKind: 'WOPI 阅读器',
   editWeb: (name: string) => `编辑 ${name}`,
   removeWeb: (name: string) => `移除 ${name}`,
   webKind: '网页应用',
@@ -74,6 +77,8 @@ const en: typeof zh = {
   catalog: 'Applications',
   explanation: 'Manage built-in and web applications for personal files.',
   addWeb: 'Add web application',
+  addWOPI: 'Add WOPI application',
+  wopiKind: 'WOPI viewer',
   editWeb: (name) => `Edit ${name}`,
   removeWeb: (name) => `Remove ${name}`,
   webKind: 'Web application',
@@ -134,6 +139,7 @@ function FileApplicationsForm({
   const [items, setItems] = useState(initial.items);
   const [webApps, setWebApps] = useState(initial.webApps);
   const [webEdit, setWebEdit] = useState<WebFileApplication | 'new'>();
+  const [wopiImport, setWOPIImport] = useState(false);
   const [defaults, setDefaults] = useState(initial.defaults);
   const [extension, setExtension] = useState('');
   const [extensionEdit, setExtensionEdit] = useState<{ id: FileApplicationID; value: string }>();
@@ -261,14 +267,24 @@ function FileApplicationsForm({
           <h2 className="text-lg font-semibold">{labels.catalog}</h2>
           <p className="text-sm text-ink-muted">{labels.explanation}</p>
         </div>
-        <Action
-          variant="secondary"
-          size="sm"
-          disabled={locked || webApps.length >= maxWebFileApplications}
-          onPress={() => setWebEdit('new')}
-        >
-          {labels.addWeb}
-        </Action>
+        <div className="flex flex-wrap gap-2">
+          <Action
+            variant="secondary"
+            size="sm"
+            disabled={locked || webApps.length >= maxWebFileApplications}
+            onPress={() => setWebEdit('new')}
+          >
+            {labels.addWeb}
+          </Action>
+          <Action
+            variant="secondary"
+            size="sm"
+            disabled={locked || webApps.length >= maxWebFileApplications}
+            onPress={() => setWOPIImport(true)}
+          >
+            {labels.addWOPI}
+          </Action>
+        </div>
         <div className="overflow-auto">
           <table
             className="w-full text-sm"
@@ -414,7 +430,9 @@ function FileApplicationsForm({
                       ) : null}
                       {app.name}
                     </div>
-                    <p className="text-xs text-ink-muted">{labels.webKind}</p>
+                    <p className="text-xs text-ink-muted">
+                      {app.protocol === 'wopi' ? labels.wopiKind : labels.webKind}
+                    </p>
                   </th>
                   <td className="p-2 text-ink-muted">
                     <p>{app.extensions.map((suffix) => `.${suffix}`).join(', ')}</p>
@@ -567,6 +585,12 @@ function FileApplicationsForm({
           platforms={platforms}
           onClose={() => setWebEdit(undefined)}
           onApply={applyWebApp}
+        />
+      ) : null}
+      {wopiImport ? (
+        <WOPIDiscoveryDialog
+          onClose={() => setWOPIImport(false)}
+          onApply={(app) => changeWebApps([...webApps, app])}
         />
       ) : null}
       {editedItem && extensionEdit && parsedExtensions ? (

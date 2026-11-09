@@ -225,6 +225,10 @@ func New(deps Dependencies) (Module, error) {
 	if err != nil {
 		return Module{}, err
 	}
+	boundary.WOPIDiscovery, err = service.NewWOPIDiscovery(source)
+	if err != nil {
+		return Module{}, err
+	}
 	downloadRepository, err := repo.NewDownloads(transfersRepository)
 	if err != nil {
 		return Module{}, err

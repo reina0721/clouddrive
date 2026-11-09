@@ -6110,6 +6110,107 @@ components:
         - field
         - reason
       type: object
+    WOPIApplication:
+      additionalProperties: false
+      properties:
+        actions:
+          items:
+            $ref: "#/components/schemas/WOPIViewAction"
+          maxItems: 128
+          minItems: 1
+          nullable: true
+          type: array
+        discoveryUrl:
+          maxLength: 2048
+          type: string
+      required:
+        - discoveryUrl
+        - actions
+      type: object
+    WOPIDiscoveryDraft:
+      additionalProperties: false
+      properties:
+        actions:
+          items:
+            $ref: "#/components/schemas/WOPIViewAction"
+          maxItems: 128
+          minItems: 1
+          nullable: true
+          type: array
+        discoveryUrl:
+          maxLength: 2048
+          type: string
+        origin:
+          type: string
+      required:
+        - origin
+        - discoveryUrl
+        - actions
+      type: object
+    WOPIFileInfo:
+      additionalProperties: false
+      properties:
+        BaseFileName:
+          type: string
+        OwnerId:
+          type: string
+        ReadOnly:
+          type: boolean
+        Size:
+          format: int64
+          type: integer
+        SupportsLocks:
+          type: boolean
+        SupportsUpdate:
+          type: boolean
+        UserCanNotWriteRelative:
+          type: boolean
+        UserCanWrite:
+          type: boolean
+        UserFriendlyName:
+          type: string
+        UserId:
+          type: string
+        Version:
+          type: string
+      required:
+        - BaseFileName
+        - Size
+        - Version
+        - OwnerId
+        - UserId
+        - UserFriendlyName
+        - ReadOnly
+        - UserCanWrite
+        - SupportsLocks
+        - SupportsUpdate
+        - UserCanNotWriteRelative
+      type: object
+    WOPIPreviewLaunch:
+      additionalProperties: false
+      properties:
+        actionUrl:
+          type: string
+        expiresAtMilliseconds:
+          format: int64
+          type: integer
+      required:
+        - actionUrl
+        - expiresAtMilliseconds
+      type: object
+    WOPIViewAction:
+      additionalProperties: false
+      properties:
+        extension:
+          maxLength: 24
+          type: string
+        url:
+          maxLength: 2048
+          type: string
+      required:
+        - extension
+        - url
+      type: object
     WebFileApplication:
       additionalProperties: false
       properties:
@@ -6118,7 +6219,7 @@ components:
         extensions:
           items:
             type: string
-          maxItems: 48
+          maxItems: 128
           minItems: 1
           nullable: true
           type: array
@@ -6147,9 +6248,15 @@ components:
             - desktop
             - mobile
           type: string
+        protocol:
+          enum:
+            - wopi
+          type: string
         urlTemplate:
           maxLength: 2048
           type: string
+        wopi:
+          $ref: "#/components/schemas/WOPIApplication"
       required:
         - urlTemplate
         - id
@@ -6168,7 +6275,7 @@ components:
         extensions:
           items:
             type: string
-          maxItems: 48
+          maxItems: 128
           minItems: 1
           nullable: true
           type: array
@@ -6196,6 +6303,10 @@ components:
             - all
             - desktop
             - mobile
+          type: string
+        protocol:
+          enum:
+            - wopi
           type: string
       required:
         - id
@@ -6219,6 +6330,8 @@ components:
           type: string
         urlTemplate:
           type: string
+        wopi:
+          $ref: "#/components/schemas/WOPIPreviewLaunch"
       required:
         - urlTemplate
         - origin
@@ -6243,6 +6356,16 @@ components:
         - application
         - origin
         - contentRevision
+      type: object
+    WopiDiscoveryInputBody:
+      additionalProperties: false
+      properties:
+        endpoint:
+          maxLength: 2048
+          minLength: 1
+          type: string
+      required:
+        - endpoint
       type: object
     WorkerCapability:
       additionalProperties: false
@@ -8184,6 +8307,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FileApplicationPolicy"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - webuiSession: []
+      tags:
+        - Files
+  /api/v1/files/applications/wopi-discovery:
+    post:
+      operationId: files.applications.wopi-discover
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WopiDiscoveryInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WOPIDiscoveryDraft"
           description: OK
         default:
           content:
@@ -14152,3 +14301,72 @@ paths:
         - bearerAuth: []
       tags:
         - Todo
+  /wopi/files/{id}:
+    get:
+      operationId: files.public.wopi.info
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: access_token
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WOPIFileInfo"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security: []
+      tags:
+        - WOPI
+  /wopi/files/{id}/contents:
+    get:
+      operationId: files.public.wopi.contents
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: access_token
+          schema:
+            type: string
+        - in: header
+          name: X-WOPI-MaxExpectedSize
+          schema:
+            default: 2147483647
+            format: int64
+            minimum: 0
+            type: integer
+      responses:
+        "200":
+          content:
+            application/octet-stream:
+              schema:
+                format: binary
+                type: string
+                x-contentMediaType: application/octet-stream
+          description: WOPI 只读文件内容
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security: []
+      tags:
+        - WOPI

@@ -42,6 +42,7 @@ import {
   fileApplicationViewSchema,
   fileApplicationPolicySchema,
   webFilePreviewSchema,
+  wopiDiscoverySchema,
   propertyDefinitionsViewSchema,
   type FileListing,
   type FilesErrorCode,
@@ -425,6 +426,10 @@ export function createFilesRuntime(
           },
           signal,
         }),
+      ),
+    discoverWOPI: async (endpoint, signal) =>
+      wopiDiscoverySchema.parse(
+        await call('/applications/wopi-discovery', { method: 'POST', body: { endpoint }, signal }),
       ),
     readStoragePolicy: async (signal) =>
       storagePolicySchema.parse(await call('/storage-policy', { signal })),

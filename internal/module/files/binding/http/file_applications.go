@@ -46,7 +46,7 @@ func registerFileApplications(api huma.API, h *handler.Handler, operation func(s
 		return output, nil
 	})
 	save := operation("files.applications.save", http.MethodPut, "/applications", string(permission.SettingsWrite), true)
-	save.MaxBodyBytes = 48 << 10
+	save.MaxBodyBytes = 256 << 10
 	save.Middlewares = append(save.Middlewares, sharingHeaders)
 	huma.Register(api, save, func(ctx context.Context, input *fileApplicationInput) (*fileApplicationOutput, error) {
 		view, err := h.FileApplications.Save(ctx, input.Body)
@@ -68,4 +68,5 @@ func registerFileApplications(api huma.API, h *handler.Handler, operation func(s
 		return &activeFileApplicationsOutput{Body: view.FileApplicationPolicy}, nil
 	})
 	registerWebFilePreviews(api, h, operation)
+	registerWOPI(api, h, operation)
 }

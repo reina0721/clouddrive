@@ -11,6 +11,7 @@ import {
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import {
   maxWebApplicationBytes,
+  maxWOPIExtensions,
   parseFileApplicationExtensions,
   type FileApplicationPlatform,
   type WebFileApplication,
@@ -31,13 +32,18 @@ export function WebFileApplicationDialog({
 }) {
   const { locale, t } = useFrontendTranslation();
   const zh = locale.startsWith('zh');
-  const title = application
+  const wopi = application?.protocol === 'wopi' ? application.wopi : undefined;
+  const title = wopi
     ? zh
-      ? '编辑网页应用'
-      : 'Edit web application'
-    : zh
-      ? '添加网页应用'
-      : 'Add web application';
+      ? '编辑 WOPI 应用'
+      : 'Edit WOPI application'
+    : application
+      ? zh
+        ? '编辑网页应用'
+        : 'Edit web application'
+      : zh
+        ? '添加网页应用'
+        : 'Add web application';
   const [name, setName] = useState(application?.name ?? '');
   const [extensions, setExtensions] = useState(application?.extensions.join(', ') ?? '');
   const [template, setTemplate] = useState(application?.urlTemplate ?? '');
@@ -45,8 +51,14 @@ export function WebFileApplicationDialog({
   const [size, setSize] = useState(String(application?.maxBytes ?? 0));
   const [platform, setPlatform] = useState<FileApplicationPlatform>(application?.platform ?? 'all');
   const [newTab, setNewTab] = useState(application?.newTab ?? false);
-  const parsed = parseFileApplicationExtensions(extensions);
-  const origin = webFilePreviewOrigin(template.trim());
+  const parsed = parseFileApplicationExtensions(extensions, wopi ? maxWOPIExtensions : undefined);
+  const origin = wopi ? application?.origin : webFilePreviewOrigin(template.trim());
+  const unsupported =
+    wopi &&
+    'extensions' in parsed &&
+    parsed.extensions.some(
+      (extension) => !wopi.actions.some((action) => action.extension === extension),
+    );
   const maxBytes = Number(size);
   const invalidSize =
     !/^\d+$/.test(size) || !Number.isSafeInteger(maxBytes) || maxBytes > maxWebApplicationBytes;
@@ -56,6 +68,7 @@ export function WebFileApplicationDialog({
     invalidName ||
     invalidIcon ||
     invalidSize ||
+    unsupported ||
     !origin ||
     'error' in parsed ||
     !parsed.extensions.length;
@@ -66,8 +79,8 @@ export function WebFileApplicationDialog({
       triggerLabel={title}
       description={
         zh
-          ? '网页应用通过短期地址读取用户确认的文件。'
-          : 'Web applications read an approved file through a temporary address.'
+          ? '外部应用通过短期授权读取用户确认的文件。'
+          : 'External applications read an approved file through temporary authorization.'
       }
       confirmLabel={zh ? '应用到草稿' : 'Apply to draft'}
       cancelLabel={t('files.cancel')}
@@ -88,6 +101,7 @@ export function WebFileApplicationDialog({
           platform,
           maxBytes,
           newTab,
+          ...(wopi ? { protocol: 'wopi', wopi } : {}),
         });
       }}
     >
@@ -113,36 +127,58 @@ export function WebFileApplicationDialog({
           label={zh ? '扩展名列表' : 'Extensions'}
           value={extensions}
           rows={2}
-          {...('error' in parsed
-            ? {
-                error: zh ? '请检查扩展名格式或重复项。' : 'Check extension format and duplicates.',
-              }
-            : {})}
-          onChange={(event) => setExtensions(event.target.value)}
-        />
-        <TextField
-          label={zh ? '应用 URL' : 'Application URL'}
-          value={template}
-          {...(template.trim() && !origin
+          {...(unsupported
             ? {
                 error: zh
-                  ? '请输入含文件地址变量的 HTTPS 模板。'
-                  : 'Enter an HTTPS template containing a source variable.',
+                  ? '请选择发现结果中支持的扩展名。'
+                  : 'Use extensions supported by the discovery result.',
               }
-            : {})}
-          onChange={(event) => setTemplate(event.target.value)}
+            : 'error' in parsed
+              ? {
+                  error: zh
+                    ? '请检查扩展名格式或重复项。'
+                    : 'Check extension format and duplicates.',
+                }
+              : {})}
+          onChange={(event) => setExtensions(event.target.value)}
         />
-        <details>
-          <summary>{zh ? '模板变量' : 'Template variables'}</summary>
-          <p className="text-sm text-ink-muted">
-            {zh
-              ? '仅用于查询值。文件地址、名称、主题变量如下。'
-              : 'Use source, name, and theme variables in query values.'}
-          </p>
-          <p>
-            <code>{'{$src}, {$src_raw}, {$src_raw_base64}, {$name}, {$theme}, {$dark}'}</code>
-          </p>
-        </details>
+        {wopi ? (
+          <div className="space-y-2">
+            <p>
+              <strong>WOPI Discovery Endpoint</strong>
+            </p>
+            <p className="break-all text-sm text-ink-muted">{wopi.discoveryUrl}</p>
+            <p className="text-sm text-ink-muted">
+              {wopi.actions.map((action) => '.' + action.extension).join(', ')}
+            </p>
+          </div>
+        ) : (
+          <>
+            <TextField
+              label={zh ? '应用 URL' : 'Application URL'}
+              value={template}
+              {...(template.trim() && !origin
+                ? {
+                    error: zh
+                      ? '请输入含文件地址变量的 HTTPS 模板。'
+                      : 'Enter an HTTPS template containing a source variable.',
+                  }
+                : {})}
+              onChange={(event) => setTemplate(event.target.value)}
+            />
+            <details>
+              <summary>{zh ? '模板变量' : 'Template variables'}</summary>
+              <p className="text-sm text-ink-muted">
+                {zh
+                  ? '仅用于查询值。文件地址、名称、主题变量如下。'
+                  : 'Use source, name, and theme variables in query values.'}
+              </p>
+              <p>
+                <code>{'{$src}, {$src_raw}, {$src_raw_base64}, {$name}, {$theme}, {$dark}'}</code>
+              </p>
+            </details>
+          </>
+        )}
         <TextField
           label={zh ? '最大文件大小（字节）' : 'Maximum file size (bytes)'}
           value={size}

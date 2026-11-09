@@ -28,18 +28,20 @@ type WebFileApplicationItem struct {
 	ID         FileApplicationID       `json:"id" pattern:"^web-[a-f0-9]{32}$"`
 	Enabled    bool                    `json:"enabled"`
 	Platform   FileApplicationPlatform `json:"platform" enum:"all,desktop,mobile"`
-	Extensions []string                `json:"extensions" minItems:"1" maxItems:"48"`
+	Extensions []string                `json:"extensions" minItems:"1" maxItems:"128"`
 	Name       string                  `json:"name" maxLength:"64"`
 	Origin     string                  `json:"origin,omitempty" readOnly:"true"`
 	IconURL    string                  `json:"iconUrl,omitempty" maxLength:"2048"`
 	MaxBytes   int64                   `json:"maxBytes" minimum:"0" maximum:"1099511627776"`
 	NewTab     bool                    `json:"newTab"`
+	Protocol   FilePreviewProtocol     `json:"protocol,omitempty" enum:"wopi"`
 }
 
 // WebFileApplication 保存管理员配置的 URL 模板。
 type WebFileApplication struct {
 	WebFileApplicationItem
-	URLTemplate string `json:"urlTemplate" maxLength:"2048"`
+	URLTemplate string           `json:"urlTemplate" maxLength:"2048"`
+	WOPI        *WOPIApplication `json:"wopi,omitempty"`
 }
 
 func normalizeWebFileApplications(values []WebFileApplication) ([]WebFileApplication, []WebFileApplicationItem, error) {
@@ -63,11 +65,29 @@ func normalizeWebFileApplications(values []WebFileApplication) ([]WebFileApplica
 			(app.Platform != FileAppAll && app.Platform != FileAppDesktop && app.Platform != FileAppMobile) {
 			return nil, nil, model.ErrInvalid
 		}
-		extensions, err := normalizeFileApplicationExtensions(app.Extensions)
+		limit := maxFileApplicationExtensions
+		if app.Protocol == FilePreviewWOPI {
+			limit = maxWOPIActions
+		}
+		extensions, err := normalizeApplicationExtensions(app.Extensions, limit)
 		if err != nil || len(extensions) == 0 {
 			return nil, nil, model.ErrInvalid
 		}
-		origin, err := webApplicationOrigin(app.URLTemplate)
+		var origin string
+		switch app.Protocol {
+		case FilePreviewWOPI:
+			if app.URLTemplate != "" {
+				return nil, nil, model.ErrInvalid
+			}
+			origin, app.WOPI, err = normalizeWOPIApplication(app.WOPI, extensions)
+		case "":
+			if app.WOPI != nil {
+				return nil, nil, model.ErrInvalid
+			}
+			origin, err = webApplicationOrigin(app.URLTemplate)
+		default:
+			return nil, nil, model.ErrInvalid
+		}
 		if err != nil {
 			return nil, nil, err
 		}
@@ -78,30 +98,9 @@ func normalizeWebFileApplications(values []WebFileApplication) ([]WebFileApplica
 }
 
 func webApplicationOrigin(template string) (string, error) {
-	if len(template) > maxWebApplicationURLBytes || strings.ContainsFunc(template, func(r rune) bool {
-		return unicode.IsControl(r) || unicode.IsSpace(r) || r == '\\'
-	}) || strings.Contains(template, "#") {
-		return "", model.ErrInvalid
-	}
-	target, err := url.Parse(template)
-	if err != nil || target.Scheme != "https" || target.Hostname() == "" || target.User != nil ||
-		strings.ContainsAny(target.Host+target.Path, "{}") {
-		return "", model.ErrInvalid
-	}
-	host := strings.ToLower(target.Hostname())
-	if ip := net.ParseIP(host); ip != nil && strings.Contains(host, ":") {
-		host = "[" + ip.String() + "]"
-	} else if !webApplicationHost.MatchString(host) {
-		return "", model.ErrInvalid
-	}
-	if port := target.Port(); port != "" {
-		value, err := strconv.Atoi(port)
-		if err != nil || value < 1 || value > 65535 {
-			return "", model.ErrInvalid
-		}
-		if value != 443 {
-			host += ":" + strconv.Itoa(value)
-		}
+	target, origin, err := applicationHTTPSURL(template)
+	if err != nil {
+		return "", err
 	}
 	query, err := url.ParseQuery(target.RawQuery)
 	if err != nil {
@@ -130,5 +129,34 @@ func webApplicationOrigin(template string) (string, error) {
 	if !hasSource {
 		return "", model.ErrInvalid
 	}
-	return (&url.URL{Scheme: target.Scheme, Host: host}).String(), nil
+	return origin, nil
+}
+
+func applicationHTTPSURL(template string) (*url.URL, string, error) {
+	if len(template) > maxWebApplicationURLBytes || strings.ContainsFunc(template, func(r rune) bool {
+		return unicode.IsControl(r) || unicode.IsSpace(r) || r == '\\'
+	}) || strings.Contains(template, "#") {
+		return nil, "", model.ErrInvalid
+	}
+	target, err := url.Parse(template)
+	if err != nil || target.Scheme != "https" || target.Hostname() == "" || target.User != nil ||
+		strings.ContainsAny(target.Host+target.Path, "{}") {
+		return nil, "", model.ErrInvalid
+	}
+	host := strings.ToLower(target.Hostname())
+	if ip := net.ParseIP(host); ip != nil && strings.Contains(host, ":") {
+		host = "[" + ip.String() + "]"
+	} else if !webApplicationHost.MatchString(host) {
+		return nil, "", model.ErrInvalid
+	}
+	if port := target.Port(); port != "" {
+		value, err := strconv.Atoi(port)
+		if err != nil || value < 1 || value > 65535 {
+			return nil, "", model.ErrInvalid
+		}
+		if value != 443 {
+			host += ":" + strconv.Itoa(value)
+		}
+	}
+	return target, (&url.URL{Scheme: target.Scheme, Host: host}).String(), nil
 }

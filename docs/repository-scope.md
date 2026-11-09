@@ -49,7 +49,7 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 
 [166 Markdown 编辑](changes/166-markdown-editor/README.md)支持本人当前 Markdown 文件的创建、源码编辑、渲染和同目录栅格图片。使用既有文件权限、版本及文本限制。
 
-[167 文件应用](changes/167-file-applications/README.md)提供本人文件的内置应用选择和全局默认规则。[168 扩展名关联](changes/168-file-app-extensions/README.md)支持编辑或清空内置应用列表及恢复继承。[169 新建映射](changes/169-file-creation-mappings/README.md)允许配置文本和 Markdown 应用的新建菜单项。[170 网页式文件应用](changes/170-web-file-viewers/README.md)为本人当前文件提供配置外部阅读器和限时读取。WOPI 编辑与外部新建映射另行对齐。
+[167 文件应用](changes/167-file-applications/README.md)提供本人文件的内置应用选择和全局默认规则。[168 扩展名关联](changes/168-file-app-extensions/README.md)支持编辑或清空内置应用列表及恢复继承。[169 新建映射](changes/169-file-creation-mappings/README.md)允许配置文本和 Markdown 应用的新建菜单项。[170 网页式文件应用](changes/170-web-file-viewers/README.md)为本人当前文件提供配置外部阅读器和限时读取。[171 WOPI](changes/171-wopi-view/README.md)提供发现导入和只读浏览。WOPI 编辑与外部新建映射另行对齐。
 
 [156管理端分享](changes/156-admin-share-management/README.md)提供独立授权的跨账号清单、浏览与下载授权计数及批量撤销。活动计数从升级后累计。
 

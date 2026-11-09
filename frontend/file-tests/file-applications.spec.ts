@@ -577,3 +577,164 @@ test('网页应用配置和临时文件预览', async ({ page }, info) => {
     await restoreApplications(page, initial);
   }
 });
+
+test('导入 WOPI 应用并打开真实只读文件', async ({ page }, info) => {
+  await loginQA(page);
+  const initial = await filesAPI<FileApplicationView>(page, '/applications');
+  await openReadingFixtureFolder(page, 'WOPI验收-');
+  const folder = new URL(page.url());
+  const name = 'WOPI 预览样例.MD';
+  await filesAPI(page, '/text', 'POST', {
+    parentId: folder.searchParams.get('parent')!,
+    name,
+    text: 'wopi-view-browser-fixture',
+    key: randomUUID(),
+  });
+  const origin = 'https://wopi.example.test';
+  const endpoint = origin + '/hosting/discovery';
+  const appName = 'WOPI 文档预览';
+  let discoveryRequests = 0;
+  let viewerRequests = 0;
+  await page.route('**/applications/wopi-discovery', async (route) => {
+    discoveryRequests++;
+    const request = route.request().postDataJSON() as { endpoint: string };
+    if (request.endpoint !== endpoint) {
+      await route.fulfill({ status: 503, json: { error: { code: 'files_offline_unavailable' } } });
+      return;
+    }
+    await route.fulfill({
+      json: {
+        origin,
+        discoveryUrl: endpoint,
+        actions: [
+          { extension: 'docx', url: origin + '/document' },
+          { extension: 'xlsx', url: origin + '/sheet' },
+          { extension: 'md', url: origin + '/reader' },
+        ],
+      },
+    });
+  });
+  await page.context().route(origin + '/reader?*', async (route) => {
+    viewerRequests++;
+    const request = route.request();
+    expect(request.method()).toBe('POST');
+    expect(request.headers()['referer']).toBeUndefined();
+    const action = new URL(request.url());
+    const source = new URL(action.searchParams.get('WOPISrc')!);
+    expect(source.origin).toBe('http://127.0.0.1:4194');
+    expect(source.pathname).toMatch(/^\/wopi\/files\/[a-f0-9-]{36}$/);
+    expect(source.search).toBe('');
+    expect(action.searchParams.has('access_token')).toBe(false);
+    const form = new URLSearchParams(request.postData()!);
+    const token = form.get('access_token')!;
+    expect(token).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(Number(form.get('access_token_ttl'))).toBeGreaterThan(Date.now() + 240_000);
+    const query = '?' + new URLSearchParams({ access_token: token }).toString();
+    const metadata = await page.request.get(source.href + query);
+    expect(metadata.status()).toBe(200);
+    expect(await metadata.json()).toMatchObject({
+      BaseFileName: name,
+      UserCanWrite: false,
+      ReadOnly: true,
+    });
+    const bytes = await page.request.get(source.href + '/contents' + query);
+    expect(bytes.status()).toBe(200);
+    expect(bytes.headers()['x-wopi-itemversion']).toBe('1');
+    expect(await bytes.text()).toBe('wopi-view-browser-fixture');
+    await route.fulfill({
+      contentType: 'text/html; charset=utf-8',
+      body: '<h1>WOPI 只读文档已加载</h1>',
+    });
+  });
+  const open = page.getByRole('button', { name: '添加 WOPI 应用', exact: true });
+  const importer = page.getByRole('dialog', { name: '导入 WOPI 应用设置', exact: true });
+  const discover = importer.getByRole('button', { name: '检查发现地址', exact: true });
+  const address = importer.getByLabel('WOPI Discovery Endpoint', { exact: true });
+  const draft = page.getByRole('button', { name: '应用到草稿', exact: true });
+  const viewer = page.getByRole('dialog', { name: appName, exact: true });
+  const allow = viewer.getByRole('button', { name: '允许并继续', exact: true });
+  const file = page.getByRole('button', { name, exact: true });
+  const save = page.getByRole('button', { name: '保存文件应用', exact: true });
+  async function savePolicy() {
+    await save.click();
+    await expect(page.getByRole('status').filter({ hasText: '文件应用设置已保存' })).toBeVisible();
+  }
+  async function openFile() {
+    await page.goto(folder.pathname + folder.search);
+    await file.click();
+  }
+  try {
+    await openApplications(page);
+    await open.click();
+    await expect(discover).toBeDisabled();
+    await address.fill('http://wopi.example.test/hosting/discovery');
+    await expect(importer.getByText('请输入有效的 HTTPS 地址。')).toBeVisible();
+    expect(discoveryRequests).toBe(0);
+    await address.fill(origin + '/invalid');
+    await discover.click();
+    await expect(importer.getByRole('alert')).toContainText('无法导入 WOPI 应用');
+    await address.fill(endpoint);
+    await discover.click();
+    await expect(importer.getByRole('status')).toContainText('发现 3 种可预览格式');
+    await importer.getByRole('button', { name: '取消', exact: true }).click();
+    await expect(page.getByText('WOPI · wopi.example.test', { exact: true })).toHaveCount(0);
+    await open.click();
+    await address.fill(endpoint);
+    await discover.click();
+    await expect(importer.getByRole('status')).toContainText('.docx, .xlsx, .md');
+    await page.screenshot({ path: info.outputPath('wopi-discovery.png'), animations: 'disabled' });
+    await draft.click();
+    await page.getByRole('button', { name: '编辑 WOPI · wopi.example.test', exact: true }).click();
+    const edit = page.getByRole('dialog', { name: '编辑 WOPI 应用', exact: true });
+    await edit.getByLabel('名称', { exact: true }).fill(appName);
+    await edit.getByLabel('扩展名列表', { exact: true }).fill('md, pdf');
+    await expect(edit.getByText('请选择发现结果中支持的扩展名。')).toBeVisible();
+    await edit.getByLabel('扩展名列表', { exact: true }).fill('md, docx');
+    await edit.getByRole('button', { name: /平台/ }).click();
+    await page.getByRole('option', { name: '桌面端', exact: true }).click();
+    await draft.click();
+    const defaults = page.getByRole('region', { name: '默认打开方式', exact: true });
+    await defaults.getByRole('button', { name: /\.md 的默认应用/ }).click();
+    await page.getByRole('option', { name: appName, exact: true }).click();
+    await savePolicy();
+
+    await openFile();
+    await expect(viewer).toContainText(origin);
+    expect(viewerRequests).toBe(0);
+    await allow.click();
+    await expect(
+      page
+        .frameLocator('iframe[title="' + appName + '"]')
+        .getByRole('heading', { name: 'WOPI 只读文档已加载' }),
+    ).toBeVisible();
+    await page.screenshot({ path: info.outputPath('wopi-reader.png'), animations: 'disabled' });
+    expect(viewerRequests).toBe(1);
+    const newTab = viewer.getByRole('button', { name: '在新标签页打开', exact: true });
+    await expect(newTab).toBeInViewport();
+    const popupPromise = page.waitForEvent('popup');
+    await newTab.click();
+    const popup = await popupPromise;
+    await expect(popup.getByRole('heading', { name: 'WOPI 只读文档已加载' })).toBeVisible();
+    await popup.close();
+    expect(viewerRequests).toBe(2);
+    await page.setViewportSize({ width: 390, height: 760 });
+    await openFile();
+    const choices = page.getByRole('dialog', { name: '打开方式', exact: true });
+    await expect(
+      choices.getByRole('button', { name: 'Markdown 编辑器', exact: true }),
+    ).toBeVisible();
+    await expect(choices.getByRole('button', { name: appName, exact: true })).toHaveCount(0);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await openApplications(page);
+    await page.getByRole('checkbox', { name: '启用 ' + appName, exact: true }).press('Space');
+    await savePolicy();
+    await openFile();
+    await expect(choices.getByRole('button', { name: appName, exact: true })).toHaveCount(0);
+    await openApplications(page);
+    await page.getByRole('button', { name: '移除 ' + appName, exact: true }).click();
+    await savePolicy();
+    await expect(page.getByText(appName, { exact: true })).toHaveCount(0);
+  } finally {
+    await restoreApplications(page, initial);
+  }
+});
