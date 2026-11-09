@@ -158,3 +158,4 @@
 - [169 新建文件映射](169-file-creation-mappings/README.md) 配置文本和 Markdown 的新建菜单。
 - [170 网页式文件应用](170-web-file-viewers/README.md) 配置外部阅读器和当前文件限时预览。
 - [171 WOPI 发现与预览](171-wopi-view/README.md) 导入阅读器并打开当前文档。
+- [172 WOPI 编辑与保存](172-wopi-edit/README.md) 授权编辑、锁定文件并保存新版本。

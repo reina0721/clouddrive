@@ -30,6 +30,7 @@ const zh = {
   explanation: '设置本人文件的内置和网页应用。',
   addWeb: '添加网页应用',
   addWOPI: '添加 WOPI 应用',
+  refreshWOPI: '重新发现',
   wopiKind: 'WOPI 阅读器',
   editWeb: (name: string) => `编辑 ${name}`,
   removeWeb: (name: string) => `移除 ${name}`,
@@ -78,6 +79,7 @@ const en: typeof zh = {
   explanation: 'Manage built-in and web applications for personal files.',
   addWeb: 'Add web application',
   addWOPI: 'Add WOPI application',
+  refreshWOPI: 'Rediscover',
   wopiKind: 'WOPI viewer',
   editWeb: (name) => `Edit ${name}`,
   removeWeb: (name) => `Remove ${name}`,
@@ -139,7 +141,7 @@ function FileApplicationsForm({
   const [items, setItems] = useState(initial.items);
   const [webApps, setWebApps] = useState(initial.webApps);
   const [webEdit, setWebEdit] = useState<WebFileApplication | 'new'>();
-  const [wopiImport, setWOPIImport] = useState(false);
+  const [wopiImport, setWOPIImport] = useState<WebFileApplication | 'new'>();
   const [defaults, setDefaults] = useState(initial.defaults);
   const [extension, setExtension] = useState('');
   const [extensionEdit, setExtensionEdit] = useState<{ id: FileApplicationID; value: string }>();
@@ -242,6 +244,7 @@ function FileApplicationsForm({
         webApps: webApps.map((app) => {
           const input = { ...app };
           delete input.origin;
+          delete input.editExtensions;
           return input;
         }),
       });
@@ -280,7 +283,7 @@ function FileApplicationsForm({
             variant="secondary"
             size="sm"
             disabled={locked || webApps.length >= maxWebFileApplications}
-            onPress={() => setWOPIImport(true)}
+            onPress={() => setWOPIImport('new')}
           >
             {labels.addWOPI}
           </Action>
@@ -445,6 +448,16 @@ function FileApplicationsForm({
                       >
                         {labels.editWeb(app.name)}
                       </Action>
+                      {app.protocol === 'wopi' ? (
+                        <Action
+                          variant="quiet"
+                          size="sm"
+                          disabled={locked}
+                          onPress={() => setWOPIImport(app)}
+                        >
+                          {labels.refreshWOPI}
+                        </Action>
+                      ) : null}
                       <Action
                         variant="quiet"
                         size="sm"
@@ -589,8 +602,15 @@ function FileApplicationsForm({
       ) : null}
       {wopiImport ? (
         <WOPIDiscoveryDialog
-          onClose={() => setWOPIImport(false)}
-          onApply={(app) => changeWebApps([...webApps, app])}
+          application={wopiImport === 'new' ? undefined : wopiImport}
+          onClose={() => setWOPIImport(undefined)}
+          onApply={(app) =>
+            changeWebApps(
+              wopiImport === 'new'
+                ? [...webApps, app]
+                : webApps.map((current) => (current.id === app.id ? app : current)),
+            )
+          }
         />
       ) : null}
       {editedItem && extensionEdit && parsedExtensions ? (

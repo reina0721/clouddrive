@@ -120,6 +120,8 @@ const (
 	OperationFilesPublicWebPreviewsHead     OperationID = "files.public.web-previews.head"
 	OperationFilesPublicWopiContents        OperationID = "files.public.wopi.contents"
 	OperationFilesPublicWopiInfo            OperationID = "files.public.wopi.info"
+	OperationFilesPublicWopiLock            OperationID = "files.public.wopi.lock"
+	OperationFilesPublicWopiPut             OperationID = "files.public.wopi.put"
 	OperationFilesRestore                   OperationID = "files.restore"
 	OperationFilesSettingsRead              OperationID = "files.settings.read"
 	OperationFilesSettingsSave              OperationID = "files.settings.save"
@@ -345,6 +347,8 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesPublicWebPreviewsHead, Method: "HEAD", Path: "/api/v1/file-web-previews/{token}", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicWopiContents, Method: "GET", Path: "/wopi/files/{id}/contents", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesPublicWopiInfo, Method: "GET", Path: "/wopi/files/{id}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicWopiLock, Method: "POST", Path: "/wopi/files/{id}", Policy: "public", Scope: "", Action: ""},
+	{ID: OperationFilesPublicWopiPut, Method: "POST", Path: "/wopi/files/{id}/contents", Policy: "public", Scope: "", Action: ""},
 	{ID: OperationFilesRestore, Method: "POST", Path: "/api/v1/files/{id}/restore", Policy: "protected", Scope: "files:write", Action: "files.restore"},
 	{ID: OperationFilesSettingsRead, Method: "GET", Path: "/api/v1/files/settings", Policy: "protected", Scope: "files:settings:read", Action: "files.settings.read"},
 	{ID: OperationFilesSettingsSave, Method: "PUT", Path: "/api/v1/files/settings", Policy: "protected", Scope: "files:settings:write", Action: "files.settings.save"},

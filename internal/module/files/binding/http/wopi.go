@@ -83,12 +83,17 @@ func registerWOPI(api huma.API, h *handler.Handler, operation func(string, strin
 			}).Body(raw)
 		}}, nil
 	})
+	registerWOPIEdits(api, h)
 }
 
 func wopiReadOperation(id, path string, definition humabinding.Definition) huma.Operation {
+	return wopiOperation(id, http.MethodGet, path, definition)
+}
+
+func wopiOperation(id, method, path string, definition humabinding.Definition) huma.Operation {
 	definition.Security, definition.Policy = humabinding.SecurityNone, humabinding.PolicyPublic
 	op := humabinding.Define(huma.Operation{
-		OperationID: id, Method: http.MethodGet, Path: path, Tags: []string{"WOPI"},
+		OperationID: id, Method: method, Path: path, Tags: []string{"WOPI"},
 	}, definition)
 	op.Middlewares = append(op.Middlewares, sharingHeaders)
 	return op

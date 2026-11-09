@@ -10,11 +10,18 @@ import (
 //go:embed sqlite/*.sql postgres/*.sql mysql/*.sql
 var sqlFiles embed.FS
 
-const CurrentVersion uint = 26
+const CurrentVersion uint = 27
 const TableName = "files_schema_migrations"
 
 func Set() dbmigrate.Set {
 	return dbmigrate.Set{Name: "files", FS: sqlFiles, CurrentVersion: CurrentVersion, MigrationsTable: TableName, DriverPaths: map[database.Driver]string{database.DriverSQLite: "sqlite", database.DriverPostgres: "postgres", database.DriverMySQL: "mysql"}, SHA256ByFile: map[string]string{
+		"sqlite/000027_wopi_write_locks.up.sql":     "72a076dc73153624750b7f5eabb3ba56848591085baceda48cf86ae8d4ff5e58",
+		"sqlite/000027_wopi_write_locks.down.sql":   "ddc6ed51bf6c4daa456eacfdc12528fd25a94681454fe01db81463b03a3c9334",
+		"postgres/000027_wopi_write_locks.up.sql":   "72a076dc73153624750b7f5eabb3ba56848591085baceda48cf86ae8d4ff5e58",
+		"postgres/000027_wopi_write_locks.down.sql": "ddc6ed51bf6c4daa456eacfdc12528fd25a94681454fe01db81463b03a3c9334",
+		"mysql/000027_wopi_write_locks.up.sql":      "72a076dc73153624750b7f5eabb3ba56848591085baceda48cf86ae8d4ff5e58",
+		"mysql/000027_wopi_write_locks.down.sql":    "ddc6ed51bf6c4daa456eacfdc12528fd25a94681454fe01db81463b03a3c9334",
+
 		"sqlite/000026_maintenance_runs.up.sql":     "56d28cdfbd1d7764abc76fbc34f4cfe79993585ac50862e7ebac1460d12abb48",
 		"sqlite/000026_maintenance_runs.down.sql":   "592be1d95ed06d36941355ad1c60897766224b0dc005361871ec9655c1922b7f",
 		"postgres/000026_maintenance_runs.up.sql":   "8c99ce752496106c22f6d77292a76d3af1fca6fbbd0f2793f5a7c49f1238ea98",

@@ -25,30 +25,54 @@ const (
 
 var ErrWriteLocked = errors.New("file write locked")
 
+const MaxWOPILockBytes = 1024
+
+// ValidWOPILockValue 约束可回写至 HTTP 响应头的客户端锁标识。
+func ValidWOPILockValue(value string) bool {
+	if value == "" || len(value) > MaxWOPILockBytes {
+		return false
+	}
+	for index := range len(value) {
+		if value[index] < 0x20 || value[index] > 0x7e {
+			return false
+		}
+	}
+	return strings.TrimSpace(value) == value
+}
+
 // WriteLock 固定在owner规范URL命名空间；不能随条目ID移动。
 type WriteLock struct {
-	ID                 string
-	OwnerID            string
-	ConnectionID       string
-	ConnectionRevision int64
-	RootPath           string
-	Depth              WriteLockDepth
-	OwnerXML           string `json:"-"`
-	CreatedAt          time.Time
-	ExpiresAt          time.Time
-	Revision           int64
+	ID                   string
+	OwnerID              string
+	ConnectionID         string
+	ConnectionRevision   int64
+	RootPath             string
+	Depth                WriteLockDepth
+	OwnerXML             string `json:"-"`
+	CreatedAt            time.Time
+	ExpiresAt            time.Time
+	Revision             int64
+	WOPISessionID        string `json:"-"`
+	WOPIEntryID          string `json:"-"`
+	WOPIValue            string `json:"-"`
+	WOPIContentRevision  int64  `json:"-"`
+	WOPISettingsRevision int64  `json:"-"`
 }
 
 func (l WriteLock) Token() string { return WriteLockTokenPrefix + l.ID }
 
-// FileWriteAuthority 只由已求值的连接条件产生，不替代连接权限检查。
+// FileWriteAuthority 只由已求值的 WebDAV 条件或已验证的 WOPI 会话产生。
 type FileWriteAuthority struct {
 	ConnectionID       string
 	ConnectionRevision int64
 	Tokens             []string
+	WOPILockID         string
 }
 
 func (a FileWriteAuthority) Allows(l WriteLock) bool {
+	if l.WOPISessionID != "" {
+		return a.WOPILockID != "" && a.WOPILockID == l.ID
+	}
 	if a.ConnectionID == "" || a.ConnectionID != l.ConnectionID || a.ConnectionRevision != l.ConnectionRevision {
 		return false
 	}

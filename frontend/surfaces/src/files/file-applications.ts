@@ -39,13 +39,15 @@ const webItem = z.object({
   maxBytes: z.number().int().nonnegative(),
   newTab: z.boolean(),
   protocol: z.literal('wopi').optional(),
+  editExtensions: z.array(z.string()).optional(),
 });
 const wopiApplication = z.object({
   discoveryUrl: z.string(),
   actions: z
-    .array(z.object({ extension: z.string(), url: z.string() }))
+    .array(z.object({ extension: z.string(), url: z.string(), editUrl: z.string().optional() }))
     .min(1)
     .max(128),
+  editEnabled: z.boolean().optional(),
 });
 export const wopiDiscoverySchema = wopiApplication.extend({ origin: z.string() });
 const webApp = webItem.extend({ urlTemplate: z.string(), wopi: wopiApplication.optional() });
@@ -85,6 +87,7 @@ export type WebFileApplicationItem = z.infer<typeof webItem>;
 export type WebFilePreview = z.infer<typeof webFilePreviewSchema>;
 export type WOPIDiscovery = z.infer<typeof wopiDiscoverySchema>;
 export const maxWOPIExtensions = 128;
+export const maxWOPIEditBytes = 8 * 1024 * 1024;
 
 export type FileApplicationID = z.infer<typeof applicationID>;
 export type FileApplicationPlatform = z.infer<typeof platform>;
@@ -102,7 +105,7 @@ export type FileApplicationSettings = {
   revision: number;
   apps: FileApplicationRule[];
   defaults: FileApplicationDefault[];
-  webApps?: Omit<WebFileApplication, 'origin'>[];
+  webApps?: Omit<WebFileApplication, 'origin' | 'editExtensions'>[];
 };
 
 const names: Record<FileApplicationID, readonly [string, string]> = {

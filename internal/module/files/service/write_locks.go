@@ -358,6 +358,7 @@ type WriteLockSummary struct {
 	Depth        model.WriteLockDepth `json:"depth"`
 	ExpiresAt    time.Time            `json:"expiresAt"`
 	Revision     int64                `json:"revision"`
+	Protocol     FilePreviewProtocol  `json:"protocol,omitempty" enum:"wopi"`
 }
 
 func (s *WriteLocks) List(ctx context.Context, owner string) ([]WriteLockSummary, error) {
@@ -367,7 +368,11 @@ func (s *WriteLocks) List(ctx context.Context, owner string) ([]WriteLockSummary
 	}
 	result := make([]WriteLockSummary, 0, len(locks))
 	for _, lock := range locks {
-		result = append(result, WriteLockSummary{ID: lock.ID, Path: lock.RootPath, ConnectionID: lock.ConnectionID, Depth: lock.Depth, ExpiresAt: lock.ExpiresAt, Revision: lock.Revision})
+		summary := WriteLockSummary{ID: lock.ID, Path: lock.RootPath, ConnectionID: lock.ConnectionID, Depth: lock.Depth, ExpiresAt: lock.ExpiresAt, Revision: lock.Revision}
+		if lock.WOPISessionID != "" {
+			summary.Protocol = FilePreviewWOPI
+		}
+		result = append(result, summary)
 	}
 	return result, nil
 }

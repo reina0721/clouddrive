@@ -80,7 +80,7 @@ func verifyWOPIView(t *testing.T, admin, observer *consoleTestClient) {
 	publicFileContentRequest(t, filePath+"?access_token=invalid", "GET", nil, 401)
 	publicFileContentRequest(t, admin.base+"/wopi/files/12345678-1234-1234-1234-1234567890ab"+query, "GET", nil, 404)
 	publicFileContentRequest(t, admin.base+"/api/v1/file-web-previews/"+token, "GET", nil, 404)
-	publicFileContentRequest(t, filePath+"/contents"+query, "POST", http.Header{"X-WOPI-Override": {"PUT"}}, 405)
+	publicFileContentRequest(t, filePath+"/contents"+query, "POST", http.Header{"X-WOPI-Override": {"PUT"}}, 404)
 	admin.request(t, "PUT", files+"/"+entryID+"/text", map[string]any{"text": "new", "expectedRevision": 1}, 200)
 	publicFileContentRequest(t, filePath+query, "GET", nil, 404)
 	publicFileContentRequest(t, filePath+"/contents"+query, "GET", nil, 404)

@@ -8276,6 +8276,9 @@
           "discoveryUrl": {
             "maxLength": 2048,
             "type": "string"
+          },
+          "editEnabled": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -8299,6 +8302,9 @@
           "discoveryUrl": {
             "maxLength": 2048,
             "type": "string"
+          },
+          "editEnabled": {
+            "type": "boolean"
           },
           "origin": {
             "type": "string"
@@ -8384,6 +8390,10 @@
       "WOPIViewAction": {
         "additionalProperties": false,
         "properties": {
+          "editUrl": {
+            "maxLength": 2048,
+            "type": "string"
+          },
           "extension": {
             "maxLength": 24,
             "type": "string"
@@ -8402,6 +8412,14 @@
       "WebFileApplication": {
         "additionalProperties": false,
         "properties": {
+          "editExtensions": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true,
+            "type": "array"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -8476,6 +8494,14 @@
       "WebFileApplicationItem": {
         "additionalProperties": false,
         "properties": {
+          "editExtensions": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true,
+            "type": "array"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -8581,6 +8607,12 @@
             "format": "int64",
             "minimum": 1,
             "type": "integer"
+          },
+          "mode": {
+            "enum": [
+              "edit"
+            ],
+            "type": "string"
           },
           "origin": {
             "maxLength": 512,
@@ -8755,6 +8787,12 @@
             "type": "string"
           },
           "path": {
+            "type": "string"
+          },
+          "protocol": {
+            "enum": [
+              "wopi"
+            ],
             "type": "string"
           },
           "revision": {
@@ -21643,6 +21681,67 @@
         "tags": [
           "WOPI"
         ]
+      },
+      "post": {
+        "operationId": "files.public.wopi.lock",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "access_token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-WOPI-Override",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-WOPI-Lock",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-WOPI-OldLock",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已处理 WOPI 锁命令"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "WOPI"
+        ]
       }
     },
     "/wopi/files/{id}/contents": {
@@ -21688,6 +21787,72 @@
               }
             },
             "description": "WOPI 只读文件内容"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "tags": [
+          "WOPI"
+        ]
+      },
+      "post": {
+        "operationId": "files.public.wopi.put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "access_token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-WOPI-Override",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-WOPI-Lock",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "format": "binary",
+                "type": "string",
+                "x-contentMediaType": "application/octet-stream"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "已保存 WOPI 文件版本"
           },
           "default": {
             "content": {

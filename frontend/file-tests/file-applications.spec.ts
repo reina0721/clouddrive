@@ -68,6 +68,7 @@ async function restoreApplications(page: Page, initial: FileApplicationView) {
     webApps: initial.webApps.map((app) => {
       const input = { ...app };
       delete input.origin;
+      delete input.editExtensions;
       return input;
     }),
   });
@@ -609,7 +610,7 @@ test('导入 WOPI 应用并打开真实只读文件', async ({ page }, info) => 
         actions: [
           { extension: 'docx', url: origin + '/document' },
           { extension: 'xlsx', url: origin + '/sheet' },
-          { extension: 'md', url: origin + '/reader' },
+          { extension: 'md', url: origin + '/reader', editUrl: origin + '/edit' },
         ],
       },
     });
@@ -644,6 +645,40 @@ test('导入 WOPI 应用并打开真实只读文件', async ({ page }, info) => 
     await route.fulfill({
       contentType: 'text/html; charset=utf-8',
       body: '<h1>WOPI 只读文档已加载</h1>',
+    });
+  });
+  await page.context().route(origin + '/edit?*', async (route) => {
+    const request = route.request();
+    expect(request.method()).toBe('POST');
+    const form = new URLSearchParams(request.postData()!);
+    const source = new URL(request.url()).searchParams.get('WOPISrc')!;
+    const query = '?' + new URLSearchParams({ access_token: form.get('access_token')! }).toString();
+    const metadata = await page.request.get(source + query);
+    expect(await metadata.json()).toMatchObject({
+      BaseFileName: name,
+      UserCanWrite: true,
+      ReadOnly: false,
+    });
+    const headers = { 'X-WOPI-Lock': 'qa-edit-lock' };
+    const lock = await page.request.post(source + query, {
+      headers: { ...headers, 'X-WOPI-Override': 'LOCK' },
+    });
+    expect(lock.status()).toBe(200);
+    const saved = await page.request.post(source + '/contents' + query, {
+      headers: { ...headers, 'X-WOPI-Override': 'PUT', 'Content-Type': 'application/octet-stream' },
+      data: Buffer.from('edited from the WOPI reader'),
+    });
+    expect(saved.status()).toBe(200);
+    expect(saved.headers()['x-wopi-itemversion']).toBe('2');
+    const read = await page.request.get(source + '/contents' + query);
+    expect(await read.text()).toBe('edited from the WOPI reader');
+    const unlock = await page.request.post(source + query, {
+      headers: { ...headers, 'X-WOPI-Override': 'UNLOCK' },
+    });
+    expect(unlock.status()).toBe(200);
+    await route.fulfill({
+      contentType: 'text/html; charset=utf-8',
+      body: '<h1>WOPI 文档已保存</h1>',
     });
   });
   const open = page.getByRole('button', { name: '添加 WOPI 应用', exact: true });
@@ -682,6 +717,7 @@ test('导入 WOPI 应用并打开真实只读文件', async ({ page }, info) => 
     await address.fill(endpoint);
     await discover.click();
     await expect(importer.getByRole('status')).toContainText('.docx, .xlsx, .md');
+    await expect(importer.getByRole('status')).toContainText('可编辑格式 .md');
     await page.screenshot({ path: info.outputPath('wopi-discovery.png'), animations: 'disabled' });
     await draft.click();
     await page.getByRole('button', { name: '编辑 WOPI · wopi.example.test', exact: true }).click();
@@ -690,6 +726,7 @@ test('导入 WOPI 应用并打开真实只读文件', async ({ page }, info) => 
     await edit.getByLabel('扩展名列表', { exact: true }).fill('md, pdf');
     await expect(edit.getByText('请选择发现结果中支持的扩展名。')).toBeVisible();
     await edit.getByLabel('扩展名列表', { exact: true }).fill('md, docx');
+    await edit.getByRole('checkbox', { name: '允许在线编辑', exact: true }).press('Space');
     await edit.getByRole('button', { name: /平台/ }).click();
     await page.getByRole('option', { name: '桌面端', exact: true }).click();
     await draft.click();
@@ -717,6 +754,19 @@ test('导入 WOPI 应用并打开真实只读文件', async ({ page }, info) => 
     await expect(popup.getByRole('heading', { name: 'WOPI 只读文档已加载' })).toBeVisible();
     await popup.close();
     expect(viewerRequests).toBe(2);
+    await openFile();
+    await expect(viewer.getByRole('button', { name: '允许编辑', exact: true })).toBeEnabled();
+    await page.screenshot({
+      path: info.outputPath('wopi-edit-consent.png'),
+      animations: 'disabled',
+    });
+    await viewer.getByRole('button', { name: '允许编辑', exact: true }).click();
+    await expect(
+      page
+        .frameLocator('iframe[title="' + appName + '"]')
+        .getByRole('heading', { name: 'WOPI 文档已保存' }),
+    ).toBeVisible();
+    await page.screenshot({ path: info.outputPath('wopi-editor.png'), animations: 'disabled' });
     await page.setViewportSize({ width: 390, height: 760 });
     await openFile();
     const choices = page.getByRole('dialog', { name: '打开方式', exact: true });

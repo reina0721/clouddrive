@@ -80,8 +80,10 @@ export default function WriteLocksDialog({
                 <dl className="mt-2 text-sm">
                   <dt>{t('files.locks.connection')}</dt>
                   <dd className="break-all">
-                    {connections.find((connection) => connection.id === lock.connectionId)?.name ??
-                      lock.connectionId}
+                    {lock.protocol === 'wopi'
+                      ? 'WOPI'
+                      : (connections.find((connection) => connection.id === lock.connectionId)
+                          ?.name ?? lock.connectionId)}
                   </dd>
                   <dt>{t('files.locks.depth')}</dt>
                   <dd>{t('files.locks.' + (lock.depth === '0' ? 'self' : 'subtree'))}</dd>

@@ -20,9 +20,11 @@ function validEndpoint(value: string) {
 }
 
 export function WOPIDiscoveryDialog({
+  application,
   onApply,
   onClose,
 }: {
+  application?: WebFileApplication | undefined;
   onApply: (app: WebFileApplication) => void;
   onClose: () => void;
 }) {
@@ -30,7 +32,7 @@ export function WOPIDiscoveryDialog({
   const zh = locale.startsWith('zh');
   const files = useFiles();
   const title = zh ? '导入 WOPI 应用设置' : 'Import WOPI application';
-  const [endpoint, setEndpoint] = useState('');
+  const [endpoint, setEndpoint] = useState(application?.wopi?.discoveryUrl ?? '');
   const [draft, setDraft] = useState<WOPIDiscovery>();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -69,8 +71,8 @@ export function WOPIDiscoveryDialog({
       triggerLabel={title}
       description={
         zh
-          ? '输入文档服务的 HTTPS 发现地址，检查可用的只读格式。'
-          : 'Enter the document service’s HTTPS discovery address to check read-only formats.'
+          ? '输入文档服务的 HTTPS 发现地址，检查可用的查看与编辑格式。'
+          : 'Enter the document service’s HTTPS discovery address to check viewing and editing formats.'
       }
       cancelLabel={t('files.cancel')}
       confirmLabel={zh ? '应用到草稿' : 'Apply to draft'}
@@ -80,18 +82,27 @@ export function WOPIDiscoveryDialog({
       }}
       onConfirm={() => {
         if (!draft) return;
+        const discovered = draft.actions.map((action) => action.extension);
+        const retained = application?.extensions.filter((extension) =>
+          discovered.includes(extension),
+        );
+        const extensions = retained?.length ? retained : discovered;
+        const editEnabled =
+          application?.wopi?.editEnabled === true &&
+          draft.actions.some((action) => action.editUrl && extensions.includes(action.extension));
         onApply({
-          id: `web-${crypto.randomUUID().replaceAll('-', '')}`,
-          name: 'WOPI · ' + new URL(draft.origin).hostname.slice(0, 57),
-          enabled: true,
-          platform: 'all',
-          extensions: draft.actions.map((action) => action.extension),
-          maxBytes: 0,
-          newTab: false,
+          id: application?.id ?? `web-${crypto.randomUUID().replaceAll('-', '')}`,
+          name: application?.name ?? 'WOPI · ' + new URL(draft.origin).hostname.slice(0, 57),
+          enabled: application?.enabled ?? true,
+          platform: application?.platform ?? 'all',
+          extensions,
+          maxBytes: application?.maxBytes ?? 0,
+          newTab: application?.newTab ?? false,
+          ...(application?.iconUrl ? { iconUrl: application.iconUrl } : {}),
           origin: draft.origin,
           protocol: 'wopi',
           urlTemplate: '',
-          wopi: { discoveryUrl: draft.discoveryUrl, actions: draft.actions },
+          wopi: { discoveryUrl: draft.discoveryUrl, actions: draft.actions, editEnabled },
         });
       }}
     >
@@ -127,6 +138,15 @@ export function WOPIDiscoveryDialog({
                 : `${draft.actions.length} preview formats found`}
             </p>
             <p>{draft.actions.map((action) => '.' + action.extension).join(', ')}</p>
+            {draft.actions.some((action) => action.editUrl) ? (
+              <p>
+                {zh ? '可编辑格式' : 'Editable formats'}{' '}
+                {draft.actions
+                  .filter((action) => action.editUrl)
+                  .map((action) => '.' + action.extension)
+                  .join(', ')}
+              </p>
+            ) : null}
           </div>
         ) : null}
       </div>

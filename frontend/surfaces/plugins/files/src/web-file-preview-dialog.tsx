@@ -5,7 +5,11 @@ import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { HiddenField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
-import type { WebFileApplicationItem } from '../../../src/files/file-applications';
+import {
+  maxWOPIEditBytes,
+  type WebFileApplicationItem,
+} from '../../../src/files/file-applications';
+import { fileIconExtension } from '../../../src/files/icon-rules';
 import { FilesError, type FileEntry } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
 import { webFilePreviewURL } from '../../../src/files/web-file-preview';
@@ -85,7 +89,9 @@ export function WebFilePreviewDialog({
   const request = useRef<AbortController>(null);
   useEffect(() => () => request.current?.abort(), []);
   const oversized = application.maxBytes > 0 && entry.sizeBytes > application.maxBytes;
-  async function launch() {
+  const editable = application.editExtensions?.includes(fileIconExtension(entry.name));
+  const canEdit = editable && entry.sizeBytes <= maxWOPIEditBytes;
+  async function launch(mode?: 'edit') {
     if (loading || !application.origin || oversized) return;
     setLoading(true);
     setError('');
@@ -94,7 +100,7 @@ export function WebFilePreviewDialog({
     try {
       if (new URL(application.origin).origin === window.location.origin)
         throw new FilesError('unsupported');
-      const preview = await port.launchWebFilePreview(entry, application, controller.signal);
+      const preview = await port.launchWebFilePreview(entry, application, controller.signal, mode);
       if (preview.origin !== application.origin) throw new FilesError('conflict');
       if (application.protocol === 'wopi') {
         if (!preview.wopi) throw new FilesError('unavailable');
@@ -173,6 +179,22 @@ export function WebFilePreviewDialog({
             >
               {zh ? '允许并继续' : 'Allow and continue'}
             </Action>
+            {editable ? (
+              <>
+                <p className="text-sm text-ink-muted">
+                  {zh
+                    ? '编辑会允许该站点在两小时内保存此文件的新版本，单次保存最多 8 MiB。'
+                    : 'Editing allows this site to save new versions of this file for two hours, up to 8 MiB per save.'}
+                </p>
+                <Action
+                  variant="secondary"
+                  disabled={loading || oversized || !canEdit || !application.origin}
+                  onPress={() => void launch('edit')}
+                >
+                  {zh ? '允许编辑' : 'Allow editing'}
+                </Action>
+              </>
+            ) : null}
           </>
         ) : target.wopi ? (
           <WOPILaunch

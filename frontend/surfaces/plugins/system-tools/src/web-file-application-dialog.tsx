@@ -51,7 +51,14 @@ export function WebFileApplicationDialog({
   const [size, setSize] = useState(String(application?.maxBytes ?? 0));
   const [platform, setPlatform] = useState<FileApplicationPlatform>(application?.platform ?? 'all');
   const [newTab, setNewTab] = useState(application?.newTab ?? false);
+  const [editEnabled, setEditEnabled] = useState(wopi?.editEnabled ?? false);
   const parsed = parseFileApplicationExtensions(extensions, wopi ? maxWOPIExtensions : undefined);
+  const editableFormats =
+    'extensions' in parsed
+      ? (wopi?.actions.filter(
+          (action) => action.editUrl && parsed.extensions.includes(action.extension),
+        ) ?? [])
+      : [];
   const origin = wopi ? application?.origin : webFilePreviewOrigin(template.trim());
   const unsupported =
     wopi &&
@@ -101,7 +108,12 @@ export function WebFileApplicationDialog({
           platform,
           maxBytes,
           newTab,
-          ...(wopi ? { protocol: 'wopi', wopi } : {}),
+          ...(wopi
+            ? {
+                protocol: 'wopi',
+                wopi: { ...wopi, editEnabled: editEnabled && editableFormats.length > 0 },
+              }
+            : {}),
         });
       }}
     >
@@ -209,6 +221,23 @@ export function WebFileApplicationDialog({
           checked={newTab}
           onCheckedChange={setNewTab}
         />
+        {wopi ? (
+          <>
+            <CheckboxField
+              label={zh ? '允许在线编辑' : 'Allow online editing'}
+              checked={editEnabled && editableFormats.length > 0}
+              disabled={editableFormats.length === 0}
+              onCheckedChange={setEditEnabled}
+            />
+            <p className="text-sm text-ink-muted">
+              {editableFormats.length
+                ? editableFormats.map((action) => '.' + action.extension).join(', ')
+                : zh
+                  ? '当前扩展名只有查看动作。可重新发现应用以更新格式。'
+                  : 'The current extensions have view actions only. Rediscover the application to update its formats.'}
+            </p>
+          </>
+        ) : null}
       </div>
     </DialogSurface>
   );

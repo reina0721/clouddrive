@@ -245,6 +245,13 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 	if legacy["cursorPage"] != nil || legacy["pageSize"] != float64(50) {
 		t.Fatalf("未重启即启用了分页设置: %v", legacy)
 	}
+	t.Run("WOPI 编辑锁与版本保存", func(t *testing.T) {
+		verifyWOPIEdit(t, admin)
+	})
+	appView = admin.request(t, "GET", apps, nil, 200)
+	restoredApplications := appBody(int(appView["revision"].(float64)), newRules, newDefaults)
+	restoredApplications["webApps"] = []any{}
+	expectedAppRevision := admin.request(t, "PUT", apps, restoredApplications, 200)["revision"]
 	stop()
 	coordinator, _ = newGenerationTestCoordinator(t, configPath)
 	if err := coordinator.Start(t.Context()); err != nil {
@@ -255,7 +262,7 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 	active := admin.request(t, "GET", endpoint, nil, 200)
 	appView = admin.request(t, "GET", apps, nil, 200)
 	appDefault := appView["defaults"].([]any)[0].(map[string]any)
-	if appView["revision"] != float64(3) || appDefault["app"] != "text" || appDefault["extension"] != "note" {
+	if appView["revision"] != expectedAppRevision || appDefault["app"] != "text" || appDefault["extension"] != "note" {
 		t.Fatalf("重启后未保留默认应用: %v", appView)
 	}
 	markdown := findApp(appView, "markdown")

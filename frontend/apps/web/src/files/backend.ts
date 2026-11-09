@@ -415,7 +415,7 @@ export function createFilesRuntime(
       fileApplicationViewSchema.parse(await call('/applications', { method: 'PUT', body })),
     readActiveFileApplications: async (signal) =>
       fileApplicationPolicySchema.parse(await call('/applications/active', { signal })),
-    launchWebFilePreview: async (entry, application, signal) =>
+    launchWebFilePreview: async (entry, application, signal, mode) =>
       webFilePreviewSchema.parse(
         await call('/' + encodeURIComponent(entry.id) + '/web-preview', {
           method: 'POST',
@@ -423,6 +423,7 @@ export function createFilesRuntime(
             application: application.id,
             origin: application.origin,
             contentRevision: entry.contentRevision,
+            ...(mode ? { mode } : {}),
           },
           signal,
         }),

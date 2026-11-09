@@ -45,7 +45,8 @@ export type ConnectionState = 'active' | 'disabled' | 'revoked';
 export const writeLockSchema = z.object({
   id: z.string().uuid(),
   path: z.string().startsWith('/'),
-  connectionId: z.string().uuid(),
+  connectionId: z.union([z.string().uuid(), z.literal('')]),
+  protocol: z.literal('wopi').optional(),
   depth: z.enum(['0', 'infinity']),
   expiresAt: z.string().datetime(),
   revision: z.number().int().positive(),

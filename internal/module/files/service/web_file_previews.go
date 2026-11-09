@@ -33,6 +33,7 @@ type WebFilePreviewRequest struct {
 	Application     FileApplicationID `json:"application" pattern:"^web-[a-f0-9]{32}$"`
 	Origin          string            `json:"origin" maxLength:"512"`
 	ContentRevision int64             `json:"contentRevision" minimum:"1"`
+	Mode            string            `json:"mode,omitempty" enum:"edit"`
 }
 
 // WebFilePreview 包含浏览器启动外站所需的短期授权和模板。
@@ -59,9 +60,10 @@ type webPreviewGrant struct {
 	ExpiresAt       int64
 	Origin          string
 	Protocol        FilePreviewProtocol
+	EditSessionID   string
 }
 
-// WOPIFileInfo 按协议公布最小只读文件属性。
+// WOPIFileInfo 按协议公布文件属性和当前会话能力。
 type WOPIFileInfo struct {
 	BaseFileName            string `json:"BaseFileName"`
 	Size                    int64  `json:"Size"`
@@ -82,11 +84,13 @@ type WebFilePreviews struct {
 	applications *FileApplications
 	authority    DirectLinkAuthority
 	sealer       cipher.AEAD
+	wopiWrites   WOPIWriteRepository
+	lockPolicy   ConnectionPolicy
 }
 
 // NewWebFilePreviews 在文件模块装配时创建仅供当前代使用的密钥。
-func NewWebFilePreviews(files *Service, applications *FileApplications, authority DirectLinkAuthority) (*WebFilePreviews, error) {
-	if files == nil || applications == nil || authority == nil {
+func NewWebFilePreviews(files *Service, applications *FileApplications, authority DirectLinkAuthority, writes WOPIWriteRepository, lockPolicy ConnectionPolicy) (*WebFilePreviews, error) {
+	if files == nil || applications == nil || authority == nil || writes == nil {
 		return nil, fmt.Errorf("web preview dependencies are required")
 	}
 	var key [32]byte
@@ -100,10 +104,10 @@ func NewWebFilePreviews(files *Service, applications *FileApplications, authorit
 	if err != nil {
 		return nil, fmt.Errorf("initialize web preview sealer: %w", err)
 	}
-	return &WebFilePreviews{files: files, applications: applications, authority: authority, sealer: sealer}, nil
+	return &WebFilePreviews{files: files, applications: applications, authority: authority, sealer: sealer, wopiWrites: writes, lockPolicy: lockPolicy}, nil
 }
 
-// Launch 校验文件和目标，再签发短期读取能力。
+// Launch 校验文件和目标，再按用户选择签发短期查看或编辑票据。
 func (s *WebFilePreviews) Launch(ctx context.Context, owner, entryID string, request WebFilePreviewRequest) (WebFilePreview, error) {
 	view, err := s.applications.Read(ctx)
 	if err != nil {
@@ -131,10 +135,38 @@ func (s *WebFilePreviews) Launch(ctx context.Context, owner, entryID string, req
 	if app.MaxBytes > 0 && entry.SizeBytes > app.MaxBytes {
 		return WebFilePreview{}, model.ErrTooLarge
 	}
-	expires := s.files.clock.Now().Add(webPreviewTTL).Truncate(time.Second)
+	var actionURL, editSession string
+	lifetime := webPreviewTTL
+	if app.Protocol == FilePreviewWOPI {
+		action := slices.IndexFunc(app.WOPI.Actions, func(action WOPIViewAction) bool { return action.Extension == extension })
+		if action < 0 {
+			return WebFilePreview{}, model.ErrUnsupported
+		}
+		actionURL = app.WOPI.Actions[action].URL
+		if request.Mode == "edit" {
+			if !app.WOPI.EditEnabled || app.WOPI.Actions[action].EditURL == "" {
+				return WebFilePreview{}, model.ErrUnsupported
+			}
+			if entry.SizeBytes > MaxWOPIWriteBytes {
+				return WebFilePreview{}, model.ErrTooLarge
+			}
+			if err := s.authorizeWOPIWrite(ctx, owner); err != nil {
+				return WebFilePreview{}, err
+			}
+			editSession, err = s.files.ids.New()
+			if err != nil {
+				return WebFilePreview{}, err
+			}
+			actionURL, lifetime = app.WOPI.Actions[action].EditURL, wopiEditTTL
+		}
+	} else if request.Mode != "" {
+		return WebFilePreview{}, model.ErrUnsupported
+	}
+	expires := s.files.clock.Now().Add(lifetime).Truncate(time.Second)
 	grant := webPreviewGrant{
 		Owner: owner, EntryID: entry.ID, ContentRevision: entry.ContentRevision,
 		PolicyRevision: view.Revision, ExpiresAt: expires.Unix(), Origin: app.Origin, Protocol: app.Protocol,
+		EditSessionID: editSession,
 	}
 	encoded, err := json.Marshal(grant)
 	if err != nil {
@@ -143,11 +175,7 @@ func (s *WebFilePreviews) Launch(ctx context.Context, owner, entryID string, req
 	token := base64.RawURLEncoding.EncodeToString(s.sealer.Seal(nil, nil, encoded, nil))
 	result := WebFilePreview{URLTemplate: app.URLTemplate, Origin: app.Origin, Name: entry.Name, NewTab: app.NewTab, Token: token}
 	if app.Protocol == FilePreviewWOPI {
-		action := slices.IndexFunc(app.WOPI.Actions, func(action WOPIViewAction) bool { return action.Extension == extension })
-		if action < 0 {
-			return WebFilePreview{}, model.ErrUnsupported
-		}
-		result.WOPI = &WOPIPreviewLaunch{ActionURL: app.WOPI.Actions[action].URL, ExpiresAtMilliseconds: expires.UnixMilli()}
+		result.WOPI = &WOPIPreviewLaunch{ActionURL: actionURL, ExpiresAtMilliseconds: expires.UnixMilli()}
 	}
 	return result, nil
 }
@@ -185,6 +213,11 @@ func (s *WebFilePreviews) readGrant(ctx context.Context, token string, protocol 
 	if !allowed {
 		return webPreviewGrant{}, model.ErrMissing
 	}
+	if grant.EditSessionID != "" {
+		if err := s.authorizeWOPIWrite(ctx, grant.Owner); err != nil {
+			return webPreviewGrant{}, err
+		}
+	}
 	return grant, nil
 }
 
@@ -193,9 +226,24 @@ func (s *WebFilePreviews) verifyGrantVersion(ctx context.Context, grant webPrevi
 	if err != nil {
 		return err
 	}
-	if entry.Kind != model.File || grant.PolicyRevision != view.Revision || grant.ContentRevision != entry.ContentRevision ||
+	if entry.Kind != model.File || grant.PolicyRevision != view.Revision ||
 		grant.ExpiresAt <= s.files.clock.Now().Unix() {
 		return model.ErrMissing
+	}
+	if grant.ContentRevision != entry.ContentRevision {
+		if grant.EditSessionID == "" {
+			return model.ErrMissing
+		}
+		locks, err := s.wopiWrites.ReadWriteLocks(ctx, grant.Owner)
+		if err != nil {
+			return err
+		}
+		if !slices.ContainsFunc(locks, func(lock model.WriteLock) bool {
+			return lock.WOPIEntryID == entry.ID && lock.WOPISessionID == grant.EditSessionID &&
+				lock.WOPIContentRevision == entry.ContentRevision
+		}) {
+			return model.ErrMissing
+		}
 	}
 	return nil
 }
@@ -216,9 +264,11 @@ func (s *WebFilePreviews) InspectWOPI(ctx context.Context, token, entryID string
 	}
 	digest := sha256.Sum256([]byte("wopi-owner:" + grant.Owner))
 	user := base64.RawURLEncoding.EncodeToString(digest[:])
+	editable := grant.EditSessionID != ""
 	return WOPIFileInfo{
 		BaseFileName: entry.Name, Size: entry.SizeBytes, Version: strconv.FormatInt(entry.ContentRevision, 10),
-		OwnerID: user, UserID: user, UserFriendlyName: "Viewer", ReadOnly: true, UserCanNotWriteRelative: true,
+		OwnerID: user, UserID: user, UserFriendlyName: "Owner", ReadOnly: !editable, UserCanWrite: editable,
+		SupportsLocks: editable, SupportsUpdate: editable, UserCanNotWriteRelative: true,
 	}, nil
 }
 

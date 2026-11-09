@@ -88,6 +88,8 @@ Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Veri
 
 “文件浏览应用”也可从 HTTPS 发现地址导入 WOPI 阅读器，按文件格式打开只读文档。详见[171变更](docs/changes/171-wopi-view/README.md)。
 
+启用 WOPI 在线编辑后，文件所有者可授权编辑并保存新版本。外部编辑锁与网页、WebDAV 和上传共用写入保护。详见[172变更](docs/changes/172-wopi-edit/README.md)。
+
 管理区的“分享管理”页可按分享者、源文件和状态查看链接与活动。获准的管理者可单独或批量撤销链接，源文件仍由原所有者管理。详见[156变更](docs/changes/156-admin-share-management/README.md)。
 
 管理区的“后台任务管理”页提供跨账号归档和下载查询。获准的管理者可以预览并清理终态任务，保留已发布文件。详见[157变更](docs/changes/157-admin-background-tasks/README.md)。

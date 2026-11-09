@@ -33,12 +33,14 @@ const FilePreviewWOPI FilePreviewProtocol = "wopi"
 type WOPIViewAction struct {
 	Extension string `json:"extension" maxLength:"24"`
 	URL       string `json:"url" maxLength:"2048"`
+	EditURL   string `json:"editUrl,omitempty" maxLength:"2048"`
 }
 
 // WOPIApplication 保存导入地址及本次发现的浏览动作。
 type WOPIApplication struct {
 	DiscoveryURL string           `json:"discoveryUrl" maxLength:"2048"`
 	Actions      []WOPIViewAction `json:"actions" minItems:"1" maxItems:"128"`
+	EditEnabled  bool             `json:"editEnabled,omitempty"`
 }
 
 // WOPIDiscoveryDraft 返回可审阅的发现结果，调用方决定是否保存。
@@ -143,6 +145,7 @@ func parseWOPIDiscovery(encoded []byte, origin string) ([]WOPIViewAction, error)
 		}
 	}
 	seen := make(map[string]bool)
+	editURLs := make(map[string]string)
 	var actions []WOPIViewAction
 	for _, zone := range discovery.Zones {
 		if zone.Name != "external-https" && zone.Name != "external-http" {
@@ -150,11 +153,18 @@ func parseWOPIDiscovery(encoded []byte, origin string) ([]WOPIViewAction, error)
 		}
 		for _, action := range zone.Actions {
 			extension := normalizeFileApplicationExtension(action.Extension)
-			if action.Name != "view" || action.Requires != "" || !fileApplicationExtension.MatchString(extension) || seen[extension] {
+			if !fileApplicationExtension.MatchString(extension) ||
+				(action.Name != "view" && action.Name != "edit") ||
+				(action.Name == "view" && (action.Requires != "" || seen[extension])) ||
+				(action.Name == "edit" && (!supportsWOPIEditRequirements(action.Requires) || editURLs[extension] != "")) {
 				continue
 			}
 			address, err := wopiActionURL(wopiOptionalQuery.ReplaceAllString(action.URL, ""), origin)
 			if err != nil {
+				continue
+			}
+			if action.Name == "edit" {
+				editURLs[extension] = address
 				continue
 			}
 			seen[extension] = true
@@ -164,10 +174,24 @@ func parseWOPIDiscovery(encoded []byte, origin string) ([]WOPIViewAction, error)
 	if len(actions) == 0 {
 		return nil, model.ErrInvalid
 	}
+	for index := range actions {
+		actions[index].EditURL = editURLs[actions[index].Extension]
+	}
 	if len(actions) > maxWOPIActions || wopiActionBytes(actions) > maxWOPIStoredActionBytes {
 		return nil, model.ErrTooLarge
 	}
 	return actions, nil
+}
+
+func supportsWOPIEditRequirements(requirements string) bool {
+	for _, requirement := range strings.Split(requirements, ",") {
+		switch strings.TrimSpace(requirement) {
+		case "", "locks", "update":
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 func wopiActionURL(address, origin string) (string, error) {
@@ -191,7 +215,7 @@ func wopiActionURL(address, origin string) (string, error) {
 func wopiActionBytes(actions []WOPIViewAction) int {
 	size := 0
 	for _, action := range actions {
-		size += len(action.URL) + len(action.Extension)
+		size += len(action.URL) + len(action.EditURL) + len(action.Extension)
 	}
 	return size
 }
@@ -216,12 +240,19 @@ func normalizeWOPIApplication(input *WOPIApplication, extensions []string) (stri
 			return "", nil, err
 		}
 		byExtension[extension] = address
-		actions = append(actions, WOPIViewAction{Extension: extension, URL: address})
+		var editURL string
+		if action.EditURL != "" {
+			editURL, err = wopiActionURL(action.EditURL, origin)
+			if err != nil {
+				return "", nil, err
+			}
+		}
+		actions = append(actions, WOPIViewAction{Extension: extension, URL: address, EditURL: editURL})
 	}
 	for _, extension := range extensions {
 		if byExtension[extension] == "" {
 			return "", nil, model.ErrInvalid
 		}
 	}
-	return origin, &WOPIApplication{DiscoveryURL: discovery.String(), Actions: actions}, nil
+	return origin, &WOPIApplication{DiscoveryURL: discovery.String(), Actions: actions, EditEnabled: input.EditEnabled}, nil
 }

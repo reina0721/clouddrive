@@ -248,6 +248,7 @@ export type FilesPort = Readonly<{
     entry: FileEntry,
     application: WebFileApplicationItem,
     signal: AbortSignal,
+    mode?: 'edit',
   ): Promise<WebFilePreview>;
   discoverWOPI(endpoint: string, signal: AbortSignal): Promise<WOPIDiscovery>;
   saveFilesystemSettings(input: FilesystemSettingsInput): Promise<FilesystemSettings>;

@@ -39618,6 +39618,9 @@
           "discoveryUrl": {
             "maxLength": 2048,
             "type": "string"
+          },
+          "editEnabled": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -39641,6 +39644,9 @@
           "discoveryUrl": {
             "maxLength": 2048,
             "type": "string"
+          },
+          "editEnabled": {
+            "type": "boolean"
           },
           "origin": {
             "type": "string"
@@ -39726,6 +39732,10 @@
       "WOPIViewAction": {
         "additionalProperties": false,
         "properties": {
+          "editUrl": {
+            "maxLength": 2048,
+            "type": "string"
+          },
           "extension": {
             "maxLength": 24,
             "type": "string"
@@ -39744,6 +39754,14 @@
       "WebFileApplication": {
         "additionalProperties": false,
         "properties": {
+          "editExtensions": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true,
+            "type": "array"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -39818,6 +39836,14 @@
       "WebFileApplicationItem": {
         "additionalProperties": false,
         "properties": {
+          "editExtensions": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true,
+            "type": "array"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -39923,6 +39949,12 @@
             "format": "int64",
             "minimum": 1,
             "type": "integer"
+          },
+          "mode": {
+            "enum": [
+              "edit"
+            ],
+            "type": "string"
           },
           "origin": {
             "maxLength": 512,
@@ -40097,6 +40129,12 @@
             "type": "string"
           },
           "path": {
+            "type": "string"
+          },
+          "protocol": {
+            "enum": [
+              "wopi"
+            ],
             "type": "string"
           },
           "revision": {

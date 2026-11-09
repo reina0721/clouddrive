@@ -23,7 +23,7 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 文件权限维护新增 `GET/PUT /api/v1/files/{id}/access`（PUT携带独立revision，policy为null明确恢复继承）、`POST /api/v1/files/audience/lookup`（精确账号/角色查找）及 `POST /api/v1/files/{id}/access/effective`（实际分享及匿名/账号的已保存权限）。均使用原IAM、文件scope与写请求CSRF边界。分享管理投影增加audience，公开metadata增加denied/signInRequired，目录和条目返回实际permissions。公开路由保留public profile，同时可选解析同源Session获取受众事实；存在但无效的会话不会静默降级匿名。详见[文件管理](../docs/operations/file-management.md)。
 
-原生 OpenAPI 与 operation inventory 通过 `internal/composition/httpcatalog` 的同一清单生成，当前共 222 个操作。生成器不再单独选择模块，也不导入带资源的应用组合根。
+原生 OpenAPI 与 operation inventory 通过 `internal/composition/httpcatalog` 的同一清单生成，当前共 224 个操作。生成器不再单独选择模块，也不导入带资源的应用组合根。
 
 管理端 `GET /api/v1/files/admin-tasks` 及 `GET /api/v1/files/admin-tasks/{kind}/{id}` 要求 `files:task-admin:read`。`GET /admin-tasks/cleanup-preview` 与 `POST /admin-tasks/cleanup` 另需 `files:task-admin:cleanup`，变更需要 CSRF。清理接受最多 20 个任务快照，返回逐项状态。过期或已变化的选择以详情及结果为准。
 
@@ -47,7 +47,9 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 `POST /api/v1/files/{id}/web-preview` 要求 `files:read` 和 CSRF，提交应用 ID、已展示的来源和当前内容修订。匿名 `GET/HEAD /api/v1/file-web-previews/{token}` 接受短期单文件授权，支持 Range 和条件请求。已确认来源可发起浏览器跨域读取，响应禁止缓存，当前代重启后原凭据失效。
 
-`POST /api/v1/files/applications/wopi-discovery` 要求 `files:settings:write` 和 CSRF，返回可保存到 `webApps` 的 WOPI 只读动作。启动接口返回 `wopi.actionUrl` 和毫秒过期时间。协议客户端使用 `GET /wopi/files/{id}` 和 `GET /wopi/files/{id}/contents`，以专用短期 `access_token` 读取当前版本。回调由 WOPI 客户端直连，不经控制台原生投影。
+`POST /api/v1/files/applications/wopi-discovery` 要求 `files:settings:write` 和 CSRF，返回可保存到 `webApps` 的 WOPI 查看动作和可用的编辑动作。启动接口返回 `wopi.actionUrl` 和毫秒过期时间。协议客户端使用 `GET /wopi/files/{id}` 和 `GET /wopi/files/{id}/contents`，以专用短期 `access_token` 读取当前版本。回调由 WOPI 客户端直连，不经控制台原生投影。
+
+当发现结果提供编辑动作且管理员设置 `wopi.editEnabled` 时，启动请求的 `mode: "edit"` 需要文件所有者同时拥有 `files:write`。编辑票据支持 `POST /wopi/files/{id}` 的 LOCK、GET_LOCK、REFRESH_LOCK、UNLOCK 和携带 `X-WOPI-OldLock` 的换锁。持锁客户端通过 `POST /wopi/files/{id}/contents` 发送 `X-WOPI-Override: PUT`、锁标识和最多 8 MiB 的二进制内容。成功返回 `X-WOPI-ItemVersion`，锁冲突返回 409 和当前锁头。
 
 管理端使用 `GET /api/v1/files/admin-shares` 和 `GET /api/v1/files/admin-shares/{id}` 查询分享，要求 `files:share-admin:read`。`POST /api/v1/files/admin-shares/revoke` 要求 `files:share-admin:revoke` 及 CSRF，接受最多 20 个 ID 与修订号。任一目标版本冲突时返回 409，整批保持原状。响应不含分享或访问凭据。
 

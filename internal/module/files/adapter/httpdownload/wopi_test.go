@@ -28,6 +28,8 @@ func TestWOPIDiscoveryUsesBoundedVerifiedHTTPS(t *testing.T) {
 			body = `<wopi-discovery><net-zone name="external-http"><app name="writer">
 				<action name="edit" ext="docm" urlsrc="` + origin + `/edit"/>
 				<action name="view" ext="DOCX" urlsrc="` + origin + `/document?lang=&lt;ui=UI_LLCC&amp;&gt;"/>
+				<action name="edit" ext="DOCX" requires="locks,update" urlsrc="` + origin + `/edit-document"/>
+				<action name="edit" ext="xlsx" requires="cobalt" urlsrc="` + origin + `/edit-sheet"/>
 				<action name="view" ext="docx" urlsrc="` + origin + `/duplicate"/>
 				<action name="view" ext="xlsx" urlsrc="` + origin + `/spreadsheet?"/>
 				<action name="view" ext="pptx" urlsrc="https://elsewhere.example.test/view"/>
@@ -71,6 +73,7 @@ func TestWOPIDiscoveryUsesBoundedVerifiedHTTPS(t *testing.T) {
 	}
 	if draft.Origin != server.URL || len(draft.Actions) != 2 ||
 		draft.Actions[0].Extension != "docx" || strings.Contains(draft.Actions[0].URL, "UI_LLCC") ||
+		draft.Actions[0].EditURL != server.URL+"/edit-document" || draft.Actions[1].EditURL != "" ||
 		draft.Actions[1].Extension != "xlsx" || !strings.Contains(draft.Actions[1].URL, "/spreadsheet") {
 		t.Fatalf("发现结果未过滤或解析动作: %+v", draft)
 	}

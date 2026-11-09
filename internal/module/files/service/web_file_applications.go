@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/url"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode"
@@ -25,16 +26,17 @@ var webApplicationHost = regexp.MustCompile(`^[a-z0-9.-]+$`)
 
 // WebFileApplicationItem 是文件打开方式和授权提示所需的外部应用信息。
 type WebFileApplicationItem struct {
-	ID         FileApplicationID       `json:"id" pattern:"^web-[a-f0-9]{32}$"`
-	Enabled    bool                    `json:"enabled"`
-	Platform   FileApplicationPlatform `json:"platform" enum:"all,desktop,mobile"`
-	Extensions []string                `json:"extensions" minItems:"1" maxItems:"128"`
-	Name       string                  `json:"name" maxLength:"64"`
-	Origin     string                  `json:"origin,omitempty" readOnly:"true"`
-	IconURL    string                  `json:"iconUrl,omitempty" maxLength:"2048"`
-	MaxBytes   int64                   `json:"maxBytes" minimum:"0" maximum:"1099511627776"`
-	NewTab     bool                    `json:"newTab"`
-	Protocol   FilePreviewProtocol     `json:"protocol,omitempty" enum:"wopi"`
+	ID             FileApplicationID       `json:"id" pattern:"^web-[a-f0-9]{32}$"`
+	Enabled        bool                    `json:"enabled"`
+	Platform       FileApplicationPlatform `json:"platform" enum:"all,desktop,mobile"`
+	Extensions     []string                `json:"extensions" minItems:"1" maxItems:"128"`
+	Name           string                  `json:"name" maxLength:"64"`
+	Origin         string                  `json:"origin,omitempty" readOnly:"true"`
+	IconURL        string                  `json:"iconUrl,omitempty" maxLength:"2048"`
+	MaxBytes       int64                   `json:"maxBytes" minimum:"0" maximum:"1099511627776"`
+	NewTab         bool                    `json:"newTab"`
+	Protocol       FilePreviewProtocol     `json:"protocol,omitempty" enum:"wopi"`
+	EditExtensions []string                `json:"editExtensions,omitempty" readOnly:"true"`
 }
 
 // WebFileApplication 保存管理员配置的 URL 模板。
@@ -92,6 +94,17 @@ func normalizeWebFileApplications(values []WebFileApplication) ([]WebFileApplica
 			return nil, nil, err
 		}
 		app.Extensions, app.Origin = extensions, origin
+		app.EditExtensions = nil
+		if app.WOPI != nil && app.WOPI.EditEnabled {
+			for _, action := range app.WOPI.Actions {
+				if action.EditURL != "" && slices.Contains(extensions, action.Extension) {
+					app.EditExtensions = append(app.EditExtensions, action.Extension)
+				}
+			}
+			if len(app.EditExtensions) == 0 {
+				return nil, nil, model.ErrInvalid
+			}
+		}
 		apps, items = append(apps, app), append(items, app.WebFileApplicationItem)
 	}
 	return apps, items, nil
