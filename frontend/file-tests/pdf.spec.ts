@@ -74,6 +74,7 @@ test('F261–277：真实PDF分页显示文字查找导航与本地组件', asyn
 test('F278：真实加密PDF密码错误后重试', async ({ page }) => {
   const d = await upload(page, fixture('encrypted.pdf'));
   await expect(d.getByText('此PDF需要密码。', { exact: true })).toBeVisible();
+  await expect(d.getByRole('button', { name: '图片标注', exact: true })).toBeDisabled();
   await d.getByLabel('PDF密码（不保存）', { exact: true }).fill('wrong');
   await d.getByRole('button', { name: '打开文档', exact: true }).click();
   await expect(d.getByText('密码不正确，请重试。', { exact: true })).toBeVisible();
@@ -162,6 +163,256 @@ test('F264–277：缩放旋转、缩略图、大纲、内部链接及位置历�
   await third.locator('.annotationLayer a').first().click();
   await expect(d.getByText('第 10 / 10 页', { exact: true })).toBeVisible();
 });
+async function stampFixtures(page: Page) {
+  return page.evaluate(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 120;
+    canvas.height = 60;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('创建标注样本需要 Canvas');
+    context.fillStyle = '#e0009c';
+    context.fillRect(0, 0, 60, 60);
+    const png = canvas.toDataURL('image/png').split(',')[1] ?? '';
+    const webp = canvas.toDataURL('image/webp').split(',')[1] ?? '';
+    context.fillRect(0, 0, 120, 60);
+    const jpeg = canvas.toDataURL('image/jpeg').split(',')[1] ?? '';
+    canvas.width = 1025;
+    canvas.height = 1;
+    const wide = canvas.toDataURL('image/png').split(',')[1] ?? '';
+    return { png, webp, jpeg, wide };
+  });
+}
+
+async function chooseStamp(
+  page: Page,
+  dialog: ReturnType<Page['getByRole']>,
+  name: string,
+  buffer: Buffer,
+  mimeType = 'image/png',
+  button = '图片标注',
+) {
+  const pending = page.waitForEvent('filechooser');
+  await dialog.getByRole('button', { name: button, exact: true }).click();
+  await (await pending).setFiles({ name, buffer, mimeType });
+}
+
+test('PDF 本机图片标注可跨页编辑、缩放、撤销并导出真实副本', async ({ page }, info) => {
+  test.setTimeout(150_000);
+  await openReadingFixtureFolder(page, 'pdf-stamp-');
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const parent = new URL(page.url()).searchParams.get('parent');
+  const d = await upload(page, fixture('reader.pdf'));
+  const sourceName = await d.getByRole('heading').innerText();
+  const button = (name: string) => d.getByRole('button', { name, exact: true });
+  const frame = d.frameLocator('iframe');
+  const pageAt = (index: number) => frame.locator('.page[data-page-number="' + index + '"]');
+  const stamps = (index: number) => pageAt(index).locator('.stampEditor');
+  const { png, jpeg, webp, wide } = await stampFixtures(page);
+  const sample = Buffer.from(png, 'base64');
+  await expect(button('图片标注')).toBeEnabled();
+  await choose(page, d, '缩放与显示', '适合整页');
+  const canceled = page.waitForEvent('filechooser');
+  await button('图片标注').click();
+  await (await canceled).setFiles([]);
+  await expect(stamps(1)).toHaveCount(0);
+  await expect(button('导出标注副本')).toBeDisabled();
+  for (const [name, content, message] of [
+    ['bad.png', Buffer.from('invalid image'), /无法读取标注图片/],
+    ['broken.png', sample.subarray(0, 35), /无法读取标注图片/],
+    ['large.png', Buffer.concat([sample, Buffer.alloc(2 * 1024 * 1024)]), /超过 2 MiB/],
+    ['wide.png', Buffer.from(wide, 'base64'), /每边最多 1024 像素/],
+  ] as const) {
+    await chooseStamp(page, d, name, content);
+    await expect(d.getByRole('alert')).toHaveText(message);
+    await expect(stamps(1)).toHaveCount(0);
+  }
+  await chooseStamp(page, d, 'overlay.png', sample);
+  await expect(d.getByText('已在第 1 页添加图片标注。', { exact: true })).toBeVisible();
+  await expect(d.locator('iframe')).toHaveAttribute('data-pdf-editor', 'stamp');
+  const stamp = stamps(1).first();
+  const artwork = stamp.locator('canvas');
+  await expect(artwork).toBeVisible();
+  const pixels = await artwork.evaluate((canvas: HTMLCanvasElement) => {
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('无法读取标注画布');
+    const middle = Math.floor(canvas.height / 2);
+    return [
+      Array.from(context.getImageData(Math.floor(canvas.width * 0.25), middle, 1, 1).data),
+      Array.from(context.getImageData(Math.floor(canvas.width * 0.75), middle, 1, 1).data),
+    ];
+  });
+  expect(pixels).toEqual([
+    [224, 0, 156, 255],
+    [0, 0, 0, 0],
+  ]);
+  await expect(d.getByText('有未导出的标注', { exact: true })).toBeVisible();
+  const box = await artwork.boundingBox();
+  if (!box) throw new Error('缺少图片标注位置');
+  expect(box.width / box.height).toBeCloseTo(2, 1);
+  const drag = async (x: number, y: number, dx: number, dy: number) => {
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + dx, y + dy, { steps: 8 });
+    await page.mouse.up();
+  };
+  await drag(box.x + box.width * 0.25, box.y + box.height / 2, 24, 16);
+  await expect.poll(async () => (await artwork.boundingBox())?.x).toBeGreaterThan(box.x + 10);
+  const resizer = stamp.locator('.resizer.bottomRight');
+  await expect(resizer).toBeVisible();
+  const corner = await resizer.boundingBox();
+  if (!corner) throw new Error('缺少图片缩放控件');
+  await drag(corner.x + corner.width / 2, corner.y + corner.height / 2, 28, 14);
+  await expect
+    .poll(async () => (await artwork.boundingBox())?.width)
+    .toBeGreaterThan(box.width + 12);
+  const resized = await artwork.boundingBox();
+  if (!resized) throw new Error('缩放后缺少图片标注位置');
+  expect(resized.width / resized.height).toBeCloseTo(2, 1);
+
+  await button('下一页').click();
+  await expect(d.getByText('第 2 / 10 页', { exact: true })).toBeVisible();
+  await expect(stamps(2)).toHaveCount(0);
+  await chooseStamp(page, d, 'overlay.jpg', Buffer.from(jpeg, 'base64'), 'image/jpeg');
+  await expect(d.getByText('已在第 2 页添加图片标注。', { exact: true })).toBeVisible();
+  await chooseStamp(page, d, 'overlay.webp', Buffer.from(webp, 'base64'), 'image/webp');
+  await expect(stamps(2).locator('canvas')).toHaveCount(2);
+  const recent = stamps(2).last();
+  await recent.click();
+  await recent.getByRole('button', { name: '移除图像', exact: true }).click();
+  await expect(stamps(2)).toHaveCount(1);
+  await button('撤销标注').click();
+  await expect(stamps(2)).toHaveCount(2);
+  await button('重做标注').click();
+  await expect(stamps(2)).toHaveCount(1);
+  await button('上一页').click();
+  await expect(d.getByText('第 1 / 10 页', { exact: true })).toBeVisible();
+  await expect(stamps(1)).toHaveCount(1);
+  await page.screenshot({ path: info.outputPath('pdf-stamp-desktop.png'), animations: 'disabled' });
+  await button('关闭').click();
+  const discard = page.getByRole('dialog', { name: '丢弃未导出的标注？', exact: true });
+  await discard.getByRole('button', { name: '继续阅读', exact: true }).click();
+  await expect(stamps(1)).toHaveCount(1);
+
+  const download = page.waitForEvent('download');
+  await button('导出标注副本').click();
+  const output = info.outputPath('stamp-annotated.pdf');
+  await (await download).saveAs(output);
+  expect((await readFile(output)).toString('latin1')).toContain('/Stamp');
+  await expect(d.getByText('有未导出的标注', { exact: true })).toHaveCount(0);
+  await button('关闭').click();
+  const originalBytes = await page.evaluate(
+    async ({ parent, sourceName }) => {
+      const list = await fetch(
+        '/api/console/v1/native/files?parent=' + encodeURIComponent(parent ?? ''),
+      );
+      if (!list.ok) throw new Error('无法读取测试目录');
+      const { items } = (await list.json()) as { items: { id: string; name: string }[] };
+      const original = items.find(({ name }) => name === sourceName);
+      if (!original) throw new Error('无法找到原件');
+      const response = await fetch(
+        '/api/console/v1/native/files/' + encodeURIComponent(original.id) + '/content',
+      );
+      if (!response.ok) throw new Error('无法读取 PDF 原件');
+      return Array.from(new Uint8Array(await response.arrayBuffer()));
+    },
+    { parent, sourceName },
+  );
+  expect(Buffer.from(originalBytes)).toEqual(await readFile(fixture('reader.pdf')));
+  const reopened = await upload(page, output);
+  const exported = reopened.frameLocator('iframe');
+  await expect(exported.locator('.page[data-page-number="1"] .stampAnnotation')).toHaveCount(1);
+  await reopened.getByRole('button', { name: '下一页', exact: true }).click();
+  await expect(exported.locator('.page[data-page-number="2"] .stampAnnotation')).toHaveCount(1);
+});
+
+test('PDF 图片读取可取消，窗口导入有界，窄屏英文仍可使用', async ({ page }, info) => {
+  test.setTimeout(150_000);
+  const d = await upload(page, fixture('reader.pdf'));
+  const name = await d.getByRole('heading').innerText();
+  const frame = d.frameLocator('iframe');
+  const button = (label: string) => d.getByRole('button', { name: label, exact: true });
+  const { png } = await stampFixtures(page);
+  const sample = Buffer.from(png, 'base64');
+  await expect(button('图片标注')).toBeEnabled();
+  type StampProbe = { closed: number; release?: () => void };
+  await page.evaluate(() => {
+    const probe: StampProbe = { closed: 0 };
+    Object.defineProperty(window, '__pdfStampProbe', { value: probe });
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- 保留原生位图的 this。
+    const close = ImageBitmap.prototype.close;
+    ImageBitmap.prototype.close = function () {
+      if (this.width === 120 && this.height === 60) probe.closed++;
+      close.call(this);
+    };
+    let pauseNext = true;
+    window.createImageBitmap = new Proxy(window.createImageBitmap.bind(window), {
+      async apply(target, receiver: unknown, args: unknown[]) {
+        const bitmap = await (Reflect.apply(target, receiver, args) as Promise<ImageBitmap>);
+        if (pauseNext && bitmap.width === 120 && bitmap.height === 60) {
+          pauseNext = false;
+          await new Promise<void>((resolve) => {
+            probe.release = resolve;
+          });
+        }
+        return bitmap;
+      },
+    });
+  });
+  await chooseStamp(page, d, 'cancel.png', sample);
+  await expect(button('下一页')).toBeDisabled();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        Boolean((window as unknown as { __pdfStampProbe: StampProbe }).__pdfStampProbe.release),
+      ),
+    )
+    .toBe(true);
+  await button('取消读取图片').click();
+  await page.evaluate(() =>
+    (window as unknown as { __pdfStampProbe: StampProbe }).__pdfStampProbe.release?.(),
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window as unknown as { __pdfStampProbe: StampProbe }).__pdfStampProbe.closed,
+      ),
+    )
+    .toBe(1);
+  await expect(frame.locator('.stampEditor')).toHaveCount(0);
+  const dropPrevented = await frame.locator('#viewerContainer').evaluate((element, bytes) => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File([Uint8Array.from(bytes)], 'drop.png', { type: 'image/png' }));
+    return !element.dispatchEvent(
+      new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true }),
+    );
+  }, Array.from(sample));
+  expect(dropPrevented).toBe(true);
+  await expect(frame.locator('.stampEditor')).toHaveCount(0);
+  for (let index = 1; index <= 12; index++) {
+    await chooseStamp(page, d, 'asset-' + index + '.png', sample);
+    await expect(frame.locator('.stampEditor canvas')).toHaveCount(index);
+  }
+  await expect(button('图片标注')).toBeDisabled();
+  await expect(d.getByText('本窗口最多导入 12 次图片标注。', { exact: true })).toBeVisible();
+  await button('撤销标注').click();
+  await expect(frame.locator('.stampEditor canvas')).toHaveCount(11);
+  await expect(button('图片标注')).toBeDisabled();
+  await button('关闭').click();
+  await page.getByRole('button', { name: '丢弃并关闭', exact: true }).click();
+  await page.getByRole('button', { name: '当前用户', exact: true }).click();
+  await page.getByRole('menuitem', { name: '语言 简体中文', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.getByRole('button', { name, exact: true }).click();
+  const reopened = page.getByRole('dialog', { name, exact: true });
+  await chooseStamp(page, reopened, 'mobile.png', sample, 'image/png', 'Image annotation');
+  await expect(
+    reopened.getByText('Image annotation added on page 1.', { exact: true }),
+  ).toBeVisible();
+  await expect(reopened.frameLocator('iframe').locator('.stampEditor canvas')).toBeVisible();
+  await page.screenshot({ path: info.outputPath('pdf-stamp-mobile.png'), animations: 'disabled' });
+});
+
 test('F279–280：真实文字批注、撤销重做、导出含批注副本再打开', async ({ page }, info) => {
   const d = await upload(page, fixture('reader.pdf'));
   const frame = d.frameLocator('iframe');
@@ -356,6 +607,7 @@ test('真实图像解码：4MP正常显示，9MP按可见预算说明省略', as
   }
 });
 test('后台上传刷新文件列表不重开阅读会话或丢弃临时批注', async ({ page }) => {
+  const parent = new URL(page.url()).searchParams.get('parent');
   const first = await upload(page, fixture('reader.pdf')),
     name = await first.getByRole('heading').innerText();
   await expect(first.getByRole('button', { name: '跳转', exact: true })).toBeEnabled();
@@ -365,6 +617,7 @@ test('后台上传刷新文件列表不重开阅读会话或丢弃临时批注',
     release = resolve;
   });
   const pattern = '**/native/files/transfers/*/data';
+  const backgroundName = 'background-' + Date.now() + '.txt';
   await page.route(pattern, async (route) => {
     if (route.request().method() === 'PATCH') await gate;
     await route.continue();
@@ -377,7 +630,7 @@ test('后台上传刷新文件列表不重开阅读会话或丢弃临时批注',
     await (
       await chooser
     ).setFiles({
-      name: 'background-' + Date.now() + '.txt',
+      name: backgroundName,
       mimeType: 'text/plain',
       buffer: Buffer.from('background upload'),
     });
@@ -397,15 +650,28 @@ test('后台上传刷新文件列表不重开阅读会话或丢弃临时批注',
       .fill('Keep draft after background refresh');
     await choose(page, d, '标注工具', '阅读与选择');
     await expect(d.getByText('有未导出的标注', { exact: true })).toBeVisible();
-    const refreshed = page.waitForResponse(
-      (response) =>
-        new URL(response.url()).pathname === '/api/console/v1/native/files' &&
-        response.request().method() === 'GET' &&
-        response.status() === 200,
-    );
+    const document = frame.locator('html');
+    await document.evaluate((node) => node.setAttribute('data-test-reader-session', 'retained'));
+    const refreshed = page.waitForResponse(async (response) => {
+      const url = new URL(response.url());
+      if (
+        url.pathname !== '/api/console/v1/native/files' ||
+        url.searchParams.get('parent') !== parent ||
+        url.searchParams.get('pagination') !== 'auto' ||
+        response.request().method() !== 'GET' ||
+        response.status() !== 200
+      )
+        return false;
+      const listing = (await response.json()) as { items: { name: string }[] };
+      return listing.items.some(({ name: listedName }) => listedName === backgroundName);
+    });
     release();
     await refreshed;
-    await expect(frame.locator('.annotationEditorLayer').first()).toContainText(
+    await expect(document).toHaveAttribute('data-test-reader-session', 'retained');
+    await expect(d.getByText('有未导出的标注', { exact: true })).toBeVisible();
+    // 阅读模式会卸下编辑层，切回后检查同一会话保有的实际文字。
+    await choose(page, d, '标注工具', '文字标注');
+    await expect(frame.locator('.page[data-page-number="1"] .freeTextEditor')).toContainText(
       'Keep draft after background refresh',
     );
     await expect(d.getByText('有未导出的标注', { exact: true })).toBeVisible();

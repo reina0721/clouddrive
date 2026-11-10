@@ -14,8 +14,13 @@ const pkg = JSON.parse(await readFile(join(vendor, 'package.json'), 'utf8'));
 if (pkg.version !== config.version)
   throw new Error('PDF SDK version does not match declared assets');
 const generated = join(root, 'apps/web/public/file-viewers/pdf');
-const target = resolve(generated, config.version);
-if (!/^\d+\.\d+\.\d+$/.test(config.version) || dirname(target) !== generated)
+const targetName = config.version + '-p' + config.protocolVersion;
+const target = resolve(generated, targetName);
+if (
+  !/^\d+\.\d+\.\d+-p[1-9]\d*$/.test(targetName) ||
+  config.publicPath !== '/file-viewers/pdf/' + targetName ||
+  dirname(target) !== generated
+)
   throw new Error('Invalid generated PDF target');
 const allowFiles = [
   'build/pdf.min.mjs',

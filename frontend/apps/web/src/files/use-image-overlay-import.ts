@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 import { readImageOverlay, type ImageOverlayError } from './image-overlay';
+import type { ImageFormat } from './image-format';
 
 /** useImageOverlayImport 在工作区卸载或取消时关闭尚未移交的位图。 */
 export function useImageOverlayImport() {
@@ -17,7 +18,10 @@ export function useImageOverlayImport() {
     setError(undefined);
   }
 
-  async function read(file: File, accept: (bitmap: ImageBitmap, name: string) => void) {
+  async function read(
+    file: File,
+    accept: (bitmap: ImageBitmap, name: string, type: ImageFormat) => void,
+  ) {
     if (request.current) return;
     const controller = new AbortController();
     request.current = controller;
@@ -30,7 +34,7 @@ export function useImageOverlayImport() {
       } else if (controller.signal.aborted) {
         result.bitmap.close();
       } else {
-        accept(result.bitmap, file.name);
+        accept(result.bitmap, file.name, result.type);
       }
     } catch (cause) {
       if (!controller.signal.aborted) throw cause;

@@ -17,7 +17,11 @@ async function walk(dir, prefix = '') {
   }
 }
 await walk(directory);
-if (manifest.version !== config.version || actual.size !== manifest.files.length)
+if (
+  manifest.version !== config.version ||
+  manifest.protocolVersion !== config.protocolVersion ||
+  actual.size !== manifest.files.length
+)
   throw new Error('PDF asset inventory mismatch');
 for (const entry of manifest.files) {
   const bytes = actual.get(entry.path);

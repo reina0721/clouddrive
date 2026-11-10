@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { FilesError, type FileDocumentProps } from '@clouddrive/surface/files';
 import { Action } from '@clouddrive/ui-adapter/action';
+import { FileChoiceAction } from '@clouddrive/ui-adapter/file-choice-action';
 import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
 import { CheckboxField, PasswordField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { SearchBox } from '@clouddrive/ui-adapter/search-box';
@@ -17,6 +18,8 @@ import {
   Search,
 } from 'lucide-react';
 import { downloadBlob } from '../native-download';
+import { imageOverlayLimit, imageOverlayTypes } from '../image-overlay';
+import { useImageOverlayImport } from '../use-image-overlay-import';
 import { PDFFrameSession, PDFFrameError, checkedOutline } from './session';
 import {
   emptyPdfState,
@@ -25,14 +28,15 @@ import {
   pdfPasswordMaxLength,
   pdfMinScale,
   pdfMaxScale,
+  pdfStampLimits,
   type PdfCommand,
   type PdfOutline,
-  type PdfEditorMode,
 } from './protocol';
 
 type Props = FileDocumentProps & {
   readContent: (props: FileDocumentProps, signal: AbortSignal) => Promise<ArrayBuffer>;
 };
+const readerModes = ['none', 'text', 'highlight', 'ink'] as const;
 const currentTheme = (): 'light' | 'dark' => {
   const theme = document.documentElement.dataset.theme;
   if (theme === 'light' || theme === 'dark') return theme;
@@ -57,6 +61,7 @@ export function PDFReaderView(props: Props) {
   );
   const [phase, setPhase] = useState<'loading' | 'password' | 'ready' | 'error'>('loading');
   const [state, setState] = useState({ ...emptyPdfState });
+  const stampImport = useImageOverlayImport();
   const [failure, setFailure] = useState(''),
     [notice, setNotice] = useState(''),
     [attempt, setAttempt] = useState(0),
@@ -218,7 +223,7 @@ export function PDFReaderView(props: Props) {
   const act = useCallback(
     async (
       command: PdfCommand,
-      consume?: (value: Awaited<ReturnType<PDFFrameSession['command']>>) => Promise<void>,
+      consume?: (value: Awaited<ReturnType<PDFFrameSession['command']>>) => void | Promise<void>,
     ) => {
       if (operation.current || !session.current) return;
       operation.current = true;
@@ -300,7 +305,22 @@ export function PDFReaderView(props: Props) {
       for (const url of urls) URL.revokeObjectURL(url);
     };
   }, [panel, phase, thumbnailPage, state.pages, state.rotation, limits, errorText]);
-  const available = phase === 'ready' && !busy && state.rendered;
+  const available = phase === 'ready' && !busy && !stampImport.loading && state.rendered;
+  const stampLimitReached = state.stampCount >= pdfStampLimits.count;
+  function chooseStamp(file: File) {
+    const owned = session.current;
+    if (!available || stampLimitReached || !owned) return;
+    const targetPage = state.page;
+    setFailure('');
+    setNotice('');
+    void stampImport.read(file, (bitmap, name, type) => {
+      bitmap.close();
+      if (session.current !== owned) return;
+      void act({ kind: 'stamp', page: targetPage, file: new File([file], name, { type }) }, () =>
+        setNotice(p('stampAdded', { page: targetPage })),
+      );
+    });
+  }
   const displayItems = [
     ['first', state.page === 1],
     ['last', state.page === state.pages],
@@ -488,16 +508,23 @@ export function PDFReaderView(props: Props) {
             triggerSize="sm"
             label={p('editor')}
             ariaLabel={p('editor')}
-            items={(['none', 'text', 'highlight', 'ink'] as const).map((id) => ({
+            items={readerModes.map((id) => ({
               id,
               label: p(id),
               disabled: !available,
             }))}
-            onAction={(mode) => {
-              if (['none', 'text', 'highlight', 'ink'].includes(mode))
-                void act({ kind: 'editor', mode: mode as PdfEditorMode });
+            onAction={(id) => {
+              const mode = readerModes.find((item) => item === id);
+              if (mode) void act({ kind: 'editor', mode });
             }}
           />
+          <FileChoiceAction
+            acceptedTypes={imageOverlayTypes}
+            disabled={!available || stampLimitReached}
+            onSelect={chooseStamp}
+          >
+            {p('stamp')}
+          </FileChoiceAction>
           <Action
             size="sm"
             variant="quiet"
@@ -553,6 +580,25 @@ export function PDFReaderView(props: Props) {
         {state.modified ? <span>{p('modified')}</span> : null}
         {busy ? <span>{p('working')}</span> : null}
       </div>
+      {stampImport.loading ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <p role="status">{p('stampReading')}</p>
+          <Action size="sm" variant="quiet" onPress={stampImport.cancel}>
+            {p('stampCancel')}
+          </Action>
+        </div>
+      ) : null}
+      {stampImport.error ? (
+        <p role="alert">
+          {p(stampImport.error, {
+            mebibytes: imageOverlayLimit.mebibytes,
+            pixels: imageOverlayLimit.sidePixels,
+          })}
+        </p>
+      ) : null}
+      {stampLimitReached ? (
+        <p role="status">{p('stampLimit', { count: pdfStampLimits.count })}</p>
+      ) : null}
       {phase === 'loading' ? <p role="status">{p('loading')}</p> : null}
       {phase === 'password' ? (
         <form
@@ -746,7 +792,7 @@ export function PDFReaderView(props: Props) {
         <iframe
           key={attempt}
           ref={frame}
-          inert={busy}
+          inert={busy || stampImport.loading}
           data-pdf-editor={state.editor}
           title={p('frame')}
           sandbox="allow-scripts allow-same-origin"

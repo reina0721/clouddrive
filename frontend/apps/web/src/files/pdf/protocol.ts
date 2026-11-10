@@ -1,5 +1,5 @@
 import type { PDFReaderLimits } from '@clouddrive/surface/files';
-export const pdfProtocolVersion = 1;
+export const pdfProtocolVersion = 2;
 export const pdfWorkerReadyKind = 'clouddrive-pdf-worker-ready';
 export const pdfThumbnailPageSize = 8;
 export const pdfPasswordMaxLength = 1024;
@@ -8,7 +8,10 @@ export const pdfOutlineTitleMaxLength = 4096;
 export const pdfHistoryLimit = 200;
 export const pdfMinScale = 0.25;
 export const pdfMaxScale = 4;
-export type PdfEditorMode = 'none' | 'text' | 'highlight' | 'ink';
+export const pdfStampLimits = { bytes: 2 * 1024 * 1024, count: 12 } as const;
+const pdfStampTypes = new Set(['image/png', 'image/jpeg', 'image/webp']);
+const pdfEditorModes = ['none', 'text', 'highlight', 'ink', 'stamp'] as const;
+export type PdfEditorMode = (typeof pdfEditorModes)[number];
 export type PdfTheme = 'light' | 'dark';
 export type PdfFailure = 'invalid' | 'limit' | 'worker' | 'timeout' | 'unavailable';
 export type PdfOutline = Readonly<{
@@ -30,6 +33,7 @@ export type PdfReaderState = Readonly<{
   undo: boolean;
   redo: boolean;
   editor: PdfEditorMode;
+  stampCount: number;
   historyBack: boolean;
   historyForward: boolean;
 }>;
@@ -46,6 +50,7 @@ export const emptyPdfState: PdfReaderState = {
   undo: false,
   redo: false,
   editor: 'none',
+  stampCount: 0,
   historyBack: false,
   historyForward: false,
 };
@@ -65,7 +70,8 @@ export type PdfCommand =
   | { kind: 'destination'; destinationId: string }
   | { kind: 'history'; direction: -1 | 1 }
   | { kind: 'thumbnail'; page: number }
-  | { kind: 'editor'; mode: PdfEditorMode }
+  | { kind: 'editor'; mode: Exclude<PdfEditorMode, 'stamp'> }
+  | { kind: 'stamp'; page: number; file: File }
   | { kind: 'edit'; action: 'undo' | 'redo' }
   | { kind: 'save' }
   | { kind: 'exported' }
@@ -111,6 +117,7 @@ const kinds = new Set([
   'history',
   'thumbnail',
   'editor',
+  'stamp',
   'edit',
   'save',
   'exported',
@@ -154,6 +161,14 @@ export function isPdfCommand(value: unknown): value is PdfRequest {
       return typeof value.destinationId === 'string' && value.destinationId.length <= 128;
     case 'editor':
       return ['none', 'text', 'highlight', 'ink'].includes(String(value.mode));
+    case 'stamp':
+      return (
+        positive(value.page) &&
+        value.file instanceof File &&
+        value.file.size > 0 &&
+        value.file.size <= pdfStampLimits.bytes &&
+        pdfStampTypes.has(value.file.type)
+      );
     case 'edit':
       return value.action === 'undo' || value.action === 'redo';
     default:
@@ -194,7 +209,7 @@ export function isPdfOpen(value: unknown): value is PdfOpen {
 export function isPdfReaderState(value: unknown): value is PdfReaderState {
   if (!record(value)) return false;
   return (
-    ['page', 'pages', 'matchesCurrent', 'matchesTotal'].every(
+    ['page', 'pages', 'matchesCurrent', 'matchesTotal', 'stampCount'].every(
       (key) =>
         typeof value[key] === 'number' &&
         Number.isSafeInteger(value[key]) &&
@@ -214,6 +229,7 @@ export function isPdfReaderState(value: unknown): value is PdfReaderState {
       'historyBack',
       'historyForward',
     ].every((key) => typeof value[key] === 'boolean') &&
-    ['none', 'text', 'highlight', 'ink'].includes(String(value.editor))
+    Number(value.stampCount) <= pdfStampLimits.count &&
+    pdfEditorModes.some((mode) => mode === value.editor)
   );
 }

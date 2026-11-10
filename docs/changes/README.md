@@ -175,3 +175,4 @@
 - [186 图片编辑视图与导出设置](186-image-editor-viewport/README.md) 提供画布实际尺寸、缩放、平移、原图对比及有损导出质量。
 - [187 图片版本保存与另存目录](187-image-version-save/README.md) 支持同格式发布新版本、过期草稿保护及另存目录。
 - [188 图片标注叠层](188-image-annotation-overlays/README.md) 支持本机图片放置、变形、叠放及像素合成。
+- [189 PDF 图片标注](189-pdf-image-annotations/README.md) 支持在 PDF 当前页导入、编辑和导出本机图片标注。

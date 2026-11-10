@@ -50,7 +50,7 @@ import {
   type FileViewPreferences,
   type UploadCandidate,
 } from '../../../src/files/model';
-import { isPDFDocument } from '../../../src/files/pdf-contract';
+import { isPDFDocument, type FileDocumentProps } from '../../../src/files/pdf-contract';
 import {
   changeFileView,
   resolveFileView,
@@ -241,7 +241,7 @@ export function FilesPage({
   const [accessTarget, setAccessTarget] = useState<FileEntry>();
   const [textEditor, setTextEditor] = useState<{ request: TextRequest; maxBytes: number }>();
   const [drawio, setDrawio] = useState<{ request: DrawioRequest; maxBytes: number }>();
-  const [pdfEntry, setPdfEntry] = useState<FileEntry>();
+  const [pdfPreview, setPdfPreview] = useState<Pick<FileDocumentProps, 'entry' | 'limits'>>();
   const [epubEntry, setEpubEntry] = useState<FileEntry>();
   const [mediaPreview, setMediaPreview] = useState<{
     entry: FileEntry;
@@ -709,6 +709,7 @@ export function FilesPage({
     [listing, preferences.view, currentGalleryPage],
   );
   const maxTextBytes = listing?.maxTextBytes;
+  const pdfReaderLimits = listing?.pdfReader;
   const playAudio = usePlayFileAudio();
   const launchApplication = useCallback(
     (entry: FileEntry, application: FileApplicationID, policy?: FileApplicationPolicy) => {
@@ -727,7 +728,9 @@ export function FilesPage({
           setArchiveEntry(entry);
           return;
         case 'pdf':
-          setPdfEntry(entry);
+          // 文件列表刷新时保留已打开的阅读会话和本次读取预算。
+          if (pdfReaderLimits) setPdfPreview({ entry, limits: pdfReaderLimits });
+          else setNotice(t('files.errors.unavailable'));
           return;
         case 'epub':
           setEpubEntry(entry);
@@ -794,7 +797,7 @@ export function FilesPage({
           return;
       }
     },
-    [t, maxMediaBytes, maxTextBytes, playAudio, visibleItems],
+    [t, maxMediaBytes, maxTextBytes, pdfReaderLimits, playAudio, visibleItems],
   );
   const showPreview = useCallback(
     async (entry: FileEntry, requested?: 'choose' | 'archive') => {
@@ -2119,13 +2122,9 @@ export function FilesPage({
           <DrawioDialog {...drawio} onClose={() => setDrawio(undefined)} onSaved={reload} />
         </Suspense>
       ) : null}
-      {pdfEntry && listing ? (
-        <Suspense fallback={<p role="status">{pdfEntry.name}</p>}>
-          <PdfDialog
-            entry={pdfEntry}
-            limits={listing.pdfReader}
-            onClose={() => setPdfEntry(undefined)}
-          />
+      {pdfPreview ? (
+        <Suspense fallback={<p role="status">{pdfPreview.entry.name}</p>}>
+          <PdfDialog {...pdfPreview} onClose={() => setPdfPreview(undefined)} />
         </Suspense>
       ) : null}
       {epubEntry ? (

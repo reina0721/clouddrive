@@ -10,6 +10,8 @@ import type { EventBus } from 'pdfjs-dist/types/web/event_utils';
 import type { PDFLinkService } from 'pdfjs-dist/types/web/pdf_link_service';
 import type { PDFFindController } from 'pdfjs-dist/types/web/pdf_find_controller';
 import type { GenericL10n } from 'pdfjs-dist/types/web/genericl10n';
+import type { PDFPageView } from 'pdfjs-dist/types/web/pdf_page_view';
+import type { AnnotationEditorLayerBuilder } from 'pdfjs-dist/types/web/annotation_editor_layer_builder';
 import {
   isPdfOpen,
   isPdfCommand,
@@ -21,6 +23,7 @@ import {
   pdfMinScale,
   pdfMaxScale,
   pdfPasswordMaxLength,
+  pdfStampLimits,
   type PdfOpen,
   type PdfRequest,
   type PdfEvent,
@@ -56,6 +59,7 @@ let state: PdfReaderState = { ...emptyPdfState };
 let passwordUpdater: ((password: string) => void) | undefined;
 let thumbnailTask: RenderTask | undefined,
   thumbnailBusy = false;
+let stampBusy = false;
 type Position = { page: number; scale: number; top: number; left: number };
 const navigation: Position[] = [];
 const capture = (): Position | undefined =>
@@ -146,16 +150,102 @@ async function selectEditorMode(mode: number) {
     }
   });
 }
+
+/** waitForStamp 等待 SDK 真正创建可见图像，卸载时中止观察。 */
+function waitForStamp(stamp: HTMLDivElement, layer: HTMLDivElement, signal: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    const cleanup = () => {
+      observer.disconnect();
+      signal.removeEventListener('abort', abort);
+    };
+    const abort = () => {
+      cleanup();
+      reject(new Error('PDF image annotation canceled', { cause: signal.reason }));
+    };
+    const check = () => {
+      if (!stamp.isConnected) {
+        cleanup();
+        reject(new Error('PDF image annotation unavailable'));
+      } else if (!stamp.hidden && stamp.querySelector('canvas')) {
+        cleanup();
+        resolve();
+      }
+    };
+    const observer = new MutationObserver(check);
+    if (signal.aborted) {
+      abort();
+      return;
+    }
+    observer.observe(layer, {
+      attributes: true,
+      attributeFilter: ['hidden'],
+      childList: true,
+      subtree: true,
+    });
+    signal.addEventListener('abort', abort, { once: true });
+    check();
+  });
+}
+
+async function insertStamp(
+  request: Extract<PdfRequest, { kind: 'stamp' }>,
+  activeViewer: PDFViewer,
+  stampMode: number,
+) {
+  if (stampBusy || request.page !== activeViewer.currentPageNumber)
+    throw new Error('PDF image annotation page unavailable');
+  if (state.stampCount >= pdfStampLimits.count) throw new RangeError('PDF image annotation limit');
+  stampBusy = true;
+  try {
+    await selectEditorMode(stampMode);
+    frameLifetime.signal.throwIfAborted();
+    if (request.page !== activeViewer.currentPageNumber)
+      throw new Error('PDF image annotation page changed');
+    const page = activeViewer.getPageView(request.page - 1) as PDFPageView | undefined;
+    const builder = page?.annotationEditorLayer as AnnotationEditorLayerBuilder | undefined;
+    const layer = builder?.annotationEditorLayer;
+    if (!layer?.div) throw new Error('PDF image annotation layer unavailable');
+
+    const bounds = layer.div.getBoundingClientRect();
+    const viewport = activeViewer.container.getBoundingClientRect();
+    const visibleCenter = (
+      start: number,
+      end: number,
+      viewportStart: number,
+      viewportEnd: number,
+    ) => (Math.max(start, viewportStart) + Math.min(end, viewportEnd)) / 2 - start;
+    // SDK 用 PointerEvent 的 offset 坐标放置对象，未分发事件的坐标即为输入的局部坐标。
+    const position = new PointerEvent('pointerdown', {
+      clientX: visibleCenter(bounds.left, bounds.right, viewport.left, viewport.right),
+      clientY: visibleCenter(bounds.top, bounds.bottom, viewport.top, viewport.bottom),
+    });
+    const editor = layer.createAndAddNewEditor(position, true, { bitmapFile: request.file });
+    if (!editor?.div) throw new Error('PDF image annotation unavailable');
+    await waitForStamp(editor.div, layer.div, frameLifetime.signal);
+    state = { ...state, stampCount: state.stampCount + 1 };
+  } finally {
+    stampBusy = false;
+  }
+}
 let uncommittedText = false;
 let exportedHash = '',
   pendingExportHash: string | undefined,
   modifiedFrame: number | undefined;
+function annotationHash(document: PDFDocumentProxy) {
+  const snapshot = document.annotationStorage.serializable;
+  // SDK 摘要也会生成导出用的位图副本，本次只使用 hash。
+  for (const transferable of snapshot.transfer ?? []) {
+    if (transferable instanceof ImageBitmap) transferable.close();
+  }
+  return snapshot.hash;
+}
+
 // 采用SDK的实际序列化摘要，覆盖导出后撤销/重做及同一个编辑器再次修改；不复制PDF序列化逻辑。
 function syncModified() {
-  if (doc && !closed)
+  if (doc && !closed && !stampBusy)
     state = {
       ...state,
-      modified: uncommittedText || doc.annotationStorage.serializable.hash !== exportedHash,
+      modified: uncommittedText || annotationHash(doc) !== exportedHash,
     };
 }
 function scheduleModified() {
@@ -394,7 +484,9 @@ async function open(message: PdfOpen) {
           ? 'highlight'
           : e.mode === core?.AnnotationEditorType.INK
             ? 'ink'
-            : 'none';
+            : e.mode === core?.AnnotationEditorType.STAMP
+              ? 'stamp'
+              : 'none';
     if (mode === 'none') uncommittedText = false;
     state = { ...state, editor: mode };
     syncModified();
@@ -434,7 +526,7 @@ async function open(message: PdfOpen) {
     await dispose(message.id);
     return;
   }
-  exportedHash = doc.annotationStorage.serializable.hash;
+  exportedHash = annotationHash(doc);
   // 上游声明将可写回调推断为null；本地只收敛该公开回调的实际类型。
   (doc.annotationStorage as unknown as { onSetModified: (() => void) | null }).onSetModified =
     () => {
@@ -590,6 +682,10 @@ async function command(request: PdfRequest) {
       await selectEditorMode(modes[request.mode]);
       break;
     }
+    case 'stamp':
+      await insertStamp(request, viewer, core.AnnotationEditorType.STAMP);
+      syncModified();
+      break;
     case 'edit':
       bus.dispatch('editingaction', { source: viewer, name: request.action });
       syncModified();
@@ -605,7 +701,7 @@ async function command(request: PdfRequest) {
     case 'save': {
       await selectEditorMode(core.AnnotationEditorType.NONE);
       pendingExportHash = undefined;
-      const savedHash = doc.annotationStorage.serializable.hash;
+      const savedHash = annotationHash(doc);
       const output = await doc.saveDocument();
       if (output.byteLength > opening.limits.maxBytes) throw new RangeError('PDF output limit');
       pendingExportHash = savedHash;
@@ -649,6 +745,51 @@ window.addEventListener('message', (event: MessageEvent<unknown>) => {
     fail(error instanceof RangeError ? 'limit' : 'unavailable', value.id),
   );
 });
+// 图片只经宿主的签名和尺寸校验进入，保留文本及已有文字/手绘/高亮标注的粘贴。
+function preventUnboundedFiles(event: ClipboardEvent | DragEvent, transfer: DataTransfer | null) {
+  if (!transfer) return;
+  const files = Array.from(transfer.items).some((item) => item.kind === 'file');
+  const editors = event.type === 'paste' ? transfer.getData('application/pdfjs') : '';
+  if (!files && !editors) return;
+  if (!files && editors.length <= pdfStampLimits.bytes) {
+    try {
+      const values: unknown = JSON.parse(editors);
+      const safeTypes = [
+        core?.AnnotationEditorType.FREETEXT,
+        core?.AnnotationEditorType.HIGHLIGHT,
+        core?.AnnotationEditorType.INK,
+      ];
+      if (
+        core &&
+        Array.isArray(values) &&
+        values.every(
+          (value: unknown) =>
+            typeof value === 'object' &&
+            value !== null &&
+            'annotationType' in value &&
+            typeof value.annotationType === 'number' &&
+            safeTypes.includes(value.annotationType),
+        )
+      )
+        return;
+    } catch (error) {
+      if (!(error instanceof SyntaxError)) throw error;
+    }
+  }
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+window.addEventListener(
+  'paste',
+  (event) => preventUnboundedFiles(event, event.clipboardData),
+  true,
+);
+window.addEventListener(
+  'dragover',
+  (event) => preventUnboundedFiles(event, event.dataTransfer),
+  true,
+);
+window.addEventListener('drop', (event) => preventUnboundedFiles(event, event.dataTransfer), true);
 // input只保守保护正在输入、尚未提交的文字；提交/撤销后的准确状态由SDK摘要重新计算。
 window.addEventListener('input', (event) => {
   if (ready && !closed && event.target instanceof HTMLElement && event.target.isContentEditable) {

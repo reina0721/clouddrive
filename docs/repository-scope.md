@@ -79,6 +79,7 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 [186 图片编辑视图与导出设置](changes/186-image-editor-viewport/README.md)增加画布实际尺寸、缩放和平移、完整原图对比，以及 JPEG/WebP 压缩质量。
 [187 图片版本保存与另存目录](changes/187-image-version-save/README.md)提供本人图片的新版本发布、修订保护与选目录另存。
 [188 图片标注叠层](changes/188-image-annotation-overlays/README.md)支持本人图片导入、调整和排序本机图片标注，合成到副本或新版本。
+[189 PDF 图片标注](changes/189-pdf-image-annotations/README.md)在本人 PDF 阅读器中加入本机图片标注，可移动、缩放、撤销并导出独立 PDF。
 
 [157管理端后台任务](changes/157-admin-background-tasks/README.md)提供 ZIP、解压、HTTP 与 BT 跨账号查询、诊断详情及终态清理。[158文件维护运行历史](changes/158-maintenance-run-history/README.md)增加回收站到期扫描和定时 Blob 回收的终态记录。运行中跟踪和跨请求关联仍在本范围之外。
 

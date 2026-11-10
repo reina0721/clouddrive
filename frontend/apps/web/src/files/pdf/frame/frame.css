@@ -12,3 +12,7 @@ body {
   overflow: auto;
   outline: none;
 }
+/* 阅读 frame 没有装配替代文本对话框，避免显示无操作的 SDK 控件。 */
+#viewerContainer .stampEditor .altText {
+  display: none;
+}

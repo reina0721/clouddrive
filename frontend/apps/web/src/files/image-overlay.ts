@@ -1,4 +1,4 @@
-import { editableImageType, imageFormats } from './image-format';
+import { editableImageType, imageFormats, type ImageFormat } from './image-format';
 import { rasterType } from './media-signatures';
 
 export const imageOverlayLimit = { mebibytes: 2, sidePixels: 1024 } as const;
@@ -16,7 +16,7 @@ function fitsOverlay({ width, height }: { width: number; height: number }) {
 export async function readImageOverlay(
   file: File,
   signal: AbortSignal,
-): Promise<{ bitmap: ImageBitmap } | { error: ImageOverlayError }> {
+): Promise<{ bitmap: ImageBitmap; type: ImageFormat } | { error: ImageOverlayError }> {
   if (file.size > imageOverlayLimit.mebibytes * 1024 * 1024) return { error: 'overlayBytes' };
   try {
     const type = await rasterType(file);
@@ -35,7 +35,7 @@ export async function readImageOverlay(
       signal.throwIfAborted();
       return { error: 'overlayDimensions' };
     }
-    return { bitmap };
+    return { bitmap, type };
   } catch (error) {
     if (signal.aborted) throw error;
     return { error: 'overlayInvalid' };
