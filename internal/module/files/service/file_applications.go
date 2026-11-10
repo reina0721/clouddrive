@@ -132,7 +132,7 @@ func builtInFileApplications() []FileApplicationItem {
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppEPUB, true, FileAppAll}, Extensions: []string{"epub"}},
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppArchive, true, FileAppAll}, Extensions: []string{"zip", "7z"}},
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppMarkdown, true, FileAppAll}, Extensions: []string{"md", "markdown"}},
-		{FileApplicationAvailability: FileApplicationAvailability{FileAppText, true, FileAppAll}, Extensions: []string{"txt", "md", "markdown", "csv", "json", "xml", "html", "css", "js", "log"}},
+		{FileApplicationAvailability: FileApplicationAvailability{FileAppText, true, FileAppAll}, Extensions: slices.Clone(privateTextExtensions)},
 	}
 	for index := range items {
 		item := &items[index]

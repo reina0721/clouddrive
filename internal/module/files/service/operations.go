@@ -10,7 +10,9 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"mime"
 	"path"
+	"slices"
 	"sort"
 	"strings"
 	"unicode/utf8"
@@ -19,6 +21,12 @@ import (
 )
 
 const editedTextMediaType = "text/plain; charset=utf-8"
+
+var privateTextExtensions = []string{
+	"txt", "md", "markdown", "csv", "json", "jsonc", "xml", "html", "htm", "css", "js", "mjs", "cjs",
+	"ts", "tsx", "jsx", "yaml", "yml", "toml", "ini", "log", "go", "py", "rs", "sh", "bash", "sql",
+	"java", "c", "cpp", "h", "hpp", "rb", "php", "ps1",
+}
 
 // CreateText 为小型纯文本创建提供明确入口，普通文件统一使用持久传输。
 func (s *Service) CreateText(ctx context.Context, owner, parent, name, key, text string) (model.Entry, error) {
@@ -77,7 +85,7 @@ func (s *Service) ReplaceText(ctx context.Context, owner, id string, revision in
 	if err != nil {
 		return model.Entry{}, err
 	}
-	if detail.Entry.Kind != model.File || !editableText(detail.Entry) {
+	if !detail.TextEditable {
 		if detail.Entry.Kind == model.Shortcut {
 			return model.Entry{}, model.ErrUnsupported
 		}
@@ -94,10 +102,7 @@ func (s *Service) ReplaceText(ctx context.Context, owner, id string, revision in
 		return model.Entry{}, err
 	}
 	key := "files/" + objectID
-	mediaType := detail.Entry.MediaType
-	if !strings.HasPrefix(mediaType, "text/") {
-		mediaType = editedTextMediaType
-	}
+	mediaType := utf8TextMediaType(detail.Entry.MediaType)
 	if err := s.content.Put(ctx, key, []byte(text), mediaType); err != nil {
 		return model.Entry{}, s.compensate(ctx, owner, key, fmt.Errorf("write text candidate: %w", err))
 	}
@@ -141,6 +146,33 @@ func (s *Service) ReplaceText(ctx context.Context, owner, id string, revision in
 
 func editableText(entry model.Entry) bool {
 	return strings.HasPrefix(entry.MediaType, "text/") || strings.EqualFold(path.Ext(entry.Name), ".md") || strings.EqualFold(path.Ext(entry.Name), ".txt")
+}
+
+func editablePrivateText(entry model.Entry) bool {
+	if entry.Kind != model.File || entry.TrashedAt != nil {
+		return false
+	}
+	return editableText(entry) ||
+		slices.Contains(privateTextExtensions, strings.TrimPrefix(strings.ToLower(path.Ext(entry.Name)), "."))
+}
+
+func utf8TextMediaType(previous string) string {
+	mediaType, parameters, err := mime.ParseMediaType(previous)
+	if err != nil {
+		return editedTextMediaType
+	}
+	switch mediaType {
+	case "application/json", "application/javascript", "application/xml", "application/yaml", "application/toml":
+	default:
+		if !strings.HasPrefix(mediaType, "text/") {
+			return editedTextMediaType
+		}
+	}
+	if _, hasCharset := parameters["charset"]; !hasCharset {
+		return previous
+	}
+	parameters["charset"] = "utf-8"
+	return mime.FormatMediaType(mediaType, parameters)
 }
 
 // Archive 先校验完整选择集与预算，再生成有界 ZIP；任何读取或关闭错误均返回失败。

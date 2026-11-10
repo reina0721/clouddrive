@@ -119,7 +119,7 @@ test('文件浏览应用保存、默认选择、平台限制和恢复', async ({
   }
   async function selectTextDefault() {
     await page.getByRole('button', { name: /\.md 的默认应用/ }).click();
-    await page.getByRole('option', { name: '文本查看器', exact: true }).click();
+    await page.getByRole('option', { name: '文本编辑器', exact: true }).click();
   }
   async function openFile() {
     await page.goto(folder.pathname + folder.search);
@@ -130,7 +130,7 @@ test('文件浏览应用保存、默认选择、平台限制和恢复', async ({
     await page.getByRole('menuitem', { name: '打开方式', exact: true }).click();
   }
   const markdown = picker.getByRole('button', { name: 'Markdown 编辑器', exact: true });
-  const text = picker.getByRole('button', { name: '文本查看器', exact: true });
+  const text = picker.getByRole('button', { name: '文本编辑器', exact: true });
   const heading = viewer
     .getByRole('article', { name: '预览', exact: true })
     .getByRole('heading', { name: '内置文件应用', exact: true });
@@ -157,7 +157,7 @@ test('文件浏览应用保存、默认选择、平台限制和恢复', async ({
     await selectTextDefault();
     await apply();
     await openFile();
-    await expect(viewer.locator('pre')).toHaveText('# 内置文件应用');
+    await expect(viewer.getByLabel('文件内容', { exact: true })).toHaveText('# 内置文件应用');
     await viewer.getByRole('button', { name: '关闭', exact: true }).click();
     await openWith();
     await expect(text).toBeVisible();
@@ -172,7 +172,7 @@ test('文件浏览应用保存、默认选择、平台限制和恢复', async ({
     await openFile();
     await expect(markdown).toBeVisible();
     await text.click();
-    await expect(viewer.locator('pre')).toHaveText('# 内置文件应用');
+    await expect(viewer.getByLabel('文件内容', { exact: true })).toHaveText('# 内置文件应用');
 
     await admin();
     await row.getByRole('button', { name: /平台/ }).click();
@@ -188,7 +188,7 @@ test('文件浏览应用保存、默认选择、平台限制和恢复', async ({
     await page.screenshot({ path: info.outputPath('applications-admin.png') });
     await page.setViewportSize({ width: 390, height: 760 });
     await openFile();
-    await expect(viewer.locator('pre')).toHaveText('# 内置文件应用');
+    await expect(viewer.getByLabel('文件内容', { exact: true })).toHaveText('# 内置文件应用');
     await viewer.getByRole('button', { name: '关闭', exact: true }).click();
     await openWith();
     await expect(text).toBeVisible();
@@ -196,7 +196,7 @@ test('文件浏览应用保存、默认选择、平台限制和恢复', async ({
 
     await page.setViewportSize({ width: 1280, height: 900 });
     await admin();
-    const enableText = page.getByRole('checkbox', { name: '启用 文本查看器', exact: true });
+    const enableText = page.getByRole('checkbox', { name: '启用 文本编辑器', exact: true });
     await enableText.press('Space');
     await expect(enableText).not.toBeChecked();
     await apply();
@@ -243,7 +243,7 @@ test('扩展名关联编辑、别名打开和清空恢复', async ({ page }, inf
       has: page.getByRole('rowheader', { name, exact: true }),
     });
   const markdownRow = row('Markdown 编辑器');
-  const textRow = row('文本查看器');
+  const textRow = row('文本编辑器');
   const epubRow = row('EPUB 阅读器');
   const editor = page
     .getByRole('dialog')
@@ -319,7 +319,7 @@ test('扩展名关联编辑、别名打开和清空恢复', async ({ page }, inf
     await expect(viewer).toHaveCount(0);
     await page.setViewportSize({ width: 390, height: 760 });
     await open(alias);
-    await expect(viewer.locator('pre')).toHaveText('# 别名编辑已保存');
+    await expect(viewer.getByLabel('文件内容', { exact: true })).toHaveText('# 别名编辑已保存');
     await page.setViewportSize({ width: 1280, height: 900 });
     await open(broken);
     const damaged = page.getByRole('dialog', { name: broken, exact: true });
@@ -336,7 +336,7 @@ test('扩展名关联编辑、别名打开和清空恢复', async ({ page }, inf
     ).toHaveCount(0);
     await savePolicy();
     await open(alias);
-    await expect(viewer.locator('pre')).toHaveText('# 别名编辑已保存');
+    await expect(viewer.getByLabel('文件内容', { exact: true })).toHaveText('# 别名编辑已保存');
     await openApplications(page);
     await markdownRow.getByRole('button', { name: '恢复内置扩展名', exact: true }).click();
     await expect(markdownRow).toContainText('.md, .markdown');

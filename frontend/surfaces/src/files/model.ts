@@ -1,4 +1,5 @@
 import type { HistoryPreferences } from './history-preferences';
+import type { FileTextSource } from './text-editor';
 import type { FileAccessPort } from './access';
 import { pdfReaderLimitsSchema } from './pdf-contract';
 import { z } from 'zod';
@@ -143,6 +144,7 @@ export type FileListing = z.infer<typeof fileListingSchema>;
 export const fileDetailSchema = z.object({
   entry: fileEntrySchema,
   breadcrumbs: z.array(fileEntrySchema),
+  textEditable: z.boolean().optional(),
 });
 export type FileQuery = Readonly<{
   parent: string;
@@ -282,6 +284,7 @@ export type FilesPort = Readonly<{
   createText(parentId: string, name: string, text: string): Promise<FileEntry>;
   textBytes(text: string): number;
   replaceText(id: string, expectedRevision: number, text: string): Promise<FileEntry>;
+  openTextSource(entry: FileEntry, signal: AbortSignal): Promise<FileTextSource>;
   archive(ids: readonly string[]): Promise<void>;
   shares(query: ShareQuery, signal?: AbortSignal): Promise<ShareListing>;
   readShare(id: string, signal?: AbortSignal): Promise<FileShare>;

@@ -174,3 +174,22 @@ func TestTextReplacementNormalizesRenamedFileMediaType(t *testing.T) {
 		t.Fatalf("文本替换后的分类不一致: %v", err)
 	}
 }
+
+func TestPrivateCodeTextEditingKeepsOriginalJSONMediaType(t *testing.T) {
+	s, _, _ := newTestService(t, DefaultPolicy())
+	ctx := t.Context()
+	entry, err := s.createSmallContent(ctx, "owner", "", "settings.json", "private-code-text-key", []byte(`{"enabled":false}`))
+	entry = requireEntry(t, entry, err)
+	detail, err := s.Detail(ctx, "owner", entry.ID)
+	if err != nil || !detail.TextEditable || editableText(entry) {
+		t.Fatalf("代码后缀必须仅扩大私有编辑: %v", err)
+	}
+	entry, err = s.ReplaceText(ctx, "owner", entry.ID, entry.ContentRevision, `{"enabled":true}`)
+	entry = requireEntry(t, entry, err)
+	if entry.MediaType != "application/json" || entry.ContentRevision != 2 {
+		t.Fatalf("写回后类型或版本不一致: %s/%d", entry.MediaType, entry.ContentRevision)
+	}
+	if utf8TextMediaType("text/plain; charset=gbk") != editedTextMediaType {
+		t.Fatal("UTF-8 内容仍带旧字符集")
+	}
+}

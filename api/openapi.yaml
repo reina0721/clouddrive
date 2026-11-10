@@ -2025,9 +2025,12 @@ components:
           type: array
         entry:
           $ref: "#/components/schemas/Entry"
+        textEditable:
+          type: boolean
       required:
         - entry
         - breadcrumbs
+        - textEditable
       type: object
     DirectLink:
       additionalProperties: false

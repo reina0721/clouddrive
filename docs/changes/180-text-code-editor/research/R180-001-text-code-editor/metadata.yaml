@@ -1,0 +1,26 @@
+schema_version: 1
+id: R180-001
+title: 文本代码编辑器
+question: 如何在现有文件版本事务和性能预算中提供浏览器代码编辑？
+research_type: current-project-and-external-primary-source
+topics: [files, text, editor, encoding]
+status: active
+evidence:
+  primary_sources:
+    - title: Cloudreve 文本编辑器
+      locator: https://docs.cloudreve.org/zh/usage/file-apps#文本编辑器
+      snapshot: 源码高亮、编码选择和 UTF-8 保存
+    - title: CodeMirror 6
+      locator: https://codemirror.net/docs/ref/
+      snapshot: 按需语言、编辑状态及内置搜索
+    - title: WHATWG Encoding
+      locator: https://encoding.spec.whatwg.org/
+      snapshot: TextDecoder 及 BOM 和历史编码
+    - title: 当前文件编辑与版本
+      locator: report.md
+      snapshot: 4b8e462
+verified_at: 2026-11-10
+validity:
+  mode: snapshot
+  refresh_triggers: [编辑器安全公告, 写入权限或内容版本变更, 需要远程语言服务]
+report: report.md

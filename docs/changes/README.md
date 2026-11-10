@@ -166,3 +166,4 @@
 - [177 Markdown 编写](177-markdown-authoring/README.md) 支持格式、链接、撤销及同目录上传图片后插入。
 - [178 EPUB 续读](178-epub-reading-progress/README.md) 支持续读、双栏或单栏翻页及本机书签。
 - [179 私有 HLS 视频](179-hls-playback/README.md) 支持 M3U8、自动和手动清晰度、直播及私有分片。
+- [180 文本与代码编辑](180-text-code-editor/README.md) 支持代码高亮、搜索替换、跳行和编码切换。

@@ -77,7 +77,7 @@ test('文本与 Markdown、双窗口编辑冲突、独立副本、右键菜单�
   await page.getByRole('dialog').getByLabel('文件内容', { exact: true }).fill('保留输入');
   await page.getByRole('dialog').getByRole('button', { name: '保存', exact: true }).click();
   await expect(page.getByRole('dialog')).toContainText('名称、内容或有效期不符合要求');
-  await expect(page.getByRole('dialog').getByLabel('文件内容', { exact: true })).toHaveValue(
+  await expect(page.getByRole('dialog').getByLabel('文件内容', { exact: true })).toHaveText(
     '保留输入',
   );
   await page.getByRole('dialog').getByRole('button', { name: '取消', exact: true }).click();

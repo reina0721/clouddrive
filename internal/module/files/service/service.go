@@ -386,8 +386,9 @@ func (s *Service) Restore(ctx context.Context, owner, id string, parent *string)
 }
 
 type Detail struct {
-	Entry       model.Entry   `json:"entry"`
-	Breadcrumbs []model.Entry `json:"breadcrumbs"`
+	Entry        model.Entry   `json:"entry"`
+	Breadcrumbs  []model.Entry `json:"breadcrumbs"`
+	TextEditable bool          `json:"textEditable"`
 }
 
 func (s *Service) Detail(ctx context.Context, owner, id string) (Detail, error) {
@@ -399,7 +400,7 @@ func (s *Service) Detail(ctx context.Context, owner, id string) (Detail, error) 
 	if !ok || !model.Visible(entries, entry) {
 		return Detail{}, model.ErrMissing
 	}
-	result := Detail{Entry: entry, Breadcrumbs: []model.Entry{}}
+	result := Detail{Entry: entry, Breadcrumbs: []model.Entry{}, TextEditable: editablePrivateText(entry)}
 	for parent := entry.ParentID; parent != ""; {
 		ancestor, ok := model.Find(entries, parent)
 		if !ok {

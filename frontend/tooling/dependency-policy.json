@@ -178,6 +178,38 @@
     "hls.js": {
       "owner": "Host 私有 HLS 播放：按需加载，所有资源通过账号文件读取适配器",
       "allowed": ["apps/web"]
+    },
+    "codemirror": {
+      "owner": "本人文件代码编辑组件的标准编辑扩展",
+      "allowed": ["surfaces"]
+    },
+    "@codemirror/view": {
+      "owner": "本人文件代码编辑组件持有的编辑视图",
+      "allowed": ["surfaces"]
+    },
+    "@codemirror/state": {
+      "owner": "本人文件代码编辑组件的局部编辑状态",
+      "allowed": ["surfaces"]
+    },
+    "@codemirror/commands": {
+      "owner": "本人文件代码编辑组件的标准编辑命令",
+      "allowed": ["surfaces"]
+    },
+    "@codemirror/search": {
+      "owner": "本人文件代码编辑组件的查找替换和跳行",
+      "allowed": ["surfaces"]
+    },
+    "@codemirror/language": {
+      "owner": "本人文件代码编辑组件的语言扩展和语法样式",
+      "allowed": ["surfaces"]
+    },
+    "@codemirror/language-data": {
+      "owner": "本人文件代码编辑组件的本地语言映射与懒加载",
+      "allowed": ["surfaces"]
+    },
+    "@lezer/highlight": {
+      "owner": "本人文件代码编辑组件的语法令牌标签",
+      "allowed": ["surfaces"]
     }
   }
 }

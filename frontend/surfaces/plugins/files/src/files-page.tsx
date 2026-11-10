@@ -110,7 +110,7 @@ const archiveFile = (entry: FileEntry) =>
     entry.mediaType === 'application/zip' ||
     entry.mediaType === 'application/x-7z-compressed');
 
-function compatibleFileApplications(entry: FileEntry): FileApplicationID[] {
+function compatibleFileApplications(entry: FileEntry, builtInText: boolean): FileApplicationID[] {
   if (archiveFile(entry)) return ['archive'];
   if (isPDFDocument(entry)) return ['pdf'];
   if (isEpubDocument(entry)) return ['epub'];
@@ -118,7 +118,7 @@ function compatibleFileApplications(entry: FileEntry): FileApplicationID[] {
   if (isHlsPlaylist(entry)) return ['video'];
   const media = entry.mediaType.split('/', 1)[0];
   if (media === 'image' || media === 'audio' || media === 'video') return [media];
-  return isTextPreview(entry) ? ['text'] : [];
+  return isTextPreview(entry) || builtInText ? ['text'] : [];
 }
 
 function configuredFileApplications(entry: FileEntry): FileApplicationID[] {
@@ -267,7 +267,6 @@ export function FilesPage({
   const [galleryAnnotations, setGalleryAnnotations] = useState<FileAnnotationSummary[]>([]),
     [galleryAnnotationsLoading, setGalleryAnnotationsLoading] = useState(false),
     [galleryAnnotationFailure, setGalleryAnnotationFailure] = useState('');
-  const [preview, setPreview] = useState<{ entry: FileEntry; text: string; loading: boolean }>();
   const [applicationPicker, setApplicationPicker] = useState<FileApplicationPicker>();
   const [webPreview, setWebPreview] = useState<{
     entry: FileEntry;
@@ -651,7 +650,7 @@ export function FilesPage({
   const maxTextBytes = listing?.maxTextBytes;
   const playAudio = usePlayFileAudio();
   const launchApplication = useCallback(
-    async (entry: FileEntry, application: FileApplicationID, signal: AbortSignal) => {
+    (entry: FileEntry, application: FileApplicationID) => {
       setApplicationPicker(undefined);
       if (
         application === 'audio' &&
@@ -673,10 +672,14 @@ export function FilesPage({
           setEpubEntry(entry);
           return;
         case 'markdown':
+        case 'text':
           if (maxTextBytes === undefined) setNotice(t('files.errors.unavailable'));
           else
             setTextEditor({
-              request: { mode: 'edit', entry, reading: true },
+              request:
+                application === 'text'
+                  ? { mode: 'edit', entry, code: true }
+                  : { mode: 'edit', entry, reading: true },
               maxBytes: maxTextBytes,
             });
           return;
@@ -694,26 +697,9 @@ export function FilesPage({
                 : {}),
             });
           return;
-        case 'text':
-          break;
-      }
-      setPreview({ entry, text: '', loading: true });
-      try {
-        const text = await port.preview(entry, signal, 'file-application');
-        if (!signal.aborted) setPreview({ entry, text, loading: false });
-      } catch (error) {
-        if (!signal.aborted)
-          setPreview({
-            entry,
-            text:
-              error instanceof FilesError && error.code === 'unsupported'
-                ? t('files.unsupportedPreview')
-                : errorText(error),
-            loading: false,
-          });
       }
     },
-    [port, t, errorText, maxMediaBytes, maxTextBytes, playAudio],
+    [t, maxMediaBytes, maxTextBytes, playAudio],
   );
   const showPreview = useCallback(
     async (entry: FileEntry, requested?: 'choose' | 'archive') => {
@@ -733,7 +719,13 @@ export function FilesPage({
         const device = fileApplicationDevice(window.innerWidth);
         const choice = fileApplicationChoice(
           policy,
-          compatibleFileApplications(entry),
+          compatibleFileApplications(
+            entry,
+            policy.items.some(
+              (item) =>
+                item.id === 'text' && !item.customExtensions && item.extensions.includes(extension),
+            ),
+          ),
           configuredFileApplications(entry),
           extension,
           device,
@@ -765,7 +757,7 @@ export function FilesPage({
               : webOptions.length
                 ? choice.options.find((id) => id === choice.defaultApp)
                 : choice.automatic;
-        if (selected) await launchApplication(entry, selected, controller.signal);
+        if (selected) launchApplication(entry, selected);
         else
           setApplicationPicker({
             entry,
@@ -2028,12 +2020,13 @@ export function FilesPage({
       {textEditor ? (
         <TextDialog
           {...textEditor}
-          {...(() => {
-            const { request } = textEditor;
-            return request.mode === 'edit' && (request.reading || isMarkdownFile(request.entry))
-              ? { onDownload: () => void download(request.entry) }
-              : {};
-          })()}
+          {...(textEditor.request.mode === 'edit'
+            ? {
+                onDownload: () => {
+                  if (textEditor.request.mode === 'edit') void download(textEditor.request.entry);
+                },
+              }
+            : {})}
           onClose={() => setTextEditor(undefined)}
           onSaved={() => {
             setNotice(t('files.operationDone'));
@@ -2180,7 +2173,7 @@ export function FilesPage({
                     onPress={() => {
                       const request = previewController.current;
                       if (request && !request.signal.aborted)
-                        void launchApplication(applicationPicker.entry, id, request.signal);
+                        launchApplication(applicationPicker.entry, id);
                     }}
                   >
                     {fileApplicationName(id, chinese)}
@@ -2224,35 +2217,6 @@ export function FilesPage({
             onClose={() => setWebPreview(undefined)}
           />
         </Suspense>
-      ) : null}
-      {preview ? (
-        <DialogSurface
-          triggerLabel={t('files.preview')}
-          title={preview.entry.name}
-          description={t('files.preview')}
-          cancelLabel={t('files.close')}
-          isOpen
-          onOpenChange={(open) => {
-            if (!open) {
-              previewController.current?.abort();
-              setPreview(undefined);
-            }
-          }}
-        >
-          <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-control bg-surface-muted p-4 text-sm">
-            {preview.loading ? t('files.previewLoading') : preview.text}
-          </pre>
-          <div className="mt-4">
-            <Action
-              variant="secondary"
-              onPress={() => {
-                void download(preview.entry);
-              }}
-            >
-              {t('files.download')}
-            </Action>
-          </div>
-        </DialogSurface>
       ) : null}
     </>
   );

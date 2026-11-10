@@ -73,6 +73,11 @@ test('真实文件闭环：目录、队列、预览、下载、移动、多选�
     'base64',
   );
 
+  const sortMenu = page.getByRole('button', { name: '排序方式', exact: true });
+  await sortMenu.click();
+  await page.getByRole('menuitem', { name: /^修改时间/ }).click();
+  await sortMenu.click();
+  await page.getByRole('menuitem', { name: /^降序/ }).click();
   await newAction(page, '创建文件夹');
   await page.getByRole('dialog').getByLabel('名称', { exact: true }).fill(folder);
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
@@ -93,7 +98,9 @@ test('真实文件闭环：目录、队列、预览、下载、移动、多选�
     .getByRole('button', { name: '关闭', exact: true })
     .click();
   await page.getByRole('button', { name: textName, exact: true }).click();
-  await expect(page.getByRole('dialog').locator('pre')).toContainText('<script>');
+  await expect(page.getByRole('dialog').getByLabel('文件内容', { exact: true })).toContainText(
+    '<script>',
+  );
   expect(await page.evaluate(() => 'filePreviewExecuted' in window)).toBe(false);
   await page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true }).click();
   await fileAction(page, textName, '属性');
@@ -123,16 +130,15 @@ test('真实文件闭环：目录、队列、预览、下载、移动、多选�
   await page.goto('/home');
   await page.getByRole('button', { name: '视图', exact: true }).click();
   await page.getByRole('menuitem', { name: '列表', exact: true }).click();
-  await page.getByRole('button', { name: '排序方式', exact: true }).click();
-  await page.getByRole('menuitem', { name: '降序', exact: true }).click();
   await page.reload();
-  await page.getByRole('button', { name: '排序方式', exact: true }).click();
+  await sortMenu.click();
   await expect(page.getByRole('menuitem', { name: /^降序/ })).toContainText('✓');
   await page.keyboard.press('Escape');
   await fileAction(page, folder, '移入回收站');
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await expect(page.getByRole('button', { name: folder, exact: true })).toHaveCount(0);
   await page.getByRole('link', { name: '回收站', exact: true }).click();
+  await page.goto('/home?trash=true&search=' + encodeURIComponent(suffix));
   await fileAction(page, folder, '恢复');
   await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
   await page.getByRole('link', { name: '我的文件', exact: true }).first().click();

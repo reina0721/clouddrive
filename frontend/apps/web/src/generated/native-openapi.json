@@ -2732,11 +2732,15 @@
           },
           "entry": {
             "$ref": "#/components/schemas/Entry"
+          },
+          "textEditable": {
+            "type": "boolean"
           }
         },
         "required": [
           "entry",
-          "breadcrumbs"
+          "breadcrumbs",
+          "textEditable"
         ],
         "type": "object"
       },

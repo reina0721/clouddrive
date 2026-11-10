@@ -1,0 +1,7 @@
+schema_version: 1
+change: 180-text-code-editor
+areas:
+  - id: frontend
+    decision: updated
+    documents: [docs/repository-scope.md, docs/operations/file-management.md]
+    reason: 记录代码编辑、编码与私有文件的保存边界。

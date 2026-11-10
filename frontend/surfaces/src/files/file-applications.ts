@@ -116,7 +116,7 @@ const names: Record<FileApplicationID, readonly [string, string]> = {
   epub: ['EPUB 阅读器', 'EPUB reader'],
   archive: ['压缩包预览', 'Archive viewer'],
   markdown: ['Markdown 编辑器', 'Markdown editor'],
-  text: ['文本查看器', 'Text viewer'],
+  text: ['文本编辑器', 'Text editor'],
 };
 
 export function fileApplicationName(id: FileApplicationID, chinese: boolean) {

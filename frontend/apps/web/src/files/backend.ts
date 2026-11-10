@@ -74,6 +74,7 @@ import { createFileSidebarPreferences } from './sidebar-preferences';
 import { createEpubReadingPreferences } from './epub-reading-preferences';
 import { createVideoSubtitleSource } from './video-subtitle-source';
 import { createPrivateHlsSource } from './hls-source';
+import { decodeFileText } from './text-source';
 import { rasterType } from './media-signatures';
 import { waitForMarkdownImagePublication } from './markdown-image-publication';
 export { fileDestinationHrefs } from './destinations';
@@ -732,6 +733,26 @@ export function createFilesRuntime(
       } catch (error) {
         throw new FilesError('unsupported', { cause: error });
       }
+    },
+    openTextSource: async (entry, signal) => {
+      if (!limits) throw new FilesError('unavailable');
+      const scoped = AbortSignal.any([signal, lifecycle.signal]);
+      const bytes = new Uint8Array(
+        await readFileBytes(
+          {
+            entry,
+            limits: { maxBytes: limits.maxTextBytes, workTimeoutMs: markdownReadTimeoutMs },
+          },
+          scoped,
+        ),
+      );
+      return {
+        decode(encoding) {
+          assertCurrent();
+          if (scoped.aborted) throw new FilesError('canceled');
+          return decodeFileText(bytes, encoding);
+        },
+      };
     },
     openEpub: async (entry, signal) => {
       const { openEpubBook } = await import('./epub-book');
