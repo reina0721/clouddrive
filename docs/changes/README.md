@@ -169,3 +169,4 @@
 - [180 文本与代码编辑](180-text-code-editor/README.md) 支持代码高亮、搜索替换、跳行和编码切换。
 - [181 照片查看工作区](181-photo-viewer/README.md) 支持同目录切图与按需查看拍摄信息。
 - [182 Draw.io 在线编辑](182-drawio-editor/README.md) 支持新建、编辑、版本保存和下载草稿。
+- [183 图片标注](183-image-annotations/README.md) 支持形状、画笔、文字、历史和带标注副本。

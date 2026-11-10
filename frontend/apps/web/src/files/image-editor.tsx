@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type PointerEvent,
-  type ReactNode,
-} from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { FilesError } from '@clouddrive/surface/files';
 import { Action } from '@clouddrive/ui-adapter/action';
@@ -17,6 +10,7 @@ import {
   Crop,
   FlipHorizontal2,
   FlipVertical2,
+  Pencil,
   Redo2,
   RotateCcw,
   RotateCw,
@@ -25,7 +19,6 @@ import {
 } from 'lucide-react';
 import {
   centeredImageCrop,
-  drawImagePreview,
   editableImageType,
   encodeImage,
   imageSizeLimit,
@@ -40,6 +33,8 @@ import {
   type ImageSize,
 } from './image-edit';
 import type { ImageToolsProps } from './media-view';
+import { ImageAnnotationWorkspace } from './image-annotation-workspace';
+import { ImageCanvas } from './image-canvas';
 import { downloadBlob } from './native-download';
 
 const zh = {
@@ -51,6 +46,7 @@ const zh = {
   crop: '裁剪',
   transform: '旋转和翻转',
   resize: '调整尺寸',
+  annotate: '图片标注',
   applyCrop: '应用裁剪',
   applySize: '应用尺寸',
   cropHint: '拖动框选原图，或输入原图中的像素坐标。',
@@ -80,6 +76,7 @@ const zh = {
   downloadReady: '已交给浏览器下载副本。',
   queueFailed: '无法将副本加入上传队列。',
   applyBeforeSave: '应用当前裁剪或尺寸后即可保存副本。',
+  finishAnnotationBeforeSave: '完成或取消当前标注后即可保存副本。',
 };
 const en: typeof zh = {
   title: 'Image editor',
@@ -90,6 +87,7 @@ const en: typeof zh = {
   crop: 'Crop',
   transform: 'Rotate and flip',
   resize: 'Resize',
+  annotate: 'Annotate',
   applyCrop: 'Apply crop',
   applySize: 'Apply size',
   cropHint: 'Drag on the source image or enter pixel coordinates.',
@@ -119,10 +117,10 @@ const en: typeof zh = {
   downloadReady: 'The browser is downloading the copy.',
   queueFailed: 'Could not queue the image copy.',
   applyBeforeSave: 'Apply the crop or resize before saving a copy.',
+  finishAnnotationBeforeSave: 'Finish or cancel the current annotation before saving a copy.',
 };
 type Labels = typeof zh;
-type Tool = 'transform' | 'crop' | 'resize';
-type Point = Readonly<{ x: number; y: number }>;
+type Tool = 'transform' | 'crop' | 'resize' | 'annotate';
 type ImageStatus = 'sizeLimit' | 'decodeFailed' | 'loading';
 type EditorProps = ImageToolsProps &
   Readonly<{
@@ -163,128 +161,6 @@ function validCopyName(name: string) {
     !Array.from(name).some(
       (character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127,
     )
-  );
-}
-
-function pointOnSource(event: PointerEvent<HTMLCanvasElement>, source: ImageSize): Point {
-  const bounds = event.currentTarget.getBoundingClientRect();
-  return {
-    x: Math.max(
-      0,
-      Math.min(
-        source.width,
-        Math.round(((event.clientX - bounds.left) / bounds.width) * source.width),
-      ),
-    ),
-    y: Math.max(
-      0,
-      Math.min(
-        source.height,
-        Math.round(((event.clientY - bounds.top) / bounds.height) * source.height),
-      ),
-    ),
-  };
-}
-
-function cropFromPoints(start: Point, end: Point): ImageCrop {
-  return {
-    x: Math.min(start.x, end.x),
-    y: Math.min(start.y, end.y),
-    width: Math.abs(start.x - end.x),
-    height: Math.abs(start.y - end.y),
-  };
-}
-
-function ImageCanvas({
-  bitmap,
-  edit,
-  labels,
-  selection,
-  onCrop,
-}: Readonly<{
-  bitmap: ImageBitmap;
-  edit: ImageEdit;
-  labels: Labels;
-  selection?: ImageCrop;
-  onCrop?: (crop: ImageCrop) => void;
-}>) {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  const drag = useRef<{ id: number; start: Point; previous: ImageCrop }>(undefined);
-  const [failed, setFailed] = useState(false);
-  useLayoutEffect(() => {
-    const node = canvas.current;
-    return () => {
-      if (node) {
-        node.width = 0;
-        node.height = 0;
-      }
-    };
-  }, []);
-  useEffect(() => {
-    const node = canvas.current;
-    if (!node) return;
-    const frame = requestAnimationFrame(() => {
-      try {
-        if (!drawImagePreview(node, bitmap, edit, selection)) setFailed(true);
-      } catch {
-        setFailed(true);
-      }
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [bitmap, edit, selection]);
-  return (
-    <div
-      className="flex items-center justify-center overflow-hidden rounded-panel bg-surface-muted"
-      style={{ height: 'min(44dvh, 36rem)' }}
-    >
-      {failed ? (
-        <p role="alert" className="p-4 text-sm text-danger">
-          {labels.decodeFailed}
-        </p>
-      ) : (
-        <canvas
-          ref={canvas}
-          aria-label={labels.canvas}
-          role="img"
-          className="block max-w-full"
-          style={{
-            width: 'auto',
-            height: 'auto',
-            maxHeight: '100%',
-            touchAction: onCrop ? 'none' : undefined,
-            cursor: onCrop ? 'crosshair' : undefined,
-          }}
-          onPointerDown={(event) => {
-            if (!onCrop || !selection || !event.isPrimary || event.button !== 0) return;
-            drag.current = {
-              id: event.pointerId,
-              start: pointOnSource(event, bitmap),
-              previous: selection,
-            };
-            event.currentTarget.setPointerCapture(event.pointerId);
-          }}
-          onPointerMove={(event) => {
-            const start = drag.current;
-            if (!onCrop || start?.id !== event.pointerId) return;
-            const next = cropFromPoints(start.start, pointOnSource(event, bitmap));
-            if (validImageCrop(next, bitmap)) onCrop(next);
-          }}
-          onPointerUp={(event) => {
-            const start = drag.current;
-            if (!onCrop || start?.id !== event.pointerId) return;
-            drag.current = undefined;
-            const next = cropFromPoints(start.start, pointOnSource(event, bitmap));
-            onCrop(validImageCrop(next, bitmap) ? next : start.previous);
-          }}
-          onLostPointerCapture={(event) => {
-            if (drag.current?.id !== event.pointerId) return;
-            const { previous } = drag.current;
-            drag.current = undefined;
-            onCrop?.(previous);
-          }}
-        />
-      )}
-    </div>
   );
 }
 
@@ -438,6 +314,7 @@ function ImageWorkspace({
   const [history, setHistory] = useState({ edits: [original], index: 0 });
   const edit = history.edits[history.index] ?? original;
   const [tool, setTool] = useState<Tool>('transform');
+  const [annotationSession, setAnnotationSession] = useState(0);
   const [format, setFormat] = useState<ImageFormat>(
     editableImageType(source.type) ? source.type : 'image/png',
   );
@@ -464,7 +341,8 @@ function ImageWorkspace({
   }
 
   function step(direction: -1 | 1) {
-    setTool('transform');
+    setTool((current) => (current === 'annotate' ? current : 'transform'));
+    setAnnotationSession((session) => session + 1);
     setFeedback(undefined);
     setHistory(({ edits, index }) => ({
       edits,
@@ -475,7 +353,7 @@ function ImageWorkspace({
   const size = outputImageSize(edit);
   const filename = name.trim() + (format === 'image/png' ? '.png' : '.jpg');
   const validName = Boolean(name.trim()) && validCopyName(filename);
-  const canSave = validName && tool === 'transform';
+  const canSave = validName && (tool === 'transform' || tool === 'annotate');
 
   async function save(destination: 'download' | 'queue') {
     const signal = lifetime.current?.signal;
@@ -520,7 +398,7 @@ function ImageWorkspace({
     }
   }
 
-  const exportControls = (
+  const exportControls = (pendingAnnotation = false) => (
     <>
       <div className="flex flex-wrap items-end gap-2 border-t border-border pt-3">
         <div className="w-full sm:w-52">
@@ -546,7 +424,7 @@ function ImageWorkspace({
         <Action
           size="sm"
           variant="secondary"
-          disabled={!canSave || Boolean(busy)}
+          disabled={!canSave || pendingAnnotation || Boolean(busy)}
           loading={busy === 'download'}
           onPress={() => void save('download')}
         >
@@ -554,16 +432,19 @@ function ImageWorkspace({
         </Action>
         <Action
           size="sm"
-          disabled={!canSave || Boolean(busy)}
+          disabled={!canSave || pendingAnnotation || Boolean(busy)}
           loading={busy === 'queue'}
           onPress={() => void save('queue')}
         >
           {labels.queue}
         </Action>
       </div>
-      {tool === 'transform' ? null : (
+      {pendingAnnotation ? (
+        <p className="text-xs text-ink-muted">{labels.finishAnnotationBeforeSave}</p>
+      ) : null}
+      {tool === 'crop' || tool === 'resize' ? (
         <p className="text-xs text-ink-muted">{labels.applyBeforeSave}</p>
-      )}
+      ) : null}
       {feedback ? (
         <p
           role={feedback.failed ? 'alert' : 'status'}
@@ -638,6 +519,14 @@ function ImageWorkspace({
         >
           {labels.resize}
         </Action>
+        <Action
+          size="sm"
+          variant={tool === 'annotate' ? 'primary' : 'secondary'}
+          leadingIcon={<Pencil />}
+          onPress={() => setTool('annotate')}
+        >
+          {labels.annotate}
+        </Action>
       </div>
       {tool === 'crop' ? (
         <CropWorkspace
@@ -645,12 +534,29 @@ function ImageWorkspace({
           edit={edit}
           labels={labels}
           onApply={(crop) => {
-            commit({ crop, turns: edit.turns, flipX: edit.flipX, flipY: edit.flipY });
+            commit({
+              crop,
+              turns: edit.turns,
+              flipX: edit.flipX,
+              flipY: edit.flipY,
+              annotations: edit.annotations,
+            });
             setTool('transform');
           }}
         >
-          {exportControls}
+          {exportControls()}
         </CropWorkspace>
+      ) : tool === 'annotate' ? (
+        <ImageAnnotationWorkspace
+          key={annotationSession}
+          bitmap={bitmap}
+          edit={edit}
+          canvasLabels={labels}
+          chinese={labels === zh}
+          onCommit={commit}
+        >
+          {exportControls}
+        </ImageAnnotationWorkspace>
       ) : (
         <div className="grid gap-3 lg:grid-cols-2">
           <ImageCanvas bitmap={bitmap} edit={edit} labels={labels} />
@@ -701,7 +607,7 @@ function ImageWorkspace({
                 </Action>
               </div>
             )}
-            {exportControls}
+            {exportControls()}
           </div>
         </div>
       )}

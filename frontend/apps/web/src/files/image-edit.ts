@@ -1,3 +1,5 @@
+import { paintAnnotations, type ImageAnnotation, type ImagePoint } from './image-annotation';
+
 export type ImageSize = Readonly<{ width: number; height: number }>;
 export type ImageCrop = Readonly<ImageSize & { x: number; y: number }>;
 export type ImageFormat = 'image/png' | 'image/jpeg';
@@ -7,6 +9,7 @@ export type ImageEdit = Readonly<{
   flipX: boolean;
   flipY: boolean;
   resize?: ImageSize;
+  annotations: readonly ImageAnnotation[];
 }>;
 
 export const imageSizeLimit = { sidePixels: 8192, totalPixels: 16 * 1024 * 1024 } as const;
@@ -36,7 +39,13 @@ export function validImageCrop(crop: ImageCrop, source: ImageSize) {
 }
 
 export function originalImage({ width, height }: ImageSize): ImageEdit {
-  return { crop: { x: 0, y: 0, width, height }, turns: 0, flipX: false, flipY: false };
+  return {
+    crop: { x: 0, y: 0, width, height },
+    turns: 0,
+    flipX: false,
+    flipY: false,
+    annotations: [],
+  };
 }
 
 export function outputImageSize(edit: ImageEdit): ImageSize {
@@ -74,12 +83,37 @@ function prepareCanvas(canvas: HTMLCanvasElement, size: ImageSize, scale: number
   return canvas.getContext('2d');
 }
 
+function imageTransform(edit: ImageEdit, { width, height }: ImageSize) {
+  const { crop, turns, flipX, flipY } = edit;
+  const rotated = turns % 2 !== 0;
+  return new DOMMatrix()
+    .translate(width / 2, height / 2)
+    .scale(flipX ? -1 : 1, flipY ? -1 : 1)
+    .rotate(turns * 90)
+    .scale((rotated ? height : width) / crop.width, (rotated ? width : height) / crop.height)
+    .translate(-crop.x - crop.width / 2, -crop.y - crop.height / 2);
+}
+
+/** sourceImagePoint 使用与绘制同一矩阵，把画布上的点反算为原图像素。 */
+export function sourceImagePoint(
+  edit: ImageEdit,
+  canvas: ImageSize,
+  point: ImagePoint,
+): ImagePoint {
+  const source = imageTransform(edit, canvas).inverse().transformPoint(point);
+  return {
+    x: Math.min(edit.crop.x + edit.crop.width, Math.max(edit.crop.x, Math.round(source.x))),
+    y: Math.min(edit.crop.y + edit.crop.height, Math.max(edit.crop.y, Math.round(source.y))),
+  };
+}
+
 function drawImage(
   canvas: HTMLCanvasElement,
   source: ImageBitmap,
   edit: ImageEdit,
   scale: number,
   background?: ImageFormat,
+  selectedAnnotation?: number,
 ) {
   const context = prepareCanvas(canvas, outputImageSize(edit), scale);
   if (!context) return false;
@@ -88,11 +122,8 @@ function drawImage(
     context.fillStyle = 'white';
     context.fillRect(0, 0, width, height);
   }
-  context.translate(width / 2, height / 2);
-  context.scale(edit.flipX ? -1 : 1, edit.flipY ? -1 : 1);
-  context.rotate((edit.turns * Math.PI) / 2);
-  const drawWidth = edit.turns % 2 ? height : width;
-  const drawHeight = edit.turns % 2 ? width : height;
+  context.save();
+  context.setTransform(imageTransform(edit, { width, height }));
   const crop = edit.crop;
   context.drawImage(
     source,
@@ -100,11 +131,13 @@ function drawImage(
     crop.y,
     crop.width,
     crop.height,
-    -drawWidth / 2,
-    -drawHeight / 2,
-    drawWidth,
-    drawHeight,
+    crop.x,
+    crop.y,
+    crop.width,
+    crop.height,
   );
+  paintAnnotations(context, edit.annotations, selectedAnnotation);
+  context.restore();
   return true;
 }
 
@@ -113,13 +146,18 @@ export function drawImagePreview(
   source: ImageBitmap,
   edit: ImageEdit,
   selection?: ImageCrop,
+  selectedAnnotation?: number,
 ) {
   const size = selection ? source : outputImageSize(edit);
   const scale = Math.min(maxPreviewScale, previewSidePixels / Math.max(size.width, size.height));
-  if (!selection) return drawImage(canvas, source, edit, scale);
+  if (!selection) return drawImage(canvas, source, edit, scale, undefined, selectedAnnotation);
   const context = prepareCanvas(canvas, size, scale);
   if (!context) return false;
   context.drawImage(source, 0, 0, canvas.width, canvas.height);
+  context.save();
+  context.scale(canvas.width / source.width, canvas.height / source.height);
+  paintAnnotations(context, edit.annotations);
+  context.restore();
   const x = (selection.x * canvas.width) / source.width;
   const y = (selection.y * canvas.height) / source.height;
   const width = (selection.width * canvas.width) / source.width;

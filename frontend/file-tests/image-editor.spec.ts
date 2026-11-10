@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-async function createWorkspace(page: Page) {
+async function createWorkspace(page: Page, prefix = 'image-editor-') {
   const access = JSON.parse(
     (
       await readFile(
@@ -19,16 +19,16 @@ async function createWorkspace(page: Page) {
   await page.getByLabel('密码', { exact: true }).fill(access.password);
   await page.getByRole('button', { name: '登录', exact: true }).click();
   await expect(page).toHaveURL(/\/home$/);
-  const parentId = await page.evaluate(async () => {
+  const parentId = await page.evaluate(async (folderPrefix) => {
     const csrf = (await (await fetch('/api/console/v1/auth/csrf')).json()) as { token: string };
     const response = await fetch('/api/console/v1/native/files/folders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf.token },
-      body: JSON.stringify({ parentId: '', name: 'image-editor-' + crypto.randomUUID() }),
+      body: JSON.stringify({ parentId: '', name: folderPrefix + crypto.randomUUID() }),
     });
     if (!response.ok) throw new Error('创建独立测试目录失败');
     return ((await response.json()) as { id: string }).id;
-  });
+  }, prefix);
   await page.goto('/home?parent=' + parentId);
   await page.getByRole('button', { name: '视图', exact: true }).click();
   await page.getByRole('menuitem', { name: '列表', exact: true }).click();
@@ -87,6 +87,47 @@ async function topLeft(canvas: Locator) {
   });
 }
 
+async function canvasPixel(canvas: Locator, x: number, y: number) {
+  return canvas.evaluate(
+    (node: HTMLCanvasElement, point) => {
+      const context = node.getContext('2d');
+      if (!context) throw new Error('画布读取失败');
+      return Array.from(
+        context.getImageData(
+          Math.round(point.x * node.width),
+          Math.round(point.y * node.height),
+          1,
+          1,
+        ).data,
+      );
+    },
+    { x, y },
+  );
+}
+
+async function copyPixel(page: Page, content: Buffer, type: string, x: number, y: number) {
+  return page.evaluate(
+    async ({ bytes, type, x, y }) => {
+      const image = await createImageBitmap(new Blob([Uint8Array.from(bytes)], { type }));
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('副本画布读取失败');
+        context.drawImage(image, 0, 0);
+        return {
+          size: [image.width, image.height],
+          pixel: Array.from(context.getImageData(x, y, 1, 1).data),
+        };
+      } finally {
+        image.close();
+      }
+    },
+    { bytes: Array.from(content), type, x, y },
+  );
+}
+
 async function downloadCopy(page: Page, editor: Locator, expectedName: string) {
   const pending = page.waitForEvent('download');
   await editor.getByRole('button', { name: '下载副本', exact: true }).click();
@@ -96,6 +137,204 @@ async function downloadCopy(page: Page, editor: Locator, expectedName: string) {
   if (!path) throw new Error('没有收到下载文件');
   return readFile(path);
 }
+
+test('本人图片标注支持图形、样式、历史和带标注副本', async ({ page }, info) => {
+  test.setTimeout(120_000);
+  const parent = await createWorkspace(page, 'image-annotations-');
+  await uploadFixtures(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole('button', { name: 'source.png', exact: true }).click();
+  await page.getByRole('button', { name: '编辑图片', exact: true }).click();
+  const editor = page.getByRole('dialog', { name: '图片编辑器', exact: true });
+  const button = (name: string) => editor.getByRole('button', { name, exact: true });
+  const canvas = editor.getByRole('img', { name: '图片编辑画布', exact: true });
+  const selectField = (field: string) =>
+    editor
+      .locator('[data-slot="select-trigger"]')
+      .and(editor.getByRole('button', { name: new RegExp(field) }));
+  const choose = async (field: string, option: string) => {
+    await selectField(field).click();
+    await page.getByRole('option', { name: option, exact: true }).click();
+  };
+  const pointer = async (points: readonly (readonly [number, number])[]) => {
+    await canvas.scrollIntoViewIfNeeded();
+    const area = await canvas.boundingBox();
+    if (!area) throw new Error('找不到标注画布');
+    const position = ([x, y]: readonly [number, number]) => ({
+      x: area.x + (area.width * x) / 320,
+      y: area.y + (area.height * y) / 240,
+    });
+    const [first, ...rest] = points;
+    if (!first) throw new Error('找不到标注起点');
+    const start = position(first);
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    for (const point of rest) {
+      const end = position(point);
+      await page.mouse.move(end.x, end.y, { steps: 3 });
+    }
+    await page.mouse.up();
+  };
+  const pixel = (x: number, y: number) => canvasPixel(canvas, x / 320, y / 240);
+  const blueChannel = async (x: number, y: number) => (await pixel(x, y))[2] ?? 0;
+  await button('图片标注').click();
+  await expect(editor.getByRole('group', { name: '标注工具' })).toBeVisible();
+  await choose('标注颜色', '蓝色');
+  await choose('线宽', '8');
+  await choose('不透明度', '50%');
+  const fill = editor.getByRole('checkbox', { name: '填充形状', exact: true });
+  await fill.press('Space');
+  await expect(fill).toBeChecked();
+  await pointer([
+    [20, 20],
+    [110, 90],
+  ]);
+  await expect.poll(() => blueChannel(60, 50)).toBeGreaterThan(95);
+  await expect.poll(async () => (await pixel(60, 50))[0]).toBeGreaterThan(140);
+  await expect.poll(() => blueChannel(60, 17)).toBeGreaterThan(85);
+
+  await button('椭圆').click();
+  await choose('标注颜色', '金色');
+  await choose('不透明度', '100%');
+  await fill.press('Space');
+  await expect(fill).not.toBeChecked();
+  await pointer([
+    [176, 20],
+    [276, 88],
+  ]);
+  await expect.poll(() => pixel(226, 54)).toEqual([0, 255, 0, 255]);
+  await choose('选中标注', '椭圆 #2');
+  await fill.press('Space');
+  await expect.poll(() => pixel(226, 54)).toEqual([255, 215, 0, 255]);
+  await button('直线').click();
+  await choose('标注颜色', '绿色');
+  await pointer([
+    [20, 108],
+    [108, 108],
+  ]);
+  await expect.poll(() => pixel(62, 108)).toEqual([46, 139, 87, 255]);
+  await button('箭头').click();
+  await choose('标注颜色', '红色');
+  await pointer([
+    [24, 144],
+    [108, 144],
+  ]);
+  await expect.poll(() => pixel(70, 144)).toEqual([255, 0, 0, 255]);
+  await button('画笔').click();
+  await choose('标注颜色', '白色');
+  await pointer([
+    [178, 164],
+    [211, 199],
+    [257, 169],
+  ]);
+  await expect.poll(() => pixel(211, 199)).toEqual([255, 255, 255, 255]);
+
+  await button('多边形').click();
+  await choose('标注颜色', '黑色');
+  await fill.press('Space');
+  await pointer([[216, 196]]);
+  await expect(button('完成多边形')).toBeDisabled();
+  await expect(button('下载副本')).toBeDisabled();
+  await button('取消多边形').click();
+  await expect(button('下载副本')).toBeEnabled();
+  await pointer([[216, 196]]);
+  await pointer([[300, 196]]);
+  await pointer([[280, 234]]);
+  await button('完成多边形').click();
+  await expect.poll(() => pixel(266, 209)).toEqual([0, 0, 0, 255]);
+  await button('文字').click();
+  await choose('标注颜色', '白色');
+  await editor.getByLabel('标注文字', { exact: true }).fill('Draft');
+  await pointer([[22, 186]]);
+  await choose('选中标注', '文字 #7');
+  await expect(editor.getByLabel('标注文字', { exact: true })).toHaveValue('Draft');
+  await choose('文字大小', '32');
+  await editor.getByLabel('标注文字', { exact: true }).fill('Checked');
+  await expect(button('下载副本')).toBeDisabled();
+  await button('应用文字').click();
+  await expect(editor.getByLabel('标注文字', { exact: true })).toHaveValue('Checked');
+
+  await button('选择').click();
+  await pointer([
+    [60, 50],
+    [95, 66],
+  ]);
+  await expect(selectField('选中标注')).toContainText('矩形 #1');
+  await expect.poll(() => pixel(30, 35)).toEqual([255, 0, 0, 255]);
+  await expect.poll(() => blueChannel(95, 66)).toBeGreaterThan(95);
+  await choose('选中标注', '箭头 #4');
+  await button('删除选中标注').click();
+  await expect.poll(() => pixel(70, 144)).toEqual([0, 0, 255, 255]);
+  await button('撤销').click();
+  await expect.poll(() => pixel(70, 144)).toEqual([255, 0, 0, 255]);
+  await button('重做').click();
+  await expect.poll(() => pixel(70, 144)).toEqual([0, 0, 255, 255]);
+  await button('撤销').click();
+  await button('清除全部标注').click();
+  await expect.poll(() => pixel(266, 209)).toEqual([0, 0, 0, 0]);
+  await button('撤销').click();
+  await expect.poll(() => pixel(266, 209)).toEqual([0, 0, 0, 255]);
+  await button('撤销').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath('annotations-desktop.png') });
+
+  await page.setViewportSize({ width: 390, height: 760 });
+  await canvas.scrollIntoViewIfNeeded();
+  expect((await canvas.boundingBox())!.width).toBeLessThan(390);
+  await page.screenshot({ path: info.outputPath('annotations-mobile.png') });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await button('旋转和翻转').click();
+  await button('向右旋转').click();
+  await expect(editor.getByText('240 × 320 px')).toBeVisible();
+  await expect
+    .poll(async () => (await canvasPixel(canvas, 174 / 240, 95 / 320))[2])
+    .toBeGreaterThan(95);
+  await button('裁剪').click();
+  await editor.getByLabel('裁剪起点 X').fill('40');
+  await editor.getByLabel('裁剪起点 Y').fill('40');
+  await editor.getByLabel('宽度（像素）').fill('140');
+  await editor.getByLabel('高度（像素）').fill('90');
+  await button('应用裁剪').click();
+  await expect(editor.getByText('90 × 140 px')).toBeVisible();
+  await expect
+    .poll(async () => (await canvasPixel(canvas, 64 / 90, 55 / 140))[2])
+    .toBeGreaterThan(95);
+  await editor.getByLabel('副本名称（不含扩展名）').fill('annotated-copy');
+  const png = await downloadCopy(page, editor, 'annotated-copy.png');
+  const pngResult = await copyPixel(page, png, 'image/png', 64, 55);
+  expect(pngResult.size).toEqual([90, 140]);
+  expect(pngResult.pixel[2]).toBeGreaterThan(95);
+  await button('上传副本到原文件夹').click();
+  await expect
+    .poll(() =>
+      page.evaluate(async (id) => {
+        const response = await fetch(
+          '/api/console/v1/native/files?parent=' + encodeURIComponent(id),
+        );
+        if (!response.ok) return [];
+        const listing = (await response.json()) as { items: { name: string }[] };
+        return listing.items.map((entry) => entry.name);
+      }, parent),
+    )
+    .toContain('annotated-copy.png');
+  const persisted = await page.evaluate(async (id) => {
+    const listing = await fetch('/api/console/v1/native/files?parent=' + encodeURIComponent(id));
+    if (!listing.ok) throw new Error('未取得已上传副本');
+    const { items } = (await listing.json()) as { items: { id: string; name: string }[] };
+    const copy = items.find(({ name }) => name === 'annotated-copy.png');
+    if (!copy) throw new Error('未找到已上传副本');
+    const content = await fetch(
+      '/api/console/v1/native/files/' + encodeURIComponent(copy.id) + '/content',
+    );
+    if (!content.ok) throw new Error('未取得副本内容');
+    return Array.from(new Uint8Array(await content.arrayBuffer()));
+  }, parent);
+  expect(Buffer.from(persisted)).toEqual(png);
+  await choose('输出格式', 'JPEG');
+  const jpeg = await downloadCopy(page, editor, 'annotated-copy.jpg');
+  const jpegResult = await copyPixel(page, jpeg, 'image/jpeg', 64, 55);
+  expect(jpegResult.size).toEqual([90, 140]);
+  expect(jpegResult.pixel[2]).toBeGreaterThan(90);
+});
 
 test('本人图片可裁剪、变换、调整尺寸、下载与上传独立副本', async ({ page, browser }, info) => {
   const parentId = await createWorkspace(page);
