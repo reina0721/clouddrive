@@ -32,6 +32,7 @@
     "./overlay-trigger": "./src/overlay-trigger.tsx",
     "./panel": "./src/panel.tsx",
     "./progress-meter": "./src/progress-meter.tsx",
+    "./range-slider": "./src/range-slider.tsx",
     "./ready-image": "./src/ready-image.tsx",
     "./search-box": "./src/search-box.tsx",
     "./skeleton": "./src/skeleton.tsx",

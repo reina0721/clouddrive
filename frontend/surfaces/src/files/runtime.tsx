@@ -30,6 +30,11 @@ export type FileMediaProps = Readonly<{
 const DocumentContext = createContext<ComponentType<FileDocumentProps> | null>(null);
 const AccountToolsContext = createContext<ComponentType | null>(null);
 const MediaContext = createContext<ComponentType<FileMediaProps> | null>(null);
+type FileMusic = Readonly<{
+  play: (entry: FileEntry, maxBytes: number) => void;
+  player: ReactNode;
+}>;
+const MusicContext = createContext<FileMusic | undefined>(undefined);
 
 const Context = createContext<FilesPort | null>(null);
 const ArchivesContext = createContext<ArchivesPort | null>(null);
@@ -44,6 +49,7 @@ export function FilesProvider({
   media: Media,
   pdfReader: Document,
   accountTools: AccountTools,
+  music,
   transfers,
   downloads,
   connections,
@@ -59,6 +65,7 @@ export function FilesProvider({
   media: ComponentType<FileMediaProps>;
   pdfReader: ComponentType<FileDocumentProps>;
   accountTools: ComponentType;
+  music?: FileMusic;
 }>) {
   return (
     <Context value={port}>
@@ -69,7 +76,9 @@ export function FilesProvider({
               <MediaContext value={Media}>
                 <AccountToolsContext value={AccountTools}>
                   <ArchivesContext value={archives}>
-                    <DocumentContext value={Document}>{children}</DocumentContext>
+                    <DocumentContext value={Document}>
+                      <MusicContext value={music}>{children}</MusicContext>
+                    </DocumentContext>
                   </ArchivesContext>
                 </AccountToolsContext>
               </MediaContext>
@@ -146,8 +155,18 @@ export function usePublicFiles(): PublicFilesPort {
 
 export function FileAccountTools() {
   const renderer = useContext(AccountToolsContext);
+  const music = useContext(MusicContext);
   if (!renderer) throw new Error('File account tools renderer is required');
-  return createElement(renderer);
+  return (
+    <>
+      {music?.player}
+      {createElement(renderer)}
+    </>
+  );
+}
+
+export function usePlayFileAudio() {
+  return useContext(MusicContext)?.play;
 }
 
 /** FileDocument 使用Host显式注入的文档renderer。 */

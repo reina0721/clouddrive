@@ -24,6 +24,7 @@
     "@noble/hashes": "2.4.0",
     "@zip.js/zip.js": "2.24.0",
     "lucide-react": "^1.37.0",
+    "music-metadata": "12.3.5",
     "next": "^16.4.5",
     "pdfjs-dist": "6.4.299",
     "react": "^19.2.8",

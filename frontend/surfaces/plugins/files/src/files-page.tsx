@@ -59,6 +59,7 @@ import {
   FileMedia,
   useFileNavigation,
   useFiles,
+  usePlayFileAudio,
   useTransfers,
   useTransferSnapshot,
 } from '../../../src/files/runtime';
@@ -639,9 +640,19 @@ export function FilesPage({
     setDetail(entry);
   }
   const maxMediaBytes = listing?.maxMediaBytes;
+  const playAudio = usePlayFileAudio();
   const launchApplication = useCallback(
     async (entry: FileEntry, application: FileApplicationID, signal: AbortSignal) => {
       setApplicationPicker(undefined);
+      if (
+        application === 'audio' &&
+        playAudio &&
+        maxMediaBytes !== undefined &&
+        entry.trashedAt === null
+      ) {
+        playAudio(entry, maxMediaBytes);
+        return;
+      }
       switch (application) {
         case 'archive':
           setArchiveEntry(entry);
@@ -681,7 +692,7 @@ export function FilesPage({
           });
       }
     },
-    [port, t, errorText, maxMediaBytes],
+    [port, t, errorText, maxMediaBytes, playAudio],
   );
   const showPreview = useCallback(
     async (entry: FileEntry, requested?: 'choose' | 'archive') => {

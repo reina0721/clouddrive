@@ -14,17 +14,7 @@ import type { FileMediaProps } from '@clouddrive/surface/files/runtime';
 
 import { rasterType } from './media-signatures';
 import { editableImageType, type ImageSize } from './image-edit';
-const waveMediaType = 'audio/wav';
-const audioTypes = new Set([
-  'audio/mpeg',
-  'audio/mp4',
-  'audio/ogg',
-  'audio/webm',
-  waveMediaType,
-  'audio/x-wav',
-  'audio/flac',
-  'audio/aac',
-]);
+import { audioMediaType } from './audio-format';
 const videoTypes = new Set(['video/mp4', 'video/webm', 'video/ogg']);
 
 export type VideoToolsProps = Readonly<{
@@ -99,10 +89,10 @@ export function FileMediaView({
       try {
         if (entry.sizeBytes > maxBytes) throw new FilesError('large');
         const rawType = entry.mediaType.split(';')[0]?.toLowerCase() ?? '';
-        // Go 的字节识别返回 audio/wave；浏览器播放探针使用通行的 WAV 别名。
-        const type = rawType === 'audio/wave' ? waveMediaType : rawType;
+        const audioType = audioMediaType(rawType);
+        const type = audioType ?? rawType;
         const image = type.startsWith('image/');
-        if (!image && (mode !== 'preview' || (!audioTypes.has(type) && !videoTypes.has(type))))
+        if (!image && (mode !== 'preview' || (!audioType && !videoTypes.has(type))))
           throw new FilesError('unsupported');
         if (!image) {
           const probe = document.createElement(videoTypes.has(type) ? 'video' : 'audio');

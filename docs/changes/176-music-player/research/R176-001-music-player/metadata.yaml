@@ -1,0 +1,26 @@
+schema_version: 1
+id: R176-001
+title: 私有文件音乐播放器
+question: 怎样补齐同目录连续播放及歌曲信息，同时保留已有访问和内存边界？
+research_type: current-project-and-external-primary-source
+topics: [files, audio, browser, metadata]
+status: active
+evidence:
+  primary_sources:
+    - title: Cloudreve 音乐播放器截图
+      locator: https://docs.cloudreve.org/assets/file-apps-music-player.CDMiFagG.png
+      snapshot: 顶部入口、封面、歌曲信息、时间轴、队列和音量
+    - title: HTML 媒体标准
+      locator: https://html.spec.whatwg.org/multipage/media.html
+      snapshot: 媒体时间轴、播放和失败事件
+    - title: music-metadata 12.3.5
+      locator: https://github.com/Borewit/music-metadata/releases/tag/v12.3.5
+      snapshot: MIT、Node 22 及浏览器 Blob API
+    - title: 本地私有文件媒体装配
+      locator: report.md
+      snapshot: 04cb991
+verified_at: 2026-11-10
+validity:
+  mode: snapshot
+  refresh_triggers: [播放器访问边界变化, 文件目录分页变化, 元数据解析依赖升级或安全公告]
+report: report.md

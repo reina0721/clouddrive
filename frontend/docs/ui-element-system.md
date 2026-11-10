@@ -87,6 +87,8 @@ Feedback 解释刚发生的结果、风险或可恢复问题；Status 描述对�
 
 ## 6. Form Control Family
 
+`RangeSlider` 复用 HeroUI 单轴滑块，应用于媒体时间轴、音量以及有相邻数值标签的场景。`/ui-elements/forms` 展示指针、键盘和禁用状态，控件样式消费语义色。
+
 `PasswordField` 经既有 `form-field` Contract 导出，复用 HeroUI TextField + InputGroup。
 `purpose=current|new` 映射账号密码自动填充；`purpose=transient` 用于压缩包临时密码并设为 `autocomplete=off`，不声明账号密码语义；显示切换使用公开 Button suffix，保留输入值、
 Label/Hint/Error、禁用和键盘语义，不提交表单。`TextField` 的 `purpose=text|email`

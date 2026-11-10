@@ -389,8 +389,7 @@ test('目录层级上传与复制、图片画廊、真实音视频播放和剪�
   ).toBe(true);
   await page.getByRole('button', { name: '子目录', exact: true }).click();
   await page.getByRole('button', { name: 'audio.wav', exact: true }).click();
-  const audio = page.getByRole('dialog').locator('audio');
-  await expect(audio).toBeVisible();
+  const audio = page.locator('audio');
   await expect(audio).toHaveAttribute('src', /^blob:/);
   const ownedAudio = await audio.elementHandle();
   if (!ownedAudio) throw new Error('Missing audio element');
@@ -401,7 +400,10 @@ test('目录层级上传与复制、图片画廊、真实音视频播放和剪�
   await expect
     .poll(() => audio.evaluate((element: HTMLAudioElement) => element.currentTime))
     .toBeGreaterThan(0);
-  await page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true }).click();
+  await page
+    .getByRole('dialog', { name: '音乐播放器' })
+    .getByRole('button', { name: '停止播放器' })
+    .click();
   await expect(page.locator('audio')).toHaveCount(0);
   expect(
     await ownedAudio.evaluate(

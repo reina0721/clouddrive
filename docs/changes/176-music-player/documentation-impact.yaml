@@ -1,0 +1,7 @@
+schema_version: 1
+change: 176-music-player
+areas:
+  - id: frontend
+    decision: updated
+    documents: [docs/repository-scope.md, docs/operations/file-management.md, frontend/docs/ui-element-system.md]
+    reason: 登记本人文件播放器、队列及标签读取边界。

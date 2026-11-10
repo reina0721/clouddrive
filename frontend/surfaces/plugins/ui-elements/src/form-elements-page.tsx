@@ -13,6 +13,7 @@ import {
   PasswordField,
 } from '@clouddrive/ui-adapter/form-field';
 import { SearchBox } from '@clouddrive/ui-adapter/search-box';
+import { RangeSlider } from '@clouddrive/ui-adapter/range-slider';
 import { FormErrorSummary } from '@clouddrive/ui-adapter/form-error-summary';
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -64,6 +65,7 @@ export function FormElementsPage({
   const [checked, setChecked] = useState(true);
   const [selected, setSelected] = useState('guided');
   const [searchValue, setSearchValue] = useState('UI');
+  const [rangeValue, setRangeValue] = useState(50);
   const visibilityIcons = {
     show: <Eye aria-hidden="true" className="size-4" />,
     hide: <EyeOff aria-hidden="true" className="size-4" />,
@@ -442,6 +444,30 @@ export function FormElementsPage({
                   ]}
                   title={t('uiElements.additional.correctFields')}
                 />
+              </ComponentPreview>
+              <ComponentPreview
+                name="RangeSlider"
+                description={t('uiElements.rangeDescription')}
+                states={['Pointer', 'Keyboard', 'Disabled']}
+              >
+                <div className="grid gap-3">
+                  <div className="space-y-2">
+                    <p>{t('uiElements.rangeValue', { value: rangeValue })}</p>
+                    <RangeSlider
+                      label={t('uiElements.rangeLabel')}
+                      value={rangeValue}
+                      max={100}
+                      onValueChange={setRangeValue}
+                    />
+                  </div>
+                  <RangeSlider
+                    label={t('uiElements.disabledField')}
+                    value={25}
+                    max={100}
+                    disabled
+                    onValueChange={setRangeValue}
+                  />
+                </div>
               </ComponentPreview>
             </div>
           </Section>

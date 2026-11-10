@@ -1,6 +1,6 @@
 'use client';
 import { lazy, Suspense } from 'react';
-import type { FileDocumentProps } from '@clouddrive/surface/files';
+import type { FileDocumentProps, FileEntry } from '@clouddrive/surface/files';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { FilesProvider, type FileMediaProps } from '@clouddrive/surface/files/runtime';
 import { Page, PageHeader } from '@clouddrive/surface-foundation/layout';
@@ -8,7 +8,15 @@ import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { Cloud, Image as ImageIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useContext, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useSiteProfile } from '@clouddrive/surface/administration/runtime';
 import { readAuthConfig } from '../auth/config';
 import { AuthContext, useAuth } from '../auth/context';
@@ -16,6 +24,7 @@ import { FileAccountMenu } from './account-menu';
 import { createFilesRuntime, fileDestinationHrefs } from './backend';
 import { fileDestinationHref } from './destinations';
 import { FileMediaView, type ImageToolsProps, type VideoToolsProps } from './media-view';
+import type { MusicRequest } from './music-player';
 
 const PDFReader = lazy(() =>
   import('./pdf/reader-view').then((module) => ({ default: module.PDFReaderView })),
@@ -25,6 +34,9 @@ const VideoSubtitles = lazy(() =>
 );
 const ImageEditor = lazy(() =>
   import('./image-editor').then((module) => ({ default: module.ImageEditor })),
+);
+const MusicPlayer = lazy(() =>
+  import('./music-player').then((module) => ({ default: module.MusicPlayer })),
 );
 export function FilesRuntime({
   children,
@@ -54,6 +66,32 @@ export function FilesRuntime({
   const filePort = useMemo(
     () => runtime && (addresses ? runtime.withSiteAddresses(addresses) : runtime),
     [runtime, addresses],
+  );
+  const musicSequence = useRef(0);
+  const [musicRequest, setMusicRequest] = useState<{
+    runtime: NonNullable<typeof runtime>;
+    sequence: number;
+    playback: MusicRequest;
+  }>();
+  const playAudio = useCallback(
+    (entry: FileEntry, maxBytes: number) => {
+      if (!runtime) return;
+      let consumed = false;
+      setMusicRequest({
+        runtime,
+        sequence: ++musicSequence.current,
+        playback: {
+          entry,
+          maxBytes,
+          consumeAutoplay: () => {
+            if (consumed) return false;
+            consumed = true;
+            return true;
+          },
+        },
+      });
+    },
+    [runtime],
   );
   const Media = useMemo(() => {
     if (!runtime) return undefined;
@@ -152,6 +190,30 @@ export function FilesRuntime({
       media={Media}
       pdfReader={Document}
       accountTools={FileAccountMenu}
+      {...(fileWorkspace
+        ? {
+            music: {
+              play: playAudio,
+              player:
+                musicRequest?.runtime === runtime ? (
+                  <Suspense fallback={<p role="status">{t('files.mediaLoading')}</p>}>
+                    <MusicPlayer
+                      key={musicRequest.sequence}
+                      request={musicRequest.playback}
+                      listFiles={runtime.port.list}
+                      readEntry={runtime.port.detail}
+                      readMedia={runtime.readMedia}
+                      onStop={() =>
+                        setMusicRequest((current) =>
+                          current === musicRequest ? undefined : current,
+                        )
+                      }
+                    />
+                  </Suspense>
+                ) : null,
+            },
+          }
+        : {})}
       transfers={runtime.transfers}
       connections={runtime.connections}
       downloads={runtime.downloads}

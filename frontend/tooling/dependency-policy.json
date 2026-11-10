@@ -170,6 +170,10 @@
     "subsrt-ts": {
       "owner": "Host 视频字幕 Worker：解析 VTT、SRT、ASS 并只返回有限纯文本时间段",
       "allowed": ["apps/web"]
+    },
+    "music-metadata": {
+      "owner": "Host 音乐标签 Worker：解析有限大小的 Blob，仅返回有界文字和待核验的封面",
+      "allowed": ["apps/web"]
     }
   }
 }
