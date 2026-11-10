@@ -38,6 +38,7 @@ import { resolveScrollOption } from '../host/scroll-preference';
 import { TopProgress } from '../host/top-progress';
 import { useShellStore } from '../state/use-shell-store';
 import { BrandMark } from './brand-mark';
+import { CurrentSiteLogo, useSiteProfile } from '@clouddrive/surface/administration/runtime';
 import { HeaderNavigation } from './header-navigation';
 import { NotificationCenter } from './notification-center';
 import { usePageTabsRecorder } from './use-page-tabs-recorder';
@@ -86,17 +87,18 @@ function NavigationContent({
   labelOverrides?: Readonly<Record<string, string>>;
 }) {
   const { t } = useFrontendTranslation();
+  const { profile } = useSiteProfile();
 
   return (
     <>
       <div
         className={`flex h-20 shrink-0 items-center border-b border-border ${compact ? 'justify-center px-3' : 'gap-3 px-5'}`}
       >
-        <BrandMark />
+        <CurrentSiteLogo className="size-9 shrink-0" fallback={<BrandMark />} />
         {compact ? null : (
           <div className="min-w-0">
             <p className="truncate text-sm font-extrabold tracking-tight text-ink">
-              {t('brand.name')}
+              {profile?.name || t('brand.name')}
             </p>
             <p className="truncate text-xs text-ink-muted">{t('brand.edition')}</p>
           </div>

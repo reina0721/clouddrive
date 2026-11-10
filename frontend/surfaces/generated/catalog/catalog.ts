@@ -486,6 +486,14 @@ export const generatedRouteCatalog: RouteCatalog = {
       paramNames: [],
     },
     {
+      routeId: 'system-settings.site',
+      pluginId: 'system-settings',
+      path: 'site',
+      segments: ['site'],
+      pattern: '/system-settings/site',
+      paramNames: [],
+    },
+    {
       routeId: 'system-tools.blobs',
       pluginId: 'system-tools',
       path: 'blobs',

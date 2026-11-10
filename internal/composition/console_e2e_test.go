@@ -166,6 +166,7 @@ func TestConsoleSQLiteDataIsolationAndRestart(t *testing.T) {
 	member.request(t, "GET", "/users", nil, 403)
 	member.request(t, "GET", "/roles?scope=self", nil, 200)
 	member.request(t, "GET", "/system/runtime", nil, 403)
+	verifyConsoleSiteProfile(t, owner, member)
 	member.request(t, "GET", "/navigation", nil, 200)
 	if preferences := member.request(t, "GET", "/native/iam/self/preferences", nil, 200); preferences["timeZone"] == "Asia/Shanghai" {
 		t.Fatal("cross-user account preferences leak")
@@ -203,6 +204,9 @@ func TestConsoleSQLiteDataIsolationAndRestart(t *testing.T) {
 	owner.base = "http://" + coordinator.Diagnostics().BoundAddress
 	member.base = owner.base
 	member.request(t, "GET", "/auth/session", nil, 200)
+	if got := owner.request(t, "GET", siteProfilePublic, nil, 200); got["name"] != testSiteProfileName {
+		t.Fatal("站点信息在重启后未保留")
+	}
 	if got := owner.request(t, "GET", "/native/iam/self/preferences", nil, 200); got["timeZone"] != "Asia/Shanghai" || got["themeMode"] != "dark" {
 		t.Fatalf("account preferences did not survive restart: %v", got)
 	}

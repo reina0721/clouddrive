@@ -20,6 +20,7 @@ const { z } = require('zod');
 const identity = await import('../surfaces/src/identity/model.ts');
 const security = await import('../surfaces/src/identity/security-schema.ts');
 const admin = await import('../surfaces/src/administration/model.ts');
+const site = await import('../surfaces/src/administration/site-profile.ts');
 const str = z.string(),
   version = z.number().int().nonnegative(),
   id = str.min(1),
@@ -117,6 +118,7 @@ function add(method, path, input, output, permission = '', code = 200, query) {
 }
 add('GET', '/auth/csrf', null, z.object({ token: id }));
 add('GET', '/auth/registration-policy', null, z.object({ enabled: z.boolean() }));
+add('GET', '/site-profile', null, site.siteProfileSchema);
 add(
   'POST',
   '/auth/setup',
@@ -243,6 +245,14 @@ add(
   '/system/registration',
   identity.registrationSettingsInputSchema,
   identity.registrationSettingsResponseSchema,
+  'console:settings:write',
+);
+add('GET', '/system/site-profile', null, site.siteProfileVersionSchema, 'console:settings:read');
+add(
+  'PUT',
+  '/system/site-profile',
+  site.siteProfileVersionSchema,
+  site.siteProfileVersionSchema,
   'console:settings:write',
 );
 add(
@@ -415,10 +425,11 @@ for (const op of operations) {
       '.' +
       op.path.replaceAll(/[{}]/g, '').replaceAll('/', '.'),
     security:
-      op.path.startsWith('/auth/') &&
-      ['csrf', 'login', 'setup', 'register', 'registration-policy'].includes(
-        op.path.split('/').at(-1),
-      )
+      op.path === '/site-profile' ||
+      (op.path.startsWith('/auth/') &&
+        ['csrf', 'login', 'setup', 'register', 'registration-policy'].includes(
+          op.path.split('/').at(-1),
+        ))
         ? []
         : [{ ConsoleCookie: [] }],
     parameters,

@@ -1,5 +1,6 @@
 'use client';
 import { useFrontendTranslation } from '@clouddrive/i18n';
+import { CurrentSiteLogo, useSiteProfile } from '@clouddrive/surface/administration/runtime';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { IconAction } from '@clouddrive/ui-adapter/icon-action';
 import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
@@ -84,6 +85,8 @@ export function FileWorkspace({
   const port = useFiles(),
     snapshot = useTransferSnapshot(),
     { t, locale } = useFrontendTranslation();
+  const { profile } = useSiteProfile();
+  const siteName = profile?.name || t('files.brand');
   const [revision, setRevision] = useWorkspaceRevision();
   const [historySettings, setHistorySettings] = useState(false);
   const [emptyTrash, setEmptyTrash] = useState(false);
@@ -273,12 +276,15 @@ export function FileWorkspace({
       >
         <FileLink
           target="files"
-          title={t('files.brand')}
+          title={siteName}
           onNavigate={close}
           className="flex min-w-0 items-center gap-2 px-1 py-2 text-base font-semibold"
         >
-          <Cloud className="size-7 shrink-0 text-brand" />
-          <span className={rail ? 'sr-only' : 'whitespace-nowrap'}>{t('files.brand')}</span>
+          <CurrentSiteLogo
+            className="size-7 shrink-0"
+            fallback={<Cloud className="size-7 shrink-0 text-brand" />}
+          />
+          <span className={rail ? 'sr-only' : 'truncate'}>{siteName}</span>
         </FileLink>
         {!mobile ? (
           <Action

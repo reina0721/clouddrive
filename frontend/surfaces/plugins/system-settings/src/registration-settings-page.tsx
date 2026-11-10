@@ -26,6 +26,7 @@ import {
   type DirectoryRole,
 } from '@clouddrive/surface/identity/runtime';
 import { useIdentityQuery } from '../../../src/identity/use-query';
+import { SettingsSections } from './settings-sections';
 import {
   IdentityModeNotice,
   IdentityQueryState,
@@ -249,6 +250,7 @@ export function RegistrationSettingsPage() {
   return (
     <Page>
       <PageHeader title={t('systemSettings.title')} description={t('systemSettings.description')} />
+      {port.mode === 'backend' ? <SettingsSections active="registration" /> : null}
       <IdentityModeNotice mode={port.mode} />
       {query.error || !query.data ? (
         <IdentityQueryState error={query.error} retry={query.reload} />

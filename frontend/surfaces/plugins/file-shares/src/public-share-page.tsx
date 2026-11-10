@@ -1,6 +1,7 @@
 'use client';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
+import { CurrentSiteLogo, useSiteProfile } from '@clouddrive/surface/administration/runtime';
 import { Page, PageHeader, Section, Toolbar } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
 import {
@@ -42,6 +43,8 @@ const PublicUploadDialog = lazy(() =>
 export function PublicSharePage() {
   const port = usePublicFiles(),
     { t } = useFrontendTranslation();
+  const { profile } = useSiteProfile();
+  const siteName = profile?.name || 'clouddrive';
   const [share, setShare] = useState<PublicShare>(),
     [listing, setListing] = useState<PublicFileListing>(),
     [query, setQuery] = useState<PublicFileQuery>(initialPublicQuery),
@@ -153,11 +156,14 @@ export function PublicSharePage() {
           primary={
             <a
               href="/home"
-              aria-label="clouddrive"
-              className="flex items-center gap-3 text-xl font-bold"
+              aria-label={siteName}
+              className="flex min-w-0 items-center gap-3 text-xl font-bold"
             >
-              <Cloud className="size-7 text-brand" />
-              <span className="hidden sm:inline">clouddrive</span>
+              <CurrentSiteLogo
+                className="size-7 shrink-0"
+                fallback={<Cloud className="size-7 text-brand" />}
+              />
+              <span className="hidden truncate sm:inline">{siteName}</span>
             </a>
           }
           secondary={
@@ -176,6 +182,11 @@ export function PublicSharePage() {
             </>
           }
         />
+        {profile?.description ? (
+          <p className="whitespace-pre-wrap break-words text-sm text-ink-muted">
+            {profile.description}
+          </p>
+        ) : null}
         <PageHeader
           title={share?.title || root?.name || t('publicFiles.title')}
           description={t(

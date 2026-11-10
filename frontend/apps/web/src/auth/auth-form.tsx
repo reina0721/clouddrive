@@ -1,18 +1,18 @@
 'use client';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { FoundationForm, useFoundationForm } from '@clouddrive/form-foundation';
 import { Page, PageHeader } from '@clouddrive/surface-foundation/layout';
 import { TextField, PasswordField } from '@clouddrive/ui-adapter/form-field';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { AlertBanner } from '@clouddrive/ui-adapter/feedback';
 import { useFrontendTranslation } from '@clouddrive/i18n';
+import { useSiteProfile } from '@clouddrive/surface/administration/runtime';
 import { useAuth } from './context';
 import { AuthFrame } from './frame';
 import { authPageHref, authReturnDestination } from './contract';
 import { readAuthConfig } from './config';
-import { DemoAccessPanel } from './demo-access';
 import { demoAccountPassword, type DemoAccount } from './demo-accounts';
 import { rememberDemoAccount } from './demo-session';
 import { resetDemoData } from './demo-reset';
@@ -20,9 +20,14 @@ import { readRegistrationAvailability } from './registration-policy';
 import type { AuthFormValues } from './form-schema';
 import { AlertTriangle, CheckCircle2, Clock, Eye, EyeOff } from 'lucide-react';
 
+const DemoAccessPanel = lazy(() =>
+  import('./demo-access').then(({ DemoAccessPanel }) => ({ default: DemoAccessPanel })),
+);
+
 export function AuthForm({ kind }: Readonly<{ kind: 'login' | 'register' | 'expired' }>) {
   const register = kind === 'register';
   const { t } = useFrontendTranslation();
+  const { profile } = useSiteProfile();
   const auth = useAuth();
   const params = useSearchParams();
   const [returnHash, setReturnHash] = useState('');
@@ -87,7 +92,11 @@ export function AuthForm({ kind }: Readonly<{ kind: 'login' | 'register' | 'expi
       <Page>
         <PageHeader
           title={t(register ? 'auth.registerTitle' : 'auth.loginTitle')}
-          description={t(register ? 'auth.registerDescription' : 'auth.loginDescription')}
+          description={
+            register
+              ? t('auth.registerDescription', { site: profile?.name || t('brand.name') })
+              : t('auth.loginDescription')
+          }
         />
         {!demoMode && !register ? (
           <Link href="/setup" className="text-brand underline">
@@ -218,11 +227,19 @@ export function AuthForm({ kind }: Readonly<{ kind: 'login' | 'register' | 'expi
           </FoundationForm>
         )}
         {demoMode && !register && !registered ? (
-          <DemoAccessPanel
-            busy={auth.busy}
-            onReset={() => resetDemoData()}
-            onSignIn={signInAsDemo}
-          />
+          <Suspense
+            fallback={
+              <p role="status" className="text-sm text-ink-muted">
+                {t('common.feedbackLoading')}
+              </p>
+            }
+          >
+            <DemoAccessPanel
+              busy={auth.busy}
+              onReset={() => resetDemoData()}
+              onSignIn={signInAsDemo}
+            />
+          </Suspense>
         ) : null}
         <p className="text-sm text-ink-muted">
           {t(register ? 'auth.hasAccount' : 'auth.noAccount')}{' '}

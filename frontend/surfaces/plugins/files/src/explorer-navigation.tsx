@@ -1,5 +1,6 @@
 'use client';
 import { useFrontendTranslation } from '@clouddrive/i18n';
+import { CurrentSiteLogo, useSiteProfile } from '@clouddrive/surface/administration/runtime';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { DrawerSurface } from '@clouddrive/ui-adapter/overlays';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
@@ -15,6 +16,7 @@ export function ExplorerNavigation({
   onFocusFiles: () => void;
 }) {
   const { t } = useFrontendTranslation();
+  const { profile } = useSiteProfile();
   const [open, setOpen] = useState(false);
   const wasOpen = useRef(false);
   useEffect(() => {
@@ -39,8 +41,11 @@ export function ExplorerNavigation({
         <Action size="sm" variant="quiet" onPress={() => setOpen(true)} leadingIcon={<Menu />}>
           {t('files.explorer.navigation')}
         </Action>
-        <Cloud className="size-5 text-brand" />
-        <span className="truncate font-semibold">{t('files.brand')}</span>
+        <CurrentSiteLogo
+          className="size-5 shrink-0"
+          fallback={<Cloud className="size-5 text-brand" />}
+        />
+        <span className="truncate font-semibold">{profile?.name || t('files.brand')}</span>
       </div>
       {open ? (
         <DrawerSurface

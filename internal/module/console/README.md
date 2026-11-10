@@ -11,6 +11,8 @@
 
 原生接口经 `/native` 转发时重新开始路由匹配，并继续执行原生授权与 mutation guard。管理配置只暴露明确许可的非敏感字段，不能返回完整配置或凭据。
 
+站点信息独立于部署及注册策略。公开读取只提供呈现字段，管理写入需要现有系统配置权限、请求来源和 CSRF 校验，并使用修订号防止覆盖。修改记录只含操作类型与结果。
+
 通知与工作区、历史、定时任务按账号隔离；工作区和任务使用版本条件写入。API relay 检查目标、DNS、重定向、请求头、取消、超时及大小预算，不执行任意 JavaScript，不提供虚假的代理或 TLS 指纹结果。
 
 接口文档见根目录 `api/console-openapi.json`；跨模块真实 SQLite/HTTP 验收见 `internal/composition/console_e2e_test.go`；真实浏览器验收见 `frontend/integration/console.spec.ts`。

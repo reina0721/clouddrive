@@ -15,6 +15,8 @@ export const authenticationResources = {
         mfaCode: '动态验证码或恢复码',
         brandEyebrow: 'clouddrive',
         brandTitle: '清晰的界面，专注的工作。',
+        termsOfUse: '使用条款',
+        privacyPolicy: '隐私政策',
         brandDescription: '回到熟悉的工作台，让日常任务、个人偏好和操作反馈井然有序。',
         benefits: {
           workbench: '统一的工作台与导航',
@@ -28,7 +30,7 @@ export const authenticationResources = {
         policyLoading: '正在读取注册策略…',
         policyFailure: '无法读取注册策略，请重试。',
         policyRetry: '重试',
-        registerDescription: '填写基本信息，开始使用 clouddrive。',
+        registerDescription: '填写基本信息，开始使用 {{site}}。',
         name: '姓名',
         email: '邮箱',
         password: '密码',
@@ -136,6 +138,8 @@ export const authenticationResources = {
         mfaCode: 'Authenticator or recovery code',
         brandEyebrow: 'clouddrive',
         brandTitle: 'A clear workspace. Room to focus.',
+        termsOfUse: 'Terms of use',
+        privacyPolicy: 'Privacy policy',
         brandDescription:
           'Return to a familiar workspace where everyday tasks, personal preferences, and feedback stay organized.',
         benefits: {
@@ -151,7 +155,7 @@ export const authenticationResources = {
         policyLoading: 'Loading registration policy…',
         policyFailure: 'The registration policy could not be loaded. Please retry.',
         policyRetry: 'Retry',
-        registerDescription: 'Add your details to get started with clouddrive.',
+        registerDescription: 'Add your details to get started with {{site}}.',
         name: 'Name',
         email: 'Email',
         password: 'Password',

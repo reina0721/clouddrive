@@ -12,6 +12,8 @@ type Persistence interface {
 	Record(context.Context, model.Event) error
 	Workspace(context.Context, string) (model.WorkspaceRecord, error)
 	SaveWorkspace(context.Context, model.WorkspaceRecord) error
+	SiteProfile(context.Context) (model.SiteProfileVersion, error)
+	SaveSiteProfile(context.Context, model.SiteProfileVersion) (model.SiteProfileVersion, error)
 	Notification(context.Context, string, string) (model.Notification, error)
 	Notifications(context.Context, string, model.NotificationQuery) ([]model.Notification, int64, int64, error)
 	ReadNotifications(context.Context, string, []string, bool) error

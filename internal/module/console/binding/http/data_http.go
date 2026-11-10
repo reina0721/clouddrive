@@ -35,6 +35,8 @@ func (h *Handler) record(r *http.Request, status int) {
 		operation = "account.update"
 	case path == "/system/registration":
 		operation = "settings.update"
+	case path == adminSiteProfilePath:
+		operation = "settings.site-profile"
 	case strings.HasPrefix(path, "/roles"):
 		operation = "roles.update"
 		if r.Method == "POST" && path == "/roles" {

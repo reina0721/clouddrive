@@ -1,0 +1,20 @@
+schema_version: 1
+id: R173-001
+title: 站点公开信息与参数设置
+question: 如何集中配置站点身份并应用到真实公开和登录后的页面？
+research_type: current-project-and-external-primary-source
+topics: [console, site-profile, branding]
+status: active
+evidence:
+  primary_sources:
+    - title: Cloudreve 参数设置的站点信息
+      locator: https://docs.cloudreve.org/zh/usage/custom-frontend
+      snapshot: 站点名称、描述、深浅标志、浏览器图标、使用条款和隐私政策
+    - title: 控制台、文件页、登录页与分享页
+      locator: report.md
+      snapshot: 970ca36
+verified_at: 2026-11-08
+validity:
+  mode: snapshot
+  refresh_triggers: [控制台授权方式变化, 前端部署模式变化, 图像 URL 安全边界变化]
+report: report.md

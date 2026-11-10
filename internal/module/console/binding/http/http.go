@@ -77,6 +77,7 @@ func New(dependencies Dependencies) (*Handler, error) {
 		h.origins[origin] = true
 	}
 	h.routes()
+	h.siteProfileRoutes()
 	h.dataRoutes()
 	h.workbenchRoutes()
 	h.dashboardRoutes()
@@ -99,7 +100,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if path != "/auth/csrf" && path != "/auth/login" && path != "/auth/register" && path != "/auth/setup" && path != "/auth/registration-policy" {
+	publicProfile := path == publicSiteProfilePath && (r.Method == http.MethodGet || r.Method == http.MethodHead)
+	if !publicProfile && path != "/auth/csrf" && path != "/auth/login" && path != "/auth/register" && path != "/auth/setup" && path != "/auth/registration-policy" {
 		authenticated, err := h.authenticateRequest(r)
 		if err != nil {
 			failure(w, 401, "unauthenticated", "")
