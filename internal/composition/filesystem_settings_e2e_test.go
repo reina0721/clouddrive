@@ -91,8 +91,24 @@ func TestFilesystemSettingsApplyAfterRestart(t *testing.T) {
 	anonymous.request(t, "GET", apps+"/active", nil, 401)
 	observer.request(t, "GET", apps+"/active", nil, 403)
 	appView := observer.request(t, "GET", apps, nil, 200)
-	if appView["canSave"] != false || len(appView["items"].([]any)) != 8 || len(appView["defaults"].([]any)) != 2 {
+	if appView["canSave"] != false || len(appView["items"].([]any)) != 9 || len(appView["defaults"].([]any)) != 2 {
 		t.Fatalf("内置应用或只读视图错误: %v", appView)
+	}
+	foundDrawio := false
+	for _, raw := range appView["items"].([]any) {
+		item := raw.(map[string]any)
+		if item["id"] != "drawio" {
+			continue
+		}
+		foundDrawio = true
+		mappings := item["newFiles"].([]any)
+		if item["canCreate"] != true || len(mappings) != 1 ||
+			mappings[0].(map[string]any)["extension"] != "drawio" {
+			t.Fatalf("图表应用缺少默认新建映射: %v", item)
+		}
+	}
+	if !foundDrawio {
+		t.Fatal("缺少内置 Draw.io 图表应用")
 	}
 	observer.request(t, "PUT", apps, appBody(0, noRules, noRules), 403)
 	admin.request(t, "PUT", "/native/iam/roles/"+roleID+"/permissions", map[string]any{

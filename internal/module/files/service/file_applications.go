@@ -24,6 +24,7 @@ const (
 	FileAppArchive  FileApplicationID = "archive"
 	FileAppMarkdown FileApplicationID = "markdown"
 	FileAppText     FileApplicationID = "text"
+	FileAppDrawio   FileApplicationID = "drawio"
 )
 
 // FileApplicationPlatform 表示浏览器打开入口允许的显示平台。
@@ -46,7 +47,7 @@ var fileApplicationExtension = regexp.MustCompile(`^[a-z0-9][a-z0-9_+-]{0,23}$`)
 
 // FileApplicationAvailability 是内置应用的可用性设置。
 type FileApplicationAvailability struct {
-	ID       FileApplicationID       `json:"id" enum:"image,audio,video,pdf,epub,archive,markdown,text"`
+	ID       FileApplicationID       `json:"id" enum:"image,audio,video,pdf,epub,archive,markdown,text,drawio"`
 	Enabled  bool                    `json:"enabled"`
 	Platform FileApplicationPlatform `json:"platform" enum:"all,desktop,mobile"`
 }
@@ -83,7 +84,7 @@ type FileApplicationDefault struct {
 // FileApplicationSettings 保存完整草稿，应用规则可以省略采用内置可用性的条目。
 type FileApplicationSettings struct {
 	Revision int64                    `json:"revision" minimum:"0"`
-	Apps     []FileApplicationRule    `json:"apps" maxItems:"8"`
+	Apps     []FileApplicationRule    `json:"apps" maxItems:"9"`
 	Defaults []FileApplicationDefault `json:"defaults" maxItems:"32"`
 	WebApps  []WebFileApplication     `json:"webApps,omitempty" maxItems:"8"`
 }
@@ -133,6 +134,7 @@ func builtInFileApplications() []FileApplicationItem {
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppArchive, true, FileAppAll}, Extensions: []string{"zip", "7z"}},
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppMarkdown, true, FileAppAll}, Extensions: []string{"md", "markdown"}},
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppText, true, FileAppAll}, Extensions: slices.Clone(privateTextExtensions)},
+		{FileApplicationAvailability: FileApplicationAvailability{FileAppDrawio, true, FileAppAll}, Extensions: []string{drawioExtension}},
 	}
 	for index := range items {
 		item := &items[index]
@@ -144,6 +146,9 @@ func builtInFileApplications() []FileApplicationItem {
 		case FileAppMarkdown:
 			item.CanCreate = true
 			item.NewFiles = append(item.NewFiles, FileCreationMapping{Extension: "md"})
+		case FileAppDrawio:
+			item.CanCreate = true
+			item.NewFiles = append(item.NewFiles, FileCreationMapping{Extension: drawioExtension})
 		}
 	}
 	return items

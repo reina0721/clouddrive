@@ -212,6 +212,16 @@ test('文件浏览应用保存、默认选择、平台限制和恢复', async ({
     await apply();
     await openFile();
     await expect(heading).toBeVisible();
+    await admin();
+    const diagram = page.getByRole('checkbox', { name: '启用 Draw.io 图表', exact: true });
+    await expect(diagram).toBeChecked();
+    await diagram.press('Space');
+    await apply();
+    await page.goto(folder.pathname + folder.search);
+    await page.getByRole('button', { name: '新建', exact: true }).click();
+    await expect(
+      page.getByRole('menuitem', { name: '新建 Draw.io 图表', exact: true }),
+    ).toHaveCount(0);
   } finally {
     await restoreApplications(page, initial);
   }

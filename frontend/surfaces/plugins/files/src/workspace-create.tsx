@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { TextField } from '@clouddrive/ui-adapter/form-field';
@@ -8,7 +8,8 @@ import { useFiles, useTransfers } from '../../../src/files/runtime';
 import type { CreationTemplate } from '../../../src/files/file-applications';
 import { TextDialog } from './text-dialog';
 import { OwnFolderPicker } from './own-folder-picker';
-export type CreateAction = 'folder' | 'text' | 'markdown' | 'upload' | 'directory';
+const DrawioDialog = lazy(() => import('./drawio-dialog'));
+export type CreateAction = 'folder' | 'text' | 'markdown' | 'drawio' | 'upload' | 'directory';
 export function WorkspaceCreate({
   action,
   initialParent,
@@ -31,7 +32,7 @@ export function WorkspaceCreate({
     [listing, setListing] = useState<FileListing>(),
     [failure, setFailure] = useState(''),
     [name, setName] = useState(''),
-    [textTarget, setTextTarget] = useState<{ parent: string; maxBytes: number }>();
+    [editorTarget, setEditorTarget] = useState<{ parent: string; maxBytes: number }>();
   const transitioning = useRef(false);
   // 对话框仍拥有候选，enqueue完成接管后关闭；取消或换账号释放句柄。
   useEffect(
@@ -49,15 +50,28 @@ export function WorkspaceCreate({
           ? 'files.newText'
           : action === 'markdown'
             ? 'files.newMarkdown'
-            : action === 'directory'
-              ? 'files.uploadDirectory'
-              : 'files.upload',
+            : action === 'drawio'
+              ? 'files.newDrawio'
+              : action === 'directory'
+                ? 'files.uploadDirectory'
+                : 'files.upload',
     );
-  if (textTarget && (action === 'text' || action === 'markdown'))
+  if (editorTarget && action === 'drawio')
+    return (
+      <Suspense fallback={<p role="status">{t('files.mediaLoading')}</p>}>
+        <DrawioDialog
+          request={{ parentId: editorTarget.parent, extension: template?.extension ?? 'drawio' }}
+          maxBytes={editorTarget.maxBytes}
+          onClose={onClose}
+          onSaved={() => onChanged(false)}
+        />
+      </Suspense>
+    );
+  if (editorTarget && (action === 'text' || action === 'markdown'))
     return (
       <TextDialog
-        request={{ mode: action, parentId: textTarget.parent, ...(template ? { template } : {}) }}
-        maxBytes={textTarget.maxBytes}
+        request={{ mode: action, parentId: editorTarget.parent, ...(template ? { template } : {}) }}
+        maxBytes={editorTarget.maxBytes}
         onClose={onClose}
         onSaved={() => onChanged(false)}
       />
@@ -87,9 +101,9 @@ export function WorkspaceCreate({
           if (action === 'folder') {
             await port.folder(parent, name);
             onChanged(false);
-          } else if (action === 'text' || action === 'markdown') {
+          } else if (action === 'text' || action === 'markdown' || action === 'drawio') {
             transitioning.current = true;
-            setTextTarget({ parent, maxBytes: listing.maxTextBytes });
+            setEditorTarget({ parent, maxBytes: listing.maxTextBytes });
           } else {
             const chosen =
               candidates ??

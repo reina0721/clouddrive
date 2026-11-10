@@ -11,6 +11,7 @@ const applicationID = z.enum([
   'archive',
   'markdown',
   'text',
+  'drawio',
 ]);
 const platform = z.enum(['all', 'desktop', 'mobile']);
 const rule = z.object({ id: applicationID, enabled: z.boolean(), platform });
@@ -57,14 +58,14 @@ const defaultRule = z.object({
 });
 
 export const fileApplicationPolicySchema = z.object({
-  items: z.array(item).max(8),
+  items: z.array(item).max(applicationID.options.length),
   defaults: z.array(defaultRule).max(32),
   webItems: z.array(webItem).max(8),
 });
 export const fileApplicationViewSchema = fileApplicationPolicySchema.extend({
   revision: z.number().int().nonnegative(),
   builtInDefaults: z.array(defaultRule),
-  builtInItems: z.array(item).max(8),
+  builtInItems: z.array(item).max(applicationID.options.length),
   webApps: z.array(webApp).max(8),
   canSave: z.boolean(),
 });
@@ -117,6 +118,7 @@ const names: Record<FileApplicationID, readonly [string, string]> = {
   archive: ['压缩包预览', 'Archive viewer'],
   markdown: ['Markdown 编辑器', 'Markdown editor'],
   text: ['文本编辑器', 'Text editor'],
+  drawio: ['Draw.io 图表', 'Draw.io diagram'],
 };
 
 export function fileApplicationName(id: FileApplicationID, chinese: boolean) {

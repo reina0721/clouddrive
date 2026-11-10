@@ -42,6 +42,7 @@ type MarkdownImageUpload = (
   signal: AbortSignal,
 ) => Promise<FileEntry | undefined>;
 const MarkdownImageContext = createContext<MarkdownImageUpload | undefined>(undefined);
+const DrawioEndpointContext = createContext('');
 
 const Context = createContext<FilesPort | null>(null);
 const ArchivesContext = createContext<ArchivesPort | null>(null);
@@ -58,6 +59,7 @@ export function FilesProvider({
   accountTools: AccountTools,
   music,
   uploadMarkdownImage,
+  drawioEndpoint,
   transfers,
   downloads,
   connections,
@@ -75,6 +77,7 @@ export function FilesProvider({
   accountTools: ComponentType;
   music?: FileMusic;
   uploadMarkdownImage?: MarkdownImageUpload;
+  drawioEndpoint: string;
 }>) {
   return (
     <Context value={port}>
@@ -88,7 +91,9 @@ export function FilesProvider({
                     <DocumentContext value={Document}>
                       <MusicContext value={music}>
                         <MarkdownImageContext value={uploadMarkdownImage}>
-                          {children}
+                          <DrawioEndpointContext value={drawioEndpoint}>
+                            {children}
+                          </DrawioEndpointContext>
                         </MarkdownImageContext>
                       </MusicContext>
                     </DocumentContext>
@@ -146,6 +151,10 @@ export function useFiles(): FilesPort {
   const port = useContext(Context);
   if (!port) throw new Error('Files runtime is required');
   return port;
+}
+
+export function useDrawioEndpoint() {
+  return useContext(DrawioEndpointContext);
 }
 
 const PublicContext = createContext<PublicFilesPort | null>(null);

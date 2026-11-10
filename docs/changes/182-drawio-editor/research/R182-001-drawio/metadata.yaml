@@ -1,0 +1,23 @@
+schema_version: 1
+id: R182-001
+title: Draw.io 在线编辑
+question: 如何在本人文件区接入 Draw.io，同时保护原件和未保存草稿？
+research_type: current-project-and-external-primary-source
+topics: [files, drawio, iframe, versioning]
+status: active
+evidence:
+  primary_sources:
+    - title: Cloudreve Draw.io
+      locator: https://docs.cloudreve.org/zh/usage/file-apps#draw-io
+      snapshot: 内置应用、图形库、画布、保存和自托管编辑服务
+    - title: Draw.io 嵌入协议
+      locator: https://www.drawio.com/docs/reference/embed-mode/
+      snapshot: configure、init、load、save、autosave 和 exit
+    - title: 当前本人文件事务与应用策略
+      locator: report.md
+      snapshot: be5c5e0
+verified_at: 2026-11-10
+validity:
+  mode: snapshot
+  refresh_triggers: [嵌入协议事件变化, 文件权限变化, 需要实时协作, 上游安全公告]
+report: report.md

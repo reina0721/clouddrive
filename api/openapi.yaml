@@ -2658,6 +2658,7 @@ components:
             - archive
             - markdown
             - text
+            - drawio
           type: string
         newFiles:
           items:
@@ -2771,6 +2772,7 @@ components:
             - archive
             - markdown
             - text
+            - drawio
           type: string
         newFiles:
           items:
@@ -2794,7 +2796,7 @@ components:
         apps:
           items:
             $ref: "#/components/schemas/FileApplicationRule"
-          maxItems: 8
+          maxItems: 9
           nullable: true
           type: array
         defaults:

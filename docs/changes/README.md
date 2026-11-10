@@ -168,3 +168,4 @@
 - [179 私有 HLS 视频](179-hls-playback/README.md) 支持 M3U8、自动和手动清晰度、直播及私有分片。
 - [180 文本与代码编辑](180-text-code-editor/README.md) 支持代码高亮、搜索替换、跳行和编码切换。
 - [181 照片查看工作区](181-photo-viewer/README.md) 支持同目录切图与按需查看拍摄信息。
+- [182 Draw.io 在线编辑](182-drawio-editor/README.md) 支持新建、编辑、版本保存和下载草稿。

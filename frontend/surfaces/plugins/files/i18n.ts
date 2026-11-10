@@ -72,6 +72,7 @@ const zh = {
   copyName: '{{name}} - 副本',
   newText: '新建文本',
   newMarkdown: '新建 Markdown',
+  newDrawio: '新建 Draw.io 图表',
   edit: '编辑文本',
   save: '保存',
   textHint: '仅保存 UTF-8 纯文本，不执行 HTML 或脚本；并发修改会保留你的编辑并提示冲突。',
@@ -311,6 +312,7 @@ const en: typeof zh = {
   copyName: '{{name}} - copy',
   newText: 'New text file',
   newMarkdown: 'New Markdown file',
+  newDrawio: 'New Draw.io diagram',
   edit: 'Edit text',
   save: 'Save',
   textHint:

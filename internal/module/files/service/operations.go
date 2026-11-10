@@ -21,6 +21,8 @@ import (
 )
 
 const editedTextMediaType = "text/plain; charset=utf-8"
+const drawioExtension = "drawio"
+const drawioMediaType = "application/xml"
 
 var privateTextExtensions = []string{
 	"txt", "md", "markdown", "csv", "json", "jsonc", "xml", "html", "htm", "css", "js", "mjs", "cjs",
@@ -103,6 +105,9 @@ func (s *Service) ReplaceText(ctx context.Context, owner, id string, revision in
 	}
 	key := "files/" + objectID
 	mediaType := utf8TextMediaType(detail.Entry.MediaType)
+	if strings.EqualFold(path.Ext(detail.Entry.Name), "."+drawioExtension) {
+		mediaType = drawioMediaType
+	}
 	if err := s.content.Put(ctx, key, []byte(text), mediaType); err != nil {
 		return model.Entry{}, s.compensate(ctx, owner, key, fmt.Errorf("write text candidate: %w", err))
 	}
@@ -152,8 +157,8 @@ func editablePrivateText(entry model.Entry) bool {
 	if entry.Kind != model.File || entry.TrashedAt != nil {
 		return false
 	}
-	return editableText(entry) ||
-		slices.Contains(privateTextExtensions, strings.TrimPrefix(strings.ToLower(path.Ext(entry.Name)), "."))
+	extension := strings.TrimPrefix(strings.ToLower(path.Ext(entry.Name)), ".")
+	return editableText(entry) || extension == drawioExtension || slices.Contains(privateTextExtensions, extension)
 }
 
 func utf8TextMediaType(previous string) string {

@@ -84,6 +84,7 @@ import { SaveShortcutDialog, ShortcutActionDialog } from './shortcut-dialogs';
 import { TagsBatchDialog } from './tags-batch-dialog';
 import { TextDialog, type TextRequest } from './text-dialog';
 import { VersionsPanel } from './versions-panel';
+import type { DrawioRequest } from './drawio-dialog';
 import { ViewOptionsDialog } from './view-options-dialog';
 import { useCursorFileFeed } from './use-cursor-file-feed';
 import type { TrashPurgeSelection } from '../../../src/files/trash-purge';
@@ -105,6 +106,7 @@ const DirectLinksDialog = lazy(() => import('./direct-links-dialog'));
 const WebFilePreviewDialog = lazy(() =>
   import('./web-file-preview-dialog').then((module) => ({ default: module.WebFilePreviewDialog })),
 );
+const DrawioDialog = lazy(() => import('./drawio-dialog'));
 const archiveFile = (entry: FileEntry) =>
   entry.kind === 'file' &&
   (/\.(zip|7z)$/i.test(entry.name) ||
@@ -118,12 +120,13 @@ function compatibleFileApplications(entry: FileEntry, builtInText: boolean): Fil
   if (isMarkdownFile(entry)) return ['markdown', 'text'];
   if (isHlsPlaylist(entry)) return ['video'];
   const media = entry.mediaType.split('/', 1)[0];
+  if (fileIconExtension(entry.name) === 'drawio') return ['drawio'];
   if (media === 'image' || media === 'audio' || media === 'video') return [media];
   return isTextPreview(entry) || builtInText ? ['text'] : [];
 }
 
 function configuredFileApplications(entry: FileEntry): FileApplicationID[] {
-  const options: FileApplicationID[] = ['pdf', 'epub', 'markdown', 'text'];
+  const options: FileApplicationID[] = ['pdf', 'epub', 'markdown', 'text', 'drawio'];
   if (archiveFile(entry)) options.push('archive');
   const media = entry.mediaType.split('/', 1)[0];
   if (media === 'image' || media === 'audio' || media === 'video') options.push(media);
@@ -236,6 +239,7 @@ export function FilesPage({
   const [directTargets, setDirectTargets] = useState<readonly FileEntry[]>();
   const [accessTarget, setAccessTarget] = useState<FileEntry>();
   const [textEditor, setTextEditor] = useState<{ request: TextRequest; maxBytes: number }>();
+  const [drawio, setDrawio] = useState<{ request: DrawioRequest; maxBytes: number }>();
   const [pdfEntry, setPdfEntry] = useState<FileEntry>();
   const [epubEntry, setEpubEntry] = useState<FileEntry>();
   const [mediaPreview, setMediaPreview] = useState<{
@@ -700,6 +704,11 @@ export function FilesPage({
           return;
         case 'epub':
           setEpubEntry(entry);
+          return;
+        case 'drawio':
+          if (maxTextBytes === undefined || entry.trashedAt !== null)
+            setNotice(t('files.errors.unavailable'));
+          else setDrawio({ request: { entry }, maxBytes: maxTextBytes });
           return;
         case 'markdown':
         case 'text':
@@ -2077,6 +2086,11 @@ export function FilesPage({
             reload();
           }}
         />
+      ) : null}
+      {drawio ? (
+        <Suspense fallback={<p role="status">{t('files.mediaLoading')}</p>}>
+          <DrawioDialog {...drawio} onClose={() => setDrawio(undefined)} onSaved={reload} />
+        </Suspense>
       ) : null}
       {pdfEntry && listing ? (
         <Suspense fallback={<p role="status">{pdfEntry.name}</p>}>

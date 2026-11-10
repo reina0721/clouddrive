@@ -224,7 +224,11 @@ func (s *Service) createSmallContent(ctx context.Context, owner, parent, name, k
 		return model.Entry{}, err
 	}
 	objectKey := "files/" + id
-	mediaType := mime.TypeByExtension(strings.ToLower(path.Ext(name)))
+	extension := strings.ToLower(path.Ext(name))
+	mediaType := mime.TypeByExtension(extension)
+	if extension == "."+drawioExtension {
+		mediaType = drawioMediaType
+	}
 	if mediaType == "" {
 		mediaType = http.DetectContentType(content)
 	}

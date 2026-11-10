@@ -207,6 +207,9 @@ export function FilesRuntime({
       pdfReader={Document}
       accountTools={FileAccountMenu}
       uploadMarkdownImage={runtime.uploadMarkdownImage}
+      drawioEndpoint={
+        process.env.NEXT_PUBLIC_CLOUDDRIVE_DRAWIO_URL ?? 'https://embed.diagrams.net/'
+      }
       {...(fileWorkspace
         ? {
             music: {

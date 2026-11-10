@@ -139,7 +139,7 @@ export function FileWorkspace({
       ? creationPolicy.policy.items.flatMap((item) => {
           const action = item.id;
           if (
-            (action !== 'text' && action !== 'markdown') ||
+            (action !== 'text' && action !== 'markdown' && action !== 'drawio') ||
             !item.enabled ||
             !item.canCreate ||
             (item.platform !== 'all' && item.platform !== creationPolicy.device)
@@ -150,7 +150,13 @@ export function FileWorkspace({
             action,
             title: mapping.label
               ? `${mapping.label} (.${mapping.extension})`
-              : t(action === 'text' ? 'files.newText' : 'files.newMarkdown'),
+              : t(
+                  action === 'text'
+                    ? 'files.newText'
+                    : action === 'drawio'
+                      ? 'files.newDrawio'
+                      : 'files.newMarkdown',
+                ),
             extension: mapping.extension,
             builtIn: !item.customNewFiles,
           }));
