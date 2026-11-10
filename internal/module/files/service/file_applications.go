@@ -127,7 +127,7 @@ func builtInFileApplications() []FileApplicationItem {
 	items := []FileApplicationItem{
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppImage, true, FileAppAll}, Extensions: []string{"png", "jpg", "jpeg", "gif", "webp", "avif"}},
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppAudio, true, FileAppAll}, Extensions: []string{"mp3", "ogg", "wav", "flac", "m4a", "aac"}},
-		{FileApplicationAvailability: FileApplicationAvailability{FileAppVideo, true, FileAppAll}, Extensions: []string{"mp4", "webm", "ogv"}},
+		{FileApplicationAvailability: FileApplicationAvailability{FileAppVideo, true, FileAppAll}, Extensions: []string{"mp4", "webm", "ogv", "m3u8"}},
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppPDF, true, FileAppAll}, Extensions: []string{"pdf"}},
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppEPUB, true, FileAppAll}, Extensions: []string{"epub"}},
 		{FileApplicationAvailability: FileApplicationAvailability{FileAppArchive, true, FileAppAll}, Extensions: []string{"zip", "7z"}},

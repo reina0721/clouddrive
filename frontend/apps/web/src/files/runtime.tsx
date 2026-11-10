@@ -32,6 +32,9 @@ const PDFReader = lazy(() =>
 const VideoSubtitles = lazy(() =>
   import('./video-subtitles').then((module) => ({ default: module.VideoSubtitles })),
 );
+const HlsPlayer = lazy(() =>
+  import('./hls-player').then((module) => ({ default: module.HlsPlayer })),
+);
 const ImageEditor = lazy(() =>
   import('./image-editor').then((module) => ({ default: module.ImageEditor })),
 );
@@ -95,8 +98,8 @@ export function FilesRuntime({
   );
   const Media = useMemo(() => {
     if (!runtime) return undefined;
-    const { readMedia, subtitles, queueImageCopy } = runtime;
-    function VideoTools({ entry, media }: VideoToolsProps) {
+    const { readMedia, subtitles, queueImageCopy, openPrivateHls } = runtime;
+    function VideoTools({ entry, media, presentation }: VideoToolsProps) {
       return (
         <Suspense>
           <VideoSubtitles
@@ -104,6 +107,7 @@ export function FilesRuntime({
             source={subtitles}
             entry={entry}
             media={media}
+            {...(presentation ? { presentation } : {})}
           />
         </Suspense>
       );
@@ -131,6 +135,18 @@ export function FilesRuntime({
       );
     }
     return function MediaRenderer(props: FileMediaProps) {
+      if (props.videoPlaylist && props.mode === 'preview' && props.version === undefined) {
+        return (
+          <Suspense fallback={<p role="status">{props.entry.name}</p>}>
+            <HlsPlayer
+              {...props}
+              open={openPrivateHls}
+              videoTools={VideoTools}
+              onDownload={props.videoPlaylist.download}
+            />
+          </Suspense>
+        );
+      }
       return props.mode === 'preview' && props.version === undefined ? (
         <FileMediaView
           {...props}

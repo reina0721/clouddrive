@@ -73,6 +73,7 @@ import { withFileIOAdmissionRetry } from './file-io-retry';
 import { createFileSidebarPreferences } from './sidebar-preferences';
 import { createEpubReadingPreferences } from './epub-reading-preferences';
 import { createVideoSubtitleSource } from './video-subtitle-source';
+import { createPrivateHlsSource } from './hls-source';
 import { rasterType } from './media-signatures';
 import { waitForMarkdownImagePublication } from './markdown-image-publication';
 export { fileDestinationHrefs } from './destinations';
@@ -754,6 +755,7 @@ export function createFilesRuntime(
     archives: archives.port,
     readDocument: createDocumentReader(call, versions.readContent, assertCurrent),
     subtitles: createVideoSubtitleSource(port, call, assertCurrent),
+    openPrivateHls: createPrivateHlsSource(port, versions.readContent, assertCurrent),
     port,
     navigation: createFileNavigationPort(call, base + native, assertCurrent),
     withSiteAddresses: (sites: SiteAddresses) => ({

@@ -42,6 +42,7 @@ import {
 } from '../../../src/files/icons';
 import {
   FilesError,
+  isHlsPlaylist,
   type FileEntry,
   type FileListing,
   type FileQuery,
@@ -114,6 +115,7 @@ function compatibleFileApplications(entry: FileEntry): FileApplicationID[] {
   if (isPDFDocument(entry)) return ['pdf'];
   if (isEpubDocument(entry)) return ['epub'];
   if (isMarkdownFile(entry)) return ['markdown', 'text'];
+  if (isHlsPlaylist(entry)) return ['video'];
   const media = entry.mediaType.split('/', 1)[0];
   if (media === 'image' || media === 'audio' || media === 'video') return [media];
   return isTextPreview(entry) ? ['text'] : [];
@@ -124,6 +126,7 @@ function configuredFileApplications(entry: FileEntry): FileApplicationID[] {
   if (archiveFile(entry)) options.push('archive');
   const media = entry.mediaType.split('/', 1)[0];
   if (media === 'image' || media === 'audio' || media === 'video') options.push(media);
+  if (isHlsPlaylist(entry) && !options.includes('video')) options.push('video');
   return options;
 }
 
@@ -233,8 +236,13 @@ export function FilesPage({
   const [textEditor, setTextEditor] = useState<{ request: TextRequest; maxBytes: number }>();
   const [pdfEntry, setPdfEntry] = useState<FileEntry>();
   const [epubEntry, setEpubEntry] = useState<FileEntry>();
-  const [mediaPreview, setMediaPreview] = useState<{ entry: FileEntry; maxBytes: number }>();
-  const videoPreview = mediaPreview?.entry.mediaType.startsWith('video/');
+  const [mediaPreview, setMediaPreview] = useState<{
+    entry: FileEntry;
+    maxBytes: number;
+    videoPlaylist?: true;
+  }>();
+  const videoPreview =
+    mediaPreview?.videoPlaylist || mediaPreview?.entry.mediaType.startsWith('video/');
   const [archiveEntry, setArchiveEntry] = useState<FileEntry>();
   const [zipSelection, setZIPSelection] = useState<{
     entries: readonly FileEntry[];
@@ -677,7 +685,14 @@ export function FilesPage({
         case 'video':
           // 上传完成会刷新列表，已打开的预览继续持有本次读取预算与文件。
           if (maxMediaBytes === undefined) setNotice(t('files.errors.unavailable'));
-          else setMediaPreview({ entry, maxBytes: maxMediaBytes });
+          else
+            setMediaPreview({
+              entry,
+              maxBytes: maxMediaBytes,
+              ...(application === 'video' && entry.trashedAt === null && isHlsPlaylist(entry)
+                ? { videoPlaylist: true }
+                : {}),
+            });
           return;
         case 'text':
           break;
@@ -2064,20 +2079,20 @@ export function FilesPage({
               entry={mediaPreview.entry}
               mode="preview"
               maxBytes={mediaPreview.maxBytes}
+              {...(mediaPreview.videoPlaylist
+                ? { videoPlaylist: { download: () => void download(mediaPreview.entry) } }
+                : {})}
               {...(mediaPreview.entry.trashedAt === null
                 ? { imageCopyParentId: mediaPreview.entry.parentId }
                 : {})}
             />
-            <div className="shrink-0">
-              <Action
-                variant="secondary"
-                onPress={() => {
-                  void download(mediaPreview.entry);
-                }}
-              >
-                {t('files.download')}
-              </Action>
-            </div>
+            {!mediaPreview.videoPlaylist ? (
+              <div className="shrink-0">
+                <Action variant="secondary" onPress={() => void download(mediaPreview.entry)}>
+                  {t('files.download')}
+                </Action>
+              </div>
+            ) : null}
           </div>
         </DialogSurface>
       ) : null}

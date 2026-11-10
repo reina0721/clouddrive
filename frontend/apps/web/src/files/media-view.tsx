@@ -20,6 +20,7 @@ const videoTypes = new Set(['video/mp4', 'video/webm', 'video/ogg']);
 export type VideoToolsProps = Readonly<{
   entry: FileMediaProps['entry'];
   media: RefObject<HTMLMediaElement | null>;
+  presentation?: 'toolbar';
 }>;
 
 export type ImageToolsProps = Readonly<{

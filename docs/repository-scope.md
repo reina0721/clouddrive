@@ -65,6 +65,8 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 
 [178 EPUB 续读](changes/178-epub-reading-progress/README.md)提供翻页、连续滚动、侧边目录和书签。当前内容版本的阅读位置和字号保存在本机浏览器。
 
+[179 私有 HLS 视频](changes/179-hls-playback/README.md)可读取本人目录内的 M3U8 清单、分片及 AES-128 密钥，支持自动和手动清晰度、直播清单刷新及外挂字幕。浏览器需支持 Media Source Extensions 与相应视频编码。
+
 [157管理端后台任务](changes/157-admin-background-tasks/README.md)提供 ZIP、解压、HTTP 与 BT 跨账号查询、诊断详情及终态清理。[158文件维护运行历史](changes/158-maintenance-run-history/README.md)增加回收站到期扫描和定时 Blob 回收的终态记录。运行中跟踪和跨请求关联仍在本范围之外。
 
 [159文件任务节点](changes/159-file-worker-nodes/README.md)提供主机文件职责、已装配 aria2 节点、通信及负载检查、关联任务筛选。节点接入由部署配置管理。Cloudreve 从机注册、远端归档和从机存储仍为后续范围。

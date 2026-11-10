@@ -103,6 +103,16 @@ export const fileEntrySchema = z.object({
   contentRevision: z.number().int().positive(),
 });
 export type FileEntry = z.infer<typeof fileEntrySchema>;
+
+/** isHlsPlaylist 判断文件名或标准媒体类型声明的 HLS 播放列表。 */
+export function isHlsPlaylist(entry: Pick<FileEntry, 'name' | 'mediaType'>) {
+  return (
+    /\.m3u8$/i.test(entry.name) ||
+    /^(?:application\/(?:vnd\.apple\.mpegurl|x-mpegurl)|audio\/mpegurl)(?:;|$)/i.test(
+      entry.mediaType,
+    )
+  );
+}
 export const fileListingSchema = z.object({
   pdfReader: pdfReaderLimitsSchema,
   items: z.array(fileEntrySchema),

@@ -174,6 +174,10 @@
     "music-metadata": {
       "owner": "Host 音乐标签 Worker：解析有限大小的 Blob，仅返回有界文字和待核验的封面",
       "allowed": ["apps/web"]
+    },
+    "hls.js": {
+      "owner": "Host 私有 HLS 播放：按需加载，所有资源通过账号文件读取适配器",
+      "allowed": ["apps/web"]
     }
   }
 }

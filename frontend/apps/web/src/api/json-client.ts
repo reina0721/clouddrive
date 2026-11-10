@@ -75,7 +75,9 @@ export function createJsonClient(apiBaseUrl: string, request: typeof fetch = fet
               },
               body: options.rawBody ?? JSON.stringify(options.body),
             }
-          : {}),
+          : options.headers
+            ? { headers: options.headers }
+            : {}),
       });
       options.onResponse?.(response);
       if (!response.ok) {

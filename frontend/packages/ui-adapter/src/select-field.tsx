@@ -23,6 +23,7 @@ export type SelectFieldProps = FieldTextProps &
     defaultOpen?: boolean;
     onValueChange?: (value: string) => void;
     presentation?: 'field' | 'toolbar';
+    popoverPlacement?: 'top' | 'bottom';
   }>;
 
 export function SelectField({
@@ -38,6 +39,7 @@ export function SelectField({
   onValueChange,
   name,
   presentation = 'field',
+  popoverPlacement,
 }: SelectFieldProps) {
   const disabledKeys = options.filter((option) => option.disabled).map((option) => option.value);
   const isToolbar = presentation === 'toolbar';
@@ -81,7 +83,10 @@ export function SelectField({
       ) : hint && !isToolbar ? (
         <Description className="ui-field-hint">{hint}</Description>
       ) : null}
-      <Select.Popover className="ui-overlay-surface ui-anchored-overlay-match-trigger">
+      <Select.Popover
+        className="ui-overlay-surface ui-anchored-overlay-match-trigger"
+        {...(popoverPlacement ? { placement: popoverPlacement } : {})}
+      >
         <ListBox className="ui-listbox">
           {options.map((option) => (
             <ListBox.Item

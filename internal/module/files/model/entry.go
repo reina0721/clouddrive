@@ -124,10 +124,15 @@ func Used(entries []Entry) int64 {
 	return used
 }
 func Category(entry Entry) string {
+	mediaType, _, _ := strings.Cut(entry.MediaType, ";")
 	switch {
 	case strings.HasPrefix(entry.MediaType, "image/"):
 		return "image"
-	case strings.HasPrefix(entry.MediaType, "video/"):
+	case strings.HasPrefix(entry.MediaType, "video/"),
+		strings.EqualFold(path.Ext(entry.Name), ".m3u8"),
+		mediaType == "application/vnd.apple.mpegurl",
+		mediaType == "application/x-mpegurl",
+		mediaType == "audio/mpegurl":
 		return "video"
 	case strings.HasPrefix(entry.MediaType, "audio/"):
 		return "audio"

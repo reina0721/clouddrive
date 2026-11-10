@@ -25,10 +25,12 @@ export function VideoSubtitles({
   source,
   entry,
   media,
+  presentation = 'field',
 }: {
   source: VideoSubtitleSource;
   entry: FileMediaProps['entry'];
   media: RefObject<HTMLMediaElement | null>;
+  presentation?: 'field' | 'toolbar';
 }) {
   const { t } = useFrontendTranslation();
   const [catalog, setCatalog] = useState<Awaited<ReturnType<VideoSubtitleSource['list']>>>();
@@ -96,9 +98,10 @@ export function VideoSubtitles({
   return (
     <div className="shrink-0 space-y-2">
       {catalog?.entries.length ? (
-        <div className="w-full sm:w-52">
+        <div className={presentation === 'field' ? 'w-full sm:w-52' : undefined}>
           <SelectField
             label={label}
+            presentation={presentation}
             value={selected?.id ?? off}
             options={[
               { value: off, label: t('files.subtitles.off') },

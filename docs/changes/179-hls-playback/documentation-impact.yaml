@@ -1,0 +1,7 @@
+schema_version: 1
+change: 179-hls-playback
+areas:
+  - id: frontend
+    decision: updated
+    documents: [docs/repository-scope.md, docs/operations/file-management.md]
+    reason: 记录私有 HLS 入口、清晰度、直播和资源权限。

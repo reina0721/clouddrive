@@ -66,7 +66,7 @@ func NewFileIconRules(repository FileIconRulesRepository) (*FileIconRules, error
 func defaultFileIconRules() []FileIconRule {
 	return []FileIconRule{
 		{Shape: FileIconAudio, Extensions: []string{"mp3", "flac", "wav", "ogg", "m4a", "aac"}, Light: "#6d28d9", Dark: "#c4b5fd"},
-		{Shape: FileIconVideo, Extensions: []string{"mp4", "webm", "mov", "mkv", "avi", "m4v"}, Light: "#b91c1c", Dark: "#fca5a5"},
+		{Shape: FileIconVideo, Extensions: []string{"mp4", "webm", "mov", "mkv", "avi", "m4v", "m3u8"}, Light: "#b91c1c", Dark: "#fca5a5"},
 		{Shape: FileIconPhoto, Extensions: []string{"png", "jpg", "jpeg", "gif", "webp", "svg", "avif", "heic", "tiff", "bmp"}, Light: "#be185d", Dark: "#f9a8d4"},
 		{Shape: FileIconPDF, Extensions: []string{"pdf"}, Light: "#b91c1c", Dark: "#fca5a5"},
 		{Shape: FileIconText, Extensions: []string{"txt", "md", "rtf", "doc", "docx", "odt"}, Light: "#1d4ed8", Dark: "#93c5fd"},

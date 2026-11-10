@@ -24,7 +24,11 @@ export function createVersionsPort(
     id: string,
     revision: number,
     signal?: AbortSignal,
-    budget?: Readonly<{ maxBlobBytes: number; timeoutMs: number }>,
+    budget?: Readonly<{
+      maxBlobBytes: number;
+      timeoutMs: number;
+      range?: Readonly<{ start: number; endExclusive: number; totalBytes: number }>;
+    }>,
   ) => {
     const previous = readTail;
     let release = () => {};
@@ -35,16 +39,30 @@ export function createVersionsPort(
     try {
       assertCurrent();
       if (signal?.aborted) throw new FilesError('canceled');
+      const range = budget?.range;
+      let rangeMatches = !range;
       const value = await call(path(id, revision) + '/content', {
         responseType: 'blob',
         ...(budget === undefined
           ? {}
           : { maxBlobBytes: budget.maxBlobBytes, timeoutMs: budget.timeoutMs }),
         ...(signal ? { signal } : {}),
+        ...(range
+          ? {
+              headers: { Range: `bytes=${range.start}-${range.endExclusive - 1}` },
+              onResponse: (response: Response) => {
+                rangeMatches =
+                  response.status === 206 &&
+                  response.headers.get('Content-Range') ===
+                    `bytes ${range.start}-${range.endExclusive - 1}/${range.totalBytes}`;
+              },
+            }
+          : {}),
       });
       assertCurrent();
       if (signal?.aborted) throw new FilesError('canceled');
       if (!(value instanceof Blob)) throw new FilesError('unavailable');
+      if (!rangeMatches) throw new FilesError('conflict');
       return value;
     } finally {
       release();

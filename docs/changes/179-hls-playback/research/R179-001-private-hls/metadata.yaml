@@ -1,0 +1,26 @@
+schema_version: 1
+id: R179-001
+title: 私有视频播放列表
+question: 如何用现有文件权限和原生视频控件播放 M3U8？
+research_type: current-project-and-external-primary-source
+topics: [video, hls, media, file-applications]
+status: active
+evidence:
+  primary_sources:
+    - title: Cloudreve 文件浏览应用
+      locator: https://docs.cloudreve.org/zh/usage/file-apps
+      snapshot: M3U8 清晰度菜单及账号文件相对路径
+    - title: HLS 协议 RFC 8216
+      locator: https://www.rfc-editor.org/rfc/rfc8216.html
+      snapshot: 资源地址、主列表、分片、加密、字节范围和直播
+    - title: hls.js 1.7.4
+      locator: https://github.com/video-dev/hls.js/releases/tag/v1.7.4
+      snapshot: 142fcab
+    - title: 文件读取及原生播放器
+      locator: report.md
+      snapshot: b0f5cb2
+verified_at: 2026-11-10
+validity:
+  mode: snapshot
+  refresh_triggers: [媒体访问权限变化, 文件路由协议变化, hls.js 安全公告或重大版本]
+report: report.md
