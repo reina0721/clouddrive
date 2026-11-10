@@ -190,6 +190,7 @@ export function FilesRuntime({
       media={Media}
       pdfReader={Document}
       accountTools={FileAccountMenu}
+      uploadMarkdownImage={runtime.uploadMarkdownImage}
       {...(fileWorkspace
         ? {
             music: {

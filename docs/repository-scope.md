@@ -61,6 +61,8 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 
 [176 音乐播放器](changes/176-music-player/README.md)支持本人音频同目录队列、时间轴、音量、循环及浏览器读取内嵌歌曲标签和封面。
 
+[177 Markdown 编写](changes/177-markdown-authoring/README.md)提供格式、链接、撤销和同目录图片上传。图片发布成功后插入相对引用，草稿保持独立保存。
+
 [157管理端后台任务](changes/157-admin-background-tasks/README.md)提供 ZIP、解压、HTTP 与 BT 跨账号查询、诊断详情及终态清理。[158文件维护运行历史](changes/158-maintenance-run-history/README.md)增加回收站到期扫描和定时 Blob 回收的终态记录。运行中跟踪和跨请求关联仍在本范围之外。
 
 [159文件任务节点](changes/159-file-worker-nodes/README.md)提供主机文件职责、已装配 aria2 节点、通信及负载检查、关联任务筛选。节点接入由部署配置管理。Cloudreve 从机注册、远端归档和从机存储仍为后续范围。

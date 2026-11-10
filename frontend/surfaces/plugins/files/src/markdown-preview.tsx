@@ -5,10 +5,14 @@ import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { FileMedia, useFiles } from '../../../src/files/runtime';
 import type { FileEntry } from '../../../src/files/model';
+import {
+  markdownHttpLink,
+  markdownImageMaxBytes,
+  markdownSiblingName,
+} from '../../../src/files/markdown';
 
 const renderBytes = 256 * 1024;
 const maxImages = 8;
-const maxImageBytes = 2 * 1024 * 1024;
 const maxLookupPages = 3;
 const imageLookupPageSize = 50;
 const encoder = new TextEncoder();
@@ -28,36 +32,6 @@ class PreviewBoundary extends Component<PreviewBoundaryProps, { source: string; 
   override render() {
     return this.state.failed ? <p role="alert">{this.props.message}</p> : this.props.children;
   }
-}
-
-function siblingName(source: string) {
-  if (!source || source.length > 1024) return undefined;
-  try {
-    const name = decodeURIComponent(source.replace(/^\.\//, '')).normalize('NFC');
-    if (
-      !name ||
-      name === '.' ||
-      name === '..' ||
-      [...name].length > 255 ||
-      /[\\/:?#]/.test(name) ||
-      [...name].some((character) => character.charCodeAt(0) < 32)
-    )
-      return undefined;
-    return name;
-  } catch {
-    return undefined;
-  }
-}
-
-function httpLink(value: string) {
-  try {
-    const url = new URL(value);
-    if ((url.protocol === 'https:' || url.protocol === 'http:') && !url.username && !url.password)
-      return url.href;
-  } catch {
-    return undefined;
-  }
-  return undefined;
 }
 
 type RenderNode = {
@@ -142,7 +116,7 @@ function SiblingImage({
 
   const current = result?.name === name && result.parentId === parentId ? result : undefined;
   return current?.entry ? (
-    <FileMedia mode="inline" entry={current.entry} alt={alt} maxBytes={maxImageBytes} />
+    <FileMedia mode="inline" entry={current.entry} alt={alt} maxBytes={markdownImageMaxBytes} />
   ) : (
     <span title={current ? missing : undefined}>{alt}</span>
   );
@@ -229,7 +203,7 @@ export function MarkdownPreview({
           <span>{children}</span>
         ),
       img: ({ src, alt }) => {
-        const name = typeof src === 'string' ? siblingName(src) : undefined;
+        const name = typeof src === 'string' ? markdownSiblingName(src) : undefined;
         return name ? (
           <SiblingImage parentId={parentId} name={name} alt={alt ?? ''} missing={missingImage} />
         ) : alt ? (
@@ -248,7 +222,7 @@ export function MarkdownPreview({
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[boundImages]}
         components={components}
-        urlTransform={(url, key) => (key === 'src' ? url : httpLink(url))}
+        urlTransform={(url, key) => (key === 'src' ? url : markdownHttpLink(url))}
       >
         {source}
       </ReactMarkdown>

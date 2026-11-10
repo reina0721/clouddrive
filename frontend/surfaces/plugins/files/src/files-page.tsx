@@ -230,7 +230,7 @@ export function FilesPage({
   const [shareTarget, setShareTarget] = useState<FileEntry>();
   const [directTargets, setDirectTargets] = useState<readonly FileEntry[]>();
   const [accessTarget, setAccessTarget] = useState<FileEntry>();
-  const [textRequest, setTextRequest] = useState<TextRequest>();
+  const [textEditor, setTextEditor] = useState<{ request: TextRequest; maxBytes: number }>();
   const [pdfEntry, setPdfEntry] = useState<FileEntry>();
   const [epubEntry, setEpubEntry] = useState<FileEntry>();
   const [mediaPreview, setMediaPreview] = useState<{ entry: FileEntry; maxBytes: number }>();
@@ -640,6 +640,7 @@ export function FilesPage({
     setDetail(entry);
   }
   const maxMediaBytes = listing?.maxMediaBytes;
+  const maxTextBytes = listing?.maxTextBytes;
   const playAudio = usePlayFileAudio();
   const launchApplication = useCallback(
     async (entry: FileEntry, application: FileApplicationID, signal: AbortSignal) => {
@@ -664,7 +665,12 @@ export function FilesPage({
           setEpubEntry(entry);
           return;
         case 'markdown':
-          setTextRequest({ mode: 'edit', entry, reading: true });
+          if (maxTextBytes === undefined) setNotice(t('files.errors.unavailable'));
+          else
+            setTextEditor({
+              request: { mode: 'edit', entry, reading: true },
+              maxBytes: maxTextBytes,
+            });
           return;
         case 'image':
         case 'audio':
@@ -692,7 +698,7 @@ export function FilesPage({
           });
       }
     },
-    [port, t, errorText, maxMediaBytes, playAudio],
+    [port, t, errorText, maxMediaBytes, maxTextBytes, playAudio],
   );
   const showPreview = useCallback(
     async (entry: FileEntry, requested?: 'choose' | 'archive') => {
@@ -1703,7 +1709,11 @@ export function FilesPage({
                         else if (action === 'direct-link') setDirectTargets([entry]);
                         else if (action === 'share') setShareTarget(entry);
                         else if (action === 'access') setAccessTarget(entry);
-                        else if (action === 'edit') setTextRequest({ mode: 'edit', entry });
+                        else if (action === 'edit')
+                          setTextEditor({
+                            request: { mode: 'edit', entry },
+                            maxBytes: listing.maxTextBytes,
+                          });
                         else if (
                           action === 'rename' ||
                           action === 'move' ||
@@ -2000,15 +2010,16 @@ export function FilesPage({
           }}
         />
       ) : null}
-      {textRequest && listing ? (
+      {textEditor ? (
         <TextDialog
-          request={textRequest}
-          maxBytes={listing.maxTextBytes}
-          {...(textRequest.mode === 'edit' &&
-          (textRequest.reading || isMarkdownFile(textRequest.entry))
-            ? { onDownload: () => void download(textRequest.entry) }
-            : {})}
-          onClose={() => setTextRequest(undefined)}
+          {...textEditor}
+          {...(() => {
+            const { request } = textEditor;
+            return request.mode === 'edit' && (request.reading || isMarkdownFile(request.entry))
+              ? { onDownload: () => void download(request.entry) }
+              : {};
+          })()}
+          onClose={() => setTextEditor(undefined)}
           onSaved={() => {
             setNotice(t('files.operationDone'));
             reload();

@@ -3,7 +3,7 @@ import { FieldError } from '@heroui/react/field-error';
 import { Label } from '@heroui/react/label';
 import { TextArea } from '@heroui/react/textarea';
 import { TextField as HeroTextField } from '@heroui/react/textfield';
-import type { ChangeEvent, FocusEvent, Ref } from 'react';
+import type { ChangeEvent, FocusEvent, KeyboardEvent, Ref } from 'react';
 import type { FieldTextProps, FieldValueProps } from './field-contract';
 
 export type TextAreaFieldProps = FieldTextProps &
@@ -17,6 +17,7 @@ export type TextAreaFieldProps = FieldTextProps &
     content?: 'text' | 'code';
     onChange?: (event: ChangeEvent<HTMLTextAreaElement>) => void;
     onBlur?: (event: FocusEvent<HTMLTextAreaElement>) => void;
+    onKeyDown?: (event: KeyboardEvent<HTMLTextAreaElement>) => void;
   }>;
 
 export function TextAreaField({

@@ -11,6 +11,8 @@ import {
   isMarkdownFile,
   isTextPreview,
   markdownReadTimeoutMs,
+  markdownImageMaxBytes,
+  markdownImagePath,
   fileShareSchema,
   shareListingSchema,
   trashPurgePreviewSchema,
@@ -70,6 +72,8 @@ import { createHistoryPreferences } from './history-preferences';
 import { withFileIOAdmissionRetry } from './file-io-retry';
 import { createFileSidebarPreferences } from './sidebar-preferences';
 import { createVideoSubtitleSource } from './video-subtitle-source';
+import { rasterType } from './media-signatures';
+import { waitForMarkdownImagePublication } from './markdown-image-publication';
 export { fileDestinationHrefs } from './destinations';
 
 const transferTimeoutMs = 120_000;
@@ -220,20 +224,27 @@ export function createFilesRuntime(
       },
     };
   }
-  function choose(mode: 'files' | 'directory'): Promise<readonly UploadCandidate[]> {
+  function choose(
+    mode: 'files' | 'directory' | 'image',
+    signal?: AbortSignal,
+  ): Promise<readonly UploadCandidate[]> {
     if (disposed) return Promise.reject(new FilesError('canceled'));
+    if (signal?.aborted)
+      return Promise.reject(new FilesError('canceled', { cause: signal.reason }));
     return new Promise((resolve, reject) => {
       const picker = document.createElement('input');
       picker.type = 'file';
-      picker.multiple = true;
+      picker.multiple = mode !== 'image';
       picker.hidden = true;
       if (mode === 'directory') picker.webkitdirectory = true;
+      if (mode === 'image') picker.accept = 'image/png,image/jpeg,image/gif,image/webp,image/avif';
       let finished = false;
       const finish = (files: readonly File[]) => {
         if (finished) return;
         finished = true;
         picker.remove();
         openPickers.delete(cancelPicker);
+        signal?.removeEventListener('abort', cancelPicker);
         try {
           if (mode === 'directory' && files.length) {
             if (!limits) throw new FilesError('unavailable');
@@ -253,6 +264,7 @@ export function createFilesRuntime(
       };
       const cancelPicker = () => finish([]);
       openPickers.add(cancelPicker);
+      signal?.addEventListener('abort', cancelPicker, { once: true });
       picker.addEventListener('change', () => finish(Array.from(picker.files ?? [])), {
         once: true,
       });
@@ -789,6 +801,42 @@ export function createFilesRuntime(
     queueImageCopy: async (file: File, parentId: string) => {
       assertCurrent();
       await transfers.port.enqueue(register([file]), parentId);
+    },
+    uploadMarkdownImage: async (parentId: string, signal: AbortSignal) => {
+      assertCurrent();
+      const requestSignal = AbortSignal.any([signal, lifecycle.signal]);
+      const candidates = await choose('image', requestSignal);
+      try {
+        requestSignal.throwIfAborted();
+        if (!candidates.length) return undefined;
+        const candidate = candidates[0];
+        if (!candidate || candidates.length !== 1) throw new FilesError('invalid');
+        const file = sources.get(candidate.id);
+        if (!file || !markdownImagePath(file.name)) throw new FilesError('invalid');
+        if (file.size > markdownImageMaxBytes) throw new FilesError('large');
+        if (!(await rasterType(file))) throw new FilesError('unsupported');
+        requestSignal.throwIfAborted();
+        assertCurrent();
+        await transfers.port.enqueue(candidates, parentId);
+        const entryId = await waitForMarkdownImagePublication(
+          transfers.port,
+          candidate.id,
+          AbortSignal.any([requestSignal, AbortSignal.timeout(transferTimeoutMs)]),
+        );
+        const { entry } = await port.detail(entryId, requestSignal);
+        if (
+          entry.parentId !== parentId ||
+          entry.kind !== 'file' ||
+          entry.trashedAt !== null ||
+          !entry.mediaType.startsWith('image/') ||
+          entry.sizeBytes > markdownImageMaxBytes ||
+          !markdownImagePath(entry.name)
+        )
+          throw new FilesError('conflict');
+        return entry;
+      } finally {
+        for (const candidate of candidates) sources.delete(candidate.id);
+      }
     },
     offer: (files: readonly File[]) => {
       if (!dropListeners.size || disposed) return;

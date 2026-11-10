@@ -35,6 +35,11 @@ type FileMusic = Readonly<{
   player: ReactNode;
 }>;
 const MusicContext = createContext<FileMusic | undefined>(undefined);
+type MarkdownImageUpload = (
+  parentId: string,
+  signal: AbortSignal,
+) => Promise<FileEntry | undefined>;
+const MarkdownImageContext = createContext<MarkdownImageUpload | undefined>(undefined);
 
 const Context = createContext<FilesPort | null>(null);
 const ArchivesContext = createContext<ArchivesPort | null>(null);
@@ -50,6 +55,7 @@ export function FilesProvider({
   pdfReader: Document,
   accountTools: AccountTools,
   music,
+  uploadMarkdownImage,
   transfers,
   downloads,
   connections,
@@ -66,6 +72,7 @@ export function FilesProvider({
   pdfReader: ComponentType<FileDocumentProps>;
   accountTools: ComponentType;
   music?: FileMusic;
+  uploadMarkdownImage?: MarkdownImageUpload;
 }>) {
   return (
     <Context value={port}>
@@ -77,7 +84,11 @@ export function FilesProvider({
                 <AccountToolsContext value={AccountTools}>
                   <ArchivesContext value={archives}>
                     <DocumentContext value={Document}>
-                      <MusicContext value={music}>{children}</MusicContext>
+                      <MusicContext value={music}>
+                        <MarkdownImageContext value={uploadMarkdownImage}>
+                          {children}
+                        </MarkdownImageContext>
+                      </MusicContext>
                     </DocumentContext>
                   </ArchivesContext>
                 </AccountToolsContext>
@@ -167,6 +178,10 @@ export function FileAccountTools() {
 
 export function usePlayFileAudio() {
   return useContext(MusicContext)?.play;
+}
+
+export function useMarkdownImageUpload() {
+  return useContext(MarkdownImageContext);
 }
 
 /** FileDocument 使用Host显式注入的文档renderer。 */

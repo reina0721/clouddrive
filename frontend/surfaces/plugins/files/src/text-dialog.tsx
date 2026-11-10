@@ -44,6 +44,7 @@ export function TextDialog({
   const [loadFailure, setLoadFailure] = useState<FilesErrorCode | ''>('');
   const [failure, setFailure] = useState<FilesErrorCode | ''>('');
   const [saving, setSaving] = useState(false);
+  const [imagePending, setImagePending] = useState(false);
   const [discard, setDiscard] = useState(false);
   const saved = useRef(false);
   useEffect(() => {
@@ -104,12 +105,13 @@ export function TextDialog({
       {...(markdown ? { size: 'cover', layout: 'workspace' } : {})}
       onOpenChange={(open) => {
         if (!open) {
-          if (markdown && dirty && !saved.current) setDiscard(true);
+          if (markdown && (dirty || imagePending) && !saved.current) setDiscard(true);
           else onClose();
         }
       }}
       confirmDisabled={
         loading ||
+        imagePending ||
         length > maxBytes ||
         (request.mode === 'edit' ? !snapshot || (markdown && !dirty) : !name.trim())
       }
@@ -211,6 +213,8 @@ export function TextDialog({
               }
               reading={request.mode === 'edit' && request.reading === true}
               disabled={saving}
+              allowImageUpload={request.mode !== 'edit' || snapshot?.trashedAt === null}
+              onImagePending={setImagePending}
             />
           </Suspense>
         ) : (

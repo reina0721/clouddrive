@@ -1,0 +1,23 @@
+schema_version: 1
+id: R177-001
+title: Markdown 格式和同目录图片上传
+question: 怎样把同目录图片上传、格式化和撤销集成到已有编辑及保存路径？
+research_type: current-project-and-external-primary-source
+topics: [files, markdown, uploads]
+status: active
+evidence:
+  primary_sources:
+    - title: Cloudreve Markdown 编辑器
+      locator: https://docs.cloudreve.org/assets/file-apps-markdown-editor.BOHreTCc.png
+      snapshot: 同一个工具栏含撤销、格式、链接、图片和表格
+    - title: GitHub Flavored Markdown
+      locator: https://github.github.com/gfm/
+      snapshot: 块级和行内格式、表格、链接与图片
+    - title: 本项目 Markdown 与上传装配
+      locator: report.md
+      snapshot: 96bd631
+verified_at: 2026-11-10
+validity:
+  mode: snapshot
+  refresh_triggers: [Markdown 解析策略变化, 文件上传状态机变化, 允许的图片读取范围变化]
+report: report.md
