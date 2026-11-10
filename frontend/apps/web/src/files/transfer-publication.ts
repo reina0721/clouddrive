@@ -19,8 +19,8 @@ function publicationFailure(failure: string | undefined): FilesErrorCode {
   }
 }
 
-/** waitForMarkdownImagePublication 只观察一次本地候选，传输仍由原有队列拥有。 */
-export function waitForMarkdownImagePublication(
+/** waitForFilePublication 只观察一次本地候选，传输仍由原有队列拥有。 */
+export function waitForFilePublication(
   transfers: Pick<TransfersPort, 'subscribe' | 'getSnapshot'>,
   candidateId: string,
   signal: AbortSignal,

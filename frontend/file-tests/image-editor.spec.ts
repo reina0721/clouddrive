@@ -138,6 +138,206 @@ async function downloadCopy(page: Page, editor: Locator, expectedName: string) {
   return readFile(path);
 }
 
+test('图片按原版本保存并可将过期草稿另存到指定目录', async ({ page }, info) => {
+  test.setTimeout(180_000);
+  const root = await createWorkspace(page, 'image-save-');
+  const { source } = await uploadFixtures(page, '#60789c');
+  const folder = await page.evaluate(async (parentId) => {
+    const csrf = (await (await fetch('/api/console/v1/auth/csrf')).json()) as { token: string };
+    const response = await fetch('/api/console/v1/native/files/folders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf.token },
+      body: JSON.stringify({ parentId, name: '图片副本目录' }),
+    });
+    if (!response.ok) throw new Error('创建副本目录失败，状态码 ' + response.status);
+    return ((await response.json()) as { id: string }).id;
+  }, root);
+  type ListedFile = { id: string; name: string; mediaType: string; contentRevision: number };
+  const listing = (owner: Page, parent: string) =>
+    owner.evaluate(async (id) => {
+      const response = await fetch('/api/console/v1/native/files?parent=' + encodeURIComponent(id));
+      if (!response.ok) throw new Error('无法读取目录，状态码 ' + response.status);
+      return ((await response.json()) as { items: ListedFile[] }).items;
+    }, parent);
+  const sourceEntry = (await listing(page, root)).find(({ name }) => name === 'source.png');
+  if (!sourceEntry) throw new Error('没有原图片');
+  const openEditor = async (owner: Page) => {
+    await owner.getByRole('button', { name: 'source.png', exact: true }).click();
+    await owner.getByRole('button', { name: '编辑图片', exact: true }).click();
+    return owner.getByRole('dialog', { name: '图片编辑器', exact: true });
+  };
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const editor = await openEditor(page);
+  const button = (name: string) => editor.getByRole('button', { name, exact: true });
+  const version = button('保存为新版本');
+  const confirm = page.getByRole('dialog', { name: '确认保存新版本', exact: true });
+  const chooseFormat = async (format: string) => {
+    await editor
+      .locator('[data-slot="select-trigger"]')
+      .and(editor.getByRole('button', { name: /输出格式/ }))
+      .click();
+    await page.getByRole('option', { name: format, exact: true }).click();
+  };
+
+  await expect(version).toBeDisabled();
+  await expect(button('上传副本到原文件夹')).toBeEnabled();
+  await expect(editor.getByText('副本保存位置 · 原文件夹', { exact: true })).toBeVisible();
+  await button('裁剪').click();
+  await expect(version).toBeDisabled();
+  await button('旋转和翻转').click();
+  await button('向右旋转').click();
+  await button('色彩微调').click();
+  await editor.getByRole('slider', { name: '亮度', exact: true }).press('End');
+  await expect(version).toBeDisabled();
+  await button('取消外观调整').click();
+  await expect(version).toBeEnabled();
+  await chooseFormat('WebP');
+  await expect(version).toBeDisabled();
+  await expect(editor.getByText('请选择与原文件一致的格式才能保存新版本。')).toBeVisible();
+  await chooseFormat('PNG');
+  await button('旋转和翻转').click();
+  await version.click();
+  await expect(confirm.getByText('source.png', { exact: true })).toBeVisible();
+  await expect(confirm.getByText('编辑所依据的版本 · 1', { exact: true })).toBeVisible();
+  await page.screenshot({
+    path: info.outputPath('image-save-desktop.png'),
+    animations: 'disabled',
+  });
+  await confirm.getByRole('button', { name: '取消', exact: true }).click();
+  expect((await listing(page, root)).find(({ id }) => id === sourceEntry.id)?.contentRevision).toBe(
+    1,
+  );
+
+  const stalePage = await page.context().newPage();
+  await stalePage.setViewportSize({ width: 1440, height: 900 });
+  await stalePage.goto('/home?parent=' + root);
+  const stale = await openEditor(stalePage);
+  const staleButton = (name: string) => stale.getByRole('button', { name, exact: true });
+  await staleButton('水平翻转').click();
+  const staleCanvas = stale.getByRole('img', { name: '图片编辑画布', exact: true });
+  await expect.poll(() => topLeft(staleCanvas)).toEqual([0, 255, 0, 255]);
+
+  let release = () => {};
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let continued = () => {};
+  const forwarded = new Promise<void>((resolve) => {
+    continued = resolve;
+  });
+  let waiting = false;
+  const commitPath = '**/native/files/transfers/*/commit';
+  await page.route(commitPath, async (route) => {
+    waiting = true;
+    await gate;
+    try {
+      await route.continue();
+    } finally {
+      continued();
+    }
+  });
+  try {
+    await version.click();
+    await confirm.getByRole('button', { name: '保存新版本', exact: true }).click();
+    await expect.poll(() => waiting).toBe(true);
+    await expect(confirm.getByText('保存新版本…', { exact: true })).toBeVisible();
+    await expect(page.getByText('已保存图片新版本。', { exact: true })).toHaveCount(0);
+    expect(
+      (await listing(page, root)).find(({ id }) => id === sourceEntry.id)?.contentRevision,
+    ).toBe(1);
+  } finally {
+    release();
+    if (waiting) await forwarded;
+    await page.unroute(commitPath);
+  }
+  await expect(editor).toHaveCount(0);
+  await expect(page.getByText('已保存图片新版本。', { exact: true })).toBeVisible();
+  const refreshed = page.getByRole('dialog').getByRole('img', { name: 'source.png', exact: true });
+  await expect
+    .poll(() =>
+      refreshed.evaluate((image: HTMLImageElement) => [image.naturalWidth, image.naturalHeight]),
+    )
+    .toEqual([240, 320]);
+  const updated = (await listing(page, root)).find(({ name }) => name === 'source.png');
+  expect(updated).toMatchObject({
+    id: sourceEntry.id,
+    name: 'source.png',
+    mediaType: 'image/png',
+    contentRevision: 2,
+  });
+  const originalVersion = () =>
+    page.evaluate(async (id) => {
+      const response = await fetch(
+        '/api/console/v1/native/files/' + encodeURIComponent(id) + '/versions/1/content',
+      );
+      if (response.status === 429) return null;
+      if (!response.ok) throw new Error('无法读取旧版本，状态码 ' + response.status);
+      return btoa(String.fromCharCode(...new Uint8Array(await response.arrayBuffer())));
+    }, sourceEntry.id);
+  await expect.poll(originalVersion, { intervals: [500, 1000, 2500] }).toBe(source);
+
+  await staleButton('保存为新版本').click();
+  await stalePage
+    .getByRole('dialog', { name: '确认保存新版本', exact: true })
+    .getByRole('button', { name: '保存新版本', exact: true })
+    .click();
+  await expect(stale.getByRole('alert')).toHaveText('原文件已变更，当前草稿可以另存为副本。');
+  await expect(staleButton('保存为新版本')).toBeDisabled();
+  await expect.poll(() => topLeft(staleCanvas)).toEqual([0, 255, 0, 255]);
+  await staleButton('更改副本保存位置').click();
+  const picker = stalePage.getByRole('dialog', { name: '选择副本保存位置', exact: true });
+  await picker.getByRole('button', { name: '进入 图片副本目录', exact: true }).click();
+  await picker.getByRole('button', { name: '上一级', exact: true }).click();
+  await picker.getByRole('button', { name: '进入 图片副本目录', exact: true }).click();
+  await stalePage.setViewportSize({ width: 390, height: 760 });
+  await expect(picker.getByRole('button', { name: '使用此位置', exact: true })).toBeEnabled();
+  await stalePage.screenshot({
+    path: info.outputPath('image-save-mobile.png'),
+    animations: 'disabled',
+  });
+  await picker.getByRole('button', { name: '使用此位置', exact: true }).click();
+  await expect(stale.getByText(/副本保存位置.*图片副本目录/)).toBeVisible();
+
+  await staleButton('更改副本保存位置').click();
+  await picker.getByRole('button', { name: '我的文件', exact: true }).click();
+  await expect(picker.getByRole('button', { name: '上一级', exact: true })).toHaveCount(0);
+  await picker.getByRole('button', { name: '取消', exact: true }).click();
+  await expect(stale.getByText(/副本保存位置.*图片副本目录/)).toBeVisible();
+  await stalePage.setViewportSize({ width: 1440, height: 900 });
+  await stale.getByLabel('副本名称（不含扩展名）').fill('saved-from-stale');
+  const downloaded = await downloadCopy(stalePage, stale, 'saved-from-stale.png');
+  expect(await copyPixel(stalePage, downloaded, 'image/png', 2, 2)).toEqual({
+    size: [320, 240],
+    pixel: [0, 255, 0, 255],
+  });
+  await staleButton('上传副本到所选位置').click();
+  await expect
+    .poll(async () => (await listing(stalePage, folder)).map(({ name }) => name))
+    .toContain('saved-from-stale.png');
+  expect((await listing(stalePage, root)).map(({ name }) => name)).not.toContain(
+    'saved-from-stale.png',
+  );
+
+  const sameName = stalePage.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      new URL(response.url()).pathname.endsWith('/native/files/transfers') &&
+      (response.request().postDataJSON() as { name?: string } | null)?.name ===
+        'saved-from-stale.png',
+  );
+  await staleButton('上传副本到所选位置').click();
+  expect((await sameName).status()).toBe(409);
+  const copies = (await listing(stalePage, folder)).filter(
+    ({ name }) => name === 'saved-from-stale.png',
+  );
+  expect(copies).toHaveLength(1);
+  expect(copies[0]?.contentRevision).toBe(1);
+  expect((await listing(page, root)).find(({ id }) => id === sourceEntry.id)?.contentRevision).toBe(
+    2,
+  );
+  await stalePage.close();
+});
+
 test('图片编辑器支持视图缩放、原图对比及独立导出质量', async ({ page }, info) => {
   test.setTimeout(150_000);
   await createWorkspace(page, 'image-viewport-');

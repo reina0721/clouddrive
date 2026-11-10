@@ -12,7 +12,7 @@ import {
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { FilesError, type FilesErrorCode } from '@clouddrive/surface/files';
-import type { FileMediaProps } from '@clouddrive/surface/files/runtime';
+import type { FileMediaProps, ImageEditingAccess } from '@clouddrive/surface/files/runtime';
 
 import { rasterType } from './media-signatures';
 import type { ImageSize } from './image-edit';
@@ -28,8 +28,7 @@ export type VideoToolsProps = Readonly<{
 }>;
 
 export type ImageToolsProps = Readonly<{
-  entry: FileMediaProps['entry'];
-  parentId: string;
+  editing: ImageEditingAccess;
   source: Blob;
   size: ImageSize;
   maxBytes: number;
@@ -44,7 +43,7 @@ export function FileMediaView({
   readContent,
   version,
   labels,
-  imageCopyParentId,
+  imageEditing,
   videoTools: VideoTools,
   imageTools: ImageTools,
 }: FileMediaProps &
@@ -70,8 +69,7 @@ export function FileMediaView({
   >();
   const [naturalSize, setNaturalSize] = useState<{ url: string; size: ImageSize }>();
   const [attempt, setAttempt] = useState(0);
-  const imageWorkspace =
-    mode === 'preview' && version === undefined && imageCopyParentId !== undefined;
+  const imageWorkspace = mode === 'preview' && version === undefined && imageEditing !== undefined;
   const requestKey = JSON.stringify([
     entry.id,
     entry.contentRevision,
@@ -223,14 +221,8 @@ export function FileMediaView({
     );
     if (!source) return picture;
     const editor =
-      ImageTools && imageCopyParentId !== undefined && size && editableImageType(source.type) ? (
-        <ImageTools
-          entry={entry}
-          parentId={imageCopyParentId}
-          source={source}
-          size={size}
-          maxBytes={maxBytes}
-        />
+      ImageTools && imageEditing && size && editableImageType(source.type) ? (
+        <ImageTools editing={imageEditing} source={source} size={size} maxBytes={maxBytes} />
       ) : null;
     return (
       <Suspense fallback={<p role="status">{labels?.loading ?? t('files.mediaLoading')}</p>}>

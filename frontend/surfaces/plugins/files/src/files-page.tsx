@@ -77,6 +77,7 @@ import { AdvancedSearchDialog } from './advanced-search-dialog';
 import { AnnotationPanel } from './annotation-panel';
 import { FileItem, FileListHeader, type FileSelectionGesture } from './file-item';
 import { CursorFilePagination, NumberedFilePagination } from './file-pagination';
+import { ImageCopyDestinationDialog } from './own-folder-picker';
 import { PinDialog } from './pinned-links';
 import { ShareDialog } from './share-dialog';
 import { directLinkBatchLimit } from '../../../src/files/direct-links';
@@ -246,6 +247,7 @@ export function FilesPage({
     entry: FileEntry;
     maxBytes: number;
     videoPlaylist?: true;
+    savedImageVersion?: boolean;
     album?: { entries: readonly FileEntry[]; index: number };
   }>();
   const album = mediaPreview?.album;
@@ -258,7 +260,8 @@ export function FilesPage({
       const { entries, index } = current.album;
       const next = index + delta;
       const entry = entries[next];
-      return entry ? { ...current, entry, album: { entries, index: next } } : current;
+      if (!entry) return current;
+      return { ...current, entry, album: { entries, index: next }, savedImageVersion: false };
     });
   };
   const [archiveEntry, setArchiveEntry] = useState<FileEntry>();
@@ -298,6 +301,30 @@ export function FilesPage({
     [t],
   );
   const reload = useCallback(() => setRevision((value) => value + 1), [setRevision]);
+  async function refreshPublishedImage(target: FileEntry, signal: AbortSignal) {
+    const { entry } = await port.detail(target.id, signal);
+    signal.throwIfAborted();
+    if (
+      entry.id !== target.id ||
+      entry.contentRevision <= target.contentRevision ||
+      entry.trashedAt !== null
+    )
+      throw new FilesError('conflict');
+    setMediaPreview((current) => {
+      if (current?.entry.id !== target.id) return current;
+      if (!current.album) return { ...current, entry, savedImageVersion: true };
+      return {
+        ...current,
+        entry,
+        savedImageVersion: true,
+        album: {
+          ...current.album,
+          entries: current.album.entries.map((item) => (item.id === entry.id ? entry : item)),
+        },
+      };
+    });
+    reload();
+  }
   const firstPage = () =>
     navigate({ parent, category, trash: trash ? 'true' : '', search, filter: filterKey });
   const preferenceReady = !!preferenceSnapshot || !!preferenceFailure;
@@ -2166,6 +2193,13 @@ export function FilesPage({
                 </Action>
               </div>
             ) : null}
+            {mediaPreview.savedImageVersion ? (
+              <p role="status" className="text-sm text-ink-muted">
+                {locale.startsWith('zh')
+                  ? '已保存图片新版本。'
+                  : 'The new image version was saved.'}
+              </p>
+            ) : null}
             <FileMedia
               key={mediaPreview.entry.id + ':' + mediaPreview.entry.contentRevision}
               entry={mediaPreview.entry}
@@ -2174,8 +2208,14 @@ export function FilesPage({
               {...(mediaPreview.videoPlaylist
                 ? { videoPlaylist: { download: () => void download(mediaPreview.entry) } }
                 : {})}
-              {...(mediaPreview.entry.trashedAt === null
-                ? { imageCopyParentId: mediaPreview.entry.parentId }
+              {...(mediaPreview.entry.kind === 'file' && mediaPreview.entry.trashedAt === null
+                ? {
+                    imageEditing: {
+                      entry: mediaPreview.entry,
+                      destinationPicker: ImageCopyDestinationDialog,
+                      onVersionPublished: refreshPublishedImage,
+                    },
+                  }
                 : {})}
             />
             {!mediaPreview.videoPlaylist && !imagePreview ? (

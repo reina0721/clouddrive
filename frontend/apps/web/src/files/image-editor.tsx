@@ -2,7 +2,8 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
-import { FilesError } from '@clouddrive/surface/files';
+import { FilesError, type FileEntry } from '@clouddrive/surface/files';
+import type { ImageCopyDestination } from '@clouddrive/surface/files/runtime';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { CheckboxField, SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { IconAction } from '@clouddrive/ui-adapter/icon-action';
@@ -96,6 +97,20 @@ const zh = {
   quality: '压缩质量',
   download: '下载副本',
   queue: '上传副本到原文件夹',
+  queueOther: '上传副本到所选位置',
+  chooseDestination: '更改副本保存位置',
+  originalFolder: '原文件夹',
+  copyDestination: '副本保存位置',
+  saveVersion: '保存为新版本',
+  confirmVersion: '确认保存新版本',
+  confirmWrite: '保存新版本',
+  versionDescription: '保存会更新当前文件，历史版本按账户和站点的保留规则处理。',
+  versionNumber: '编辑所依据的版本',
+  versionFormat: '请选择与原文件一致的格式才能保存新版本。',
+  versionConflict: '原文件已变更，当前草稿可以另存为副本。',
+  versionPublished: '新版本已保存。请重新打开预览查看更新后的图片。',
+  versionWait: '仍未确认新版本已发布，请在传输中心查看状态。',
+  versionFailed: '无法发布图片的新版本。',
   queued: '副本已加入上传队列，可在传输中心查看进度。',
   invalidName: '请输入有效的副本名称。',
   encodeFailed: '无法编码图片副本。',
@@ -155,6 +170,21 @@ const en: typeof zh = {
   quality: 'Compression quality',
   download: 'Download copy',
   queue: 'Upload copy to original folder',
+  queueOther: 'Upload copy to selected folder',
+  chooseDestination: 'Change copy destination',
+  originalFolder: 'Original folder',
+  copyDestination: 'Copy destination',
+  saveVersion: 'Save as new version',
+  confirmVersion: 'Confirm new version',
+  confirmWrite: 'Save new version',
+  versionDescription:
+    'Saving updates the current file. Previous versions follow account and site retention rules.',
+  versionNumber: 'Version being edited',
+  versionFormat: 'Select the original file format to save a new version.',
+  versionConflict: 'The original changed. You can save this draft as a copy.',
+  versionPublished: 'The new version was saved. Reopen the preview to see the updated image.',
+  versionWait: 'Publication is still unconfirmed. Check the transfer center for progress.',
+  versionFailed: 'Could not publish the new image version.',
   queued: 'Copy queued. Check the transfer center for progress.',
   invalidName: 'Enter a valid copy name.',
   encodeFailed: 'Could not encode the image copy.',
@@ -169,9 +199,11 @@ const en: typeof zh = {
 type Labels = typeof zh;
 type Tool = 'transform' | 'crop' | 'resize' | 'annotate' | ImageAppearanceTool;
 type ImageStatus = 'sizeLimit' | 'decodeFailed' | 'loading';
+type SaveDestination = 'download' | 'queue' | 'version';
 type EditorProps = ImageToolsProps &
   Readonly<{
     queueCopy: (file: File, parentId: string) => Promise<void>;
+    publishVersion: (file: File, target: FileEntry, signal: AbortSignal) => Promise<void>;
     onClose: () => void;
   }>;
 
@@ -358,11 +390,11 @@ function ResizeControls({
 
 function ImageWorkspace({
   bitmap,
-  entry,
-  parentId,
+  editing,
   source,
   maxBytes,
   queueCopy,
+  publishVersion,
   labels,
 }: Omit<EditorProps, 'size' | 'onClose'> &
   Readonly<{
@@ -370,6 +402,7 @@ function ImageWorkspace({
     labels: Labels;
   }>) {
   const { t } = useFrontendTranslation();
+  const { entry, destinationPicker: DestinationPicker, onVersionPublished } = editing;
   const [original] = useState(() => originalImage(bitmap));
   const [history, setHistory] = useState({ edits: [original], index: 0 });
   const edit = history.edits[history.index] ?? original;
@@ -387,7 +420,11 @@ function ImageWorkspace({
   const exportId = useId();
   const exportSection = useRef<HTMLElement>(null);
   const [feedback, setFeedback] = useState<{ message: string; failed: boolean }>();
-  const [busy, setBusy] = useState<'download' | 'queue'>();
+  const [busy, setBusy] = useState<SaveDestination>();
+  const [destination, setDestination] = useState<ImageCopyDestination>();
+  const [choosingDestination, setChoosingDestination] = useState(false);
+  const [confirmingVersion, setConfirmingVersion] = useState(false);
+  const [versionBlocked, setVersionBlocked] = useState<'stale' | 'published'>();
   const inProgress = useRef(false);
   const lifetime = useRef<AbortController>(null);
   const logoAssets = useRef(new Set<ImageLogoAsset>());
@@ -466,13 +503,22 @@ function ImageWorkspace({
   };
   const filename = name.trim() + imageFormats[format].extension;
   const validName = Boolean(name.trim()) && validCopyName(filename);
-  const canSave = validName && tool !== 'crop' && tool !== 'resize';
+  const canEncode = tool !== 'crop' && tool !== 'resize';
+  const canSave = validName && canEncode;
+  const canPublish = canEncode && edit !== original && format === source.type && !versionBlocked;
+  const copyParent = destination?.id ?? entry.parentId;
 
-  async function save(destination: 'download' | 'queue') {
+  async function save(action: SaveDestination) {
     const signal = lifetime.current?.signal;
-    if (!canSave || inProgress.current || !signal || signal.aborted) return;
+    if (
+      !(action === 'version' ? canPublish : canSave) ||
+      inProgress.current ||
+      !signal ||
+      signal.aborted
+    )
+      return;
     inProgress.current = true;
-    setBusy(destination);
+    setBusy(action);
     setFeedback(undefined);
     let failure = labels.encodeFailed;
     try {
@@ -490,22 +536,44 @@ function ImageWorkspace({
         setFeedback({ message: labels.tooLarge, failed: true });
         return;
       }
-      if (destination === 'download') {
+      if (action === 'version') {
+        failure = labels.versionFailed;
+        await publishVersion(new File([encoded], entry.name, { type: format }), entry, signal);
+        if (signal.aborted) return;
+        setVersionBlocked('published');
+        try {
+          await onVersionPublished(entry, signal);
+        } catch {
+          // 已确认发布，预览刷新失败由编辑器内的结果说明处理。
+          return;
+        }
+        return;
+      }
+      if (action === 'download') {
         downloadBlob(encoded, filename);
       } else {
         failure = labels.queueFailed;
-        await queueCopy(new File([encoded], filename, { type: format }), parentId);
+        await queueCopy(new File([encoded], filename, { type: format }), copyParent);
       }
       if (!signal.aborted) {
         setFeedback({
-          message: destination === 'queue' ? labels.queued : labels.downloadReady,
+          message: action === 'queue' ? labels.queued : labels.downloadReady,
           failed: false,
         });
       }
     } catch (error) {
       if (!signal.aborted) {
+        if (action === 'version' && error instanceof FilesError && error.code === 'conflict') {
+          setVersionBlocked('stale');
+          return;
+        }
         setFeedback({
-          message: error instanceof FilesError ? t('files.errors.' + error.code) : failure,
+          message:
+            error instanceof FilesError
+              ? action === 'version' && error.code === 'busy'
+                ? labels.versionWait
+                : t('files.errors.' + error.code)
+              : failure,
           failed: true,
         });
       }
@@ -576,9 +644,43 @@ function ImageWorkspace({
           loading={busy === 'queue'}
           onPress={() => void save('queue')}
         >
-          {labels.queue}
+          {copyParent === entry.parentId ? labels.queue : labels.queueOther}
         </Action>
       </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Action
+          size="sm"
+          variant="secondary"
+          disabled={!canPublish || Boolean(pending || busy)}
+          onPress={() => setConfirmingVersion(true)}
+        >
+          {labels.saveVersion}
+        </Action>
+        <Action
+          size="sm"
+          variant="quiet"
+          disabled={Boolean(busy)}
+          onPress={() => setChoosingDestination(true)}
+        >
+          {labels.chooseDestination}
+        </Action>
+        <p className="text-xs text-ink-muted">
+          {labels.copyDestination} · {destination?.path ?? labels.originalFolder}
+        </p>
+      </div>
+      {format !== source.type && edit !== original && !versionBlocked ? (
+        <p className="text-xs text-ink-muted">{labels.versionFormat}</p>
+      ) : null}
+      {versionBlocked === 'stale' ? (
+        <p role="alert" className="text-sm text-danger">
+          {labels.versionConflict}
+        </p>
+      ) : null}
+      {versionBlocked === 'published' ? (
+        <p role="status" className="text-sm text-ink-muted">
+          {labels.versionPublished}
+        </p>
+      ) : null}
       {pending ? (
         <p className="text-xs text-ink-muted">
           {pending === 'annotation'
@@ -719,6 +821,32 @@ function ImageWorkspace({
         <p role="status" className="text-xs text-ink-muted">
           {labels.originalPreview}
         </p>
+      ) : null}
+      {choosingDestination ? (
+        <DestinationPicker
+          initialParentId={copyParent}
+          onSelect={setDestination}
+          onClose={() => setChoosingDestination(false)}
+        />
+      ) : null}
+      {confirmingVersion ? (
+        <DialogSurface
+          triggerLabel={labels.confirmVersion}
+          title={labels.confirmVersion}
+          description={labels.versionDescription}
+          cancelLabel={t('files.cancel')}
+          confirmLabel={labels.confirmWrite}
+          isOpen
+          onOpenChange={(open) => {
+            if (!open) setConfirmingVersion(false);
+          }}
+          onConfirm={() => save('version')}
+        >
+          <p className="break-words">{entry.name}</p>
+          <p className="text-sm text-ink-muted">
+            {labels.versionNumber} · {entry.contentRevision}
+          </p>
+        </DialogSurface>
       ) : null}
       <div className="flex flex-wrap gap-2">
         <Action
@@ -913,7 +1041,7 @@ export function ImageEditor({ onClose, size, ...props }: EditorProps) {
     <DialogSurface
       triggerLabel={labels.title}
       title={labels.title}
-      description={props.entry.name}
+      description={props.editing.entry.name}
       cancelLabel={t('files.close')}
       size="cover"
       layout="workspace"

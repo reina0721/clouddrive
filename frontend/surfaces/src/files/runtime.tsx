@@ -17,6 +17,18 @@ import type { ArchivesPort } from './archives';
 import type { TransfersPort } from './transfers';
 export { loadFileAnnotationMessages, loadPublicFileMessages } from './messages';
 
+export type ImageCopyDestination = Readonly<{ id: string; path: string }>;
+export type ImageCopyDestinationProps = Readonly<{
+  initialParentId: string;
+  onSelect: (destination: ImageCopyDestination) => void;
+  onClose: () => void;
+}>;
+export type ImageEditingAccess = Readonly<{
+  entry: FileEntry;
+  destinationPicker: ComponentType<ImageCopyDestinationProps>;
+  onVersionPublished: (entry: FileEntry, signal: AbortSignal) => Promise<void>;
+}>;
+
 export type FileMediaProps = Readonly<{
   entry: Pick<FileEntry, 'id' | 'name' | 'mediaType' | 'sizeBytes' | 'contentRevision'>;
   mode: 'preview' | 'thumbnail' | 'inline';
@@ -25,8 +37,8 @@ export type FileMediaProps = Readonly<{
   version?: number;
   /** 仅在当前本人文件通过视频应用打开 M3U8 时提供。 */
   videoPlaylist?: Readonly<{ download: () => void }>;
-  /** 只由本人当前文件预览提供，空字符串表示根目录。 */
-  imageCopyParentId?: string;
+  /** 只由本人当前文件预览提供。 */
+  imageEditing?: ImageEditingAccess;
   labels?: Readonly<{ loading: string; unsupported: string; tooLarge: string; retry: string }>;
 }>;
 const DocumentContext = createContext<ComponentType<FileDocumentProps> | null>(null);

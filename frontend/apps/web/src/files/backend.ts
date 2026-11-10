@@ -47,6 +47,7 @@ import {
   wopiDiscoverySchema,
   propertyDefinitionsViewSchema,
   type FileListing,
+  type FileEntry,
   type FilesErrorCode,
   type FileShortcut,
   type FilesPort,
@@ -76,7 +77,7 @@ import { createVideoSubtitleSource } from './video-subtitle-source';
 import { createPrivateHlsSource } from './hls-source';
 import { decodeFileText } from './text-source';
 import { rasterType } from './media-signatures';
-import { waitForMarkdownImagePublication } from './markdown-image-publication';
+import { waitForFilePublication } from './transfer-publication';
 export { fileDestinationHrefs } from './destinations';
 
 const transferTimeoutMs = 120_000;
@@ -827,6 +828,31 @@ export function createFilesRuntime(
       assertCurrent();
       await transfers.port.enqueue(register([file]), parentId);
     },
+    publishImageVersion: async (file: File, target: FileEntry, signal: AbortSignal) => {
+      assertCurrent();
+      const requestSignal = AbortSignal.any([
+        signal,
+        lifecycle.signal,
+        AbortSignal.timeout(transferTimeoutMs),
+      ]);
+      requestSignal.throwIfAborted();
+      if (file.name !== target.name || target.kind !== 'file' || target.trashedAt !== null)
+        throw new FilesError('invalid');
+      const [candidate] = register([file]);
+      if (!candidate) throw new FilesError('canceled');
+      await transfers.port.replace(candidate, target);
+      try {
+        const id = await waitForFilePublication(transfers.port, candidate.id, requestSignal);
+        if (id !== target.id) throw new FilesError('conflict');
+      } catch (error) {
+        if (
+          requestSignal.reason instanceof DOMException &&
+          requestSignal.reason.name === 'TimeoutError'
+        )
+          throw new FilesError('busy', { cause: error });
+        throw error;
+      }
+    },
     uploadMarkdownImage: async (parentId: string, signal: AbortSignal) => {
       assertCurrent();
       const requestSignal = AbortSignal.any([signal, lifecycle.signal]);
@@ -843,7 +869,7 @@ export function createFilesRuntime(
         requestSignal.throwIfAborted();
         assertCurrent();
         await transfers.port.enqueue(candidates, parentId);
-        const entryId = await waitForMarkdownImagePublication(
+        const entryId = await waitForFilePublication(
           transfers.port,
           candidate.id,
           AbortSignal.any([requestSignal, AbortSignal.timeout(transferTimeoutMs)]),

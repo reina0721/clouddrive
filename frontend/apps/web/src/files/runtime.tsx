@@ -98,7 +98,7 @@ export function FilesRuntime({
   );
   const Media = useMemo(() => {
     if (!runtime) return undefined;
-    const { readMedia, subtitles, queueImageCopy, openPrivateHls } = runtime;
+    const { readMedia, subtitles, queueImageCopy, publishImageVersion, openPrivateHls } = runtime;
     function VideoTools({ entry, media, presentation }: VideoToolsProps) {
       return (
         <Suspense>
@@ -128,7 +128,12 @@ export function FilesRuntime({
           </Action>
           {open ? (
             <Suspense fallback={<p role="status">{t('files.mediaLoading')}</p>}>
-              <ImageEditor {...props} queueCopy={queueImageCopy} onClose={() => setOpen(false)} />
+              <ImageEditor
+                {...props}
+                queueCopy={queueImageCopy}
+                publishVersion={publishImageVersion}
+                onClose={() => setOpen(false)}
+              />
             </Suspense>
           ) : null}
         </div>
@@ -152,7 +157,7 @@ export function FilesRuntime({
           {...props}
           readContent={readMedia}
           videoTools={VideoTools}
-          {...(props.imageCopyParentId !== undefined ? { imageTools: ImageTools } : {})}
+          {...(props.imageEditing ? { imageTools: ImageTools } : {})}
         />
       ) : (
         <FileMediaView {...props} readContent={readMedia} />

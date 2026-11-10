@@ -173,3 +173,4 @@
 - [184 图片外观调整](184-image-appearance/README.md) 提供色彩微调、滤镜、原色对比和文字水印。
 - [185 图片水印与 WebP 编辑](185-raster-watermarks/README.md) 提供本机图片水印、文字叠加及 WebP 编辑和副本。
 - [186 图片编辑视图与导出设置](186-image-editor-viewport/README.md) 提供画布实际尺寸、缩放、平移、原图对比及有损导出质量。
+- [187 图片版本保存与另存目录](187-image-version-save/README.md) 支持同格式发布新版本、过期草稿保护及另存目录。

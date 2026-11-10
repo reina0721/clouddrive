@@ -2,8 +2,9 @@
 import { useEffect, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
+import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { FilesError, type FileListing } from '../../../src/files/model';
-import { useFiles } from '../../../src/files/runtime';
+import { useFiles, type ImageCopyDestinationProps } from '../../../src/files/runtime';
 
 /** OwnFolderPicker 由创建与解压共同使用，分页读取本人有效目录。 */
 export function OwnFolderPicker({
@@ -125,5 +126,44 @@ export function OwnFolderPicker({
         ) : null}
       </div>
     </div>
+  );
+}
+
+export function ImageCopyDestinationDialog({
+  initialParentId,
+  onSelect,
+  onClose,
+}: ImageCopyDestinationProps) {
+  const { t, locale } = useFrontendTranslation();
+  const chinese = locale.startsWith('zh');
+  const title = chinese ? '选择副本保存位置' : 'Choose copy destination';
+  const [parent, setParent] = useState(initialParentId);
+  const [listing, setListing] = useState<FileListing>();
+  return (
+    <DialogSurface
+      triggerLabel={title}
+      title={title}
+      description={
+        chinese
+          ? '选择本人文件夹，副本会使用导出设置中的名称。'
+          : 'Select a folder. The copy uses the name in export settings.'
+      }
+      cancelLabel={t('files.cancel')}
+      confirmLabel={t('files.workspace.chooseHere')}
+      confirmDisabled={!listing}
+      isOpen
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+      onConfirm={() => {
+        if (!listing) return;
+        onSelect({
+          id: parent,
+          path: [t('files.nav'), ...listing.breadcrumbs.map(({ name }) => name)].join(' / '),
+        });
+      }}
+    >
+      <OwnFolderPicker value={parent} onChange={setParent} onListing={setListing} />
+    </DialogSurface>
   );
 }
