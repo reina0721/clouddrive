@@ -23,6 +23,7 @@
     "@clouddrive/ui-adapter": "workspace:*",
     "@noble/hashes": "2.4.0",
     "@zip.js/zip.js": "2.24.0",
+    "exifreader": "4.54.0",
     "hls.js": "1.7.4",
     "lucide-react": "^1.37.0",
     "music-metadata": "12.3.5",

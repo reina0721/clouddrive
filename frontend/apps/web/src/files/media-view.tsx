@@ -1,5 +1,7 @@
 'use client';
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useRef,
@@ -16,6 +18,7 @@ import { rasterType } from './media-signatures';
 import { editableImageType, type ImageSize } from './image-edit';
 import { audioMediaType } from './audio-format';
 const videoTypes = new Set(['video/mp4', 'video/webm', 'video/ogg']);
+const ImageViewer = lazy(() => import('./image-viewer'));
 
 export type VideoToolsProps = Readonly<{
   entry: FileMediaProps['entry'];
@@ -61,11 +64,13 @@ export function FileMediaView({
       reader: typeof readContent;
       url: string;
       failure: FilesErrorCode | '';
-      editable?: Blob;
+      imageSource?: Blob;
     }>
   >();
   const [naturalSize, setNaturalSize] = useState<{ url: string; size: ImageSize }>();
   const [attempt, setAttempt] = useState(0);
+  const imageWorkspace =
+    mode === 'preview' && version === undefined && imageCopyParentId !== undefined;
   const requestKey = JSON.stringify([
     entry.id,
     entry.contentRevision,
@@ -111,7 +116,7 @@ export function FileMediaView({
           reader: readContent,
           url: ownedURL,
           failure: '',
-          ...(ImageTools && editableImageType(safeType) ? { editable: safeBlob } : {}),
+          ...(image && imageWorkspace ? { imageSource: safeBlob } : {}),
         });
       } catch (error) {
         if (!controller.signal.aborted)
@@ -144,7 +149,7 @@ export function FileMediaView({
     mode,
     readContent,
     requestKey,
-    ImageTools,
+    imageWorkspace,
   ]);
   if (current?.failure) {
     const failure =
@@ -177,54 +182,63 @@ export function FileMediaView({
       </p>
     );
   }
-  if (entry.mediaType.startsWith('image/'))
-    return (
-      <>
-        {ImageTools &&
-        imageCopyParentId !== undefined &&
-        current?.editable &&
-        naturalSize?.url === url ? (
-          <ImageTools
-            entry={entry}
-            parentId={imageCopyParentId}
-            source={current.editable}
-            size={naturalSize.size}
-            maxBytes={maxBytes}
-          />
-        ) : null}
-        <img
-          src={url}
-          alt={alt ?? entry.name}
-          style={
-            mode === 'inline'
+  if (entry.mediaType.startsWith('image/')) {
+    const source = current?.imageSource;
+    const size = naturalSize?.url === url ? naturalSize.size : undefined;
+    const picture = (
+      <img
+        src={url}
+        alt={alt ?? entry.name}
+        style={
+          source
+            ? { maxHeight: '100%' }
+            : mode === 'inline'
               ? { maxWidth: '100%', maxHeight: 'min(28rem, 60vh)', objectFit: 'contain' }
               : undefined
-          }
-          className={
-            mode === 'thumbnail'
-              ? 'h-40 w-full rounded-control object-contain'
-              : mode === 'preview'
-                ? 'max-h-screen w-full object-contain'
-                : undefined
-          }
-          onLoad={
-            current?.editable
-              ? ({ currentTarget }) =>
-                  setNaturalSize({
-                    url,
-                    size: {
-                      width: currentTarget.naturalWidth,
-                      height: currentTarget.naturalHeight,
-                    },
-                  })
+        }
+        className={
+          mode === 'thumbnail'
+            ? 'h-40 w-full rounded-control object-contain'
+            : mode === 'preview'
+              ? 'max-h-screen w-full object-contain'
               : undefined
-          }
-          onError={() =>
-            setResult({ key: requestKey, reader: readContent, url: '', failure: 'unsupported' })
-          }
-        />
-      </>
+        }
+        onLoad={
+          source
+            ? ({ currentTarget }) =>
+                setNaturalSize({
+                  url,
+                  size: {
+                    width: currentTarget.naturalWidth,
+                    height: currentTarget.naturalHeight,
+                  },
+                })
+            : undefined
+        }
+        onError={() =>
+          setResult({ key: requestKey, reader: readContent, url: '', failure: 'unsupported' })
+        }
+      />
     );
+    if (!source) return picture;
+    const editor =
+      ImageTools && imageCopyParentId !== undefined && size && editableImageType(source.type) ? (
+        <ImageTools
+          entry={entry}
+          parentId={imageCopyParentId}
+          source={source}
+          size={size}
+          maxBytes={maxBytes}
+        />
+      ) : null;
+    return (
+      <Suspense fallback={<p role="status">{labels?.loading ?? t('files.mediaLoading')}</p>}>
+        <ImageViewer key={url} source={source} {...(size ? { size } : {})} editor={editor}>
+          {picture}
+        </ImageViewer>
+      </Suspense>
+    );
+  }
   if (entry.mediaType.startsWith('video/'))
     return (
       <>

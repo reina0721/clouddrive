@@ -1,0 +1,23 @@
+schema_version: 1
+id: R181-001
+title: 照片查看工作区
+question: 如何在本人图片预览中增加同目录浏览与安全的拍摄信息查看？
+research_type: current-project-and-external-primary-source
+topics: [files, images, exif]
+status: active
+evidence:
+  primary_sources:
+    - title: Cloudreve 图片查看器及官方截图
+      locator: https://docs.cloudreve.org/zh/usage/file-apps#图片查看器
+      snapshot: 大画布、位置、左右箭头、可展开右侧拍摄信息
+    - title: ExifReader 4.54.0
+      locator: https://github.com/mattiasw/ExifReader/releases/tag/v4.54.0
+      snapshot: 受控 PNG 文本和分段错误隔离
+    - title: 当前文件应用与原件读取
+      locator: report.md
+      snapshot: d321b35
+verified_at: 2026-11-10
+validity:
+  mode: snapshot
+  refresh_triggers: [私有文件读取边界改变, EXIF 安全公告, 跨页面图片浏览, 元数据持久化]
+report: report.md

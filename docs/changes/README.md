@@ -167,3 +167,4 @@
 - [178 EPUB 续读](178-epub-reading-progress/README.md) 支持续读、双栏或单栏翻页及本机书签。
 - [179 私有 HLS 视频](179-hls-playback/README.md) 支持 M3U8、自动和手动清晰度、直播及私有分片。
 - [180 文本与代码编辑](180-text-code-editor/README.md) 支持代码高亮、搜索替换、跳行和编码切换。
+- [181 照片查看工作区](181-photo-viewer/README.md) 支持同目录切图与按需查看拍摄信息。

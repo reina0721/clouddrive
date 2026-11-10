@@ -69,6 +69,8 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 
 [180 文本与代码编辑](changes/180-text-code-editor/README.md)支持本人文本文件的语言识别、代码导航、查找替换及历史编码读取，以 UTF-8 保存并检查内容修订。
 
+[181 照片查看工作区](changes/181-photo-viewer/README.md)提供本人图片的同目录切换和浏览器端按需 EXIF 查看。
+
 [157管理端后台任务](changes/157-admin-background-tasks/README.md)提供 ZIP、解压、HTTP 与 BT 跨账号查询、诊断详情及终态清理。[158文件维护运行历史](changes/158-maintenance-run-history/README.md)增加回收站到期扫描和定时 Blob 回收的终态记录。运行中跟踪和跨请求关联仍在本范围之外。
 
 [159文件任务节点](changes/159-file-worker-nodes/README.md)提供主机文件职责、已装配 aria2 节点、通信及负载检查、关联任务筛选。节点接入由部署配置管理。Cloudreve 从机注册、远端归档和从机存储仍为后续范围。

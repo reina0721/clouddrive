@@ -24,6 +24,7 @@ import {
   fileApplicationName,
   isTextPreview,
   type FileApplicationID,
+  type FileApplicationPolicy,
   type WebFileApplicationItem,
 } from '../../../src/files/file-applications';
 import { fileIconExtension, type FileIconRule } from '../../../src/files/icon-rules';
@@ -134,6 +135,7 @@ type FileApplicationPicker = Readonly<{
   entry: FileEntry;
   options?: readonly FileApplicationID[];
   webOptions?: readonly WebFileApplicationItem[];
+  policy?: FileApplicationPolicy;
   error?: string;
 }>;
 
@@ -240,9 +242,21 @@ export function FilesPage({
     entry: FileEntry;
     maxBytes: number;
     videoPlaylist?: true;
+    album?: { entries: readonly FileEntry[]; index: number };
   }>();
+  const album = mediaPreview?.album;
+  const imagePreview = album !== undefined;
   const videoPreview =
     mediaPreview?.videoPlaylist || mediaPreview?.entry.mediaType.startsWith('video/');
+  const moveImage = (delta: -1 | 1) => {
+    setMediaPreview((current) => {
+      if (!current?.album) return current;
+      const { entries, index } = current.album;
+      const next = index + delta;
+      const entry = entries[next];
+      return entry ? { ...current, entry, album: { entries, index: next } } : current;
+    });
+  };
   const [archiveEntry, setArchiveEntry] = useState<FileEntry>();
   const [zipSelection, setZIPSelection] = useState<{
     entries: readonly FileEntry[];
@@ -647,10 +661,26 @@ export function FilesPage({
     setDetail(entry);
   }
   const maxMediaBytes = listing?.maxMediaBytes;
+  const pageCount = listing
+    ? Math.max(1, Math.ceil(listing.items.length / listing.maxGalleryEntries))
+    : 0;
+  const currentGalleryPage = Math.min(galleryPage, Math.max(0, pageCount - 1));
+  const visibleItems = useMemo(
+    () =>
+      listing
+        ? preferences.view === 'gallery'
+          ? listing.items.slice(
+              currentGalleryPage * listing.maxGalleryEntries,
+              (currentGalleryPage + 1) * listing.maxGalleryEntries,
+            )
+          : listing.items
+        : [],
+    [listing, preferences.view, currentGalleryPage],
+  );
   const maxTextBytes = listing?.maxTextBytes;
   const playAudio = usePlayFileAudio();
   const launchApplication = useCallback(
-    (entry: FileEntry, application: FileApplicationID) => {
+    (entry: FileEntry, application: FileApplicationID, policy?: FileApplicationPolicy) => {
       setApplicationPicker(undefined);
       if (
         application === 'audio' &&
@@ -688,18 +718,47 @@ export function FilesPage({
         case 'video':
           // 上传完成会刷新列表，已打开的预览继续持有本次读取预算与文件。
           if (maxMediaBytes === undefined) setNotice(t('files.errors.unavailable'));
-          else
+          else {
+            const device = fileApplicationDevice(window.innerWidth);
+            const neighbors =
+              application === 'image' && policy && entry.trashedAt === null
+                ? visibleItems.filter(
+                    (item) =>
+                      item.kind === 'file' &&
+                      item.parentId === entry.parentId &&
+                      item.trashedAt === null &&
+                      item.sizeBytes <= maxMediaBytes &&
+                      compatibleFileApplications(item, false).includes('image') &&
+                      fileApplicationChoice(
+                        policy,
+                        ['image'],
+                        ['image'],
+                        fileIconExtension(item.name),
+                        device,
+                      ).options.includes('image'),
+                  )
+                : undefined;
+            const position = neighbors?.findIndex((item) => item.id === entry.id) ?? -1;
             setMediaPreview({
               entry,
               maxBytes: maxMediaBytes,
+              ...(application === 'image' && entry.trashedAt === null
+                ? {
+                    album:
+                      position >= 0 && neighbors
+                        ? { entries: neighbors, index: position }
+                        : { entries: [entry], index: 0 },
+                  }
+                : {}),
               ...(application === 'video' && entry.trashedAt === null && isHlsPlaylist(entry)
                 ? { videoPlaylist: true }
                 : {}),
             });
+          }
           return;
       }
     },
-    [t, maxMediaBytes, maxTextBytes, playAudio],
+    [t, maxMediaBytes, maxTextBytes, playAudio, visibleItems],
   );
   const showPreview = useCallback(
     async (entry: FileEntry, requested?: 'choose' | 'archive') => {
@@ -757,12 +816,13 @@ export function FilesPage({
               : webOptions.length
                 ? choice.options.find((id) => id === choice.defaultApp)
                 : choice.automatic;
-        if (selected) launchApplication(entry, selected);
+        if (selected) launchApplication(entry, selected, policy);
         else
           setApplicationPicker({
             entry,
             options: requested === 'archive' ? [] : choice.options,
             webOptions,
+            policy,
           });
       } catch (error) {
         if (!controller.signal.aborted) setApplicationPicker({ entry, error: errorText(error) });
@@ -781,22 +841,6 @@ export function FilesPage({
   const targets = useMemo(
     () => listing?.items.filter((entry) => selectedIds.has(entry.id)) ?? [],
     [listing, selectedIds],
-  );
-  const pageCount = listing
-    ? Math.max(1, Math.ceil(listing.items.length / listing.maxGalleryEntries))
-    : 0;
-  const currentGalleryPage = Math.min(galleryPage, Math.max(0, pageCount - 1));
-  const visibleItems = useMemo(
-    () =>
-      listing
-        ? preferences.view === 'gallery'
-          ? listing.items.slice(
-              currentGalleryPage * listing.maxGalleryEntries,
-              (currentGalleryPage + 1) * listing.maxGalleryEntries,
-            )
-          : listing.items
-        : [],
-    [listing, preferences.view, currentGalleryPage],
   );
   useEffect(
     () => setGalleryPage(0),
@@ -2059,14 +2103,55 @@ export function FilesPage({
           title={mediaPreview.entry.name}
           description={t('files.mediaPreview')}
           cancelLabel={t('files.close')}
-          size={videoPreview ? 'cover' : 'lg'}
-          layout={videoPreview ? 'workspace' : 'standard'}
+          size={videoPreview || imagePreview ? 'cover' : 'lg'}
+          layout={videoPreview || imagePreview ? 'workspace' : 'standard'}
           isOpen
           onOpenChange={(open) => {
             if (!open) setMediaPreview(undefined);
           }}
         >
           <div className={videoPreview ? 'flex h-full min-h-0 flex-col gap-4' : 'space-y-4'}>
+            {album ? (
+              // eslint-disable-next-line jsx-a11y-x/no-noninteractive-element-interactions -- 事件只从可聚焦的导航按钮冒泡。
+              <div
+                role="group"
+                aria-label={locale.startsWith('zh') ? '照片导航' : 'Photo navigation'}
+                className="flex flex-wrap items-center gap-2"
+                onKeyDown={(event) => {
+                  if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+                  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+                  event.preventDefault();
+                  moveImage(event.key === 'ArrowLeft' ? -1 : 1);
+                }}
+              >
+                <Action
+                  size="sm"
+                  variant="secondary"
+                  disabled={album.index === 0}
+                  onPress={() => moveImage(-1)}
+                >
+                  {locale.startsWith('zh') ? '上一张' : 'Previous photo'}
+                </Action>
+                <p role="status" className="text-sm text-ink-muted">
+                  {album.index + 1} / {album.entries.length}
+                </p>
+                <Action
+                  size="sm"
+                  variant="secondary"
+                  disabled={album.index + 1 >= album.entries.length}
+                  onPress={() => moveImage(1)}
+                >
+                  {locale.startsWith('zh') ? '下一张' : 'Next photo'}
+                </Action>
+                <Action
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => void download(mediaPreview.entry)}
+                >
+                  {t('files.download')}
+                </Action>
+              </div>
+            ) : null}
             <FileMedia
               key={mediaPreview.entry.id + ':' + mediaPreview.entry.contentRevision}
               entry={mediaPreview.entry}
@@ -2079,7 +2164,7 @@ export function FilesPage({
                 ? { imageCopyParentId: mediaPreview.entry.parentId }
                 : {})}
             />
-            {!mediaPreview.videoPlaylist ? (
+            {!mediaPreview.videoPlaylist && !imagePreview ? (
               <div className="shrink-0">
                 <Action variant="secondary" onPress={() => void download(mediaPreview.entry)}>
                   {t('files.download')}
@@ -2173,7 +2258,7 @@ export function FilesPage({
                     onPress={() => {
                       const request = previewController.current;
                       if (request && !request.signal.aborted)
-                        launchApplication(applicationPicker.entry, id);
+                        launchApplication(applicationPicker.entry, id, applicationPicker.policy);
                     }}
                   >
                     {fileApplicationName(id, chinese)}

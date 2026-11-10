@@ -15,6 +15,8 @@ export type ActionProps = Readonly<{
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   fullWidth?: boolean;
+  expanded?: boolean;
+  controls?: string;
 }> &
   ActionBehavior;
 
@@ -53,12 +55,16 @@ export function Action({
   disabled = false,
   loading = false,
   fullWidth = false,
+  expanded,
+  controls,
   type = 'button',
   onPress,
 }: ActionProps) {
   return (
     <HeroButton
       aria-busy={loading || undefined}
+      {...(expanded === undefined ? {} : { 'aria-expanded': expanded })}
+      {...(controls ? { 'aria-controls': controls } : {})}
       className={actionStyles({ fullWidth, size, variant })}
       isDisabled={disabled}
       isPending={loading}
