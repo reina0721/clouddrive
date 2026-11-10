@@ -172,3 +172,4 @@
 - [183 图片标注](183-image-annotations/README.md) 支持形状、画笔、文字、历史和带标注副本。
 - [184 图片外观调整](184-image-appearance/README.md) 提供色彩微调、滤镜、原色对比和文字水印。
 - [185 图片水印与 WebP 编辑](185-raster-watermarks/README.md) 提供本机图片水印、文字叠加及 WebP 编辑和副本。
+- [186 图片编辑视图与导出设置](186-image-editor-viewport/README.md) 提供画布实际尺寸、缩放、平移、原图对比及有损导出质量。

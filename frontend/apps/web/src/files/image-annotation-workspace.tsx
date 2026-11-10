@@ -17,7 +17,7 @@ import {
   type ImageAnnotation,
   type ImagePoint,
 } from './image-annotation';
-import { ImageCanvas } from './image-canvas';
+import { ImageCanvas, type ImageCanvasView } from './image-canvas';
 import { sourceImagePoint, type ImageEdit } from './image-edit';
 
 const modes = [
@@ -118,6 +118,7 @@ export function ImageAnnotationWorkspace({
   bitmap,
   edit,
   canvasLabels,
+  view,
   chinese,
   onCommit,
   children,
@@ -125,6 +126,7 @@ export function ImageAnnotationWorkspace({
   bitmap: ImageBitmap;
   edit: ImageEdit;
   canvasLabels: Readonly<{ canvas: string; decodeFailed: string }>;
+  view: ImageCanvasView;
   chinese: boolean;
   onCommit: (edit: ImageEdit) => void;
   children: (pending: boolean) => ReactNode;
@@ -327,6 +329,7 @@ export function ImageAnnotationWorkspace({
       <div className="flex flex-wrap gap-3">
         <div className="min-w-0 space-y-2" style={{ flex: '4 1 26rem' }}>
           <ImageCanvas
+            view={view}
             bitmap={bitmap}
             edit={preview}
             labels={canvasLabels}

@@ -6,7 +6,7 @@ import {
   type ImageAppearance,
   type ImageFilter,
 } from './image-appearance';
-import type { ImageFormat } from './image-format';
+import { imageQuality, type ImageFormat } from './image-format';
 
 export type ImageSize = Readonly<{ width: number; height: number }>;
 export type ImageCrop = Readonly<ImageSize & { x: number; y: number }>;
@@ -24,7 +24,6 @@ export const imageSizeLimit = { sidePixels: 8192, totalPixels: 16 * 1024 * 1024 
 const previewSidePixels = 1200;
 const maxPreviewScale = 4;
 const filterSampleSidePixels = 96;
-const lossyImageQuality = 0.9;
 
 export function validImageSize({ width, height }: ImageSize) {
   return (
@@ -159,9 +158,13 @@ export function drawImagePreview(
   edit: ImageEdit,
   selection?: ImageCrop,
   selectedAnnotation?: number,
+  zoomPercent?: number,
 ) {
   const size = selection ? source : outputImageSize(edit);
-  const scale = Math.min(maxPreviewScale, previewSidePixels / Math.max(size.width, size.height));
+  const scale =
+    zoomPercent === undefined
+      ? Math.min(maxPreviewScale, previewSidePixels / Math.max(size.width, size.height))
+      : Math.min(1, zoomPercent / 100);
   if (!selection) return drawImage(canvas, source, edit, scale, undefined, selectedAnnotation);
   const context = prepareCanvas(canvas, size, scale);
   if (!context) return false;
@@ -210,12 +213,13 @@ export async function encodeImage(
   source: ImageBitmap,
   edit: ImageEdit,
   format: ImageFormat,
+  qualityPercent: number = imageQuality.defaultValue,
 ): Promise<Blob | null> {
   const canvas = document.createElement('canvas');
   try {
     if (!drawImage(canvas, source, edit, 1, format)) return null;
     return await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, format, lossyImageQuality),
+      canvas.toBlob(resolve, format, format === 'image/png' ? undefined : qualityPercent / 100),
     );
   } finally {
     canvas.width = 0;

@@ -23,7 +23,7 @@ import {
   type ImageToneField,
   type ImageWatermark,
 } from './image-appearance';
-import { ImageCanvas } from './image-canvas';
+import { ImageCanvas, type ImageCanvasView } from './image-canvas';
 import { drawFilterSample, type ImageEdit } from './image-edit';
 import { imageFormats } from './image-format';
 import {
@@ -247,6 +247,7 @@ export function ImageAppearanceWorkspace({
   edit,
   tool,
   canvasLabels,
+  view,
   chinese,
   onWatermarkTool,
   adoptLogo,
@@ -258,6 +259,7 @@ export function ImageAppearanceWorkspace({
   edit: ImageEdit;
   tool: ImageAppearanceTool;
   canvasLabels: Readonly<{ canvas: string; decodeFailed: string }>;
+  view: ImageCanvasView;
   chinese: boolean;
   onWatermarkTool: (tool: WatermarkTool) => void;
   adoptLogo: (bitmap: ImageBitmap, name: string) => ImageLogoAsset;
@@ -344,7 +346,7 @@ export function ImageAppearanceWorkspace({
     <div className="space-y-3">
       <div className="flex flex-wrap gap-3">
         <div className="min-w-0 space-y-3" style={{ flex: '4 1 26rem' }}>
-          <ImageCanvas bitmap={bitmap} edit={preview} labels={canvasLabels} />
+          <ImageCanvas bitmap={bitmap} edit={preview} labels={canvasLabels} view={view} />
           <CheckboxField label={labels.compare} checked={compare} onCheckedChange={setCompare} />
           {compare ? <p className="text-xs text-ink-muted">{labels.comparison}</p> : null}
         </div>

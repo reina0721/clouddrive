@@ -1,22 +1,29 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { FilesError } from '@clouddrive/surface/files';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { CheckboxField, SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
+import { IconAction } from '@clouddrive/ui-adapter/icon-action';
+import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
+import { RangeSlider } from '@clouddrive/ui-adapter/range-slider';
 import {
   Crop,
   FlipHorizontal2,
   FlipVertical2,
+  Hand,
+  Minus,
   Palette,
   Pencil,
+  Plus,
   Redo2,
   RotateCcw,
   RotateCw,
   Scaling,
   SlidersHorizontal,
+  SplitSquareHorizontal,
   Stamp,
   Undo2,
 } from 'lucide-react';
@@ -33,17 +40,28 @@ import {
   type ImageEdit,
   type ImageSize,
 } from './image-edit';
-import { editableImageType, imageFormats, type ImageFormat } from './image-format';
+import { editableImageType, imageFormats, imageQuality, type ImageFormat } from './image-format';
 import type { ImageLogoAsset } from './image-logo';
 import type { ImageToolsProps } from './media-view';
 import { ImageAnnotationWorkspace } from './image-annotation-workspace';
 import { ImageAppearanceWorkspace, type ImageAppearanceTool } from './image-appearance-workspace';
-import { ImageCanvas } from './image-canvas';
+import { ImageCanvas, type ImageCanvasView } from './image-canvas';
 import { downloadBlob } from './native-download';
 
 const zh = {
   title: '图片编辑器',
   canvas: '图片编辑画布',
+  viewport: '画布视区',
+  zoom: '画布缩放',
+  fit: '适合窗口',
+  actualSize: '实际尺寸',
+  zoomIn: '放大画布',
+  zoomOut: '缩小画布',
+  pan: '拖动画布',
+  stopPan: '结束拖动画布',
+  showOriginal: '查看原图',
+  showEdited: '返回编辑预览',
+  originalPreview: '正在预览原图。导出仍使用已应用的编辑。',
   loading: '正在准备图片…',
   sizeLimit: `图片尺寸超出编辑上限。每边最多 ${imageSizeLimit.sidePixels} 像素，总像素最多 ${imageSizeLimit.totalPixels}。`,
   decodeFailed: '此浏览器无法准备图片编辑画布。',
@@ -74,6 +92,8 @@ const zh = {
   copySuffix: '编辑副本',
   copyName: '副本名称（不含扩展名）',
   format: '输出格式',
+  export: '导出设置',
+  quality: '压缩质量',
   download: '下载副本',
   queue: '上传副本到原文件夹',
   queued: '副本已加入上传队列，可在传输中心查看进度。',
@@ -90,6 +110,17 @@ const zh = {
 const en: typeof zh = {
   title: 'Image editor',
   canvas: 'Image editing canvas',
+  viewport: 'Image viewport',
+  zoom: 'Canvas zoom',
+  fit: 'Fit to window',
+  actualSize: 'Actual size',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
+  pan: 'Pan canvas',
+  stopPan: 'Stop panning',
+  showOriginal: 'View original',
+  showEdited: 'Return to edited preview',
+  originalPreview: 'Showing the original. Export uses the applied edits.',
   loading: 'Preparing image…',
   sizeLimit: `This image exceeds the editor limit of ${imageSizeLimit.sidePixels} pixels per side and ${imageSizeLimit.totalPixels} total pixels.`,
   decodeFailed: 'This browser could not prepare the image editor.',
@@ -120,6 +151,8 @@ const en: typeof zh = {
   copySuffix: 'edited copy',
   copyName: 'Copy name (without extension)',
   format: 'Output format',
+  export: 'Export settings',
+  quality: 'Compression quality',
   download: 'Download copy',
   queue: 'Upload copy to original folder',
   queued: 'Copy queued. Check the transfer center for progress.',
@@ -151,6 +184,7 @@ const cropFields = ['x', 'y', 'width', 'height'] as const;
 const sizeFields = ['width', 'height'] as const;
 const historyLimit = 24;
 const fileNameLimit = 255;
+const zoomStops = [10, 25, 50, 75, 100, 150, 200, 300, 400];
 const formats = Object.entries(imageFormats).map(([value, { label }]) => ({ value, label }));
 const longestExtension = Math.max(
   ...Object.values(imageFormats).map(({ extension }) => extension.length),
@@ -191,12 +225,14 @@ function CropWorkspace({
   bitmap,
   edit,
   labels,
+  view,
   onApply,
   children,
 }: Readonly<{
   bitmap: ImageBitmap;
   edit: ImageEdit;
   labels: Labels;
+  view: ImageCanvasView;
   onApply: (crop: ImageCrop) => void;
   children: ReactNode;
 }>) {
@@ -225,6 +261,7 @@ function CropWorkspace({
         bitmap={bitmap}
         edit={edit}
         labels={labels}
+        view={view}
         selection={valid ? crop : edit.crop}
         onCrop={(next) => setFields(cropInput(next))}
       />
@@ -338,10 +375,17 @@ function ImageWorkspace({
   const edit = history.edits[history.index] ?? original;
   const [tool, setTool] = useState<Tool>('transform');
   const [toolSession, setToolSession] = useState(0);
+  const [zoom, setZoom] = useState<ImageCanvasView['zoom']>('fit');
+  const [fitPercent, setFitPercent] = useState(100);
+  const [pan, setPan] = useState(false);
+  const [comparing, setComparing] = useState(false);
   const [format, setFormat] = useState<ImageFormat>(
     editableImageType(source.type) ? source.type : 'image/png',
   );
   const [name, setName] = useState(() => copyStem(entry.name, labels.copySuffix));
+  const [quality, setQuality] = useState<number>(imageQuality.defaultValue);
+  const exportId = useId();
+  const exportSection = useRef<HTMLElement>(null);
   const [feedback, setFeedback] = useState<{ message: string; failed: boolean }>();
   const [busy, setBusy] = useState<'download' | 'queue'>();
   const inProgress = useRef(false);
@@ -385,6 +429,7 @@ function ImageWorkspace({
 
   function commit(next: ImageEdit) {
     setFeedback(undefined);
+    setComparing(false);
     setDraftLogo(undefined);
     setHistory(({ edits, index }) => {
       const current = edits[index];
@@ -408,6 +453,17 @@ function ImageWorkspace({
   }
 
   const size = outputImageSize(edit);
+  const viewSize = comparing ? bitmap : size;
+  const zoomPercent = zoom === 'fit' ? fitPercent : zoom;
+  const nextZoom = zoomStops.find((percent) => percent > zoomPercent);
+  const previousZoom = zoomStops.filter((percent) => percent < zoomPercent).at(-1);
+  const view: ImageCanvasView = {
+    zoom,
+    pan,
+    viewportLabel: labels.viewport,
+    onFitPercent: setFitPercent,
+    ...(comparing ? { original } : {}),
+  };
   const filename = name.trim() + imageFormats[format].extension;
   const validName = Boolean(name.trim()) && validCopyName(filename);
   const canSave = validName && tool !== 'crop' && tool !== 'resize';
@@ -420,7 +476,7 @@ function ImageWorkspace({
     setFeedback(undefined);
     let failure = labels.encodeFailed;
     try {
-      const encoded = await encodeImage(bitmap, edit, format);
+      const encoded = await encodeImage(bitmap, edit, format, quality);
       if (signal.aborted) return;
       if (encoded && encoded.type !== format && format === 'image/webp') {
         setFeedback({ message: labels.webpEncodeFailed, failed: true });
@@ -460,7 +516,13 @@ function ImageWorkspace({
   }
 
   const exportControls = (pending?: 'annotation' | 'appearance') => (
-    <>
+    <section
+      id={exportId}
+      ref={exportSection}
+      aria-label={labels.export}
+      tabIndex={-1}
+      className="space-y-2"
+    >
       <div className="flex flex-wrap items-end gap-2 border-t border-border pt-3">
         <div className="w-full sm:w-52">
           <TextField
@@ -482,6 +544,23 @@ function ImageWorkspace({
             }}
           />
         </div>
+        {format !== 'image/png' ? (
+          <div className="w-32 space-y-2">
+            <div className="flex items-center justify-between gap-2 text-sm">
+              <span>{labels.quality}</span>
+              <span className="text-ink-muted">{quality}%</span>
+            </div>
+            <RangeSlider
+              label={labels.quality}
+              value={quality}
+              min={imageQuality.min}
+              max={imageQuality.max}
+              step={imageQuality.step}
+              disabled={Boolean(busy)}
+              onValueChange={setQuality}
+            />
+          </div>
+        ) : null}
         <Action
           size="sm"
           variant="secondary"
@@ -518,13 +597,24 @@ function ImageWorkspace({
           {feedback.message}
         </p>
       ) : null}
-    </>
+    </section>
   );
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1">
+          <Action
+            size="sm"
+            controls={exportId}
+            onPress={() => {
+              const section = exportSection.current;
+              section?.scrollIntoView({ block: 'nearest' });
+              section?.focus({ preventScroll: true });
+            }}
+          >
+            {labels.export}
+          </Action>
           <Action
             size="sm"
             variant="secondary"
@@ -543,22 +633,93 @@ function ImageWorkspace({
           >
             {labels.redo}
           </Action>
-          <Action
+          <IconAction
             size="sm"
-            variant="quiet"
+            label={labels.reset}
+            tooltip
             disabled={edit === original}
             onPress={() => {
               commit(original);
               setTool('transform');
             }}
           >
-            {labels.reset}
-          </Action>
+            <RotateCcw />
+          </IconAction>
         </div>
-        <p className="text-sm text-ink-muted">
-          {size.width} × {size.height} px
-        </p>
+        <div className="flex flex-wrap items-center gap-1">
+          <span className="text-sm text-ink-muted">
+            {viewSize.width} × {viewSize.height} px
+          </span>
+          <IconAction
+            label={comparing ? labels.showEdited : labels.showOriginal}
+            active={comparing}
+            size="sm"
+            tooltip
+            onPress={() => setComparing(!comparing)}
+          >
+            <SplitSquareHorizontal />
+          </IconAction>
+          <IconAction
+            label={labels.zoomOut}
+            size="sm"
+            tooltip
+            disabled={previousZoom === undefined}
+            onPress={() => {
+              if (previousZoom !== undefined) setZoom(previousZoom);
+            }}
+          >
+            <Minus />
+          </IconAction>
+          <MenuButton
+            label={zoomPercent + '%'}
+            ariaLabel={labels.zoom}
+            triggerSize="sm"
+            items={[
+              { id: 'fit', label: labels.fit },
+              ...zoomStops.map((percent) => ({
+                id: String(percent),
+                label: percent === 100 ? `${labels.actualSize} (100%)` : `${percent}%`,
+              })),
+            ]}
+            onAction={(id) => {
+              if (id === 'fit') {
+                setPan(false);
+                setZoom('fit');
+              } else {
+                const percent = zoomStops.find((value) => String(value) === id);
+                if (percent !== undefined) setZoom(percent);
+              }
+            }}
+          />
+          <IconAction
+            label={labels.zoomIn}
+            size="sm"
+            tooltip
+            disabled={nextZoom === undefined}
+            onPress={() => {
+              if (nextZoom !== undefined) setZoom(nextZoom);
+            }}
+          >
+            <Plus />
+          </IconAction>
+          {zoom !== 'fit' ? (
+            <IconAction
+              label={pan ? labels.stopPan : labels.pan}
+              active={pan}
+              size="sm"
+              tooltip
+              onPress={() => setPan(!pan)}
+            >
+              <Hand />
+            </IconAction>
+          ) : null}
+        </div>
       </div>
+      {comparing ? (
+        <p role="status" className="text-xs text-ink-muted">
+          {labels.originalPreview}
+        </p>
+      ) : null}
       <div className="flex flex-wrap gap-2">
         <Action
           size="sm"
@@ -611,6 +772,7 @@ function ImageWorkspace({
           bitmap={bitmap}
           edit={edit}
           labels={labels}
+          view={view}
           onApply={(crop) => {
             commit({
               crop,
@@ -631,6 +793,7 @@ function ImageWorkspace({
           bitmap={bitmap}
           edit={edit}
           canvasLabels={labels}
+          view={view}
           chinese={labels === zh}
           onCommit={commit}
         >
@@ -642,6 +805,7 @@ function ImageWorkspace({
           bitmap={bitmap}
           edit={edit}
           canvasLabels={labels}
+          view={view}
           chinese={labels === zh}
           tool={tool}
           onWatermarkTool={setTool}
@@ -653,7 +817,7 @@ function ImageWorkspace({
         </ImageAppearanceWorkspace>
       ) : (
         <div className="grid gap-3 lg:grid-cols-2">
-          <ImageCanvas bitmap={bitmap} edit={edit} labels={labels} />
+          <ImageCanvas bitmap={bitmap} edit={edit} labels={labels} view={view} />
           <div className="min-w-0 space-y-3">
             {tool === 'resize' ? (
               <ResizeControls

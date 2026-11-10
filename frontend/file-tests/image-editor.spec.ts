@@ -138,6 +138,182 @@ async function downloadCopy(page: Page, editor: Locator, expectedName: string) {
   return readFile(path);
 }
 
+test('图片编辑器支持视图缩放、原图对比及独立导出质量', async ({ page }, info) => {
+  test.setTimeout(150_000);
+  await createWorkspace(page, 'image-viewport-');
+  await uploadFixtures(page, '#60789c');
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole('button', { name: 'source.png', exact: true }).click();
+  await page.getByRole('button', { name: '编辑图片', exact: true }).click();
+  const editor = page.getByRole('dialog', { name: '图片编辑器', exact: true });
+  const button = (name: string) => editor.getByRole('button', { name, exact: true });
+  const canvas = editor.getByRole('img', { name: '图片编辑画布', exact: true });
+  const viewport = editor.getByRole('region', { name: '画布视区', exact: true });
+  const exportRegion = editor.getByRole('region', { name: '导出设置', exact: true });
+  const zoom = button('画布缩放');
+  const chooseZoom = async (label: string) => {
+    await zoom.click();
+    await page.getByRole('menuitem', { name: label, exact: true }).click();
+  };
+  const canvasDimensions = () =>
+    canvas.evaluate((node: HTMLCanvasElement) => [
+      node.clientWidth,
+      node.clientHeight,
+      node.width,
+      node.height,
+    ]);
+  const scrollPosition = () =>
+    viewport.evaluate((node) => ({ x: node.scrollLeft, y: node.scrollTop }));
+  const choose = async (field: string, option: string) => {
+    await editor
+      .locator('[data-slot="select-trigger"]')
+      .and(editor.getByRole('button', { name: new RegExp(field) }))
+      .click();
+    await page.getByRole('option', { name: option, exact: true }).click();
+  };
+  const draw = async (from: [number, number], to: [number, number]) => {
+    const bounds = await canvas.boundingBox();
+    if (!bounds) throw new Error('找不到图片画布');
+    const point = ([x, y]: [number, number]) =>
+      [bounds.x + x * bounds.width, bounds.y + y * bounds.height] as const;
+    await page.mouse.move(...point(from));
+    await page.mouse.down();
+    await page.mouse.move(...point(to), { steps: 4 });
+    await page.mouse.up();
+  };
+  await expect.poll(async () => (await canvasDimensions())[2]).toBe(1200);
+  const wideFit = Math.round(((await canvasDimensions())[0]! * 100) / 320);
+  await expect(zoom).toHaveText(wideFit + '%');
+  await expect(button('拖动画布')).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 760 });
+  await expect.poll(async () => (await canvasDimensions())[0]).toBeLessThan(390);
+  const narrowFit = Math.round(((await canvasDimensions())[0]! * 100) / 320);
+  expect(narrowFit).toBeLessThan(wideFit);
+  await expect(zoom).toHaveText(narrowFit + '%');
+  await page.screenshot({ path: info.outputPath('viewport-mobile.png'), animations: 'disabled' });
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  await chooseZoom('实际尺寸 (100%)');
+  await expect.poll(canvasDimensions).toEqual([320, 240, 320, 240]);
+  await button('放大画布').click();
+  await expect(zoom).toHaveText('150%');
+  await button('缩小画布').click();
+  await expect(zoom).toHaveText('100%');
+  await chooseZoom('50%');
+  await expect.poll(canvasDimensions).toEqual([160, 120, 160, 120]);
+  await chooseZoom('400%');
+  await expect.poll(canvasDimensions).toEqual([1280, 960, 320, 240]);
+  await expect(button('放大画布')).toBeDisabled();
+  await button('拖动画布').click();
+  await viewport.scrollIntoViewIfNeeded();
+  const initial = await scrollPosition();
+  const area = await viewport.boundingBox();
+  if (!area) throw new Error('找不到画布视区');
+  await page.mouse.move(area.x + area.width / 2, area.y + area.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(area.x + area.width / 2 - 80, area.y + area.height / 2 - 55, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(async () => (await scrollPosition()).x).toBeGreaterThan(initial.x);
+  await expect.poll(async () => (await scrollPosition()).y).toBeGreaterThan(initial.y);
+  await button('结束拖动画布').click();
+  const beforeKey = await scrollPosition();
+  await viewport.focus();
+  await viewport.press('ArrowLeft');
+  await expect.poll(async () => (await scrollPosition()).x).toBeLessThan(beforeKey.x);
+  await chooseZoom('适合窗口');
+  await expect(zoom).toHaveText(wideFit + '%');
+  await expect(button('撤销')).toBeDisabled();
+  await page.screenshot({ path: info.outputPath('viewport-desktop.png'), animations: 'disabled' });
+
+  await chooseZoom('200%');
+  await button('裁剪').click();
+  await expect(zoom).toHaveText('200%');
+  await viewport.scrollIntoViewIfNeeded();
+  await draw([30 / 320, 40 / 240], [210 / 320, 180 / 240]);
+  await expect(editor.getByLabel('裁剪起点 X')).toHaveValue('30');
+  await expect(editor.getByLabel('裁剪起点 Y')).toHaveValue('40');
+  await expect(editor.getByLabel('宽度（像素）')).toHaveValue('180');
+  await expect(editor.getByLabel('高度（像素）')).toHaveValue('140');
+  await button('应用裁剪').click();
+  await expect.poll(canvasDimensions).toEqual([360, 280, 180, 140]);
+
+  await button('图片标注').click();
+  await expect(zoom).toHaveText('200%');
+  await button('矩形').click();
+  await choose('标注颜色', '黑色');
+  const fill = editor.getByRole('checkbox', { name: '填充形状', exact: true });
+  if (!(await fill.isChecked())) await fill.press('Space');
+  await viewport.scrollIntoViewIfNeeded();
+  await draw([0.08, 0.1], [0.28, 0.32]);
+  await expect.poll(() => canvasPixel(canvas, 0.18, 0.2)).toEqual([0, 0, 0, 255]);
+
+  await button('色彩微调').click();
+  await editor.getByRole('slider', { name: '亮度', exact: true }).press('End');
+  await expect.poll(() => canvasPixel(canvas, 0.4, 0.2)).toEqual([160, 184, 220, 255]);
+  await button('查看原图').click();
+  await expect(editor.getByText('320 × 240 px', { exact: true })).toBeVisible();
+  await expect.poll(() => canvasPixel(canvas, 0.18, 0.2)).toEqual([96, 120, 156, 255]);
+  await button('返回编辑预览').click();
+  await expect(editor.getByText('180 × 140 px', { exact: true })).toBeVisible();
+  await expect.poll(() => canvasPixel(canvas, 0.4, 0.2)).toEqual([160, 184, 220, 255]);
+  await button('应用外观调整').click();
+  await button('查看原图').click();
+  await button('导出设置').click();
+  await expect(exportRegion).toBeFocused();
+  await exportRegion.getByLabel('副本名称（不含扩展名）').fill('viewport-copy');
+  await page.evaluate(() => {
+    const calls: Array<{ format: string | undefined; quality: number | undefined }> = [];
+    Object.defineProperty(window, '__imageEncodingCalls', { value: calls });
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- 保持原编码器的 this 并记录实参。
+    const encode = HTMLCanvasElement.prototype.toBlob;
+    HTMLCanvasElement.prototype.toBlob = function (callback, format, quality) {
+      calls.push({ format, quality });
+      return encode.call(this, callback, format, quality);
+    };
+  });
+  const quality = exportRegion.getByRole('slider', { name: '压缩质量', exact: true });
+  await expect(quality).toHaveCount(0);
+  const png = await downloadCopy(page, editor, 'viewport-copy.png');
+  const result = await copyPixel(page, png, 'image/png', 165, 125);
+  expect(result).toEqual({ size: [180, 140], pixel: [0, 0, 0, 0] });
+
+  for (const [format, extension] of [
+    ['JPEG', 'jpg'],
+    ['WebP', 'webp'],
+  ] as const) {
+    await choose('输出格式', format);
+    await quality.press('Home');
+    await expect(exportRegion.getByText('10%', { exact: true })).toBeVisible();
+    const low = await downloadCopy(page, editor, 'viewport-copy.' + extension);
+    await quality.press('End');
+    await expect(exportRegion.getByText('100%', { exact: true })).toBeVisible();
+    const high = await downloadCopy(page, editor, 'viewport-copy.' + extension);
+    expect(high.equals(low)).toBe(false);
+    const mime = format === 'JPEG' ? 'image/jpeg' : 'image/webp';
+    expect((await copyPixel(page, high, mime, 80, 60)).size).toEqual([180, 140]);
+  }
+  await page.screenshot({ path: info.outputPath('viewport-export.png'), animations: 'disabled' });
+  await choose('输出格式', 'PNG');
+  await expect(quality).toHaveCount(0);
+  expect(await downloadCopy(page, editor, 'viewport-copy.png')).toEqual(png);
+  const calls = await page.evaluate(
+    () =>
+      (
+        window as unknown as {
+          __imageEncodingCalls: Array<{ format: string; quality?: number }>;
+        }
+      ).__imageEncodingCalls,
+  );
+  expect(calls).toEqual([
+    { format: 'image/png', quality: undefined },
+    { format: 'image/jpeg', quality: 0.1 },
+    { format: 'image/jpeg', quality: 1 },
+    { format: 'image/webp', quality: 0.1 },
+    { format: 'image/webp', quality: 1 },
+    { format: 'image/png', quality: undefined },
+  ]);
+});
+
 test('WebP 支持图片水印、透明副本和原件保留', async ({ page }, info) => {
   test.setTimeout(150_000);
   const parentId = await createWorkspace(page, 'image-logo-');
