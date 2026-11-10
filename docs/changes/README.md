@@ -170,3 +170,4 @@
 - [181 照片查看工作区](181-photo-viewer/README.md) 支持同目录切图与按需查看拍摄信息。
 - [182 Draw.io 在线编辑](182-drawio-editor/README.md) 支持新建、编辑、版本保存和下载草稿。
 - [183 图片标注](183-image-annotations/README.md) 支持形状、画笔、文字、历史和带标注副本。
+- [184 图片外观调整](184-image-appearance/README.md) 提供色彩微调、滤镜、原色对比和文字水印。

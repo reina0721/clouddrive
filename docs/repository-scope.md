@@ -74,6 +74,7 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 [182 Draw.io 在线编辑](changes/182-drawio-editor/README.md)提供本人图表的绘制与版本保存，支持使用独立部署的编辑器。
 
 [183 图片标注](changes/183-image-annotations/README.md)提供本人图片的形状、画笔和文字标注，沿用已有编辑历史及图片副本上传。
+[184 图片外观调整](changes/184-image-appearance/README.md)为本人图片增加色彩微调、滤镜预览和文字水印，支持撤销、重做与 PNG/JPEG 副本。
 
 [157管理端后台任务](changes/157-admin-background-tasks/README.md)提供 ZIP、解压、HTTP 与 BT 跨账号查询、诊断详情及终态清理。[158文件维护运行历史](changes/158-maintenance-run-history/README.md)增加回收站到期扫描和定时 Blob 回收的终态记录。运行中跟踪和跨请求关联仍在本范围之外。
 

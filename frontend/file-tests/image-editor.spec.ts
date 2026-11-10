@@ -35,16 +35,16 @@ async function createWorkspace(page: Page, prefix = 'image-editor-') {
   return parentId;
 }
 
-async function uploadFixtures(page: Page) {
-  const images = await page.evaluate(() => {
+async function uploadFixtures(page: Page, topLeftColor = '#ff0000') {
+  const images = await page.evaluate((topLeftColor) => {
     const canvas = document.createElement('canvas');
     canvas.width = 320;
     canvas.height = 240;
     const context = canvas.getContext('2d');
     if (!context) throw new Error('浏览器不支持 Canvas');
-    // 左上红、右上绿、左下蓝、右下透明，用实际像素检查旋转和镜像。
+    // 四个象限区分颜色、位置和透明度，调色用例使用未饱和的左上色块。
     for (const [color, x, y] of [
-      ['#ff0000', 0, 0],
+      [topLeftColor, 0, 0],
       ['#00ff00', 160, 0],
       ['#0000ff', 0, 120],
     ] as const) {
@@ -57,7 +57,7 @@ async function uploadFixtures(page: Page) {
     canvas.height = 1;
     const large = canvas.toDataURL('image/png').split(',')[1] ?? '';
     return { source, webp, large };
-  });
+  }, topLeftColor);
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: '新建', exact: true }).click();
   await page.getByRole('menuitem', { name: '上传文件', exact: true }).click();
@@ -137,6 +137,175 @@ async function downloadCopy(page: Page, editor: Locator, expectedName: string) {
   if (!path) throw new Error('没有收到下载文件');
   return readFile(path);
 }
+
+test('图片外观调整支持色彩、滤镜、文字水印和副本导出', async ({ page }, info) => {
+  test.setTimeout(120_000);
+  await createWorkspace(page, 'image-appearance-');
+  await uploadFixtures(page, '#60789c');
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole('button', { name: 'source.png', exact: true }).click();
+  await page.getByRole('button', { name: '编辑图片', exact: true }).click();
+  const editor = page.getByRole('dialog', { name: '图片编辑器', exact: true });
+  const button = (name: string) => editor.getByRole('button', { name, exact: true });
+  const slider = (name: string) => editor.getByRole('slider', { name, exact: true });
+  const canvas = editor.getByRole('img', { name: '图片编辑画布', exact: true });
+  const pixel = () => canvasPixel(canvas, 0.25, 0.25);
+  const original = [96, 120, 156, 255];
+  const choose = async (field: string, option: string) => {
+    await editor
+      .locator('[data-slot="select-trigger"]')
+      .and(editor.getByRole('button', { name: new RegExp(field) }))
+      .click();
+    await page.getByRole('option', { name: option, exact: true }).click();
+  };
+
+  await button('色彩微调').click();
+  await expect.poll(pixel).toEqual(original);
+  for (const [field, key, expected] of [
+    ['亮度', 'End', [160, 184, 220, 255]],
+    ['对比度', 'End', [64, 112, 184, 255]],
+    ['饱和度', 'Home', [117, 117, 117, 255]],
+    ['色相', 'End', [139, 115, 79, 255]],
+    ['色温', 'End', [131, 120, 121, 255]],
+    ['曝光', 'ArrowRight', [103, 129, 167, 255]],
+  ] as const) {
+    await slider(field).press(key);
+    await expect.poll(pixel).toEqual(expected);
+    await expect(button('下载副本')).toBeDisabled();
+    await button('重置色彩微调').click();
+    await expect.poll(pixel).toEqual(original);
+  }
+  await slider('亮度').press('ArrowRight');
+  const compare = editor.getByRole('checkbox', { name: '查看原色对比' });
+  await compare.press('Space');
+  await expect(compare).toBeChecked();
+  await expect.poll(pixel).toEqual(original);
+  await button('应用外观调整').click();
+  await expect(button('下载副本')).toBeEnabled();
+  await compare.press('Space');
+  await expect(compare).not.toBeChecked();
+  await expect.poll(pixel).toEqual([99, 123, 159, 255]);
+  await button('重置色彩微调').click();
+  await button('取消外观调整').click();
+  await expect.poll(pixel).toEqual([99, 123, 159, 255]);
+  await button('重置色彩微调').click();
+  await button('应用外观调整').click();
+
+  await button('滤镜').click();
+  const filters = editor.getByRole('group', { name: '滤镜预设' });
+  const seen = new Set([original.join(',')]);
+  await expect(filters.locator('canvas')).toHaveCount(6);
+  for (const name of ['黑白', '棕褐', '鲜艳', '柔和', '冷调']) {
+    const filter = filters.getByRole('button', { name, exact: true });
+    await filter.click();
+    await expect(filter).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(async () => seen.has((await pixel()).join(','))).toBe(false);
+    seen.add((await pixel()).join(','));
+  }
+  const fullFilter = await pixel();
+  await slider('滤镜强度').press('Home');
+  await expect.poll(pixel).toEqual(original);
+  await slider('滤镜强度').press('End');
+  await expect.poll(pixel).toEqual(fullFilter);
+  await button('应用外观调整').click();
+  await filters.getByRole('button', { name: '原色', exact: true }).click();
+  await expect.poll(pixel).toEqual(original);
+  await button('应用外观调整').click();
+  await button('撤销').click();
+  await expect.poll(pixel).toEqual(fullFilter);
+  await button('重做').click();
+  await expect.poll(pixel).toEqual(original);
+  await filters.getByRole('button', { name: '棕褐', exact: true }).click();
+  await button('应用外观调整').click();
+  const sepia = [159, 142, 111, 255];
+  await expect.poll(pixel).toEqual(sepia);
+  await page.screenshot({ path: info.outputPath('appearance-filters.png') });
+
+  const goldPixels = () =>
+    canvas.evaluate((element: HTMLCanvasElement) => {
+      const context = element.getContext('2d');
+      if (!context) throw new Error('无法读取水印像素');
+      const width = element.width;
+      const height = Math.floor(element.height / 2);
+      const pixels = context.getImageData(0, 0, width, height).data;
+      let left = 0;
+      let right = 0;
+      for (let index = 0; index < pixels.length; index += 4) {
+        if (pixels[index] > 220 && pixels[index + 1] > 170 && pixels[index + 2] < 50) {
+          if ((index / 4) % width < width / 2) left++;
+          else right++;
+        }
+      }
+      return { left, right };
+    });
+  await button('文字水印').click();
+  await editor.getByLabel('水印文字', { exact: true }).fill('CD');
+  await choose('水印位置', '左上');
+  await choose('水印颜色', '金色');
+  await slider('水印不透明度').press('End');
+  await slider('水印字号比例').press('Home');
+  await expect.poll(async () => (await goldPixels()).left).toBeGreaterThan(0);
+  const small = (await goldPixels()).left;
+  await slider('水印字号比例').press('End');
+  await expect.poll(async () => (await goldPixels()).left).toBeGreaterThan(small);
+  await slider('水印不透明度').press('Home');
+  await expect.poll(goldPixels).toEqual({ left: 0, right: 0 });
+  await slider('水印不透明度').press('End');
+  await choose('水印颜色', '白色');
+  await expect.poll(goldPixels).toEqual({ left: 0, right: 0 });
+  await choose('水印颜色', '金色');
+  await choose('水印位置', '右上');
+  await expect.poll(async () => (await goldPixels()).right).toBeGreaterThan(small);
+  expect((await goldPixels()).left).toBe(0);
+  await expect(button('上传副本到原文件夹')).toBeDisabled();
+  await button('应用外观调整').click();
+  await button('移除水印').click();
+  await button('应用外观调整').click();
+  await expect.poll(goldPixels).toEqual({ left: 0, right: 0 });
+  await button('撤销').click();
+  await expect.poll(async () => (await goldPixels()).right).toBeGreaterThan(small);
+  await page.screenshot({ path: info.outputPath('appearance-desktop.png') });
+  await page.setViewportSize({ width: 390, height: 760 });
+  await canvas.scrollIntoViewIfNeeded();
+  expect((await canvas.boundingBox())!.width).toBeLessThan(390);
+  await page.screenshot({ path: info.outputPath('appearance-mobile.png') });
+  await slider('水印不透明度').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath('appearance-mobile-controls.png') });
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  await editor.getByLabel('副本名称（不含扩展名）').fill('appearance-copy');
+  const png = await downloadCopy(page, editor, 'appearance-copy.png');
+  expect(await copyPixel(page, png, 'image/png', 80, 60)).toEqual({
+    size: [320, 240],
+    pixel: sepia,
+  });
+  expect((await copyPixel(page, png, 'image/png', 240, 180)).pixel).toEqual([0, 0, 0, 0]);
+  const exported = await page.evaluate(async (bytes) => {
+    const bitmap = await createImageBitmap(
+      new Blob([Uint8Array.from(bytes)], { type: 'image/png' }),
+    );
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('无法读取导出的水印');
+      context.drawImage(bitmap, 0, 0);
+      const rgba = context.getImageData(160, 0, 160, 120).data;
+      return rgba.some(
+        (red, index) =>
+          index % 4 === 0 && red === 255 && rgba[index + 1] === 215 && rgba[index + 2] === 0,
+      );
+    } finally {
+      bitmap.close();
+    }
+  }, Array.from(png));
+  expect(exported).toBe(true);
+  await choose('输出格式', 'JPEG');
+  const jpeg = await downloadCopy(page, editor, 'appearance-copy.jpg');
+  const white = (await copyPixel(page, jpeg, 'image/jpeg', 240, 180)).pixel;
+  expect(white).toEqual([255, 255, 255, 255]);
+});
 
 test('本人图片标注支持图形、样式、历史和带标注副本', async ({ page }, info) => {
   test.setTimeout(120_000);
@@ -316,19 +485,27 @@ test('本人图片标注支持图形、样式、历史和带标注副本', async
       }, parent),
     )
     .toContain('annotated-copy.png');
-  const persisted = await page.evaluate(async (id) => {
-    const listing = await fetch('/api/console/v1/native/files?parent=' + encodeURIComponent(id));
-    if (!listing.ok) throw new Error('未取得已上传副本');
-    const { items } = (await listing.json()) as { items: { id: string; name: string }[] };
-    const copy = items.find(({ name }) => name === 'annotated-copy.png');
-    if (!copy) throw new Error('未找到已上传副本');
-    const content = await fetch(
-      '/api/console/v1/native/files/' + encodeURIComponent(copy.id) + '/content',
-    );
-    if (!content.ok) throw new Error('未取得副本内容');
-    return Array.from(new Uint8Array(await content.arrayBuffer()));
+  const copyId = await page.evaluate(async (id) => {
+    const response = await fetch('/api/console/v1/native/files?parent=' + encodeURIComponent(id));
+    if (!response.ok) throw new Error('未取得已上传副本，状态码 ' + response.status);
+    const { items } = (await response.json()) as { items: { id: string; name: string }[] };
+    return items.find(({ name }) => name === 'annotated-copy.png')?.id;
   }, parent);
-  expect(Buffer.from(persisted)).toEqual(png);
+  if (!copyId) throw new Error('未找到已上传副本');
+  await expect
+    .poll(
+      () =>
+        page.evaluate(async (id) => {
+          const response = await fetch(
+            '/api/console/v1/native/files/' + encodeURIComponent(id) + '/content',
+          );
+          if (response.status === 429) return null;
+          if (!response.ok) throw new Error('未取得副本内容，状态码 ' + response.status);
+          return Array.from(new Uint8Array(await response.arrayBuffer()));
+        }, copyId),
+      { intervals: [500, 1000, 2500], timeout: 30_000 },
+    )
+    .toEqual(Array.from(png));
   await choose('输出格式', 'JPEG');
   const jpeg = await downloadCopy(page, editor, 'annotated-copy.jpg');
   const jpegResult = await copyPixel(page, jpeg, 'image/jpeg', 64, 55);

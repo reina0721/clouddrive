@@ -4,6 +4,7 @@ import { Slider } from '@heroui/react/slider';
 type RangeSliderProps = Readonly<{
   label: string;
   value: number;
+  min?: number;
   max: number;
   step?: number;
   disabled?: boolean;
@@ -14,6 +15,7 @@ type RangeSliderProps = Readonly<{
 export function RangeSlider({
   label,
   value,
+  min = 0,
   max,
   step = 1,
   disabled = false,
@@ -23,7 +25,7 @@ export function RangeSlider({
     <Slider
       className="w-full min-w-0"
       value={value}
-      minValue={0}
+      minValue={min}
       maxValue={max}
       step={step}
       isDisabled={disabled}

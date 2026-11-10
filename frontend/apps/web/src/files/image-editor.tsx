@@ -10,11 +10,14 @@ import {
   Crop,
   FlipHorizontal2,
   FlipVertical2,
+  Palette,
   Pencil,
   Redo2,
   RotateCcw,
   RotateCw,
   Scaling,
+  SlidersHorizontal,
+  Stamp,
   Undo2,
 } from 'lucide-react';
 import {
@@ -34,6 +37,7 @@ import {
 } from './image-edit';
 import type { ImageToolsProps } from './media-view';
 import { ImageAnnotationWorkspace } from './image-annotation-workspace';
+import { ImageAppearanceWorkspace, type ImageAppearanceTool } from './image-appearance-workspace';
 import { ImageCanvas } from './image-canvas';
 import { downloadBlob } from './native-download';
 
@@ -47,6 +51,9 @@ const zh = {
   transform: '旋转和翻转',
   resize: '调整尺寸',
   annotate: '图片标注',
+  tone: '色彩微调',
+  filters: '滤镜',
+  watermark: '文字水印',
   applyCrop: '应用裁剪',
   applySize: '应用尺寸',
   cropHint: '拖动框选原图，或输入原图中的像素坐标。',
@@ -77,6 +84,7 @@ const zh = {
   queueFailed: '无法将副本加入上传队列。',
   applyBeforeSave: '应用当前裁剪或尺寸后即可保存副本。',
   finishAnnotationBeforeSave: '完成或取消当前标注后即可保存副本。',
+  finishAppearanceBeforeSave: '应用或取消外观调整后即可保存副本。',
 };
 const en: typeof zh = {
   title: 'Image editor',
@@ -88,6 +96,9 @@ const en: typeof zh = {
   transform: 'Rotate and flip',
   resize: 'Resize',
   annotate: 'Annotate',
+  tone: 'Finetune',
+  filters: 'Filters',
+  watermark: 'Text watermark',
   applyCrop: 'Apply crop',
   applySize: 'Apply size',
   cropHint: 'Drag on the source image or enter pixel coordinates.',
@@ -118,9 +129,10 @@ const en: typeof zh = {
   queueFailed: 'Could not queue the image copy.',
   applyBeforeSave: 'Apply the crop or resize before saving a copy.',
   finishAnnotationBeforeSave: 'Finish or cancel the current annotation before saving a copy.',
+  finishAppearanceBeforeSave: 'Apply or cancel appearance changes before saving a copy.',
 };
 type Labels = typeof zh;
-type Tool = 'transform' | 'crop' | 'resize' | 'annotate';
+type Tool = 'transform' | 'crop' | 'resize' | 'annotate' | ImageAppearanceTool;
 type ImageStatus = 'sizeLimit' | 'decodeFailed' | 'loading';
 type EditorProps = ImageToolsProps &
   Readonly<{
@@ -141,6 +153,15 @@ const formats = [
   { value: 'image/png', label: 'PNG' },
   { value: 'image/jpeg', label: 'JPEG' },
 ];
+const appearanceTools = [
+  { name: 'tone', Icon: SlidersHorizontal },
+  { name: 'filters', Icon: Palette },
+  { name: 'watermark', Icon: Stamp },
+] as const;
+
+function isAppearanceTool(tool: Tool): tool is ImageAppearanceTool {
+  return appearanceTools.some(({ name }) => name === tool);
+}
 
 function copyStem(name: string, suffix: string) {
   const stem = name.replace(/\.[^.]+$/, '') || name;
@@ -314,7 +335,7 @@ function ImageWorkspace({
   const [history, setHistory] = useState({ edits: [original], index: 0 });
   const edit = history.edits[history.index] ?? original;
   const [tool, setTool] = useState<Tool>('transform');
-  const [annotationSession, setAnnotationSession] = useState(0);
+  const [toolSession, setToolSession] = useState(0);
   const [format, setFormat] = useState<ImageFormat>(
     editableImageType(source.type) ? source.type : 'image/png',
   );
@@ -341,8 +362,10 @@ function ImageWorkspace({
   }
 
   function step(direction: -1 | 1) {
-    setTool((current) => (current === 'annotate' ? current : 'transform'));
-    setAnnotationSession((session) => session + 1);
+    setTool((current) =>
+      current === 'annotate' || isAppearanceTool(current) ? current : 'transform',
+    );
+    setToolSession((session) => session + 1);
     setFeedback(undefined);
     setHistory(({ edits, index }) => ({
       edits,
@@ -353,7 +376,7 @@ function ImageWorkspace({
   const size = outputImageSize(edit);
   const filename = name.trim() + (format === 'image/png' ? '.png' : '.jpg');
   const validName = Boolean(name.trim()) && validCopyName(filename);
-  const canSave = validName && (tool === 'transform' || tool === 'annotate');
+  const canSave = validName && tool !== 'crop' && tool !== 'resize';
 
   async function save(destination: 'download' | 'queue') {
     const signal = lifetime.current?.signal;
@@ -398,7 +421,7 @@ function ImageWorkspace({
     }
   }
 
-  const exportControls = (pendingAnnotation = false) => (
+  const exportControls = (pending?: 'annotation' | 'appearance') => (
     <>
       <div className="flex flex-wrap items-end gap-2 border-t border-border pt-3">
         <div className="w-full sm:w-52">
@@ -424,7 +447,7 @@ function ImageWorkspace({
         <Action
           size="sm"
           variant="secondary"
-          disabled={!canSave || pendingAnnotation || Boolean(busy)}
+          disabled={!canSave || Boolean(pending || busy)}
           loading={busy === 'download'}
           onPress={() => void save('download')}
         >
@@ -432,15 +455,19 @@ function ImageWorkspace({
         </Action>
         <Action
           size="sm"
-          disabled={!canSave || pendingAnnotation || Boolean(busy)}
+          disabled={!canSave || Boolean(pending || busy)}
           loading={busy === 'queue'}
           onPress={() => void save('queue')}
         >
           {labels.queue}
         </Action>
       </div>
-      {pendingAnnotation ? (
-        <p className="text-xs text-ink-muted">{labels.finishAnnotationBeforeSave}</p>
+      {pending ? (
+        <p className="text-xs text-ink-muted">
+          {pending === 'annotation'
+            ? labels.finishAnnotationBeforeSave
+            : labels.finishAppearanceBeforeSave}
+        </p>
       ) : null}
       {tool === 'crop' || tool === 'resize' ? (
         <p className="text-xs text-ink-muted">{labels.applyBeforeSave}</p>
@@ -527,6 +554,17 @@ function ImageWorkspace({
         >
           {labels.annotate}
         </Action>
+        {appearanceTools.map(({ name, Icon }) => (
+          <Action
+            key={name}
+            size="sm"
+            variant={tool === name ? 'primary' : 'secondary'}
+            leadingIcon={<Icon />}
+            onPress={() => setTool(name)}
+          >
+            {labels[name]}
+          </Action>
+        ))}
       </div>
       {tool === 'crop' ? (
         <CropWorkspace
@@ -540,6 +578,7 @@ function ImageWorkspace({
               flipX: edit.flipX,
               flipY: edit.flipY,
               annotations: edit.annotations,
+              appearance: edit.appearance,
             });
             setTool('transform');
           }}
@@ -548,15 +587,27 @@ function ImageWorkspace({
         </CropWorkspace>
       ) : tool === 'annotate' ? (
         <ImageAnnotationWorkspace
-          key={annotationSession}
+          key={toolSession}
           bitmap={bitmap}
           edit={edit}
           canvasLabels={labels}
           chinese={labels === zh}
           onCommit={commit}
         >
-          {exportControls}
+          {(pending) => exportControls(pending ? 'annotation' : undefined)}
         </ImageAnnotationWorkspace>
+      ) : isAppearanceTool(tool) ? (
+        <ImageAppearanceWorkspace
+          key={toolSession}
+          bitmap={bitmap}
+          edit={edit}
+          canvasLabels={labels}
+          chinese={labels === zh}
+          tool={tool}
+          onCommit={commit}
+        >
+          {(pending) => exportControls(pending ? 'appearance' : undefined)}
+        </ImageAppearanceWorkspace>
       ) : (
         <div className="grid gap-3 lg:grid-cols-2">
           <ImageCanvas bitmap={bitmap} edit={edit} labels={labels} />

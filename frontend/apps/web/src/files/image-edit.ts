@@ -1,4 +1,11 @@
 import { paintAnnotations, type ImageAnnotation, type ImagePoint } from './image-annotation';
+import {
+  originalImageAppearance,
+  paintImageColor,
+  paintImageWatermark,
+  type ImageAppearance,
+  type ImageFilter,
+} from './image-appearance';
 
 export type ImageSize = Readonly<{ width: number; height: number }>;
 export type ImageCrop = Readonly<ImageSize & { x: number; y: number }>;
@@ -10,11 +17,13 @@ export type ImageEdit = Readonly<{
   flipY: boolean;
   resize?: ImageSize;
   annotations: readonly ImageAnnotation[];
+  appearance: ImageAppearance;
 }>;
 
 export const imageSizeLimit = { sidePixels: 8192, totalPixels: 16 * 1024 * 1024 } as const;
 const previewSidePixels = 1200;
 const maxPreviewScale = 4;
+const filterSampleSidePixels = 96;
 const jpegQuality = 0.9;
 
 export function editableImageType(type: string): type is ImageFormat {
@@ -45,6 +54,7 @@ export function originalImage({ width, height }: ImageSize): ImageEdit {
     flipX: false,
     flipY: false,
     annotations: [],
+    appearance: originalImageAppearance,
   };
 }
 
@@ -118,12 +128,8 @@ function drawImage(
   const context = prepareCanvas(canvas, outputImageSize(edit), scale);
   if (!context) return false;
   const { width, height } = canvas;
-  if (background === 'image/jpeg') {
-    context.fillStyle = 'white';
-    context.fillRect(0, 0, width, height);
-  }
-  context.save();
-  context.setTransform(imageTransform(edit, { width, height }));
+  const transform = imageTransform(edit, { width, height });
+  context.setTransform(transform);
   const crop = edit.crop;
   context.drawImage(
     source,
@@ -136,8 +142,18 @@ function drawImage(
     crop.width,
     crop.height,
   );
+  context.resetTransform();
+  paintImageColor(context, edit.appearance);
+  context.setTransform(transform);
   paintAnnotations(context, edit.annotations, selectedAnnotation);
-  context.restore();
+  context.resetTransform();
+  paintImageWatermark(context, edit.appearance.watermark);
+  if (background === 'image/jpeg') {
+    // 白底最后铺在照片与覆盖层背后，不受色彩调整影响。
+    context.globalCompositeOperation = 'destination-over';
+    context.fillStyle = 'white';
+    context.fillRect(0, 0, width, height);
+  }
   return true;
 }
 
@@ -154,6 +170,7 @@ export function drawImagePreview(
   const context = prepareCanvas(canvas, size, scale);
   if (!context) return false;
   context.drawImage(source, 0, 0, canvas.width, canvas.height);
+  paintImageColor(context, edit.appearance);
   context.save();
   context.scale(canvas.width / source.width, canvas.height / source.height);
   paintAnnotations(context, edit.annotations);
@@ -170,6 +187,27 @@ export function drawImagePreview(
   context.strokeStyle = 'white';
   context.strokeRect(x, y, width, height);
   return true;
+}
+
+/** drawFilterSample 复用照片渲染，在有界小画布上显示真实预设效果。 */
+export function drawFilterSample(
+  canvas: HTMLCanvasElement,
+  source: ImageBitmap,
+  edit: ImageEdit,
+  filter: ImageFilter,
+) {
+  const { width, height } = outputImageSize(edit);
+  const scale = Math.min(1, filterSampleSidePixels / Math.max(width, height));
+  return drawImage(
+    canvas,
+    source,
+    {
+      ...edit,
+      annotations: [],
+      appearance: { ...edit.appearance, filter, filterPercent: 100, watermark: null },
+    },
+    scale,
+  );
 }
 
 export async function encodeImage(
