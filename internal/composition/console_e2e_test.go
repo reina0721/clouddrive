@@ -92,7 +92,7 @@ func TestConsoleSQLiteDataIsolationAndRestart(t *testing.T) {
 	directory := t.TempDir()
 	configPath := filepath.Join(directory, "config.yaml")
 	config := strings.Replace(generationConfig(directory, 120, 1<<20, filepath.Join(directory, "console.db")), "mode: development-anonymous", "mode: session", 1)
-	config = "iam:\n  local:\n    setupToken: console-setup-secret\nconsole:\n  relay:\n    allowedOrigins: [" + upstream.URL + "]\n" + strings.Replace(config, "enabled: false", "enabled: true", 1)
+	config = "iam:\n  local:\n    setupToken: console-setup-secret\nconsole:\n  siteOrigins: [" + testSitePrimary + ", " + testSiteAlternative + "]\n  relay:\n    allowedOrigins: [" + upstream.URL + "]\n" + strings.Replace(config, "enabled: false", "enabled: true", 1)
 	writeGenerationConfig(t, configPath, config)
 	coordinator, _ := newGenerationTestCoordinator(t, configPath)
 	if err := coordinator.Start(t.Context()); err != nil {
@@ -167,6 +167,7 @@ func TestConsoleSQLiteDataIsolationAndRestart(t *testing.T) {
 	member.request(t, "GET", "/roles?scope=self", nil, 200)
 	member.request(t, "GET", "/system/runtime", nil, 403)
 	verifyConsoleSiteProfile(t, owner, member)
+	verifySiteOrigins(t, owner, member)
 	member.request(t, "GET", "/navigation", nil, 200)
 	if preferences := member.request(t, "GET", "/native/iam/self/preferences", nil, 200); preferences["timeZone"] == "Asia/Shanghai" {
 		t.Fatal("cross-user account preferences leak")
@@ -197,6 +198,7 @@ func TestConsoleSQLiteDataIsolationAndRestart(t *testing.T) {
 	owner.request(t, "POST", "/api-workbench/tasks", map[string]any{"id": "restart-task", "name": "Restart task", "targetCollectionId": "collection", "cronOrInterval": "1s", "enabled": true}, 204)
 	// A service restart uses the same SQLite database, and the original cookie still restores.
 	stop()
+	writeGenerationConfig(t, configPath, strings.Replace(config, ", "+testSiteAlternative, "", 1))
 	coordinator, _ = newGenerationTestCoordinator(t, configPath)
 	if err := coordinator.Start(t.Context()); err != nil {
 		t.Fatal(err)
@@ -204,9 +206,7 @@ func TestConsoleSQLiteDataIsolationAndRestart(t *testing.T) {
 	owner.base = "http://" + coordinator.Diagnostics().BoundAddress
 	member.base = owner.base
 	member.request(t, "GET", "/auth/session", nil, 200)
-	if got := owner.request(t, "GET", siteProfilePublic, nil, 200); got["name"] != testSiteProfileName {
-		t.Fatal("站点信息在重启后未保留")
-	}
+	verifySiteOriginsAfterRestart(t, owner)
 	if got := owner.request(t, "GET", "/native/iam/self/preferences", nil, 200); got["timeZone"] != "Asia/Shanghai" || got["themeMode"] != "dark" {
 		t.Fatalf("account preferences did not survive restart: %v", got)
 	}

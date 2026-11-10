@@ -13227,6 +13227,28 @@
                     "privacyUrl": {
                       "type": "string",
                       "maxLength": 1024
+                    },
+                    "siteAddresses": {
+                      "type": "object",
+                      "properties": {
+                        "primary": {
+                          "type": "string",
+                          "maxLength": 1024
+                        },
+                        "alternatives": {
+                          "maxItems": 8,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "maxLength": 1024
+                          }
+                        }
+                      },
+                      "required": [
+                        "primary",
+                        "alternatives"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
@@ -22579,6 +22601,28 @@
                         "privacyUrl": {
                           "type": "string",
                           "maxLength": 1024
+                        },
+                        "siteAddresses": {
+                          "type": "object",
+                          "properties": {
+                            "primary": {
+                              "type": "string",
+                              "maxLength": 1024
+                            },
+                            "alternatives": {
+                              "maxItems": 8,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 1024
+                              }
+                            }
+                          },
+                          "required": [
+                            "primary",
+                            "alternatives"
+                          ],
+                          "additionalProperties": false
                         }
                       },
                       "required": [
@@ -22591,6 +22635,14 @@
                         "privacyUrl"
                       ],
                       "additionalProperties": false
+                    },
+                    "publicationOrigins": {
+                      "maxItems": 32,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 1024
+                      }
                     }
                   },
                   "required": [
@@ -22858,6 +22910,28 @@
                         "privacyUrl": {
                           "type": "string",
                           "maxLength": 1024
+                        },
+                        "siteAddresses": {
+                          "type": "object",
+                          "properties": {
+                            "primary": {
+                              "type": "string",
+                              "maxLength": 1024
+                            },
+                            "alternatives": {
+                              "maxItems": 8,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 1024
+                              }
+                            }
+                          },
+                          "required": [
+                            "primary",
+                            "alternatives"
+                          ],
+                          "additionalProperties": false
                         }
                       },
                       "required": [
@@ -22870,6 +22944,14 @@
                         "privacyUrl"
                       ],
                       "additionalProperties": false
+                    },
+                    "publicationOrigins": {
+                      "maxItems": 32,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 1024
+                      }
                     }
                   },
                   "required": [
@@ -23109,6 +23191,28 @@
                       "privacyUrl": {
                         "type": "string",
                         "maxLength": 1024
+                      },
+                      "siteAddresses": {
+                        "type": "object",
+                        "properties": {
+                          "primary": {
+                            "type": "string",
+                            "maxLength": 1024
+                          },
+                          "alternatives": {
+                            "maxItems": 8,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "maxLength": 1024
+                            }
+                          }
+                        },
+                        "required": [
+                          "primary",
+                          "alternatives"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [

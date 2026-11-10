@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
+import { publishedSiteOrigin, useSiteProfile } from '@clouddrive/surface/administration/runtime';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { HiddenField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
@@ -81,6 +82,7 @@ export function WebFilePreviewDialog({
   onClose: () => void;
 }) {
   const port = useFiles();
+  const { readPublishedAddresses } = useSiteProfile();
   const { locale, t } = useFrontendTranslation();
   const zh = locale.startsWith('zh');
   const [target, setTarget] = useState<PreviewTarget>();
@@ -98,7 +100,11 @@ export function WebFilePreviewDialog({
     const controller = new AbortController();
     request.current = controller;
     try {
-      if (new URL(application.origin).origin === window.location.origin)
+      const currentOrigin = window.location.origin;
+      const addresses = await readPublishedAddresses?.(controller.signal);
+      const callbackOrigin = publishedSiteOrigin(addresses, currentOrigin, 'callback');
+      const applicationOrigin = new URL(application.origin).origin;
+      if (applicationOrigin === currentOrigin || applicationOrigin === callbackOrigin)
         throw new FilesError('unsupported');
       const preview = await port.launchWebFilePreview(entry, application, controller.signal, mode);
       if (preview.origin !== application.origin) throw new FilesError('conflict');
@@ -112,10 +118,7 @@ export function WebFilePreviewDialog({
           action.password
         )
           throw new FilesError('unsupported');
-        const source = new URL(
-          '/wopi/files/' + encodeURIComponent(entry.id),
-          window.location.origin,
-        );
+        const source = new URL('/wopi/files/' + encodeURIComponent(entry.id), callbackOrigin);
         action.searchParams.set('WOPISrc', source.href);
         if (!controller.signal.aborted)
           setTarget({
@@ -130,7 +133,7 @@ export function WebFilePreviewDialog({
       }
       const url = webFilePreviewURL(
         preview,
-        window.location.origin,
+        callbackOrigin,
         document.documentElement.dataset.theme === 'dark',
       );
       if (!controller.signal.aborted) setTarget({ url, newTab: preview.newTab });

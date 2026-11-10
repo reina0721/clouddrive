@@ -247,12 +247,12 @@ add(
   identity.registrationSettingsResponseSchema,
   'console:settings:write',
 );
-add('GET', '/system/site-profile', null, site.siteProfileVersionSchema, 'console:settings:read');
+add('GET', '/system/site-profile', null, site.siteProfileManagementSchema, 'console:settings:read');
 add(
   'PUT',
   '/system/site-profile',
   site.siteProfileVersionSchema,
-  site.siteProfileVersionSchema,
+  site.siteProfileManagementSchema,
   'console:settings:write',
 );
 add(

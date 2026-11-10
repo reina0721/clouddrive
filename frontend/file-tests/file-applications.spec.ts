@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
 import type { FileApplicationView } from '../surfaces/src/files/file-applications';
 import { openReadingFixtureFolder } from './reading-fixture';
+import { siteProfileAPI } from './site-profile-api';
 
 async function filesAPI<T>(page: Page, path: string, method = 'GET', body?: unknown): Promise<T> {
   return page.evaluate(
@@ -49,6 +50,26 @@ async function openApplications(page: Page) {
   await page.goto('/system-tools/filesystem');
   await page.getByRole('tab', { name: '文件浏览应用', exact: true }).click();
   await expect(page.getByRole('table', { name: '应用列表', exact: true })).toBeVisible();
+}
+
+async function preparePublicationFixture(page: Page) {
+  const configured = process.env.CLOUDDRIVE_TEST_PUBLICATION_ORIGIN;
+  const original = configured ? await siteProfileAPI(page) : undefined;
+  return {
+    origin: configured ?? new URL(page.url()).origin,
+    async activate() {
+      if (!configured || !original) return;
+      await siteProfileAPI(page, {
+        revision: original.revision,
+        profile: { ...original.profile, siteAddresses: { primary: configured, alternatives: [] } },
+      });
+    },
+    async restore() {
+      if (!original) return;
+      const current = await siteProfileAPI(page);
+      await siteProfileAPI(page, { revision: current.revision, profile: original.profile });
+    },
+  };
 }
 
 async function restoreApplications(page: Page, initial: FileApplicationView) {
@@ -448,6 +469,7 @@ test('新建文件映射按配置创建真实文件并保留后缀', async ({ pa
 test('网页应用配置和临时文件预览', async ({ page }, info) => {
   await loginQA(page);
   const initial = await filesAPI<FileApplicationView>(page, '/applications');
+  const publication = await preparePublicationFixture(page);
   await openReadingFixtureFolder(page, '网页验收-');
   const folder = new URL(page.url());
   const name = '外部阅读 中文.MD';
@@ -475,7 +497,7 @@ test('网页应用配置和临时文件预览', async ({ page }, info) => {
   await page.context().route(origin + '/read?*', async (route) => {
     const url = new URL(route.request().url());
     const source = new URL(url.searchParams.get('file')!);
-    expect(source.origin).toBe('http://127.0.0.1:4194');
+    expect(source.origin).toBe(publication.origin);
     expect(source.pathname).toMatch(/^\/api\/v1\/file-web-previews\/[A-Za-z0-9_-]+$/);
     expect(url.searchParams.get('name')).toBe(name);
     const response = await page.request.get(source.href, { headers: { Origin: origin } });
@@ -496,6 +518,7 @@ test('网页应用配置和临时文件预览', async ({ page }, info) => {
     await currentFile.click();
   }
   try {
+    await publication.activate();
     await openApplications(page);
     await add.click();
     await expect(draft).toBeDisabled();
@@ -575,13 +598,18 @@ test('网页应用配置和临时文件预览', async ({ page }, info) => {
     await savePolicy();
     await expect(edit).toHaveCount(0);
   } finally {
-    await restoreApplications(page, initial);
+    try {
+      await restoreApplications(page, initial);
+    } finally {
+      await publication.restore();
+    }
   }
 });
 
 test('导入 WOPI 应用并打开真实只读文件', async ({ page }, info) => {
   await loginQA(page);
   const initial = await filesAPI<FileApplicationView>(page, '/applications');
+  const publication = await preparePublicationFixture(page);
   await openReadingFixtureFolder(page, 'WOPI验收-');
   const folder = new URL(page.url());
   const name = 'WOPI 预览样例.MD';
@@ -622,7 +650,7 @@ test('导入 WOPI 应用并打开真实只读文件', async ({ page }, info) => 
     expect(request.headers()['referer']).toBeUndefined();
     const action = new URL(request.url());
     const source = new URL(action.searchParams.get('WOPISrc')!);
-    expect(source.origin).toBe('http://127.0.0.1:4194');
+    expect(source.origin).toBe(publication.origin);
     expect(source.pathname).toMatch(/^\/wopi\/files\/[a-f0-9-]{36}$/);
     expect(source.search).toBe('');
     expect(action.searchParams.has('access_token')).toBe(false);
@@ -652,6 +680,7 @@ test('导入 WOPI 应用并打开真实只读文件', async ({ page }, info) => 
     expect(request.method()).toBe('POST');
     const form = new URLSearchParams(request.postData()!);
     const source = new URL(request.url()).searchParams.get('WOPISrc')!;
+    expect(new URL(source).origin).toBe(publication.origin);
     const query = '?' + new URLSearchParams({ access_token: form.get('access_token')! }).toString();
     const metadata = await page.request.get(source + query);
     expect(await metadata.json()).toMatchObject({
@@ -699,6 +728,7 @@ test('导入 WOPI 应用并打开真实只读文件', async ({ page }, info) => 
     await file.click();
   }
   try {
+    await publication.activate();
     await openApplications(page);
     await open.click();
     await expect(discover).toBeDisabled();
@@ -785,6 +815,10 @@ test('导入 WOPI 应用并打开真实只读文件', async ({ page }, info) => 
     await savePolicy();
     await expect(page.getByText(appName, { exact: true })).toHaveCount(0);
   } finally {
-    await restoreApplications(page, initial);
+    try {
+      await restoreApplications(page, initial);
+    } finally {
+      await publication.restore();
+    }
   }
 });

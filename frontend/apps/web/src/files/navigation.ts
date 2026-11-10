@@ -7,6 +7,7 @@ import {
   type NavigationPort,
 } from '@clouddrive/surface/files';
 import type { createJsonClient } from '../api/json-client';
+import type { SiteAddresses } from '@clouddrive/surface/administration';
 import { fileDestinationHrefs } from './destinations';
 import {
   parseFileShareAddress,
@@ -19,6 +20,7 @@ export function createFileNavigationPort(
   call: ReturnType<typeof createJsonClient>,
   rawBase: string,
   assertCurrent: () => void,
+  siteAddresses?: SiteAddresses,
 ): NavigationPort {
   const shortcutHref = (id: string) => {
     assertCurrent();
@@ -31,7 +33,7 @@ export function createFileNavigationPort(
       ),
     saveShortcut: async (input) => {
       assertCurrent();
-      const token = parseFileShareAddress(input.address, location.origin);
+      const token = parseFileShareAddress(input.address, location.origin, siteAddresses);
       return fileEntrySchema.parse(
         await call('/shortcuts', {
           method: 'POST',

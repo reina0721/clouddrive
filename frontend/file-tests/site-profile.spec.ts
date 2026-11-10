@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { siteProfileAPI } from './site-profile-api';
 
 const adminPath = '/system/site-profile';
 
@@ -184,5 +185,128 @@ test('站点信息保存后应用到文件区、访客登录注册和公开分�
         });
       }
     }
+  }
+});
+
+test('站点地址管理、别名分享、快捷方式和直链走真实发布地址', async ({ page, request }, info) => {
+  const accessPath = process.env.CLOUDDRIVE_FILE_TEST_ACCESS;
+  const primary = process.env.CLOUDDRIVE_TEST_PUBLICATION_ORIGIN;
+  test.skip(!accessPath || !primary, '需要在隔离 QA 登记第二个站点地址。');
+  const account = JSON.parse(
+    (await readFile(resolve(__dirname, accessPath!), 'utf8')).replace(/^\uFEFF/, ''),
+  ) as { url: string; username: string; password: string };
+  const local = new URL(account.url).origin;
+  expect(local).toBe('http://127.0.0.1:4194');
+  expect(primary).toBe('http://localhost:4194');
+  await page.goto('/login?returnTo=%2Fsystem-settings%2Fsite');
+  await page.getByLabel('邮箱', { exact: true }).fill(account.username);
+  await page.getByLabel('密码', { exact: true }).fill(account.password);
+  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await expect(page).toHaveURL(/\/system-settings\/site$/);
+  const original = await siteProfileAPI(page);
+  expect(original.publicationOrigins).toEqual(expect.arrayContaining([local, primary]));
+  const main = page.getByLabel('主站地址', { exact: true });
+  const add = page.getByRole('button', { name: '添加备选地址', exact: true });
+  const alternative = page.getByLabel('备选地址 1', { exact: true });
+  const remove = page.getByRole('button', { name: '移除备选地址 1', exact: true });
+  const save = page.getByRole('button', { name: '保存站点信息', exact: true });
+  const saveAndRead = async (address?: string) => {
+    const revision = (await siteProfileAPI(page)).revision;
+    await save.click();
+    await expect.poll(async () => (await siteProfileAPI(page)).revision).toBe(revision + 1);
+    expect((await siteProfileAPI(page)).profile.siteAddresses?.primary).toBe(address);
+    await expect(save).toBeDisabled();
+  };
+  const suffix = randomUUID().slice(0, 8);
+  const name = '站点直链-' + suffix + '.txt';
+  let fileId: string | undefined;
+  let shareId: string | undefined;
+  try {
+    await main.fill('https://unapproved.example.test');
+    await expect(page.getByText('该地址尚未获部署配置许可。')).toBeVisible();
+    await save.click();
+    await expect(
+      page.getByRole('alert').filter({ hasText: '该地址尚未获部署配置许可。' }),
+    ).toBeVisible();
+    expect((await siteProfileAPI(page)).revision).toBe(original.revision);
+    await main.fill(primary! + '/');
+    await add.click();
+    await alternative.fill(primary!);
+    await save.click();
+    await expect(page.getByText(/请填写完整的主站地址/)).toBeVisible();
+    await alternative.fill(local);
+    await main.scrollIntoViewIfNeeded();
+    await page.screenshot({
+      path: info.outputPath('site-origins-desktop.png'),
+      animations: 'disabled',
+    });
+    await saveAndRead(primary);
+    await expect(main).toHaveValue(primary!);
+
+    const file = await write<{ id: string }>(page, '/native/files/text', 'POST', {
+      parentId: '',
+      name,
+      text: '站点地址真实回调',
+      key: randomUUID(),
+    });
+    fileId = file.id;
+    const share = await write<{ id: string; token: string }>(page, '/native/files/shares', 'POST', {
+      rootId: file.id,
+      title: name,
+      password: '',
+      permissions: {
+        browse: true,
+        preview: true,
+        download: true,
+        create: false,
+        upload: false,
+        modify: false,
+        rename: false,
+        move: false,
+        copy: false,
+        delete: false,
+      },
+    });
+    shareId = share.id;
+    const shareLink = (host: string) => host + '/share#token=' + share.token;
+    await page.goto('/home/shares');
+    const shareCard = page.locator('[data-share-id="' + share.id + '"]');
+    await expect(shareCard.getByRole('link')).toHaveAttribute('href', shareLink(local));
+    await page.goto('/home/shared');
+    await page.getByRole('button', { name: '保存分享快捷方式', exact: true }).first().click();
+    const shortcut = page.getByRole('dialog');
+    await shortcut.getByLabel('本实例分享链接', { exact: true }).fill(shareLink(primary!));
+    await shortcut.getByLabel('快捷方式名称', { exact: true }).fill('别名-' + suffix);
+    await shortcut.getByRole('button', { name: '保存', exact: true }).click();
+    await expect(shortcut).toHaveCount(0);
+
+    await page.goto('/system-settings/site');
+    await remove.click();
+    await saveAndRead(primary);
+    await page.goto('/home/shares');
+    await expect(shareCard.getByRole('link')).toHaveAttribute('href', shareLink(primary!));
+    await page.goto('/home?search=' + encodeURIComponent(name));
+    await page.getByRole('button', { name: name + ' 的操作', exact: true }).click();
+    await page.getByRole('menuitem', { name: '获取直链', exact: true }).click();
+    const direct = page.getByRole('dialog', { name: '获取直链', exact: true });
+    await direct.getByRole('button', { name: '生成直链', exact: true }).click();
+    const address = direct.getByRole('link');
+    await expect(address).toHaveAttribute(
+      'href',
+      new RegExp('^http://localhost:4194/api/v1/file-direct-links/'),
+    );
+    const actual = await request.get((await address.getAttribute('href'))! + '?download=true');
+    expect(actual.status()).toBe(200);
+    expect(await actual.text()).toBe('站点地址真实回调');
+    expect(actual.headers()['content-disposition']).toContain('attachment');
+    await page.goto('/system-settings/site');
+    await page.getByRole('button', { name: '清空站点地址', exact: true }).click();
+    await saveAndRead(undefined);
+  } finally {
+    const current = await siteProfileAPI(page);
+    await siteProfileAPI(page, { revision: current.revision, profile: original.profile });
+    if (shareId)
+      await write(page, '/native/files/shares/' + shareId + '/revoke', 'POST', undefined);
+    if (fileId) await write(page, '/native/files/' + fileId + '/trash', 'POST', undefined);
   }
 });

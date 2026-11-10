@@ -39,6 +39,12 @@ export function RuntimeSiteProfile({
       },
     [client],
   );
+  const readPublishedAddresses = useMemo(
+    () =>
+      client &&
+      (async (signal: AbortSignal) => (await (await client()).publicProfile(signal)).siteAddresses),
+    [client],
+  );
   useEffect(() => {
     if (!client) return;
     const controller = new AbortController();
@@ -57,7 +63,7 @@ export function RuntimeSiteProfile({
     return () => controller.abort();
   }, [client]);
   return (
-    <SiteProfileProvider value={{ profile, theme, admin }}>
+    <SiteProfileProvider value={{ profile, theme, admin, readPublishedAddresses }}>
       <title>{profile?.name || 'clouddrive'}</title>
       <meta name="description" content={profile?.description || 'clouddrive 管理工作区'} />
       {profile?.icon ? <link rel="icon" href={profile.icon} referrerPolicy="no-referrer" /> : null}

@@ -16,13 +16,14 @@ const (
 
 // SiteProfile 是可直接提供给访客的站点展示配置。
 type SiteProfile struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	LightLogo   string `json:"lightLogo"`
-	DarkLogo    string `json:"darkLogo"`
-	Icon        string `json:"icon"`
-	TermsURL    string `json:"termsUrl"`
-	PrivacyURL  string `json:"privacyUrl"`
+	Name          string         `json:"name"`
+	Description   string         `json:"description"`
+	LightLogo     string         `json:"lightLogo"`
+	DarkLogo      string         `json:"darkLogo"`
+	Icon          string         `json:"icon"`
+	TermsURL      string         `json:"termsUrl"`
+	PrivacyURL    string         `json:"privacyUrl"`
+	SiteAddresses *SiteAddresses `json:"siteAddresses,omitempty"`
 }
 
 // SiteProfileVersion 将公开内容和管理写入所需的修订号分开。
@@ -46,7 +47,8 @@ func (p SiteProfile) Valid() bool {
 			return false
 		}
 	}
-	return true
+	_, valid := NormalizeSiteAddresses(p.SiteAddresses)
+	return valid
 }
 
 func validSiteProfileURL(value string) bool {

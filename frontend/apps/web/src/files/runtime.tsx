@@ -8,6 +8,7 @@ import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
 import { Cloud } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useContext, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
+import { useSiteProfile } from '@clouddrive/surface/administration/runtime';
 import { readAuthConfig } from '../auth/config';
 import { AuthContext, useAuth } from '../auth/context';
 import { FileAccountMenu } from './account-menu';
@@ -29,6 +30,8 @@ export function FilesRuntime({
   const controller = useContext(AuthContext);
   const account = useAuth().session?.user.id;
   const router = useRouter();
+  const { profile } = useSiteProfile();
+  const addresses = profile?.siteAddresses;
   const [transferFailure, setTransferFailure] = useState(false);
   const runtime = useMemo(() => {
     const config = readAuthConfig();
@@ -44,6 +47,10 @@ export function FilesRuntime({
         ),
     );
   }, [controller, account, router]);
+  const filePort = useMemo(
+    () => runtime && (addresses ? runtime.withSiteAddresses(addresses) : runtime),
+    [runtime, addresses],
+  );
   const Media = useMemo(() => {
     if (!runtime) return undefined;
     const { readMedia, subtitles } = runtime;
@@ -87,7 +94,7 @@ export function FilesRuntime({
       void runtime.dispose().catch(() => setTransferFailure(true));
     };
   }, [runtime]);
-  if (!runtime || !Media || !Document)
+  if (!runtime || !filePort || !Media || !Document)
     return fileWorkspace ? (
       <main id="main-content" tabIndex={-1} className="p-4">
         <Page>
@@ -109,7 +116,7 @@ export function FilesRuntime({
   return (
     <FilesProvider
       key={account}
-      port={runtime.port}
+      port={filePort.port}
       archives={runtime.archives}
       media={Media}
       pdfReader={Document}
@@ -117,7 +124,7 @@ export function FilesRuntime({
       transfers={runtime.transfers}
       connections={runtime.connections}
       downloads={runtime.downloads}
-      navigation={runtime.navigation}
+      navigation={filePort.navigation}
     >
       <div
         onDragOver={(event) => {

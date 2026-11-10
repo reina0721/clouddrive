@@ -58,11 +58,14 @@ go run ./cmd/app config init --output .data/generated-config.yaml
 | `auth` | Auth 模块 | development-anonymous 或 JWT 鉴权配置 |
 | `iam` | IAM 模块 | 本地 setup、登录锁定、Session timeout 安全预算、密码策略（`local.passwordPolicy`：`minLength`/`maxLength` 默认 15/128、`requireComplexity` 默认 false、`historySize`/`maxPasswordAge` 默认关闭）、会话上限（`local.maxSessionsPerAccount` 默认 0=不限，超限主动剔最旧）与 API 令牌（`local.apiTokenMaxPerAccount` 默认 5、`local.apiTokenDefaultTTL` 默认永不过期） |
 | `http` | Kernel HTTP composition | 业务 HTTP listener 与请求治理 |
+| `console` | Console 模块 | API 工作台转发策略及站点地址发布许可 |
 | `management` | Ops 模块 | management listener、readiness、metrics access |
 | `observability` | Kernel Observability composition | service name、tracing exporter 与采样参数 |
 | `alerting` | Kernel Alerting App（`application.alerting`） | 安全告警 webhook 通道（默认关闭；webhookUrl/signingKey 属配置秘密） |
 
 Bootstrap CLI、migration one-shot、Todo CLI 和长期 Service 都必须识别同一套官方应用配置节。某个运行模式可以只创建自己需要的资源，但不能把其他官方配置节当作未知字段拒绝。
+
+`console.siteOrigins` 默认为空，可登记最多 32 个供管理页面选择的站点 Origin。地址应转发到同一实例，使用 HTTPS；本机预览可以明确登记回环 HTTP。该名单独立于 `http.cors.allowedOrigins`。
 
 ## WebUI 托管
 

@@ -9,6 +9,7 @@ import {
   withoutShareSaveIntent,
 } from './share-address';
 import { createFileNavigationPort } from './navigation';
+import { publishedSiteOrigin } from '@clouddrive/surface/administration/runtime';
 
 describe('保存分享与登录返回的Host边界', () => {
   const token = 'a'.repeat(43),
@@ -45,6 +46,22 @@ describe('保存分享与登录返回的Host边界', () => {
     expect(authReturnDestination('https://elsewhere.test', '#returnFragment=hello')).toBe(
       '/#hello',
     );
+  });
+  it('分享沿用已发布的访问地址，外部回调始终选主地址', () => {
+    const site = {
+      primary: 'https://files.example.test',
+      alternatives: ['https://edge.example.test'],
+    };
+    expect(publishedSiteOrigin(undefined, origin, 'links')).toBe(origin);
+    expect(publishedSiteOrigin(site, origin, 'links')).toBe(site.primary);
+    expect(publishedSiteOrigin(site, site.alternatives[0]!, 'links')).toBe(site.alternatives[0]);
+    expect(publishedSiteOrigin(site, site.alternatives[0]!, 'callback')).toBe(site.primary);
+    const alternativeLink = fileShareAddress(token, site.alternatives[0]!);
+    expect(parseFileShareAddress(alternativeLink, origin, site)).toBe(token);
+    expect(() => parseFileShareAddress(alternativeLink, origin)).toThrow(FilesError);
+    expect(() =>
+      parseFileShareAddress(alternativeLink.replace('/share#', '/share?query=1#'), origin, site),
+    ).toThrow(FilesError);
   });
   it('不会将密码票据或畸形保存意图带入持久状态', () => {
     expect(readShareSaveIntent('#other=ok', origin)).toBeNull();

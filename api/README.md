@@ -13,7 +13,7 @@ npx --yes pnpm@10.22.0 codegen:contracts:check
 
 身份使用 HttpOnly Cookie。所有控制台写请求必须携带受信任 Origin、控制台 CSRF Cookie 和 X-CSRF-Token；GET /api/console/v1/auth/csrf 返回双提交令牌。原生转发还会执行原生权限和 CSRF 检查。
 
-`GET /api/console/v1/site-profile` 公开返回七个站点呈现字段。`GET /api/console/v1/system/site-profile` 需要 `console:settings:read`，并返回当前修订号。PUT 同一管理路径需要 `console:settings:write` 和 CSRF，使用 `{revision,profile}` 提交完整配置，旧修订返回 409。
+`GET /api/console/v1/site-profile` 公开返回站点呈现字段及可选的有效 `siteAddresses`。`GET /api/console/v1/system/site-profile` 需要 `console:settings:read`，返回当前修订号、保存内容和可选的 `publicationOrigins`。PUT 同一管理路径需要 `console:settings:write` 和 CSRF，使用 `{revision,profile}` 提交完整配置。旧修订返回 409，未获部署许可的地址返回 422。
 
 锁屏本人密码复核使用 `POST /api/console/v1/auth/password/verify`；原生为 `POST /api/v1/iam/self/password/verify`（`iam:account:self:read`、WebUI Cookie和CSRF）。只接受`password`，成功返回`{verified:true}`且不写会话Cookie；不是登录或高风险操作授权票据。错误尝试共享登录的持久预算，语义见[文件管理手册](../docs/operations/file-management.md)。
 

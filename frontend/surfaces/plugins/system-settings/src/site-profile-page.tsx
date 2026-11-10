@@ -18,26 +18,34 @@ import {
   siteProfileSchema,
   SiteProfileError,
   type SiteProfile,
-  type SiteProfileVersion,
+  type SiteProfileManagement,
 } from '../../../src/administration/site-profile';
 import { SiteLogo, useSiteProfile } from '../../../src/administration/site-profile-runtime';
 import { SettingsSections } from './settings-sections';
+import { SiteAddressesFields } from './site-addresses-fields';
 
 const logoFields = ['lightLogo', 'darkLogo'] as const;
 const linkFields = ['termsUrl', 'privacyUrl'] as const;
+
+function profileDraft(profile: SiteProfile): SiteProfile {
+  return { ...profile, siteAddresses: profile.siteAddresses ?? { primary: '', alternatives: [] } };
+}
 
 function ProfileForm({
   initial,
   canWrite,
   reload,
-}: Readonly<{ initial: SiteProfileVersion; canWrite: boolean; reload: () => void }>) {
+}: Readonly<{ initial: SiteProfileManagement; canWrite: boolean; reload: () => void }>) {
   const { t } = useFrontendTranslation();
   const { admin } = useSiteProfile();
   const { notify } = useFeedback();
   const [saved, setSaved] = useState(initial);
   const [failure, setFailure] = useState<SiteProfileError['code']>();
   const [preview, setPreview] = useState<Partial<Pick<SiteProfile, 'lightLogo' | 'darkLogo'>>>({});
-  const form = useFoundationForm({ schema: siteProfileSchema, defaultValues: initial.profile });
+  const form = useFoundationForm({
+    schema: siteProfileSchema,
+    defaultValues: profileDraft(initial.profile),
+  });
   useRegisterDirtySource({
     pageId: 'system-settings.site',
     message: () => t('identityProduct.unsaved'),
@@ -55,14 +63,14 @@ function ProfileForm({
       const result = await admin.save({ revision: saved.revision, profile });
       setSaved(result);
       setPreview({});
-      form.reset(result.profile);
+      form.reset(profileDraft(result.profile));
       notify({ title: label('saved'), tone: 'success' });
     } catch (error) {
       setFailure(error instanceof SiteProfileError ? error.code : 'unavailable');
     }
   }
   function reset() {
-    form.reset(saved.profile);
+    form.reset(profileDraft(saved.profile));
     setPreview({});
     setFailure(undefined);
   }
@@ -102,6 +110,17 @@ function ProfileForm({
           />
         </div>
       </Section>
+      <FoundationControlledField form={form} name="siteAddresses">
+        {(field) => (
+          <SiteAddressesFields
+            value={field.value}
+            onChange={field.onChange}
+            allowed={saved.publicationOrigins ?? []}
+            disabled={disabled}
+            invalid={form.hasError('siteAddresses')}
+          />
+        )}
+      </FoundationControlledField>
       <Section
         title={label('icons')}
         description={label('urlHint')}
@@ -199,7 +218,7 @@ export function SiteProfilePage() {
   const canRead = access.data?.permissions.includes('settings.read') === true;
   const canWrite = access.data?.permissions.includes('settings.update') === true;
   const [attempt, setAttempt] = useState(0);
-  const [result, setResult] = useState<SiteProfileVersion | 'failed'>();
+  const [result, setResult] = useState<SiteProfileManagement | 'failed'>();
   function reload() {
     setResult(undefined);
     setAttempt((value) => value + 1);

@@ -1,6 +1,6 @@
 import {
   siteProfileSchema,
-  siteProfileVersionSchema,
+  siteProfileManagementSchema,
   SiteProfileError,
   type SiteProfileVersion,
 } from '@clouddrive/surface/administration';
@@ -16,7 +16,21 @@ export function createSiteProfileClient(apiBaseUrl: string) {
       const status = error instanceof ApiError ? error.status : 0;
       if (status === 409) throw new SiteProfileError('conflict');
       if (status === 403) throw new SiteProfileError('forbidden');
-      if (status === 422) throw new SiteProfileError('invalid');
+      if (status === 422) {
+        const envelope = error instanceof ApiError ? error.payload : undefined;
+        const reason =
+          envelope && typeof envelope === 'object' && 'error' in envelope
+            ? envelope.error
+            : undefined;
+        if (
+          reason &&
+          typeof reason === 'object' &&
+          'reason' in reason &&
+          reason.reason === 'site-origin-not-allowed'
+        )
+          throw new SiteProfileError('origin-not-allowed');
+        throw new SiteProfileError('invalid');
+      }
       throw new SiteProfileError('unavailable');
     }
   }
@@ -25,12 +39,12 @@ export function createSiteProfileClient(apiBaseUrl: string) {
       return siteProfileSchema.parse(await request('/site-profile', { signal }));
     },
     async read(signal?: AbortSignal) {
-      return siteProfileVersionSchema.parse(
+      return siteProfileManagementSchema.parse(
         await call(() => request(path, signal ? { signal } : {})),
       );
     },
     async save(value: SiteProfileVersion) {
-      return siteProfileVersionSchema.parse(
+      return siteProfileManagementSchema.parse(
         await call(() => request(path, { method: 'PUT', body: value })),
       );
     },

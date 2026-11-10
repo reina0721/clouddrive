@@ -2,7 +2,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, type ReactNode } from 'react';
 import type { AdministrationPort } from './model';
-export { CurrentSiteLogo, SiteProfileProvider, useSiteProfile } from './site-profile-runtime';
+export {
+  CurrentSiteLogo,
+  publishedSiteOrigin,
+  SiteProfileProvider,
+  useSiteProfile,
+} from './site-profile-runtime';
 const Context = createContext<AdministrationPort | null>(null);
 export function AdministrationProvider({
   port,

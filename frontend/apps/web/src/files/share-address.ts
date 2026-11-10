@@ -1,4 +1,5 @@
 import { FilesError } from '@clouddrive/surface/files';
+import type { SiteAddresses } from '@clouddrive/surface/administration';
 import { fileDestinationHrefs } from './destinations';
 
 export const shareTokenPattern = /^[A-Za-z0-9_-]{43}$/;
@@ -11,7 +12,11 @@ export function fileShareAddress(token: string, origin: string): string {
   if (!shareTokenPattern.test(token)) throw new FilesError('missing');
   return origin + sharePath + '#' + new URLSearchParams({ [tokenKey]: token }).toString();
 }
-export function parseFileShareAddress(value: string, origin: string): string {
+export function parseFileShareAddress(
+  value: string,
+  origin: string,
+  sites?: SiteAddresses,
+): string {
   let address: URL;
   try {
     address = new URL(value, origin);
@@ -21,7 +26,9 @@ export function parseFileShareAddress(value: string, origin: string): string {
   const fragment = new URLSearchParams(address.hash.slice(1));
   const token = fragment.get(tokenKey) ?? '';
   if (
-    address.origin !== origin ||
+    (address.origin !== origin &&
+      address.origin !== sites?.primary &&
+      !sites?.alternatives.includes(address.origin)) ||
     address.pathname !== sharePath ||
     address.search ||
     address.username ||

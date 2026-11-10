@@ -160,3 +160,4 @@
 - [171 WOPI 发现与预览](171-wopi-view/README.md) 导入阅读器并打开当前文档。
 - [172 WOPI 编辑与保存](172-wopi-edit/README.md) 授权编辑、锁定文件并保存新版本。
 - [173 站点信息](173-site-profile/README.md) 管理公开名称、描述、标志、浏览器图标及法律链接。
+- [174 站点地址](174-site-origins/README.md) 选择主站和备选地址，应用于分享、直链、快捷方式和文档回调。

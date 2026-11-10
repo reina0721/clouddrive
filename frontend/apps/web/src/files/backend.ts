@@ -61,6 +61,8 @@ import { nativeDownload, downloadBlob as saveBlob } from './native-download';
 import { createFileNavigationPort } from './navigation';
 import { fileListParameters } from './query';
 import { fileShareAddress } from './share-address';
+import type { SiteAddresses } from '@clouddrive/surface/administration';
+import { publishedSiteOrigin } from '@clouddrive/surface/administration/runtime';
 import { createTransferRuntime } from './transfer-runtime';
 import { createVersionsPort } from './versions';
 import { createFilePreferences } from './preferences';
@@ -193,8 +195,30 @@ export function createFilesRuntime(
     if (disposed) throw new FilesError('canceled');
     saveBlob(blob, name);
   }
-  function shareLink(token: string) {
-    return fileShareAddress(token, location.origin);
+  function fileLinks(
+    sites?: SiteAddresses,
+  ): Pick<FilesPort, 'shareLink' | 'copyShareLink' | 'directLink'> {
+    const origin = () => publishedSiteOrigin(sites, location.origin, 'links');
+    const shareLink = (token: string) => fileShareAddress(token, origin());
+    return {
+      shareLink,
+      copyShareLink: async (token) => {
+        try {
+          await navigator.clipboard.writeText(shareLink(token));
+        } catch (error) {
+          throw new FilesError('unavailable', { cause: error });
+        }
+      },
+      directLink: (token, delivery) => {
+        if (!directLinkTokenPattern.test(token)) throw new FilesError('missing');
+        return (
+          origin() +
+          '/api/v1/file-direct-links/' +
+          token +
+          (delivery === 'download' ? '?download=true' : '')
+        );
+      },
+    };
   }
   function choose(mode: 'files' | 'directory'): Promise<readonly UploadCandidate[]> {
     if (disposed) return Promise.reject(new FilesError('canceled'));
@@ -568,27 +592,11 @@ export function createFilesRuntime(
     revokeDirectLink: async (id, signal) => {
       await call('/direct-links/' + encodeURIComponent(id), { method: 'DELETE', signal });
     },
-    directLink: (token, delivery) => {
-      if (!directLinkTokenPattern.test(token)) throw new FilesError('missing');
-      return (
-        location.origin +
-        '/api/v1/file-direct-links/' +
-        token +
-        (delivery === 'download' ? '?download=true' : '')
-      );
-    },
+    ...fileLinks(),
     copyDirectLinks: async (urls) => {
       assertCurrent();
       try {
         await navigator.clipboard.writeText(urls.join('\n'));
-      } catch (error) {
-        throw new FilesError('unavailable', { cause: error });
-      }
-    },
-    shareLink,
-    copyShareLink: async (token) => {
-      try {
-        await navigator.clipboard.writeText(shareLink(token));
       } catch (error) {
         throw new FilesError('unavailable', { cause: error });
       }
@@ -733,8 +741,10 @@ export function createFilesRuntime(
     readDocument: createDocumentReader(call, versions.readContent, assertCurrent),
     subtitles: createVideoSubtitleSource(port, call, assertCurrent),
     port,
-    navigation: createFileNavigationPort(call, base + native, () => {
-      if (disposed || !account || owner() !== account) throw new FilesError('canceled');
+    navigation: createFileNavigationPort(call, base + native, assertCurrent),
+    withSiteAddresses: (sites: SiteAddresses) => ({
+      port: { ...port, ...fileLinks(sites) },
+      navigation: createFileNavigationPort(call, base + native, assertCurrent, sites),
     }),
     connections: createConnectionsPort(call, () => {
       if (disposed || !account || owner() !== account) throw new FilesError('canceled');

@@ -420,3 +420,7 @@ files:
     kdfConcurrency: 2
     downloadTTL: 1m
     downloadLimit: 100
+
+console:
+  # 可从站点信息选用的发布地址，按部署实际转发地址登记。
+  siteOrigins: []

@@ -16,6 +16,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -32,6 +33,7 @@ type Handler struct {
 	cookieName          string
 	native              http.Handler
 	origins             map[string]bool
+	siteOrigins         []string
 	mux                 *http.ServeMux
 	store               Persistence
 	logger              logger.Logger
@@ -48,6 +50,7 @@ type Dependencies struct {
 	CookieName   string
 	Native       http.Handler
 	Origins      []string
+	SiteOrigins  []string
 	Data         Persistence
 	Logger       logger.Logger
 	Relay        RelayPolicy
@@ -73,6 +76,7 @@ func New(dependencies Dependencies) (*Handler, error) {
 	h.authenticateRequest = dependencies.Authenticate
 	h.todos = dependencies.Todos
 	h.navigation = dependencies.Navigation
+	h.siteOrigins = slices.Clone(dependencies.SiteOrigins)
 	for _, origin := range origins {
 		h.origins[origin] = true
 	}
