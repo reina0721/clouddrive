@@ -51,7 +51,7 @@ import type {
   WebFilePreview,
   WOPIDiscovery,
 } from './file-applications';
-import type { EpubBook, EpubEntry } from './epub-contract';
+import type { EpubBook, EpubEntry, EpubReadingPort } from './epub-contract';
 import type { PropertyDefinitionSet, PropertyDefinitionsView } from './property-definitions';
 export * from './sharing';
 export type { FileViewPreferences } from './view-options';
@@ -302,6 +302,7 @@ export type FilesPort = Readonly<{
   download(entry: FileEntry): Promise<void>;
   preview(entry: FileEntry, signal?: AbortSignal, source?: 'file-application'): Promise<string>;
   openEpub(entry: EpubEntry, signal: AbortSignal): Promise<EpubBook>;
+  epubReading?: EpubReadingPort;
   loadSidebarPreferences(): FileSidebarPreferences;
   saveSidebarPreferences(value: FileSidebarPreferences): void;
   loadPreferences(

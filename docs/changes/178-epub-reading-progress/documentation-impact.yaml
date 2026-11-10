@@ -1,0 +1,7 @@
+schema_version: 1
+change: 178-epub-reading-progress
+areas:
+  - id: frontend
+    decision: updated
+    documents: [docs/repository-scope.md, docs/operations/file-management.md]
+    reason: 记录 EPUB 进度、书签和翻页边界。

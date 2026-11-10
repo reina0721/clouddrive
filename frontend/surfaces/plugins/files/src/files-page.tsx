@@ -2038,6 +2038,7 @@ export function FilesPage({
       {epubEntry ? (
         <Suspense fallback={<p role="status">{epubEntry.name}</p>}>
           <EpubDialog
+            key={`${epubEntry.id}:${epubEntry.contentRevision}`}
             entry={epubEntry}
             onClose={() => setEpubEntry(undefined)}
             onDownload={() => void download(epubEntry)}

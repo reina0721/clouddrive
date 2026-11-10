@@ -164,3 +164,4 @@
 - [175 图片编辑](175-image-editor/README.md) 裁剪、旋转、镜像、调整尺寸和保存独立副本。
 - [176 音乐播放器](176-music-player/README.md) 在文件区播放本人歌曲、切歌、循环及查看内嵌标签。
 - [177 Markdown 编写](177-markdown-authoring/README.md) 支持格式、链接、撤销及同目录上传图片后插入。
+- [178 EPUB 续读](178-epub-reading-progress/README.md) 支持续读、双栏或单栏翻页及本机书签。

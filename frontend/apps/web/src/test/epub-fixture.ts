@@ -35,7 +35,11 @@ export async function epubFixture(mode: 'nav' | 'ncx' | 'spine' = 'nav', padding
       <img src="https://epub.example.test/remote.png" alt="外部图片替代文字"/>
       <a href="https://epub.example.test/">外部链接文字</a>
       <script>window.epubScriptRan = true;</script><iframe src="https://epub.example.test/frame"/>
-      ${'<p>滚动正文</p>'.repeat(32)}<h2 id="tail">本章尾部</h2>`),
+      ${Array.from(
+        { length: 96 },
+        (_, index) =>
+          `<p>第 ${index + 1} 段。海风吹过码头，远处的灯塔在傍晚亮起。沿着石阶往上走，可以看到从海面归来的渔船。</p>`,
+      ).join('')}<h2 id="tail">本章尾部</h2>`),
     'OPS/text/two.xhtml': xhtml('<h1 id="topic">第二章</h1><p>章节二内容</p>'),
     ...(mode === 'nav'
       ? {

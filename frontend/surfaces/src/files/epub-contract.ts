@@ -57,6 +57,27 @@ export const epubTags = [
 export type EpubTag = (typeof epubTags)[number];
 export type EpubDestination = Readonly<{ chapter: number; fragment?: string }>;
 export type EpubTocEntry = Readonly<{ label: string; destination: EpubDestination }>;
+
+export const epubFontScales = [0.875, 1, 1.125, 1.25, 1.5] as const;
+export const epubBookmarkLimit = 16;
+export type EpubReadingPosition = Readonly<{ chapter: number; ratio: number }>;
+export type EpubReadingState = Readonly<{
+  position: EpubReadingPosition;
+  fontIndex: number;
+  layout: 'scroll' | 'pages';
+  bookmarks: readonly EpubReadingPosition[];
+}>;
+export const defaultEpubReadingState: EpubReadingState = {
+  position: { chapter: 0, ratio: 0 },
+  fontIndex: 1,
+  layout: 'scroll',
+  bookmarks: [],
+};
+export type EpubReadingPort = Readonly<{
+  load(entry: EpubEntry): EpubReadingState | undefined;
+  save(entry: EpubEntry, reading: EpubReadingState): void;
+}>;
+
 export type EpubNode =
   | Readonly<{ kind: 'text'; value: string }>
   | Readonly<{ kind: 'element'; tag: EpubTag; anchor?: string; children: readonly EpubNode[] }>

@@ -2,30 +2,64 @@
 
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Action } from '@clouddrive/ui-adapter/action';
+import { useContainerBreakpoint } from '@clouddrive/ui-adapter/container-layout';
+import { IconAction } from '@clouddrive/ui-adapter/icon-action';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  List,
+  Minus,
+  Plus,
+  RotateCcw,
+  Rows3,
+} from 'lucide-react';
 import {
   createElement,
   useEffect,
+  useEffectEvent,
+  useId,
   useRef,
   useState,
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import type {
-  EpubBook,
-  EpubChapter,
-  EpubDestination,
-  EpubEntry,
-  EpubNode,
-  EpubTag,
+import {
+  epubBookmarkLimit,
+  epubFontScales,
+  type EpubBook,
+  type EpubChapter,
+  type EpubDestination,
+  type EpubEntry,
+  type EpubNode,
+  type EpubTag,
 } from '../../../src/files/epub-contract';
 import { FilesError } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
+import { useEpubReadingState } from './epub-reading-state';
+import {
+  EpubReadingViewport,
+  type PageEdges,
+  type ReadingLocation,
+  type TurnPage,
+} from './epub-reading-viewport';
 
 const zh = {
   title: 'EPUB 阅读器',
-  hint: '按章节阅读电子书，目录和包内链接可跳转。',
+  hint: '使用目录跳转章节，或切换翻页与连续滚动。阅读进度保存在此浏览器。',
   contents: '目录',
+  pages: '切换为翻页',
+  scroll: '切换为连续滚动',
+  previousPage: '上一页',
+  nextPage: '下一页',
+  start: '从头阅读',
+  bookmarks: '书签',
+  addBookmark: '添加书签',
+  removeBookmark: '移除书签',
+  bookmark: (chapter: number, ratio: number) => `第 ${chapter} 章 · ${ratio}%`,
+  storage: '此浏览器无法保存阅读进度，仍可继续阅读。',
   previous: '上一章',
   next: '下一章',
   smaller: '缩小字号',
@@ -40,8 +74,18 @@ const zh = {
 };
 const en: typeof zh = {
   title: 'EPUB reader',
-  hint: 'Read by chapter and follow the table of contents or links inside the book.',
+  hint: 'Jump between chapters or switch between pages and continuous scrolling. Reading progress stays in this browser.',
   contents: 'Contents',
+  pages: 'Switch to pages',
+  scroll: 'Switch to continuous scrolling',
+  previousPage: 'Previous page',
+  nextPage: 'Next page',
+  start: 'Read from the beginning',
+  bookmarks: 'Bookmarks',
+  addBookmark: 'Add bookmark',
+  removeBookmark: 'Remove bookmark',
+  bookmark: (chapter, ratio) => `Chapter ${chapter} · ${ratio}%`,
+  storage: 'This browser could not save reading progress. You can continue reading.',
   previous: 'Previous chapter',
   next: 'Next chapter',
   smaller: 'Decrease font size',
@@ -76,12 +120,12 @@ const tagLayout: Partial<Record<EpubTag, CSSProperties>> = {
   ol: { listStyleType: 'decimal', paddingInlineStart: '1.25rem' },
   blockquote: { paddingInlineStart: '0.75rem' },
 };
-const fontScales = [0.875, 1, 1.125, 1.25, 1.5] as const;
 type ReadResult<T> = { value: T; error?: never } | { value?: never; error: unknown };
 
 function chapterNodes(
   nodes: readonly EpubNode[],
   onNavigate: (target: EpubDestination) => void,
+  paged: boolean,
 ): ReactNode {
   return nodes.map((node, index) => {
     switch (node.kind) {
@@ -94,6 +138,7 @@ function chapterNodes(
             src={node.url}
             alt={node.alt}
             className="my-3 max-w-full object-contain"
+            style={paged ? { maxHeight: 'calc(100cqh - 1.5rem)', breakInside: 'avoid' } : undefined}
           />
         );
       case 'link':
@@ -104,7 +149,7 @@ function chapterNodes(
             className="text-brand underline"
             onClick={() => onNavigate(node.destination)}
           >
-            {chapterNodes(node.children, onNavigate)}
+            {chapterNodes(node.children, onNavigate, paged)}
           </button>
         );
       case 'element': {
@@ -116,7 +161,7 @@ function chapterNodes(
         };
         return node.tag === 'br' || node.tag === 'hr'
           ? createElement(node.tag, props)
-          : createElement(node.tag, props, chapterNodes(node.children, onNavigate));
+          : createElement(node.tag, props, chapterNodes(node.children, onNavigate, paged));
       }
     }
   });
@@ -133,13 +178,22 @@ export function EpubDialog({
 }) {
   const { t, locale } = useFrontendTranslation();
   const labels = locale.startsWith('zh') ? zh : en;
-  const { openEpub } = useFiles();
+  const { openEpub, epubReading } = useFiles();
+  const reading = useEpubReadingState(entry, epubReading);
+  const { fontIndex, layout, bookmarks } = reading.settings;
+  const restore = useEffectEvent((chapterCount: number) => reading.restore(chapterCount));
+  const { ref: workspace, matches: wide } = useContainerBreakpoint('4xl');
+  const [contentsOpen, setContentsOpen] = useState<boolean>();
+  const contentsVisible = contentsOpen ?? wide;
+  const contentsId = useId();
+  const pageControl = useRef<TurnPage>(null);
+  const [edges, setEdges] = useState<PageEdges>({ first: true, last: true });
   const [opened, setOpened] = useState<{
     entry: EpubEntry;
     retry: number;
     result: ReadResult<EpubBook>;
   }>();
-  const [target, setTarget] = useState<EpubDestination>({ chapter: 0 });
+  const [target, setTarget] = useState<ReadingLocation>({ chapter: 0 });
   const [loaded, setLoaded] = useState<{
     book: EpubBook;
     index: number;
@@ -148,8 +202,6 @@ export function EpubDialog({
   }>();
   const [bookRetry, setBookRetry] = useState(0);
   const [chapterRetry, setChapterRetry] = useState(0);
-  const [font, setFont] = useState(1);
-  const article = useRef<HTMLElement>(null);
   const publication =
     opened?.entry === entry && opened.retry === bookRetry ? opened.result : undefined;
   const book = publication?.value;
@@ -172,6 +224,7 @@ export function EpubDialog({
         if (controller.signal.aborted) value.release();
         else {
           owned = value;
+          setTarget(restore(value.chapters.length));
           setOpened({ entry, retry: bookRetry, result: { value } });
         }
       },
@@ -208,17 +261,6 @@ export function EpubDialog({
     };
   }, [book, target.chapter, chapterRetry]);
 
-  useEffect(() => {
-    const root = article.current;
-    if (!content || !root) return;
-    root.scrollTop = 0;
-    if (!target.fragment) return;
-    const anchor = Array.from(root.querySelectorAll<HTMLElement>('[data-epub-anchor]')).find(
-      (element) => element.dataset.epubAnchor === target.fragment,
-    );
-    anchor?.scrollIntoView({ block: 'start' });
-  }, [content, target]);
-
   const failure = bookError ?? chapterError;
   const message =
     failure instanceof FilesError && failure.code === 'large'
@@ -229,6 +271,29 @@ export function EpubDialog({
         ? t('files.errors.' + failure.code)
         : labels.invalid;
   const chapter = target.chapter;
+  const paged = layout === 'pages';
+  const toc = book?.toc.length
+    ? book.toc
+    : (book?.chapters.map((_, index) => ({
+        label: labels.name(index + 1),
+        destination: { chapter: index },
+      })) ?? []);
+  const activeToc = toc.findIndex((item) => item.destination.chapter === chapter);
+  function navigate(destination: ReadingLocation) {
+    reading.flush();
+    setTarget({ ...destination });
+  }
+
+  function addBookmark() {
+    const position = reading.current.current.position;
+    if (
+      bookmarks.some(
+        (bookmark) => bookmark.chapter === position.chapter && bookmark.ratio === position.ratio,
+      )
+    )
+      return;
+    reading.configure({ bookmarks: [...bookmarks, position] });
+  }
   return (
     <DialogSurface
       isOpen
@@ -239,83 +304,99 @@ export function EpubDialog({
       description={labels.hint}
       cancelLabel={t('files.close')}
       onOpenChange={(open) => {
-        if (!open) onClose();
+        if (!open) {
+          reading.flush();
+          onClose();
+        }
       }}
     >
-      <div className="flex h-full min-h-0 min-w-0 flex-col gap-3">
+      <div ref={workspace} className="flex h-full min-h-0 min-w-0 flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <Action size="sm" variant="secondary" onPress={onDownload}>
-            {t('files.download')}
-          </Action>
+          <IconAction label={t('files.download')} size="sm" tooltip onPress={onDownload}>
+            <Download className="size-icon-sm" aria-hidden="true" />
+          </IconAction>
           {book ? (
             <>
-              <Action
+              <IconAction
+                label={labels.previous}
                 size="sm"
-                variant="secondary"
+                tooltip
                 disabled={chapter <= 0}
-                onPress={() => setTarget({ chapter: chapter - 1 })}
+                onPress={() => navigate({ chapter: chapter - 1 })}
               >
-                {labels.previous}
-              </Action>
+                <ChevronLeft className="size-icon-sm" aria-hidden="true" />
+              </IconAction>
               <span className="text-sm text-ink-muted" role="status">
                 {labels.chapter(chapter + 1, book.chapters.length)}
               </span>
-              <Action
+              <IconAction
+                label={labels.next}
                 size="sm"
-                variant="secondary"
+                tooltip
                 disabled={chapter >= book.chapters.length - 1}
-                onPress={() => setTarget({ chapter: chapter + 1 })}
+                onPress={() => navigate({ chapter: chapter + 1 })}
               >
-                {labels.next}
-              </Action>
-              <Action
+                <ChevronRight className="size-icon-sm" aria-hidden="true" />
+              </IconAction>
+              <IconAction
+                label={labels.smaller}
                 size="sm"
-                variant="quiet"
-                disabled={font === 0}
-                onPress={() => setFont(font - 1)}
+                tooltip
+                disabled={fontIndex === 0}
+                onPress={() => reading.configure({ fontIndex: fontIndex - 1 })}
               >
-                {labels.smaller}
-              </Action>
-              <Action
+                <Minus className="size-icon-sm" aria-hidden="true" />
+              </IconAction>
+              <IconAction
+                label={labels.larger}
                 size="sm"
-                variant="quiet"
-                disabled={font === fontScales.length - 1}
-                onPress={() => setFont(font + 1)}
+                tooltip
+                disabled={fontIndex === epubFontScales.length - 1}
+                onPress={() => reading.configure({ fontIndex: fontIndex + 1 })}
               >
-                {labels.larger}
-              </Action>
+                <Plus className="size-icon-sm" aria-hidden="true" />
+              </IconAction>
+              <IconAction
+                label={paged ? labels.scroll : labels.pages}
+                size="sm"
+                tooltip
+                active={paged}
+                onPress={() => reading.configure({ layout: paged ? 'scroll' : 'pages' })}
+              >
+                {paged ? (
+                  <Rows3 className="size-icon-sm" aria-hidden="true" />
+                ) : (
+                  <BookOpen className="size-icon-sm" aria-hidden="true" />
+                )}
+              </IconAction>
+              <IconAction
+                label={labels.contents}
+                size="sm"
+                tooltip
+                active={contentsVisible}
+                controls={contentsId}
+                expanded={contentsVisible}
+                onPress={() => setContentsOpen(!contentsVisible)}
+              >
+                <List className="size-icon-sm" aria-hidden="true" />
+              </IconAction>
+              <IconAction
+                label={labels.start}
+                size="sm"
+                tooltip
+                onPress={() => navigate({ chapter: 0 })}
+              >
+                <RotateCcw className="size-icon-sm" aria-hidden="true" />
+              </IconAction>
             </>
           ) : null}
         </div>
-        {book?.author ? <p className="text-sm text-ink-muted">{book.author}</p> : null}
-        {book ? (
-          <details className="max-h-40 overflow-auto rounded-control border border-border p-2">
-            <summary className="cursor-pointer text-sm font-semibold">{labels.contents}</summary>
-            <nav aria-label={labels.contents} className="flex flex-wrap gap-2">
-              {book.toc.length
-                ? book.toc.map((item, index) => (
-                    <Action
-                      key={index}
-                      size="sm"
-                      variant="quiet"
-                      onPress={() => setTarget(item.destination)}
-                    >
-                      {item.label}
-                    </Action>
-                  ))
-                : book.chapters.map((path, index) => (
-                    <Action
-                      key={path + ':' + index}
-                      size="sm"
-                      variant="quiet"
-                      onPress={() => setTarget({ chapter: index })}
-                    >
-                      {labels.name(index + 1)}
-                    </Action>
-                  ))}
-            </nav>
-          </details>
+        {reading.storageFailed ? (
+          <p role="status" className="text-sm text-ink-muted">
+            {labels.storage}
+          </p>
         ) : null}
+        {book?.author ? <p className="text-sm text-ink-muted">{book.author}</p> : null}
         {failure ? (
           <div className="flex flex-wrap items-center gap-2">
             <p role="alert" className="text-sm text-danger">
@@ -335,14 +416,107 @@ export function EpubDialog({
         ) : !content ? (
           <p role="status">{book ? labels.loading : labels.opening}</p>
         ) : (
-          <article
-            ref={article}
-            aria-label={labels.reading}
-            className="min-h-0 min-w-0 flex-1 overflow-auto break-words rounded-panel border border-border bg-surface p-4"
-            style={{ fontSize: `${fontScales[font] ?? 1}rem`, lineHeight: 1.7 }}
-          >
-            {chapterNodes(content.nodes, setTarget)}
-          </article>
+          <>
+            <div
+              className="flex min-h-0 min-w-0 flex-1 gap-3"
+              style={{ flexDirection: wide ? 'row' : 'column' }}
+            >
+              <aside
+                id={contentsId}
+                hidden={!contentsVisible}
+                className="overflow-auto rounded-panel border border-border p-2"
+                style={wide ? { width: '12rem', flexShrink: 0 } : { maxHeight: '35%' }}
+              >
+                <nav aria-label={labels.contents} className="flex flex-col gap-1">
+                  {toc.map((item, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      aria-current={index === activeToc ? 'location' : undefined}
+                      className={`rounded-control p-2 text-start text-sm ${index === activeToc ? 'bg-brand-soft text-brand' : 'text-ink hover:bg-surface-muted'}`}
+                      onClick={() => navigate(item.destination)}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </nav>
+                <section aria-label={labels.bookmarks} className="mt-3 border-t border-border">
+                  <p className="p-2 text-sm font-semibold">{labels.bookmarks}</p>
+                  <Action
+                    size="sm"
+                    variant="secondary"
+                    disabled={bookmarks.length >= epubBookmarkLimit}
+                    onPress={addBookmark}
+                  >
+                    {labels.addBookmark}
+                  </Action>
+                  {bookmarks.map((bookmark) => {
+                    const label = labels.bookmark(
+                      bookmark.chapter + 1,
+                      Math.round(bookmark.ratio * 100),
+                    );
+                    return (
+                      <div
+                        key={`${bookmark.chapter}:${bookmark.ratio}`}
+                        className="flex flex-wrap gap-1"
+                      >
+                        <Action size="sm" variant="quiet" onPress={() => navigate(bookmark)}>
+                          {label}
+                        </Action>
+                        <button
+                          type="button"
+                          className="rounded-control p-2 text-sm text-ink-muted hover:bg-surface-muted"
+                          aria-label={`${labels.removeBookmark} · ${label}`}
+                          onClick={() =>
+                            reading.configure({
+                              bookmarks: bookmarks.filter((saved) => saved !== bookmark),
+                            })
+                          }
+                        >
+                          ×
+                        </button>
+                      </div>
+                    );
+                  })}
+                </section>
+              </aside>
+              <EpubReadingViewport
+                label={labels.reading}
+                location={target}
+                content={chapterNodes(content.nodes, navigate, paged)}
+                fontIndex={fontIndex}
+                paged={paged}
+                columns={wide ? 2 : 1}
+                onPosition={(ratio) => reading.update({ chapter, ratio })}
+                onEdges={(next) =>
+                  setEdges((current) =>
+                    current.first === next.first && current.last === next.last ? current : next,
+                  )
+                }
+                pageControlRef={pageControl}
+              />
+            </div>
+            {paged ? (
+              <div className="flex items-center justify-center gap-2">
+                <Action
+                  size="sm"
+                  variant="secondary"
+                  disabled={edges.first}
+                  onPress={() => pageControl.current?.(-1)}
+                >
+                  {labels.previousPage}
+                </Action>
+                <Action
+                  size="sm"
+                  variant="secondary"
+                  disabled={edges.last}
+                  onPress={() => pageControl.current?.(1)}
+                >
+                  {labels.nextPage}
+                </Action>
+              </div>
+            ) : null}
+          </>
         )}
       </div>
     </DialogSurface>

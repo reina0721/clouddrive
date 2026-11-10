@@ -71,6 +71,7 @@ import { createFilePreferences } from './preferences';
 import { createHistoryPreferences } from './history-preferences';
 import { withFileIOAdmissionRetry } from './file-io-retry';
 import { createFileSidebarPreferences } from './sidebar-preferences';
+import { createEpubReadingPreferences } from './epub-reading-preferences';
 import { createVideoSubtitleSource } from './video-subtitle-source';
 import { rasterType } from './media-signatures';
 import { waitForMarkdownImagePublication } from './markdown-image-publication';
@@ -745,6 +746,7 @@ export function createFilesRuntime(
       return openEpubBook(bytes, bounded, scoped);
     },
     ...createFileSidebarPreferences(account, assertCurrent),
+    epubReading: createEpubReadingPreferences(account, assertCurrent),
     ...createFilePreferences(call, account, assertCurrent),
     ...createHistoryPreferences(call, assertCurrent),
   };
