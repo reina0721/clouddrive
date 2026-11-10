@@ -232,8 +232,8 @@ export function FilesPage({
   const [textRequest, setTextRequest] = useState<TextRequest>();
   const [pdfEntry, setPdfEntry] = useState<FileEntry>();
   const [epubEntry, setEpubEntry] = useState<FileEntry>();
-  const [mediaEntry, setMediaEntry] = useState<FileEntry>();
-  const videoPreview = mediaEntry?.mediaType.startsWith('video/');
+  const [mediaPreview, setMediaPreview] = useState<{ entry: FileEntry; maxBytes: number }>();
+  const videoPreview = mediaPreview?.entry.mediaType.startsWith('video/');
   const [archiveEntry, setArchiveEntry] = useState<FileEntry>();
   const [zipSelection, setZIPSelection] = useState<{
     entries: readonly FileEntry[];
@@ -638,6 +638,7 @@ export function FilesPage({
   function showDetails(entry: FileEntry) {
     setDetail(entry);
   }
+  const maxMediaBytes = listing?.maxMediaBytes;
   const launchApplication = useCallback(
     async (entry: FileEntry, application: FileApplicationID, signal: AbortSignal) => {
       setApplicationPicker(undefined);
@@ -657,7 +658,9 @@ export function FilesPage({
         case 'image':
         case 'audio':
         case 'video':
-          setMediaEntry(entry);
+          // 上传完成会刷新列表，已打开的预览继续持有本次读取预算与文件。
+          if (maxMediaBytes === undefined) setNotice(t('files.errors.unavailable'));
+          else setMediaPreview({ entry, maxBytes: maxMediaBytes });
           return;
         case 'text':
           break;
@@ -678,7 +681,7 @@ export function FilesPage({
           });
       }
     },
-    [port, t, errorText],
+    [port, t, errorText, maxMediaBytes],
   );
   const showPreview = useCallback(
     async (entry: FileEntry, requested?: 'choose' | 'archive') => {
@@ -2019,31 +2022,34 @@ export function FilesPage({
           />
         </Suspense>
       ) : null}
-      {mediaEntry && listing ? (
+      {mediaPreview ? (
         <DialogSurface
           triggerLabel={t('files.mediaPreview')}
-          title={mediaEntry.name}
+          title={mediaPreview.entry.name}
           description={t('files.mediaPreview')}
           cancelLabel={t('files.close')}
           size={videoPreview ? 'cover' : 'lg'}
           layout={videoPreview ? 'workspace' : 'standard'}
           isOpen
           onOpenChange={(open) => {
-            if (!open) setMediaEntry(undefined);
+            if (!open) setMediaPreview(undefined);
           }}
         >
           <div className={videoPreview ? 'flex h-full min-h-0 flex-col gap-4' : 'space-y-4'}>
             <FileMedia
-              key={mediaEntry.id + ':' + mediaEntry.contentRevision}
-              entry={mediaEntry}
+              key={mediaPreview.entry.id + ':' + mediaPreview.entry.contentRevision}
+              entry={mediaPreview.entry}
               mode="preview"
-              maxBytes={listing.maxMediaBytes}
+              maxBytes={mediaPreview.maxBytes}
+              {...(mediaPreview.entry.trashedAt === null
+                ? { imageCopyParentId: mediaPreview.entry.parentId }
+                : {})}
             />
             <div className="shrink-0">
               <Action
                 variant="secondary"
                 onPress={() => {
-                  void download(mediaEntry);
+                  void download(mediaPreview.entry);
                 }}
               >
                 {t('files.download')}

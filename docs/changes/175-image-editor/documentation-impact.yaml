@@ -1,0 +1,7 @@
+schema_version: 1
+change: 175-image-editor
+areas:
+  - id: frontend
+    decision: updated
+    documents: [docs/repository-scope.md, docs/operations/file-management.md]
+    reason: 登记图片编辑、资源预算和副本工作流。

@@ -13,6 +13,7 @@ import { FilesError, type FilesErrorCode } from '@clouddrive/surface/files';
 import type { FileMediaProps } from '@clouddrive/surface/files/runtime';
 
 import { rasterType } from './media-signatures';
+import { editableImageType, type ImageSize } from './image-edit';
 const waveMediaType = 'audio/wav';
 const audioTypes = new Set([
   'audio/mpeg',
@@ -31,6 +32,14 @@ export type VideoToolsProps = Readonly<{
   media: RefObject<HTMLMediaElement | null>;
 }>;
 
+export type ImageToolsProps = Readonly<{
+  entry: FileMediaProps['entry'];
+  parentId: string;
+  source: Blob;
+  size: ImageSize;
+  maxBytes: number;
+}>;
+
 /** FileMediaView 拥有媒体 URL、请求和播放器关闭，不向 Surface 传递浏览器句柄。 */
 export function FileMediaView({
   entry,
@@ -40,7 +49,9 @@ export function FileMediaView({
   readContent,
   version,
   labels,
+  imageCopyParentId,
   videoTools: VideoTools,
+  imageTools: ImageTools,
 }: FileMediaProps &
   Readonly<{
     readContent: (
@@ -50,6 +61,7 @@ export function FileMediaView({
       version?: number,
     ) => Promise<Blob>;
     videoTools?: ComponentType<VideoToolsProps>;
+    imageTools?: ComponentType<ImageToolsProps>;
   }>) {
   const { t } = useFrontendTranslation();
   const [result, setResult] = useState<
@@ -58,8 +70,10 @@ export function FileMediaView({
       reader: typeof readContent;
       url: string;
       failure: FilesErrorCode | '';
+      editable?: Blob;
     }>
   >();
+  const [naturalSize, setNaturalSize] = useState<{ url: string; size: ImageSize }>();
   const [attempt, setAttempt] = useState(0);
   const requestKey = JSON.stringify([
     entry.id,
@@ -99,8 +113,15 @@ export function FileMediaView({
         const safeType = image ? await rasterType(blob) : type;
         if (!safeType) throw new FilesError('unsupported');
         if (controller.signal.aborted) return;
-        ownedURL = URL.createObjectURL(new Blob([blob], { type: safeType }));
-        setResult({ key: requestKey, reader: readContent, url: ownedURL, failure: '' });
+        const safeBlob = new Blob([blob], { type: safeType });
+        ownedURL = URL.createObjectURL(safeBlob);
+        setResult({
+          key: requestKey,
+          reader: readContent,
+          url: ownedURL,
+          failure: '',
+          ...(ImageTools && editableImageType(safeType) ? { editable: safeBlob } : {}),
+        });
       } catch (error) {
         if (!controller.signal.aborted)
           setResult({
@@ -132,6 +153,7 @@ export function FileMediaView({
     mode,
     readContent,
     requestKey,
+    ImageTools,
   ]);
   if (current?.failure) {
     const failure =
@@ -166,25 +188,51 @@ export function FileMediaView({
   }
   if (entry.mediaType.startsWith('image/'))
     return (
-      <img
-        src={url}
-        alt={alt ?? entry.name}
-        style={
-          mode === 'inline'
-            ? { maxWidth: '100%', maxHeight: 'min(28rem, 60vh)', objectFit: 'contain' }
-            : undefined
-        }
-        className={
-          mode === 'thumbnail'
-            ? 'h-40 w-full rounded-control object-contain'
-            : mode === 'preview'
-              ? 'max-h-screen w-full object-contain'
+      <>
+        {ImageTools &&
+        imageCopyParentId !== undefined &&
+        current?.editable &&
+        naturalSize?.url === url ? (
+          <ImageTools
+            entry={entry}
+            parentId={imageCopyParentId}
+            source={current.editable}
+            size={naturalSize.size}
+            maxBytes={maxBytes}
+          />
+        ) : null}
+        <img
+          src={url}
+          alt={alt ?? entry.name}
+          style={
+            mode === 'inline'
+              ? { maxWidth: '100%', maxHeight: 'min(28rem, 60vh)', objectFit: 'contain' }
               : undefined
-        }
-        onError={() =>
-          setResult({ key: requestKey, reader: readContent, url: '', failure: 'unsupported' })
-        }
-      />
+          }
+          className={
+            mode === 'thumbnail'
+              ? 'h-40 w-full rounded-control object-contain'
+              : mode === 'preview'
+                ? 'max-h-screen w-full object-contain'
+                : undefined
+          }
+          onLoad={
+            current?.editable
+              ? ({ currentTarget }) =>
+                  setNaturalSize({
+                    url,
+                    size: {
+                      width: currentTarget.naturalWidth,
+                      height: currentTarget.naturalHeight,
+                    },
+                  })
+              : undefined
+          }
+          onError={() =>
+            setResult({ key: requestKey, reader: readContent, url: '', failure: 'unsupported' })
+          }
+        />
+      </>
     );
   if (entry.mediaType.startsWith('video/'))
     return (

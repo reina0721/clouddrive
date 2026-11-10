@@ -57,6 +57,8 @@ Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接
 
 [174 站点地址](changes/174-site-origins/README.md)管理部署许可的主站和备选地址，生成分享、直链及文档回调。
 
+[175 图片编辑](changes/175-image-editor/README.md)支持本人当前 PNG 和 JPEG 的裁剪、旋转、镜像、缩放、历史及独立副本导出。上传副本沿用现有传输队列。
+
 [157管理端后台任务](changes/157-admin-background-tasks/README.md)提供 ZIP、解压、HTTP 与 BT 跨账号查询、诊断详情及终态清理。[158文件维护运行历史](changes/158-maintenance-run-history/README.md)增加回收站到期扫描和定时 Blob 回收的终态记录。运行中跟踪和跨请求关联仍在本范围之外。
 
 [159文件任务节点](changes/159-file-worker-nodes/README.md)提供主机文件职责、已装配 aria2 节点、通信及负载检查、关联任务筛选。节点接入由部署配置管理。Cloudreve 从机注册、远端归档和从机存储仍为后续范围。

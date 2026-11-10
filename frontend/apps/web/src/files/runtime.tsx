@@ -5,7 +5,8 @@ import { useFrontendTranslation } from '@clouddrive/i18n';
 import { FilesProvider, type FileMediaProps } from '@clouddrive/surface/files/runtime';
 import { Page, PageHeader } from '@clouddrive/surface-foundation/layout';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
-import { Cloud } from 'lucide-react';
+import { Action } from '@clouddrive/ui-adapter/action';
+import { Cloud, Image as ImageIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useContext, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import { useSiteProfile } from '@clouddrive/surface/administration/runtime';
@@ -14,13 +15,16 @@ import { AuthContext, useAuth } from '../auth/context';
 import { FileAccountMenu } from './account-menu';
 import { createFilesRuntime, fileDestinationHrefs } from './backend';
 import { fileDestinationHref } from './destinations';
-import { FileMediaView, type VideoToolsProps } from './media-view';
+import { FileMediaView, type ImageToolsProps, type VideoToolsProps } from './media-view';
 
 const PDFReader = lazy(() =>
   import('./pdf/reader-view').then((module) => ({ default: module.PDFReaderView })),
 );
 const VideoSubtitles = lazy(() =>
   import('./video-subtitles').then((module) => ({ default: module.VideoSubtitles })),
+);
+const ImageEditor = lazy(() =>
+  import('./image-editor').then((module) => ({ default: module.ImageEditor })),
 );
 export function FilesRuntime({
   children,
@@ -53,7 +57,7 @@ export function FilesRuntime({
   );
   const Media = useMemo(() => {
     if (!runtime) return undefined;
-    const { readMedia, subtitles } = runtime;
+    const { readMedia, subtitles, queueImageCopy } = runtime;
     function VideoTools({ entry, media }: VideoToolsProps) {
       return (
         <Suspense>
@@ -66,9 +70,36 @@ export function FilesRuntime({
         </Suspense>
       );
     }
+    function ImageTools(props: ImageToolsProps) {
+      const { t } = useFrontendTranslation();
+      const [open, setOpen] = useState(false);
+      const label = t('files.editImage');
+      return (
+        <div className="flex flex-wrap items-center gap-2">
+          <Action
+            size="sm"
+            variant="secondary"
+            leadingIcon={<ImageIcon />}
+            onPress={() => setOpen(true)}
+          >
+            {label}
+          </Action>
+          {open ? (
+            <Suspense fallback={<p role="status">{t('files.mediaLoading')}</p>}>
+              <ImageEditor {...props} queueCopy={queueImageCopy} onClose={() => setOpen(false)} />
+            </Suspense>
+          ) : null}
+        </div>
+      );
+    }
     return function MediaRenderer(props: FileMediaProps) {
       return props.mode === 'preview' && props.version === undefined ? (
-        <FileMediaView {...props} readContent={readMedia} videoTools={VideoTools} />
+        <FileMediaView
+          {...props}
+          readContent={readMedia}
+          videoTools={VideoTools}
+          {...(props.imageCopyParentId !== undefined ? { imageTools: ImageTools } : {})}
+        />
       ) : (
         <FileMediaView {...props} readContent={readMedia} />
       );

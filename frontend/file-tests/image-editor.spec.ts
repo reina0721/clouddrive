@@ -1,0 +1,342 @@
+import { expect, test, type Locator, type Page } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+
+async function createWorkspace(page: Page) {
+  const access = JSON.parse(
+    (
+      await readFile(
+        resolve(
+          __dirname,
+          process.env.CLOUDDRIVE_FILE_TEST_ACCESS ?? '../../.data/preview-access.json',
+        ),
+        'utf8',
+      )
+    ).replace(/^\uFEFF/, ''),
+  ) as { username: string; password: string };
+  await page.goto('/login?returnTo=%2Fhome');
+  await page.getByLabel('邮箱', { exact: true }).fill(access.username);
+  await page.getByLabel('密码', { exact: true }).fill(access.password);
+  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await expect(page).toHaveURL(/\/home$/);
+  const parentId = await page.evaluate(async () => {
+    const csrf = (await (await fetch('/api/console/v1/auth/csrf')).json()) as { token: string };
+    const response = await fetch('/api/console/v1/native/files/folders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf.token },
+      body: JSON.stringify({ parentId: '', name: 'image-editor-' + crypto.randomUUID() }),
+    });
+    if (!response.ok) throw new Error('创建独立测试目录失败');
+    return ((await response.json()) as { id: string }).id;
+  });
+  await page.goto('/home?parent=' + parentId);
+  await page.getByRole('button', { name: '视图', exact: true }).click();
+  await page.getByRole('menuitem', { name: '列表', exact: true }).click();
+  return parentId;
+}
+
+async function uploadFixtures(page: Page) {
+  const images = await page.evaluate(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 320;
+    canvas.height = 240;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('浏览器不支持 Canvas');
+    // 左上红、右上绿、左下蓝、右下透明，用实际像素检查旋转和镜像。
+    for (const [color, x, y] of [
+      ['#ff0000', 0, 0],
+      ['#00ff00', 160, 0],
+      ['#0000ff', 0, 120],
+    ] as const) {
+      context.fillStyle = color;
+      context.fillRect(x, y, 160, 120);
+    }
+    const source = canvas.toDataURL('image/png').split(',')[1] ?? '';
+    const webp = canvas.toDataURL('image/webp').split(',')[1] ?? '';
+    canvas.width = 8193;
+    canvas.height = 1;
+    const large = canvas.toDataURL('image/png').split(',')[1] ?? '';
+    return { source, webp, large };
+  });
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: '新建', exact: true }).click();
+  await page.getByRole('menuitem', { name: '上传文件', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '使用此位置', exact: true }).click();
+  await (
+    await chooser
+  ).setFiles([
+    { name: 'source.png', mimeType: 'image/png', buffer: Buffer.from(images.source, 'base64') },
+    {
+      name: 'unsupported.webp',
+      mimeType: 'image/webp',
+      buffer: Buffer.from(images.webp, 'base64'),
+    },
+    { name: 'oversize.png', mimeType: 'image/png', buffer: Buffer.from(images.large, 'base64') },
+  ]);
+  const queue = page.getByRole('dialog', { name: '上传队列', exact: true });
+  await expect(queue.getByText('上传完成', { exact: true })).toHaveCount(3);
+  await queue.getByRole('button', { name: '关闭', exact: true }).click();
+  return images.source;
+}
+
+async function topLeft(canvas: Locator) {
+  return canvas.evaluate((element: HTMLCanvasElement) => {
+    const context = element.getContext('2d');
+    if (!context) throw new Error('画布读取失败');
+    return Array.from(context.getImageData(2, 2, 1, 1).data);
+  });
+}
+
+async function downloadCopy(page: Page, editor: Locator, expectedName: string) {
+  const pending = page.waitForEvent('download');
+  await editor.getByRole('button', { name: '下载副本', exact: true }).click();
+  const download = await pending;
+  expect(download.suggestedFilename()).toBe(expectedName);
+  const path = await download.path();
+  if (!path) throw new Error('没有收到下载文件');
+  return readFile(path);
+}
+
+test('本人图片可裁剪、变换、调整尺寸、下载与上传独立副本', async ({ page, browser }, info) => {
+  const parentId = await createWorkspace(page);
+  const original = await uploadFixtures(page);
+  const preview = page.getByRole('dialog');
+  const editor = page.getByRole('dialog', { name: '图片编辑器', exact: true });
+  const button = (name: string) => editor.getByRole('button', { name, exact: true });
+  const canvas = editor.getByRole('img', { name: '图片编辑画布', exact: true });
+  const editEntry = () => page.getByRole('button', { name: '编辑图片', exact: true }).click();
+
+  await page.getByRole('button', { name: 'unsupported.webp', exact: true }).click();
+  await expect(preview.getByRole('img', { name: 'unsupported.webp' })).toBeVisible();
+  await expect(preview.getByRole('button', { name: '编辑图片' })).toHaveCount(0);
+  await preview.getByRole('button', { name: '关闭', exact: true }).click();
+  await page.getByRole('button', { name: 'oversize.png', exact: true }).click();
+  await editEntry();
+  await expect(editor.getByRole('alert')).toContainText('图片尺寸超出编辑上限');
+  await expect(canvas).toHaveCount(0);
+  await button('关闭').click();
+  await preview.getByRole('button', { name: '关闭', exact: true }).click();
+
+  await page.evaluate(() => {
+    const count = { closed: 0 };
+    Object.defineProperty(window, '__imageBitmapProbe', { value: count });
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- 记录释放次数后通过 call 传回原位图。
+    const close = ImageBitmap.prototype.close;
+    ImageBitmap.prototype.close = function () {
+      count.closed++;
+      close.call(this);
+    };
+  });
+  await page.getByRole('button', { name: 'source.png', exact: true }).click();
+  await editEntry();
+  await expect(canvas).toBeVisible();
+  await expect.poll(() => topLeft(canvas)).toEqual([255, 0, 0, 255]);
+  await expect(button('撤销')).toBeDisabled();
+  await button('向右旋转').click();
+  await expect(editor.getByText('240 × 320 px')).toBeVisible();
+  await expect.poll(() => topLeft(canvas)).toEqual([0, 0, 255, 255]);
+  await button('向左旋转').click();
+  await expect(editor.getByText('320 × 240 px')).toBeVisible();
+  await expect.poll(() => topLeft(canvas)).toEqual([255, 0, 0, 255]);
+  await button('水平翻转').click();
+  await expect.poll(() => topLeft(canvas)).toEqual([0, 255, 0, 255]);
+  await button('垂直翻转').click();
+  await expect.poll(() => topLeft(canvas)).toEqual([0, 0, 0, 0]);
+  await button('撤销').click();
+  await expect.poll(() => topLeft(canvas)).toEqual([0, 255, 0, 255]);
+  await button('重做').click();
+  await expect.poll(() => topLeft(canvas)).toEqual([0, 0, 0, 0]);
+  await button('恢复原图').click();
+  await expect.poll(() => topLeft(canvas)).toEqual([255, 0, 0, 255]);
+
+  await button('裁剪').click();
+  await expect(button('下载副本')).toBeDisabled();
+  await button('1:1').click();
+  await expect(editor.getByLabel('裁剪起点 X')).toHaveValue('40');
+  await expect(editor.getByLabel('宽度（像素）')).toHaveValue('240');
+  await editor.getByLabel('裁剪起点 X').fill('321');
+  await expect(button('应用裁剪')).toBeDisabled();
+  await editor.getByLabel('裁剪起点 X').fill('160');
+  await editor.getByLabel('裁剪起点 Y').fill('0');
+  await editor.getByLabel('宽度（像素）').fill('160');
+  await editor.getByLabel('高度（像素）').fill('120');
+  await button('应用裁剪').click();
+  await expect(editor.getByText('160 × 120 px')).toBeVisible();
+  await expect.poll(() => topLeft(canvas)).toEqual([0, 255, 0, 255]);
+
+  await button('裁剪').click();
+  await canvas.scrollIntoViewIfNeeded();
+  const area = await canvas.boundingBox();
+  if (!area) throw new Error('找不到裁剪画布');
+  await page.mouse.move(area.x + area.width / 4, area.y + area.height / 4);
+  await page.mouse.down();
+  await page.mouse.move(area.x + (area.width * 3) / 4, area.y + (area.height * 3) / 4, {
+    steps: 4,
+  });
+  await page.mouse.up();
+  await expect(editor.getByLabel('裁剪起点 X')).toHaveValue('80');
+  await expect(editor.getByLabel('裁剪起点 Y')).toHaveValue('60');
+  await expect(editor.getByLabel('宽度（像素）')).toHaveValue('160');
+  await button('撤销').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath('image-editor-desktop.png') });
+  await button('应用裁剪').click();
+
+  await button('调整尺寸').click();
+  await editor.getByLabel('宽度（像素）').fill('80');
+  await expect(editor.getByLabel('高度（像素）')).toHaveValue('60');
+  const aspect = editor.getByRole('checkbox', { name: '保持宽高比' });
+  await aspect.press('Space');
+  await expect(aspect).not.toBeChecked();
+  await editor.getByLabel('高度（像素）').fill('9000');
+  await expect(button('应用尺寸')).toBeDisabled();
+  await editor.getByLabel('高度（像素）').fill('90');
+  await button('应用尺寸').click();
+  await expect(editor.getByText('80 × 90 px')).toBeVisible();
+  await button('撤销').click();
+  await expect(editor.getByText('160 × 120 px')).toBeVisible();
+  await button('重做').click();
+  await expect(editor.getByText('80 × 90 px')).toBeVisible();
+
+  const name = editor.getByLabel('副本名称（不含扩展名）', { exact: true });
+  await name.fill('../invalid');
+  await expect(button('下载副本')).toBeDisabled();
+  await name.fill('edited-copy');
+  const png = await downloadCopy(page, editor, 'edited-copy.png');
+  expect(png.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+  expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([80, 90]);
+  await button('上传副本到原文件夹').click();
+  await expect(editor.getByRole('status')).toContainText('副本已加入上传队列');
+  await expect
+    .poll(async () =>
+      page.evaluate(async (id) => {
+        const response = await fetch(
+          '/api/console/v1/native/files?parent=' + encodeURIComponent(id),
+        );
+        if (!response.ok) return [];
+        const listing = (await response.json()) as { items: { name: string }[] };
+        return listing.items.map((entry) => entry.name);
+      }, parentId),
+    )
+    .toContain('edited-copy.png');
+
+  await editor.locator('[aria-haspopup="listbox"]').click();
+  await page.getByRole('option', { name: 'JPEG', exact: true }).click();
+  const jpeg = await downloadCopy(page, editor, 'edited-copy.jpg');
+  expect(jpeg.subarray(0, 2).toString('hex')).toBe('ffd8');
+  const jpegResult = await page.evaluate(async (base64) => {
+    const bitmap = await createImageBitmap(
+      await (await fetch('data:image/jpeg;base64,' + base64)).blob(),
+    );
+    try {
+      const surface = document.createElement('canvas');
+      surface.width = bitmap.width;
+      surface.height = bitmap.height;
+      const context = surface.getContext('2d');
+      if (!context) throw new Error('JPEG 检查需要 Canvas');
+      context.drawImage(bitmap, 0, 0);
+      return {
+        width: bitmap.width,
+        height: bitmap.height,
+        pixel: Array.from(context.getImageData(75, 85, 1, 1).data),
+      };
+    } finally {
+      bitmap.close();
+    }
+  }, jpeg.toString('base64'));
+  expect(jpegResult).toEqual({ width: 80, height: 90, pixel: [255, 255, 255, 255] });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await button('裁剪').click();
+  await expect(canvas).toBeVisible();
+  await page.screenshot({ path: info.outputPath('image-editor-mobile.png') });
+  await button('关闭').click();
+  await expect(editor).toHaveCount(0);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (window as unknown as { __imageBitmapProbe: { closed: number } }).__imageBitmapProbe
+            .closed,
+      ),
+    )
+    .toBe(2);
+  await expect(preview.getByRole('img', { name: 'source.png' })).toBeVisible();
+  await preview.getByRole('button', { name: '关闭', exact: true }).click();
+
+  const contents = await page.evaluate(async (id) => {
+    const listing = (await (
+      await fetch('/api/console/v1/native/files?parent=' + encodeURIComponent(id))
+    ).json()) as {
+      items: { id: string; name: string; contentRevision: number }[];
+    };
+    const files = await Promise.all(
+      ['source.png', 'edited-copy.png'].map(async (name) => {
+        const entry = listing.items.find((value) => value.name === name);
+        if (!entry) throw new Error('文件不存在');
+        const response = await fetch(
+          '/api/console/v1/native/files/' + encodeURIComponent(entry.id) + '/content',
+        );
+        if (!response.ok) throw new Error('读取原始文件失败');
+        return {
+          ...entry,
+          base64: btoa(String.fromCharCode(...new Uint8Array(await response.arrayBuffer()))),
+        };
+      }),
+    );
+    return files;
+  }, parentId);
+  expect(contents[0]).toMatchObject({ base64: original, contentRevision: 1 });
+  expect(contents[1]).toMatchObject({ base64: png.toString('base64'), contentRevision: 1 });
+  expect(contents[1]?.id).not.toBe(contents[0]?.id);
+
+  await page.getByRole('button', { name: 'source.png 的操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '版本历史', exact: true }).click();
+  await page.locator('[data-file-version="1"]').getByRole('button', { name: '预览此版本' }).click();
+  await expect(page.getByRole('img', { name: 'source.png' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '编辑图片', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '关闭版本预览', exact: true }).click();
+
+  const share = await page.evaluate(async (rootId) => {
+    const csrf = (await (await fetch('/api/console/v1/auth/csrf')).json()) as { token: string };
+    const response = await fetch('/api/console/v1/native/files/shares', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf.token },
+      body: JSON.stringify({
+        rootId,
+        title: '图片只读验证',
+        password: '',
+        permissions: {
+          browse: true,
+          preview: true,
+          download: true,
+          create: false,
+          upload: false,
+          modify: false,
+          rename: false,
+          move: false,
+          copy: false,
+          delete: false,
+        },
+      }),
+    });
+    if (!response.ok) throw new Error('无法创建图片只读测试分享');
+    return (await response.json()) as { id: string; token: string };
+  }, contents[0]?.id);
+  const guest = await browser.newContext({ locale: 'zh-CN' });
+  try {
+    const shared = await guest.newPage();
+    await shared.goto(new URL('/share#token=' + encodeURIComponent(share.token), page.url()).href);
+    await shared.getByRole('button', { name: '预览', exact: true }).click();
+    await expect(shared.getByRole('img', { name: 'source.png' })).toBeVisible();
+    await expect(shared.getByRole('button', { name: '编辑图片', exact: true })).toHaveCount(0);
+  } finally {
+    await guest.close();
+    await page.evaluate(async (id) => {
+      const csrf = (await (await fetch('/api/console/v1/auth/csrf')).json()) as { token: string };
+      const response = await fetch('/api/console/v1/native/files/shares/' + id + '/revoke', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrf.token },
+      });
+      if (!response.ok) throw new Error('无法撤销图片测试分享');
+    }, share.id);
+  }
+});

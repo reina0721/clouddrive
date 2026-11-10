@@ -786,6 +786,10 @@ export function createFilesRuntime(
       if (lifecycle.signal.aborted) lifecycle = new AbortController();
       transfers.activate();
     },
+    queueImageCopy: async (file: File, parentId: string) => {
+      assertCurrent();
+      await transfers.port.enqueue(register([file]), parentId);
+    },
     offer: (files: readonly File[]) => {
       if (!dropListeners.size || disposed) return;
       const candidates = register(files);

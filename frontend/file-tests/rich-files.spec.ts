@@ -161,12 +161,18 @@ test('密码分享、匿名目录浏览与字节下载、跨目录拒绝及已�
     folder = `分享目录-${suffix}`,
     name = `访客-${suffix}.txt`,
     outside = `分享外-${suffix}.txt`;
+  const workspace = await isolatedWorkspace(page);
   await createText(page, '新建文本', outside.replace(/\.txt$/, ''), 'private fixture');
-  const outsideID = await page.evaluate(async (name) => {
-    const response = await fetch('/api/console/v1/native/files');
-    const body = (await response.json()) as { items: { id: string; name: string }[] };
-    return body.items.find((item) => item.name === name)?.id;
-  }, outside);
+  const outsideID = await page.evaluate(
+    async ({ name, parent }) => {
+      const response = await fetch(
+        '/api/console/v1/native/files?' + new URLSearchParams({ parent }).toString(),
+      );
+      const body = (await response.json()) as { items: { id: string; name: string }[] };
+      return body.items.find((item) => item.name === name)?.id;
+    },
+    { name: outside, parent: workspace.id },
+  );
   expect(outsideID).toBeTruthy();
   await newAction(page, '创建文件夹');
   await page.getByRole('dialog').getByLabel('名称', { exact: true }).fill(folder);
@@ -174,7 +180,7 @@ test('密码分享、匿名目录浏览与字节下载、跨目录拒绝及已�
   await page.getByRole('button', { name: folder, exact: true }).click();
   await expect(page).toHaveURL(/parent=/);
   await createText(page, '新建文本', name.replace(/\.txt$/, ''), 'visitor verified bytes');
-  await page.goto('/home');
+  await page.goto('/home?parent=' + workspace.id);
   await fileAction(page, folder, '分享');
   const password = randomUUID();
   await page.getByRole('dialog').getByLabel('访问密码（可选）', { exact: true }).fill(password);

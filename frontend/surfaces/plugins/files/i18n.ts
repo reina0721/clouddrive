@@ -83,6 +83,7 @@ const zh = {
   gallery: '画廊',
   mediaPreview: '媒体预览',
   mediaLoading: '正在加载媒体…',
+  editImage: '编辑图片',
   subtitles: {
     label: '字幕',
     off: '关闭字幕',
@@ -323,6 +324,7 @@ const en: typeof zh = {
   gallery: 'Gallery',
   mediaPreview: 'Media preview',
   mediaLoading: 'Loading media…',
+  editImage: 'Edit image',
   subtitles: {
     label: 'Subtitles',
     off: 'Disable subtitles',

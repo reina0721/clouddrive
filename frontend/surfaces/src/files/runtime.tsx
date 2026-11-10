@@ -23,6 +23,8 @@ export type FileMediaProps = Readonly<{
   alt?: string;
   maxBytes: number;
   version?: number;
+  /** 只由本人当前文件预览提供，空字符串表示根目录。 */
+  imageCopyParentId?: string;
   labels?: Readonly<{ loading: string; unsupported: string; tooLarge: string; retry: string }>;
 }>;
 const DocumentContext = createContext<ComponentType<FileDocumentProps> | null>(null);
