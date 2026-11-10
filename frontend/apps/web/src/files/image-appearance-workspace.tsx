@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { FileChoiceAction } from '@clouddrive/ui-adapter/file-choice-action';
 import { CheckboxField, SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
@@ -25,17 +25,11 @@ import {
 } from './image-appearance';
 import { ImageCanvas, type ImageCanvasView } from './image-canvas';
 import { drawFilterSample, type ImageEdit } from './image-edit';
-import { imageFormats } from './image-format';
-import {
-  imageLogoLimit,
-  readImageLogo,
-  type ImageLogoAsset,
-  type ImageLogoError,
-} from './image-logo';
+import { imageOverlayLimit, imageOverlayTypes, type ImageOverlayAsset } from './image-overlay';
+import { useImageOverlayImport } from './use-image-overlay-import';
 
 type WatermarkTool = 'watermark' | 'logo';
 export type ImageAppearanceTool = 'tone' | 'filters' | WatermarkTool;
-const logoFileTypes = Object.keys(imageFormats);
 
 const zh = {
   brightness: '亮度',
@@ -89,9 +83,9 @@ const zh = {
   logoOpacity: '图片水印不透明度',
   logoHint: '选择本机 PNG、JPEG 或 WebP。图片只用于当前编辑。',
   logoLoading: '正在读取水印图片…',
-  logoBytes: `水印文件超过 ${imageLogoLimit.mebibytes} MiB。`,
-  logoDimensions: `水印图片每边最多 ${imageLogoLimit.sidePixels} 像素。`,
-  logoInvalid: '无法读取这张水印图片，请选择有效的 PNG、JPEG 或 WebP。',
+  overlayBytes: `水印文件超过 ${imageOverlayLimit.mebibytes} MiB。`,
+  overlayDimensions: `水印图片每边最多 ${imageOverlayLimit.sidePixels} 像素。`,
+  overlayInvalid: '无法读取这张水印图片，请选择有效的 PNG、JPEG 或 WebP。',
 };
 const en: typeof zh = {
   brightness: 'Brightness',
@@ -145,9 +139,9 @@ const en: typeof zh = {
   logoOpacity: 'Image watermark opacity',
   logoHint: 'Choose a local PNG, JPEG or WebP. The image is used only for this edit.',
   logoLoading: 'Reading watermark image…',
-  logoBytes: `The watermark file exceeds ${imageLogoLimit.mebibytes} MiB.`,
-  logoDimensions: `The watermark image can have at most ${imageLogoLimit.sidePixels} pixels per side.`,
-  logoInvalid: 'Could not read this watermark. Choose a valid PNG, JPEG or WebP.',
+  overlayBytes: `The watermark file exceeds ${imageOverlayLimit.mebibytes} MiB.`,
+  overlayDimensions: `The watermark image can have at most ${imageOverlayLimit.sidePixels} pixels per side.`,
+  overlayInvalid: 'Could not read this watermark. Choose a valid PNG, JPEG or WebP.',
 };
 
 type AppearanceDraft = Omit<ImageAppearance, 'watermark'> & { watermark: ImageWatermark };
@@ -262,7 +256,7 @@ export function ImageAppearanceWorkspace({
   view: ImageCanvasView;
   chinese: boolean;
   onWatermarkTool: (tool: WatermarkTool) => void;
-  adoptLogo: (bitmap: ImageBitmap, name: string) => ImageLogoAsset;
+  adoptLogo: (bitmap: ImageBitmap, name: string) => ImageOverlayAsset;
   discardLogo: () => void;
   onCommit: (edit: ImageEdit) => void;
   children: (pending: boolean) => ReactNode;
@@ -270,10 +264,12 @@ export function ImageAppearanceWorkspace({
   const labels = chinese ? zh : en;
   const [draft, setDraft] = useState(() => appearanceDraft(edit.appearance));
   const [compare, setCompare] = useState(false);
-  const [logoLoading, setLogoLoading] = useState(false);
-  const [logoError, setLogoError] = useState<ImageLogoError>();
-  const logoImport = useRef<AbortController>(undefined);
-  useLayoutEffect(() => () => logoImport.current?.abort(), []);
+  const {
+    loading: logoLoading,
+    error: logoError,
+    cancel: cancelLogo,
+    read: readLogo,
+  } = useImageOverlayImport();
   const text = draft.watermark.text.trim();
   const invalidText = /[\p{Cc}\p{Cf}]/u.test(text) || text.length > watermarkTextLimit;
   const appearance: ImageAppearance = {
@@ -302,42 +298,16 @@ export function ImageAppearanceWorkspace({
     );
   }
 
-  async function importLogo(file: File) {
-    if (logoImport.current) return;
-    const controller = new AbortController();
-    logoImport.current = controller;
-    setLogoLoading(true);
-    setLogoError(undefined);
-    try {
-      const result = await readImageLogo(file, controller.signal);
-      if (controller.signal.aborted) {
-        if ('bitmap' in result) result.bitmap.close();
-        return;
-      }
-      if ('error' in result) {
-        setLogoError(result.error);
-        return;
-      }
-      const asset = adoptLogo(result.bitmap, file.name);
-      setDraft((current) => ({
-        ...current,
-        logo: { ...(current.logo ?? defaultImageLogo), asset },
-      }));
-    } catch {
-      if (!controller.signal.aborted) setLogoError('logoInvalid');
-    } finally {
-      if (logoImport.current === controller && !controller.signal.aborted) {
-        logoImport.current = undefined;
-        setLogoLoading(false);
-      }
-    }
+  function acceptLogo(bitmap: ImageBitmap, name: string) {
+    const asset = adoptLogo(bitmap, name);
+    setDraft((current) => ({
+      ...current,
+      logo: { ...(current.logo ?? defaultImageLogo), asset },
+    }));
   }
 
   function cancel() {
-    logoImport.current?.abort();
-    logoImport.current = undefined;
-    setLogoLoading(false);
-    setLogoError(undefined);
+    cancelLogo();
     discardLogo();
     setDraft(appearanceDraft(edit.appearance));
   }
@@ -438,9 +408,9 @@ export function ImageAppearanceWorkspace({
           ) : tool === 'logo' ? (
             <>
               <FileChoiceAction
-                acceptedTypes={logoFileTypes}
+                acceptedTypes={imageOverlayTypes}
                 disabled={logoLoading}
-                onSelect={(file) => void importLogo(file)}
+                onSelect={(file) => void readLogo(file, acceptLogo)}
               >
                 {draft.logo ? labels.replaceLogo : labels.chooseLogo}
               </FileChoiceAction>
@@ -489,7 +459,7 @@ export function ImageAppearanceWorkspace({
                     disabled={logoLoading}
                     onPress={() => {
                       setDraft((current) => ({ ...current, logo: null }));
-                      setLogoError(undefined);
+                      cancelLogo();
                       discardLogo();
                     }}
                   >

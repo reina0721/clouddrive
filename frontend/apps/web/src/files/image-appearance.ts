@@ -1,4 +1,4 @@
-import type { ImageLogoAsset } from './image-logo';
+import type { ImageOverlayAsset } from './image-overlay';
 
 export const toneLimits = {
   brightness: { min: -100, max: 100, step: 5 },
@@ -58,7 +58,7 @@ export const defaultWatermark: ImageWatermark = {
 };
 
 export type ImageLogo = Readonly<{
-  asset: ImageLogoAsset;
+  asset: ImageOverlayAsset;
   position: ImageWatermark['position'];
   opacityPercent: number;
   sizePercent: number;

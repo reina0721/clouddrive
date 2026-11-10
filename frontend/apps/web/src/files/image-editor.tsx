@@ -1,6 +1,14 @@
 'use client';
 
-import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { FilesError, type FileEntry } from '@clouddrive/surface/files';
 import type { ImageCopyDestination } from '@clouddrive/surface/files/runtime';
@@ -42,7 +50,7 @@ import {
   type ImageSize,
 } from './image-edit';
 import { editableImageType, imageFormats, imageQuality, type ImageFormat } from './image-format';
-import type { ImageLogoAsset } from './image-logo';
+import type { ImageOverlayAsset } from './image-overlay';
 import type { ImageToolsProps } from './media-view';
 import { ImageAnnotationWorkspace } from './image-annotation-workspace';
 import { ImageAppearanceWorkspace, type ImageAppearanceTool } from './image-appearance-workspace';
@@ -427,13 +435,26 @@ function ImageWorkspace({
   const [versionBlocked, setVersionBlocked] = useState<'stale' | 'published'>();
   const inProgress = useRef(false);
   const lifetime = useRef<AbortController>(null);
-  const logoAssets = useRef(new Set<ImageLogoAsset>());
-  const nextLogoId = useRef(0);
-  const [draftLogo, setDraftLogo] = useState<ImageLogoAsset>();
+  const overlayAssets = useRef(new Set<ImageOverlayAsset>());
+  const nextOverlayId = useRef(0);
+  const [draftLogo, setDraftLogo] = useState<ImageOverlayAsset>();
+  const overlays = useMemo(() => {
+    const retained = new Set<ImageOverlayAsset>();
+    const annotationAssets = new Set<ImageOverlayAsset>();
+    history.edits.forEach(({ appearance, annotations }, index) => {
+      if (appearance.logo) retained.add(appearance.logo.asset);
+      for (const annotation of annotations) {
+        if (annotation.kind !== 'image') continue;
+        retained.add(annotation.asset);
+        if (index <= history.index) annotationAssets.add(annotation.asset);
+      }
+    });
+    return { retained, annotationAssetCount: annotationAssets.size };
+  }, [history]);
 
   useLayoutEffect(() => {
     const controller = new AbortController();
-    const assets = logoAssets.current;
+    const assets = overlayAssets.current;
     lifetime.current = controller;
     return () => {
       controller.abort();
@@ -442,19 +463,22 @@ function ImageWorkspace({
     };
   }, []);
 
-  useEffect(() => {
-    const retained = new Set(history.edits.map(({ appearance }) => appearance.logo?.asset));
-    retained.add(draftLogo);
-    for (const asset of logoAssets.current) {
-      if (retained.has(asset)) continue;
+  useLayoutEffect(() => {
+    for (const asset of overlayAssets.current) {
+      if (asset === draftLogo || overlays.retained.has(asset)) continue;
       asset.bitmap.close();
-      logoAssets.current.delete(asset);
+      overlayAssets.current.delete(asset);
     }
-  }, [history, draftLogo]);
+  }, [overlays, draftLogo]);
 
-  function adoptLogo(bitmap: ImageBitmap, name: string): ImageLogoAsset {
-    const asset = { id: ++nextLogoId.current, name, bitmap };
-    logoAssets.current.add(asset);
+  function adoptOverlay(bitmap: ImageBitmap, name: string): ImageOverlayAsset {
+    const asset = { id: ++nextOverlayId.current, name, bitmap };
+    overlayAssets.current.add(asset);
+    return asset;
+  }
+
+  function adoptLogo(bitmap: ImageBitmap, name: string): ImageOverlayAsset {
+    const asset = adoptOverlay(bitmap, name);
     setDraftLogo(asset);
     return asset;
   }
@@ -923,6 +947,8 @@ function ImageWorkspace({
           canvasLabels={labels}
           view={view}
           chinese={labels === zh}
+          imageAssetCount={overlays.annotationAssetCount}
+          adoptImage={adoptOverlay}
           onCommit={commit}
         >
           {(pending) => exportControls(pending ? 'annotation' : undefined)}

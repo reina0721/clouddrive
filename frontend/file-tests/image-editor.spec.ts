@@ -138,6 +138,274 @@ async function downloadCopy(page: Page, editor: Locator, expectedName: string) {
   return readFile(path);
 }
 
+async function imageAnnotationWorkspace(page: Page) {
+  const parent = await createWorkspace(page, 'image-overlays-');
+  await uploadFixtures(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole('button', { name: 'source.png', exact: true }).click();
+  await page.getByRole('button', { name: '编辑图片', exact: true }).click();
+  const editor = page.getByRole('dialog', { name: '图片编辑器', exact: true });
+  const button = (name: string) => editor.getByRole('button', { name, exact: true });
+  const canvas = editor.getByRole('img', { name: '图片编辑画布', exact: true });
+  const field = (name: string) =>
+    editor
+      .locator('[data-slot="select-trigger"]')
+      .and(editor.getByRole('button', { name: new RegExp(name) }));
+  const choose = async (name: string, option: string) => {
+    await field(name).click();
+    await page.getByRole('option', { name: option, exact: true }).click();
+  };
+  const chooseImage = async (name: string, buffer: Buffer, mimeType = 'image/png') => {
+    const pending = page.waitForEvent('filechooser');
+    await button('图片').click();
+    await (await pending).setFiles({ name, buffer, mimeType });
+  };
+  const assets = await page.evaluate(() => {
+    const sample = document.createElement('canvas');
+    sample.width = 80;
+    sample.height = 40;
+    const context = sample.getContext('2d');
+    if (!context) throw new Error('创建标注素材需要 Canvas');
+    context.fillStyle = '#f0cc20';
+    context.fillRect(0, 0, 40, 40);
+    const png = sample.toDataURL('image/png').split(',')[1] ?? '';
+    context.fillStyle = '#e000a0';
+    context.fillRect(0, 0, 80, 40);
+    const jpeg = sample.toDataURL('image/jpeg').split(',')[1] ?? '';
+    const webp = sample.toDataURL('image/webp').split(',')[1] ?? '';
+    sample.width = 1025;
+    sample.height = 1;
+    const oversized = sample.toDataURL('image/png').split(',')[1] ?? '';
+    return { png, jpeg, webp, oversized };
+  });
+  await button('图片标注').click();
+  await expect(
+    editor
+      .getByRole('group', { name: '标注工具' })
+      .getByRole('button', { name: '图片', exact: true }),
+  ).toBeVisible();
+  return { parent, editor, canvas, button, field, choose, chooseImage, assets };
+}
+
+test('图片标注可合成透明素材、编辑叠放顺序并保存真实新版本', async ({ page }, info) => {
+  test.setTimeout(150_000);
+  const { parent, editor, canvas, button, field, choose, chooseImage, assets } =
+    await imageAnnotationWorkspace(page);
+  const png = Buffer.from(assets.png, 'base64');
+  const gold = [240, 204, 32, 255];
+  const pixel = (x: number, y: number) => canvasPixel(canvas, x / 320, y / 240);
+  const pointer = async (x: number, y: number, endX = x, endY = y) => {
+    await canvas.scrollIntoViewIfNeeded();
+    const bounds = await canvas.boundingBox();
+    if (!bounds) throw new Error('没有可操作的标注画布');
+    await page.mouse.move(
+      bounds.x + (bounds.width * x) / 320,
+      bounds.y + (bounds.height * y) / 240,
+    );
+    await page.mouse.down();
+    await page.mouse.move(
+      bounds.x + (bounds.width * endX) / 320,
+      bounds.y + (bounds.height * endY) / 240,
+      { steps: 4 },
+    );
+    await page.mouse.up();
+  };
+
+  for (const [name, buffer, message] of [
+    ['invalid.png', Buffer.from('invalid image'), /无法读取这张标注图片/],
+    ['corrupt.png', png.subarray(0, 35), /无法读取这张标注图片/],
+    ['large.png', Buffer.concat([png, Buffer.alloc(2 * 1024 * 1024)]), /超过 2 MiB/],
+    ['wide.png', Buffer.from(assets.oversized, 'base64'), /每边最多 1024 像素/],
+  ] as const) {
+    await chooseImage(name, buffer);
+    await expect(editor.getByRole('alert')).toHaveText(message);
+    await expect(field('选中标注')).toContainText('未选中');
+  }
+
+  await chooseImage('overlay.png', png);
+  await expect(field('选中标注')).toContainText('图片 #1');
+  await expect(editor.getByText('overlay.png', { exact: true })).toBeVisible();
+  await expect.poll(() => pixel(135, 128)).toEqual(gold);
+  await expect.poll(() => pixel(180, 130)).toEqual([0, 0, 0, 0]);
+  await expect.poll(() => pixel(100, 100)).toEqual([255, 0, 0, 255]);
+  await choose('标注图片大小', '50%');
+  await expect.poll(() => pixel(100, 100)).toEqual(gold);
+  await choose('标注图片旋转', '90°');
+  await expect.poll(() => pixel(162, 70)).toEqual(gold);
+  await choose('不透明度', '50%');
+  await expect.poll(async () => (await pixel(162, 70))[0]).toBeGreaterThan(110);
+  await expect.poll(async () => (await pixel(162, 70))[0]).toBeLessThan(130);
+  await pointer(160, 120, 210, 150);
+  await expect.poll(async () => (await pixel(218, 130))[3]).toBe(128);
+  await expect.poll(() => pixel(162, 70)).toEqual([0, 255, 0, 255]);
+  await button('复制选中图片').click();
+  await expect(field('选中标注')).toContainText('图片 #2');
+  await choose('不透明度', '100%');
+  await pointer(218, 130);
+  await expect(field('选中标注')).toContainText('图片 #2');
+  await choose('选中标注', '图片 #1');
+  await expect(field('不透明度')).toContainText('50%');
+  await choose('选中标注', '图片 #2');
+  await expect(field('不透明度')).toContainText('100%');
+  await expect(button('前移一层')).toBeDisabled();
+
+  await button('矩形').click();
+  await choose('标注颜色', '黑色');
+  await editor.getByRole('checkbox', { name: '填充形状', exact: true }).press('Space');
+  await pointer(200, 106, 235, 146);
+  await expect.poll(() => pixel(218, 130)).toEqual([0, 0, 0, 255]);
+  await choose('选中标注', '图片 #2');
+  await button('前移一层').click();
+  await expect.poll(() => pixel(218, 130)).toEqual(gold);
+  await button('后移一层').click();
+  await expect.poll(() => pixel(218, 130)).toEqual([0, 0, 0, 255]);
+  await button('前移一层').click();
+  await button('删除选中标注').click();
+  await expect.poll(() => pixel(218, 130)).toEqual([0, 0, 0, 255]);
+  await button('撤销').click();
+  await expect.poll(() => pixel(218, 130)).toEqual(gold);
+  await button('重做').click();
+  await expect.poll(() => pixel(218, 130)).toEqual([0, 0, 0, 255]);
+  await button('撤销').click();
+  await button('清除全部标注').click();
+  await expect.poll(() => pixel(218, 130)).toEqual([0, 0, 0, 0]);
+  await button('撤销').click();
+  await expect.poll(() => pixel(218, 130)).toEqual(gold);
+
+  await chooseImage('overlay.jpg', Buffer.from(assets.jpeg, 'base64'), 'image/jpeg');
+  await expect(editor.getByText('overlay.jpg', { exact: true })).toBeVisible();
+  await expect.poll(async () => (await pixel(143, 132))[0]).toBeGreaterThan(215);
+  await expect.poll(async () => (await pixel(143, 132))[2]).toBeGreaterThan(130);
+  await button('删除选中标注').click();
+  await chooseImage('overlay.webp', Buffer.from(assets.webp, 'base64'), 'image/webp');
+  await expect(editor.getByText('overlay.webp', { exact: true })).toBeVisible();
+  await expect.poll(async () => (await pixel(143, 132))[2]).toBeGreaterThan(130);
+  await button('删除选中标注').click();
+  await choose('选中标注', '图片 #2');
+  await canvas.scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: info.outputPath('image-annotation-desktop.png'),
+    animations: 'disabled',
+  });
+  await page.setViewportSize({ width: 390, height: 760 });
+  await canvas.scrollIntoViewIfNeeded();
+  expect((await canvas.boundingBox())?.width).toBeLessThan(390);
+  await page.screenshot({
+    path: info.outputPath('image-annotation-mobile.png'),
+    animations: 'disabled',
+  });
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  await editor.getByLabel('副本名称（不含扩展名）').fill('overlay-copy');
+  const copy = await downloadCopy(page, editor, 'overlay-copy.png');
+  expect(await copyPixel(page, copy, 'image/png', 218, 130)).toEqual({
+    size: [320, 240],
+    pixel: gold,
+  });
+  expect((await copyPixel(page, copy, 'image/png', 154, 170)).pixel).toEqual([0, 0, 255, 255]);
+  await button('保存为新版本').click();
+  await page
+    .getByRole('dialog', { name: '确认保存新版本' })
+    .getByRole('button', { name: '保存新版本', exact: true })
+    .click();
+  await expect(page.getByText('已保存图片新版本。', { exact: true })).toBeVisible();
+  const published = await page.evaluate(async (parentId) => {
+    const listing = await fetch(
+      '/api/console/v1/native/files?parent=' + encodeURIComponent(parentId),
+    );
+    if (!listing.ok) throw new Error('无法读取标注测试目录');
+    const { items } = (await listing.json()) as {
+      items: { id: string; name: string; contentRevision: number }[];
+    };
+    const source = items.find(({ name }) => name === 'source.png');
+    if (!source) throw new Error('未找到已发布图片');
+    const response = await fetch(
+      '/api/console/v1/native/files/' + encodeURIComponent(source.id) + '/content',
+    );
+    if (!response.ok) throw new Error('无法读取已发布图片内容');
+    return {
+      revision: source.contentRevision,
+      bytes: Array.from(new Uint8Array(await response.arrayBuffer())),
+    };
+  }, parent);
+  expect(published.revision).toBe(2);
+  expect(Buffer.from(published.bytes)).toEqual(copy);
+});
+
+test('图片标注取消读取、限制历史位图数量并释放淘汰素材', async ({ page }) => {
+  test.setTimeout(120_000);
+  const { editor, button, field, chooseImage, assets } = await imageAnnotationWorkspace(page);
+  const png = Buffer.from(assets.png, 'base64');
+  type OverlayProbe = { closed: number; resume?: () => void };
+  await page.evaluate(() => {
+    const probe: OverlayProbe = { closed: 0 };
+    Object.defineProperty(window, '__annotationOverlayProbe', { value: probe });
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- 调用时保留原位图的 this。
+    const close = ImageBitmap.prototype.close;
+    ImageBitmap.prototype.close = function () {
+      if (this.width === 80 && this.height === 40) probe.closed++;
+      close.call(this);
+    };
+    let pauseNext = true;
+    window.createImageBitmap = new Proxy(window.createImageBitmap.bind(window), {
+      async apply(target, receiver: unknown, args: unknown[]) {
+        const bitmap = await (Reflect.apply(target, receiver, args) as Promise<ImageBitmap>);
+        if (pauseNext && bitmap.width === 80 && bitmap.height === 40) {
+          pauseNext = false;
+          await new Promise<void>((resolve) => {
+            probe.resume = resolve;
+          });
+        }
+        return bitmap;
+      },
+    });
+  });
+  const closed = () =>
+    page.evaluate(
+      () =>
+        (window as unknown as { __annotationOverlayProbe: OverlayProbe }).__annotationOverlayProbe
+          .closed,
+    );
+  await chooseImage('cancel.png', png);
+  await expect(button('下载副本')).toBeDisabled();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        Boolean(
+          (window as unknown as { __annotationOverlayProbe: OverlayProbe }).__annotationOverlayProbe
+            .resume,
+        ),
+      ),
+    )
+    .toBe(true);
+  await button('取消读取图片').click();
+  await page.evaluate(() =>
+    (
+      window as unknown as { __annotationOverlayProbe: OverlayProbe }
+    ).__annotationOverlayProbe.resume?.(),
+  );
+  await expect.poll(closed).toBe(1);
+  await expect(field('选中标注')).toContainText('未选中');
+  for (let index = 1; index <= 12; index++) {
+    await chooseImage('asset-' + index + '.png', png);
+    await expect(field('选中标注')).toContainText('图片 #' + index);
+  }
+  await expect(button('图片')).toBeDisabled();
+  await expect(editor.getByText('编辑历史最多保留 12 张不同的标注图片。')).toBeVisible();
+  await button('复制选中图片').click();
+  await expect(field('选中标注')).toContainText('图片 #13');
+  await button('撤销').click();
+  await expect(button('图片')).toBeDisabled();
+  await button('撤销').click();
+  await expect(button('图片')).toBeEnabled();
+  await chooseImage('replacement.png', png);
+  await expect(editor.getByText('replacement.png', { exact: true })).toBeVisible();
+  await expect.poll(closed).toBe(2);
+  await expect(button('重做')).toBeDisabled();
+  await button('关闭').click();
+  await expect.poll(closed).toBe(14);
+});
+
 test('图片按原版本保存并可将过期草稿另存到指定目录', async ({ page }, info) => {
   test.setTimeout(180_000);
   const root = await createWorkspace(page, 'image-save-');
@@ -387,9 +655,13 @@ test('图片编辑器支持视图缩放、原图对比及独立导出质量', as
   await expect(button('拖动画布')).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 760 });
   await expect.poll(async () => (await canvasDimensions())[0]).toBeLessThan(390);
-  const narrowFit = Math.round(((await canvasDimensions())[0]! * 100) / 320);
-  expect(narrowFit).toBeLessThan(wideFit);
-  await expect(zoom).toHaveText(narrowFit + '%');
+  // 窄屏切换后弹窗仍在过渡，按当前画布宽度验证观察器发布的比例。
+  await expect
+    .poll(async () => {
+      const narrowFit = Math.round(((await canvasDimensions())[0]! * 100) / 320);
+      return narrowFit < wideFit && (await zoom.textContent()) === narrowFit + '%';
+    })
+    .toBe(true);
   await page.screenshot({ path: info.outputPath('viewport-mobile.png'), animations: 'disabled' });
   await page.setViewportSize({ width: 1440, height: 900 });
 

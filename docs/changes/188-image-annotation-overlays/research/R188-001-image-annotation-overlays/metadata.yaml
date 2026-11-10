@@ -1,0 +1,30 @@
+schema_version: 1
+id: R188-001
+title: 图片标注叠层
+question: 如何补齐 Cloudreve 图片标注并保持几何、历史和发布流程一致？
+research_type: current-project-and-external-primary-source
+topics: [image-editor, annotation, canvas]
+keywords: [图片标注, 位图, 图层, 透明度]
+applicable_scenarios: [本人当前图片, 本机 PNG JPEG WebP]
+non_applicable_scenarios: [远程图片, 图层文件互操作, 动图保真]
+status: active
+summary: 复用既有图片解码、源坐标、编辑历史和 Canvas 合成。
+evidence:
+  types: [source-code, screenshot, official-specification]
+  primary_sources:
+    - title: Cloudreve 图片编辑器
+      locator: https://docs.cloudreve.org/assets/file-apps-image-editor.DA9QZGmM.png
+      snapshot: 2026-11-10 核对标注工具栏的 Image 项
+    - title: 当前图片编辑器
+      locator: report.md
+      snapshot: 8a51b6e
+    - title: HTML Living Standard
+      locator: https://html.spec.whatwg.org/multipage/canvas.html
+      snapshot: Canvas 2D 合成与 ImageBitmap 生命周期
+researched_at: 2026-11-10
+verified_at: 2026-11-10
+validity:
+  mode: snapshot
+  review_after: 2027-05-10
+  refresh_triggers: [图片标注模型变化, 浏览器解码限制变化, 图层文件互操作, 后端合成]
+report: report.md

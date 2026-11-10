@@ -1,24 +1,31 @@
 'use client';
 
-import { useRef, useState, type PointerEvent, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { Action } from '@clouddrive/ui-adapter/action';
+import { FileChoiceAction } from '@clouddrive/ui-adapter/file-choice-action';
 import { CheckboxField, SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
 import {
   annotationAt,
   annotationColors,
+  annotationImageAngles,
+  annotationImageSizes,
   annotationLimits,
   annotationOpacities,
   annotationTextSizes,
   annotationWidths,
   closedAnnotation,
+  defaultAnnotationImageSizePercent,
   defaultAnnotationStyle,
   translateAnnotation,
   type AnnotationStyle,
   type ImageAnnotation,
   type ImagePoint,
+  type RasterAnnotation,
 } from './image-annotation';
 import { ImageCanvas, type ImageCanvasView } from './image-canvas';
 import { sourceImagePoint, type ImageEdit } from './image-edit';
+import { imageOverlayLimit, imageOverlayTypes, type ImageOverlayAsset } from './image-overlay';
+import { useImageOverlayImport } from './use-image-overlay-import';
 
 const modes = [
   'select',
@@ -40,6 +47,7 @@ const zh = {
   pen: '画笔',
   polygon: '多边形',
   text: '文字',
+  image: '图片',
   tools: '标注工具',
   selected: '选中标注',
   noSelection: '未选中',
@@ -58,6 +66,17 @@ const zh = {
   polygonHint: '逐点点击画布，至少选择 3 个点后完成多边形。',
   textHint: '输入文字后点击画布放置。',
   limit: '已达到标注数量上限。',
+  imageLimit: `编辑历史最多保留 ${annotationLimits.imageAssets} 张不同的标注图片。`,
+  imageLoading: '正在读取标注图片…',
+  cancelImage: '取消读取图片',
+  overlayBytes: `标注文件超过 ${imageOverlayLimit.mebibytes} MiB。`,
+  overlayDimensions: `标注图片每边最多 ${imageOverlayLimit.sidePixels} 像素。`,
+  overlayInvalid: '无法读取这张标注图片，请选择有效的 PNG、JPEG 或 WebP。',
+  imageSize: '标注图片大小',
+  imageAngle: '标注图片旋转',
+  duplicate: '复制选中图片',
+  forward: '前移一层',
+  backward: '后移一层',
   colors: ['红色', '蓝色', '绿色', '金色', '黑色', '白色'],
 };
 const en: typeof zh = {
@@ -69,6 +88,7 @@ const en: typeof zh = {
   pen: 'Pen',
   polygon: 'Polygon',
   text: 'Text',
+  image: 'Image',
   tools: 'Annotation tools',
   selected: 'Selected annotation',
   noSelection: 'None',
@@ -87,6 +107,17 @@ const en: typeof zh = {
   polygonHint: 'Click at least three points on the canvas and finish the polygon.',
   textHint: 'Enter text, then click the canvas to place it.',
   limit: 'The image has reached its annotation limit.',
+  imageLimit: `Edit history holds up to ${annotationLimits.imageAssets} distinct annotation images.`,
+  imageLoading: 'Reading annotation image…',
+  cancelImage: 'Cancel image import',
+  overlayBytes: `The annotation file exceeds ${imageOverlayLimit.mebibytes} MiB.`,
+  overlayDimensions: `The annotation image can have at most ${imageOverlayLimit.sidePixels} pixels per side.`,
+  overlayInvalid: 'Could not read this annotation image. Choose a valid PNG, JPEG or WebP.',
+  imageSize: 'Annotation image size',
+  imageAngle: 'Annotation image rotation',
+  duplicate: 'Duplicate selected image',
+  forward: 'Move forward one layer',
+  backward: 'Move back one layer',
   colors: ['Red', 'Blue', 'Green', 'Gold', 'Black', 'White'],
 };
 
@@ -99,6 +130,7 @@ type Drag = Readonly<{
 }>;
 const none = 'none';
 const minimumPenStepPixels = 2;
+const duplicateOffsetPixels = 12;
 
 function sourcePoint(event: CanvasEvent, edit: ImageEdit) {
   const canvas = event.currentTarget;
@@ -120,6 +152,8 @@ export function ImageAnnotationWorkspace({
   canvasLabels,
   view,
   chinese,
+  imageAssetCount,
+  adoptImage,
   onCommit,
   children,
 }: {
@@ -128,6 +162,8 @@ export function ImageAnnotationWorkspace({
   canvasLabels: Readonly<{ canvas: string; decodeFailed: string }>;
   view: ImageCanvasView;
   chinese: boolean;
+  imageAssetCount: number;
+  adoptImage: (bitmap: ImageBitmap, name: string) => ImageOverlayAsset;
   onCommit: (edit: ImageEdit) => void;
   children: (pending: boolean) => ReactNode;
 }) {
@@ -139,14 +175,22 @@ export function ImageAnnotationWorkspace({
   const [polygon, setPolygon] = useState<readonly ImagePoint[]>([]);
   const [newText, setNewText] = useState('');
   const [textEdit, setTextEdit] = useState<{ id: number; text: string }>();
+  const imageImport = useImageOverlayImport();
   const drag = useRef<Drag | undefined>(undefined);
   const nextId = useRef(Math.max(0, ...edit.annotations.map(({ id }) => id)) + 1);
+  const currentEdit = useRef(edit);
+  useLayoutEffect(() => {
+    currentEdit.current = edit;
+  }, [edit]);
   const selected = edit.annotations.find(({ id }) => id === selectedId);
   const active = mode === 'select' ? selected : undefined;
+  const raster = active?.kind === 'image' ? active : undefined;
+  const activeIndex = raster ? edit.annotations.indexOf(raster) : -1;
   const textAnnotation = active?.kind === 'text' ? active : undefined;
   const kind = active?.kind ?? mode;
   const style = active?.style ?? defaults;
   const limitReached = edit.annotations.length >= annotationLimits.count;
+  const imageLimitReached = imageAssetCount >= annotationLimits.imageAssets;
   const textInput = textAnnotation
     ? textEdit?.id === textAnnotation.id
       ? textEdit.text
@@ -191,6 +235,54 @@ export function ImageAnnotationWorkspace({
     setMode(next);
   }
 
+  function acceptImage(bitmap: ImageBitmap, name: string) {
+    const latest = currentEdit.current;
+    const crop = latest.crop;
+    const annotation: RasterAnnotation = {
+      id: nextId.current++,
+      kind: 'image',
+      anchor: { x: crop.x + crop.width / 2, y: crop.y + crop.height / 2 },
+      fitScale: Math.min(crop.width / bitmap.width, crop.height / bitmap.height),
+      sizePercent: defaultAnnotationImageSizePercent,
+      angleDegrees: 0,
+      style: defaultAnnotationStyle,
+      asset: adoptImage(bitmap, name),
+    };
+    onCommit({ ...latest, annotations: [...latest.annotations, annotation] });
+    setMode('select');
+    setSelectedId(annotation.id);
+  }
+
+  function duplicateImage(annotation: RasterAnnotation) {
+    const { crop } = edit;
+    const shift = (value: number, start: number, length: number) =>
+      Math.min(
+        start + length,
+        Math.max(
+          start,
+          value + (value >= start + length / 2 ? -duplicateOffsetPixels : duplicateOffsetPixels),
+        ),
+      );
+    add({
+      ...annotation,
+      id: nextId.current++,
+      anchor: {
+        x: shift(annotation.anchor.x, crop.x, crop.width),
+        y: shift(annotation.anchor.y, crop.y, crop.height),
+      },
+    });
+  }
+
+  function moveLayer(index: number, step: -1 | 1) {
+    const annotations = [...edit.annotations];
+    const current = annotations[index];
+    const other = annotations[index + step];
+    if (!current || !other) return;
+    annotations[index] = other;
+    annotations[index + step] = current;
+    updateAnnotations(annotations);
+  }
+
   function updateGesture(current: Drag, point: ImagePoint) {
     if (current.mode === 'move') {
       return translateAnnotation(
@@ -200,7 +292,7 @@ export function ImageAnnotationWorkspace({
       );
     }
     const annotation = current.annotation;
-    if (annotation.kind === 'text') return annotation;
+    if (annotation.kind === 'text' || annotation.kind === 'image') return annotation;
     if (annotation.kind !== 'pen') return { ...annotation, points: [current.start, point] };
     const last = annotation.points.at(-1);
     if (!last || Math.hypot(point.x - last.x, point.y - last.y) < minimumPenStepPixels)
@@ -213,7 +305,7 @@ export function ImageAnnotationWorkspace({
   }
 
   function pointerDown(event: CanvasEvent) {
-    if (!event.isPrimary || event.button !== 0 || drag.current) return;
+    if (!event.isPrimary || event.button !== 0 || drag.current || imageImport.loading) return;
     const start = sourcePoint(event, edit);
     if (mode === 'select') {
       const bounds = event.currentTarget.getBoundingClientRect();
@@ -269,7 +361,8 @@ export function ImageAnnotationWorkspace({
       if (point.x !== current.start.x || point.y !== current.start.y) replace(annotation);
       return;
     }
-    if (annotation.kind === 'text' || annotation.points.length < 2) return;
+    if (annotation.kind === 'text' || annotation.kind === 'image' || annotation.points.length < 2)
+      return;
     if (closedAnnotation(annotation.kind)) {
       if (point.x === current.start.x || point.y === current.start.y) return;
     } else if (
@@ -325,6 +418,16 @@ export function ImageAnnotationWorkspace({
             {labels[item]}
           </Action>
         ))}
+        <FileChoiceAction
+          acceptedTypes={imageOverlayTypes}
+          disabled={limitReached || imageLimitReached || imageImport.loading}
+          onSelect={(file) => {
+            changeMode('select');
+            void imageImport.read(file, acceptImage);
+          }}
+        >
+          {labels.image}
+        </FileChoiceAction>
       </div>
       <div className="flex flex-wrap gap-3">
         <div className="min-w-0 space-y-2" style={{ flex: '4 1 26rem' }}>
@@ -350,6 +453,16 @@ export function ImageAnnotationWorkspace({
                 : labels.hint}
           </p>
           {limitReached ? <p role="status">{labels.limit}</p> : null}
+          {imageLimitReached ? <p role="status">{labels.imageLimit}</p> : null}
+          {imageImport.loading ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <p role="status">{labels.imageLoading}</p>
+              <Action size="sm" variant="quiet" onPress={imageImport.cancel}>
+                {labels.cancelImage}
+              </Action>
+            </div>
+          ) : null}
+          {imageImport.error ? <p role="alert">{labels[imageImport.error]}</p> : null}
           {mode === 'polygon' ? (
             <div className="flex flex-wrap items-center gap-2">
               <Action
@@ -388,18 +501,20 @@ export function ImageAnnotationWorkspace({
           />
           {editingStyle ? (
             <div className="grid grid-cols-2 gap-2">
-              <SelectField
-                label={labels.color}
-                value={style.color}
-                options={annotationColors.map((value, index) => ({
-                  value,
-                  label: labels.colors[index] ?? value,
-                }))}
-                onValueChange={(value) => {
-                  const color = annotationColors.find((item) => item === value);
-                  if (color) changeStyle({ color });
-                }}
-              />
+              {!raster ? (
+                <SelectField
+                  label={labels.color}
+                  value={style.color}
+                  options={annotationColors.map((value, index) => ({
+                    value,
+                    label: labels.colors[index] ?? value,
+                  }))}
+                  onValueChange={(value) => {
+                    const color = annotationColors.find((item) => item === value);
+                    if (color) changeStyle({ color });
+                  }}
+                />
+              ) : null}
               <SelectField
                 label={labels.opacity}
                 value={String(style.opacity)}
@@ -409,7 +524,32 @@ export function ImageAnnotationWorkspace({
                   if (opacity) changeStyle({ opacity });
                 }}
               />
-              {kind === 'text' ? (
+              {raster ? (
+                <>
+                  <SelectField
+                    label={labels.imageSize}
+                    value={String(raster.sizePercent)}
+                    options={numberOptions(annotationImageSizes, '%')}
+                    onValueChange={(value) => {
+                      const sizePercent = annotationImageSizes.find(
+                        (item) => item === Number(value),
+                      );
+                      if (sizePercent !== undefined) replace({ ...raster, sizePercent });
+                    }}
+                  />
+                  <SelectField
+                    label={labels.imageAngle}
+                    value={String(raster.angleDegrees)}
+                    options={numberOptions(annotationImageAngles, '°')}
+                    onValueChange={(value) => {
+                      const angleDegrees = annotationImageAngles.find(
+                        (item) => item === Number(value),
+                      );
+                      if (angleDegrees !== undefined) replace({ ...raster, angleDegrees });
+                    }}
+                  />
+                </>
+              ) : kind === 'text' ? (
                 <SelectField
                   label={labels.textSize}
                   value={String(style.textSize)}
@@ -464,6 +604,39 @@ export function ImageAnnotationWorkspace({
               {labels.applyText}
             </Action>
           ) : null}
+          {raster ? (
+            <>
+              <p className="text-xs text-ink-muted" style={{ overflowWrap: 'anywhere' }}>
+                {raster.asset.name}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Action
+                  size="sm"
+                  variant="secondary"
+                  disabled={limitReached || imageImport.loading}
+                  onPress={() => duplicateImage(raster)}
+                >
+                  {labels.duplicate}
+                </Action>
+                <Action
+                  size="sm"
+                  variant="quiet"
+                  disabled={activeIndex === edit.annotations.length - 1}
+                  onPress={() => moveLayer(activeIndex, 1)}
+                >
+                  {labels.forward}
+                </Action>
+                <Action
+                  size="sm"
+                  variant="quiet"
+                  disabled={activeIndex <= 0}
+                  onPress={() => moveLayer(activeIndex, -1)}
+                >
+                  {labels.backward}
+                </Action>
+              </div>
+            </>
+          ) : null}
           <div className="flex flex-wrap gap-2">
             <Action
               size="sm"
@@ -491,7 +664,8 @@ export function ImageAnnotationWorkspace({
         </div>
       </div>
       {children(
-        Boolean(draft) ||
+        imageImport.loading ||
+          Boolean(draft) ||
           polygon.length > 0 ||
           Boolean(
             textAnnotation && textEdit?.id === textAnnotation.id && text !== textAnnotation.text,
