@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 import {
   centeredImageCrop,
-  editableImageType,
   encodeImage,
   imageSizeLimit,
   originalImage,
@@ -32,9 +31,10 @@ import {
   validImageSize,
   type ImageCrop,
   type ImageEdit,
-  type ImageFormat,
   type ImageSize,
 } from './image-edit';
+import { editableImageType, imageFormats, type ImageFormat } from './image-format';
+import type { ImageLogoAsset } from './image-logo';
 import type { ImageToolsProps } from './media-view';
 import { ImageAnnotationWorkspace } from './image-annotation-workspace';
 import { ImageAppearanceWorkspace, type ImageAppearanceTool } from './image-appearance-workspace';
@@ -53,7 +53,7 @@ const zh = {
   annotate: '图片标注',
   tone: '色彩微调',
   filters: '滤镜',
-  watermark: '文字水印',
+  watermark: '水印',
   applyCrop: '应用裁剪',
   applySize: '应用尺寸',
   cropHint: '拖动框选原图，或输入原图中的像素坐标。',
@@ -79,6 +79,7 @@ const zh = {
   queued: '副本已加入上传队列，可在传输中心查看进度。',
   invalidName: '请输入有效的副本名称。',
   encodeFailed: '无法编码图片副本。',
+  webpEncodeFailed: '此浏览器无法编码 WebP，请改选 PNG 或 JPEG。',
   tooLarge: '图片副本超过允许的媒体字节上限。',
   downloadReady: '已交给浏览器下载副本。',
   queueFailed: '无法将副本加入上传队列。',
@@ -98,7 +99,7 @@ const en: typeof zh = {
   annotate: 'Annotate',
   tone: 'Finetune',
   filters: 'Filters',
-  watermark: 'Text watermark',
+  watermark: 'Watermarks',
   applyCrop: 'Apply crop',
   applySize: 'Apply size',
   cropHint: 'Drag on the source image or enter pixel coordinates.',
@@ -124,6 +125,7 @@ const en: typeof zh = {
   queued: 'Copy queued. Check the transfer center for progress.',
   invalidName: 'Enter a valid copy name.',
   encodeFailed: 'Could not encode the image copy.',
+  webpEncodeFailed: 'This browser cannot encode WebP. Select PNG or JPEG.',
   tooLarge: 'The copy exceeds the media byte limit.',
   downloadReady: 'The browser is downloading the copy.',
   queueFailed: 'Could not queue the image copy.',
@@ -149,10 +151,10 @@ const cropFields = ['x', 'y', 'width', 'height'] as const;
 const sizeFields = ['width', 'height'] as const;
 const historyLimit = 24;
 const fileNameLimit = 255;
-const formats = [
-  { value: 'image/png', label: 'PNG' },
-  { value: 'image/jpeg', label: 'JPEG' },
-];
+const formats = Object.entries(imageFormats).map(([value, { label }]) => ({ value, label }));
+const longestExtension = Math.max(
+  ...Object.values(imageFormats).map(({ extension }) => extension.length),
+);
 const appearanceTools = [
   { name: 'tone', Icon: SlidersHorizontal },
   { name: 'filters', Icon: Palette },
@@ -160,13 +162,13 @@ const appearanceTools = [
 ] as const;
 
 function isAppearanceTool(tool: Tool): tool is ImageAppearanceTool {
-  return appearanceTools.some(({ name }) => name === tool);
+  return tool === 'logo' || appearanceTools.some(({ name }) => name === tool);
 }
 
 function copyStem(name: string, suffix: string) {
   const stem = name.replace(/\.[^.]+$/, '') || name;
   return Array.from(stem + ' - ' + suffix)
-    .slice(0, fileNameLimit - 4)
+    .slice(0, fileNameLimit - longestExtension)
     .join('')
     .trimEnd();
 }
@@ -344,15 +346,46 @@ function ImageWorkspace({
   const [busy, setBusy] = useState<'download' | 'queue'>();
   const inProgress = useRef(false);
   const lifetime = useRef<AbortController>(null);
+  const logoAssets = useRef(new Set<ImageLogoAsset>());
+  const nextLogoId = useRef(0);
+  const [draftLogo, setDraftLogo] = useState<ImageLogoAsset>();
 
   useLayoutEffect(() => {
     const controller = new AbortController();
+    const assets = logoAssets.current;
     lifetime.current = controller;
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      for (const asset of assets) asset.bitmap.close();
+      assets.clear();
+    };
   }, []);
+
+  useEffect(() => {
+    const retained = new Set(history.edits.map(({ appearance }) => appearance.logo?.asset));
+    retained.add(draftLogo);
+    for (const asset of logoAssets.current) {
+      if (retained.has(asset)) continue;
+      asset.bitmap.close();
+      logoAssets.current.delete(asset);
+    }
+  }, [history, draftLogo]);
+
+  function adoptLogo(bitmap: ImageBitmap, name: string): ImageLogoAsset {
+    const asset = { id: ++nextLogoId.current, name, bitmap };
+    logoAssets.current.add(asset);
+    setDraftLogo(asset);
+    return asset;
+  }
+
+  function switchTool(next: Tool) {
+    if (!isAppearanceTool(next)) setDraftLogo(undefined);
+    setTool(next);
+  }
 
   function commit(next: ImageEdit) {
     setFeedback(undefined);
+    setDraftLogo(undefined);
     setHistory(({ edits, index }) => {
       const current = edits[index];
       if (JSON.stringify(current) === JSON.stringify(next)) return { edits, index };
@@ -366,6 +399,7 @@ function ImageWorkspace({
       current === 'annotate' || isAppearanceTool(current) ? current : 'transform',
     );
     setToolSession((session) => session + 1);
+    setDraftLogo(undefined);
     setFeedback(undefined);
     setHistory(({ edits, index }) => ({
       edits,
@@ -374,7 +408,7 @@ function ImageWorkspace({
   }
 
   const size = outputImageSize(edit);
-  const filename = name.trim() + (format === 'image/png' ? '.png' : '.jpg');
+  const filename = name.trim() + imageFormats[format].extension;
   const validName = Boolean(name.trim()) && validCopyName(filename);
   const canSave = validName && tool !== 'crop' && tool !== 'resize';
 
@@ -388,6 +422,10 @@ function ImageWorkspace({
     try {
       const encoded = await encodeImage(bitmap, edit, format);
       if (signal.aborted) return;
+      if (encoded && encoded.type !== format && format === 'image/webp') {
+        setFeedback({ message: labels.webpEncodeFailed, failed: true });
+        return;
+      }
       if (!encoded || encoded.type !== format) {
         setFeedback({ message: failure, failed: true });
         return;
@@ -526,7 +564,7 @@ function ImageWorkspace({
           size="sm"
           variant={tool === 'transform' ? 'primary' : 'secondary'}
           leadingIcon={<RotateCw />}
-          onPress={() => setTool('transform')}
+          onPress={() => switchTool('transform')}
         >
           {labels.transform}
         </Action>
@@ -534,7 +572,7 @@ function ImageWorkspace({
           size="sm"
           variant={tool === 'crop' ? 'primary' : 'secondary'}
           leadingIcon={<Crop />}
-          onPress={() => setTool('crop')}
+          onPress={() => switchTool('crop')}
         >
           {labels.crop}
         </Action>
@@ -542,7 +580,7 @@ function ImageWorkspace({
           size="sm"
           variant={tool === 'resize' ? 'primary' : 'secondary'}
           leadingIcon={<Scaling />}
-          onPress={() => setTool('resize')}
+          onPress={() => switchTool('resize')}
         >
           {labels.resize}
         </Action>
@@ -550,7 +588,7 @@ function ImageWorkspace({
           size="sm"
           variant={tool === 'annotate' ? 'primary' : 'secondary'}
           leadingIcon={<Pencil />}
-          onPress={() => setTool('annotate')}
+          onPress={() => switchTool('annotate')}
         >
           {labels.annotate}
         </Action>
@@ -558,9 +596,11 @@ function ImageWorkspace({
           <Action
             key={name}
             size="sm"
-            variant={tool === name ? 'primary' : 'secondary'}
+            variant={
+              tool === name || (tool === 'logo' && name === 'watermark') ? 'primary' : 'secondary'
+            }
             leadingIcon={<Icon />}
-            onPress={() => setTool(name)}
+            onPress={() => switchTool(name === 'watermark' && tool === 'logo' ? tool : name)}
           >
             {labels[name]}
           </Action>
@@ -604,6 +644,9 @@ function ImageWorkspace({
           canvasLabels={labels}
           chinese={labels === zh}
           tool={tool}
+          onWatermarkTool={setTool}
+          adoptLogo={adoptLogo}
+          discardLogo={() => setDraftLogo(undefined)}
           onCommit={commit}
         >
           {(pending) => exportControls(pending ? 'appearance' : undefined)}

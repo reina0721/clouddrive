@@ -1,27 +1,41 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Action } from '@clouddrive/ui-adapter/action';
+import { FileChoiceAction } from '@clouddrive/ui-adapter/file-choice-action';
 import { CheckboxField, SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { RangeSlider } from '@clouddrive/ui-adapter/range-slider';
 import {
+  defaultImageLogo,
   defaultWatermark,
   imageFilterNames,
+  imageLogoSize,
   neutralImageTone,
   toneLimits,
   watermarkColors,
+  watermarkOpacity,
   watermarkPositions,
   watermarkSizeLimit,
   watermarkTextLimit,
   type ImageAppearance,
   type ImageFilter,
+  type ImageLogo,
   type ImageToneField,
   type ImageWatermark,
 } from './image-appearance';
 import { ImageCanvas } from './image-canvas';
 import { drawFilterSample, type ImageEdit } from './image-edit';
+import { imageFormats } from './image-format';
+import {
+  imageLogoLimit,
+  readImageLogo,
+  type ImageLogoAsset,
+  type ImageLogoError,
+} from './image-logo';
 
-export type ImageAppearanceTool = 'tone' | 'filters' | 'watermark';
+type WatermarkTool = 'watermark' | 'logo';
+export type ImageAppearanceTool = 'tone' | 'filters' | WatermarkTool;
+const logoFileTypes = Object.keys(imageFormats);
 
 const zh = {
   brightness: '亮度',
@@ -65,6 +79,19 @@ const zh = {
   sizeHint: '字号按输出图片较短边的比例计算。',
   remove: '移除水印',
   invalid: '水印文字包含不支持的控制字符。',
+  textTool: '文字水印',
+  logoTool: '图片水印',
+  chooseLogo: '选择水印图片',
+  replaceLogo: '替换水印图片',
+  removeLogo: '移除图片水印',
+  logoPosition: '图片水印位置',
+  logoSize: '图片水印尺寸',
+  logoOpacity: '图片水印不透明度',
+  logoHint: '选择本机 PNG、JPEG 或 WebP。图片只用于当前编辑。',
+  logoLoading: '正在读取水印图片…',
+  logoBytes: `水印文件超过 ${imageLogoLimit.mebibytes} MiB。`,
+  logoDimensions: `水印图片每边最多 ${imageLogoLimit.sidePixels} 像素。`,
+  logoInvalid: '无法读取这张水印图片，请选择有效的 PNG、JPEG 或 WebP。',
 };
 const en: typeof zh = {
   brightness: 'Brightness',
@@ -108,6 +135,19 @@ const en: typeof zh = {
   sizeHint: 'Font size is a percentage of the shorter output side.',
   remove: 'Remove watermark',
   invalid: 'The watermark contains unsupported control characters.',
+  textTool: 'Text watermark',
+  logoTool: 'Image watermark',
+  chooseLogo: 'Choose watermark image',
+  replaceLogo: 'Replace watermark image',
+  removeLogo: 'Remove image watermark',
+  logoPosition: 'Image watermark position',
+  logoSize: 'Image watermark size',
+  logoOpacity: 'Image watermark opacity',
+  logoHint: 'Choose a local PNG, JPEG or WebP. The image is used only for this edit.',
+  logoLoading: 'Reading watermark image…',
+  logoBytes: `The watermark file exceeds ${imageLogoLimit.mebibytes} MiB.`,
+  logoDimensions: `The watermark image can have at most ${imageLogoLimit.sidePixels} pixels per side.`,
+  logoInvalid: 'Could not read this watermark. Choose a valid PNG, JPEG or WebP.',
 };
 
 type AppearanceDraft = Omit<ImageAppearance, 'watermark'> & { watermark: ImageWatermark };
@@ -208,6 +248,9 @@ export function ImageAppearanceWorkspace({
   tool,
   canvasLabels,
   chinese,
+  onWatermarkTool,
+  adoptLogo,
+  discardLogo,
   onCommit,
   children,
 }: {
@@ -216,19 +259,31 @@ export function ImageAppearanceWorkspace({
   tool: ImageAppearanceTool;
   canvasLabels: Readonly<{ canvas: string; decodeFailed: string }>;
   chinese: boolean;
+  onWatermarkTool: (tool: WatermarkTool) => void;
+  adoptLogo: (bitmap: ImageBitmap, name: string) => ImageLogoAsset;
+  discardLogo: () => void;
   onCommit: (edit: ImageEdit) => void;
   children: (pending: boolean) => ReactNode;
 }) {
   const labels = chinese ? zh : en;
   const [draft, setDraft] = useState(() => appearanceDraft(edit.appearance));
   const [compare, setCompare] = useState(false);
+  const [logoLoading, setLogoLoading] = useState(false);
+  const [logoError, setLogoError] = useState<ImageLogoError>();
+  const logoImport = useRef<AbortController>(undefined);
+  useLayoutEffect(() => () => logoImport.current?.abort(), []);
   const text = draft.watermark.text.trim();
   const invalidText = /[\p{Cc}\p{Cf}]/u.test(text) || text.length > watermarkTextLimit;
   const appearance: ImageAppearance = {
     ...draft,
     watermark: text && !invalidText ? { ...draft.watermark, text } : null,
   };
-  const pending = invalidText || JSON.stringify(appearance) !== JSON.stringify(edit.appearance);
+  const pending =
+    logoLoading || invalidText || JSON.stringify(appearance) !== JSON.stringify(edit.appearance);
+  const positions = watermarkPositions.map((value, index) => ({
+    value,
+    label: labels.positions[index] ?? value,
+  }));
   const preview = {
     ...edit,
     appearance: compare
@@ -238,6 +293,53 @@ export function ImageAppearanceWorkspace({
   function changeWatermark(values: Partial<ImageWatermark>) {
     setDraft((current) => ({ ...current, watermark: { ...current.watermark, ...values } }));
   }
+
+  function changeLogo(values: Partial<Omit<ImageLogo, 'asset'>>) {
+    setDraft((current) =>
+      current.logo ? { ...current, logo: { ...current.logo, ...values } } : current,
+    );
+  }
+
+  async function importLogo(file: File) {
+    if (logoImport.current) return;
+    const controller = new AbortController();
+    logoImport.current = controller;
+    setLogoLoading(true);
+    setLogoError(undefined);
+    try {
+      const result = await readImageLogo(file, controller.signal);
+      if (controller.signal.aborted) {
+        if ('bitmap' in result) result.bitmap.close();
+        return;
+      }
+      if ('error' in result) {
+        setLogoError(result.error);
+        return;
+      }
+      const asset = adoptLogo(result.bitmap, file.name);
+      setDraft((current) => ({
+        ...current,
+        logo: { ...(current.logo ?? defaultImageLogo), asset },
+      }));
+    } catch {
+      if (!controller.signal.aborted) setLogoError('logoInvalid');
+    } finally {
+      if (logoImport.current === controller && !controller.signal.aborted) {
+        logoImport.current = undefined;
+        setLogoLoading(false);
+      }
+    }
+  }
+
+  function cancel() {
+    logoImport.current?.abort();
+    logoImport.current = undefined;
+    setLogoLoading(false);
+    setLogoError(undefined);
+    discardLogo();
+    setDraft(appearanceDraft(edit.appearance));
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-3">
@@ -247,6 +349,24 @@ export function ImageAppearanceWorkspace({
           {compare ? <p className="text-xs text-ink-muted">{labels.comparison}</p> : null}
         </div>
         <div className="min-w-0 space-y-3" style={{ flex: '1 1 18rem' }}>
+          {tool === 'watermark' || tool === 'logo' ? (
+            <div className="flex flex-wrap gap-2">
+              <Action
+                size="sm"
+                variant={tool === 'watermark' ? 'primary' : 'secondary'}
+                onPress={() => onWatermarkTool('watermark')}
+              >
+                {labels.textTool}
+              </Action>
+              <Action
+                size="sm"
+                variant={tool === 'logo' ? 'primary' : 'secondary'}
+                onPress={() => onWatermarkTool('logo')}
+              >
+                {labels.logoTool}
+              </Action>
+            </div>
+          ) : null}
           {tool === 'tone' ? (
             <>
               {(Object.keys(toneLimits) as ImageToneField[]).map((field) => {
@@ -313,6 +433,69 @@ export function ImageAppearanceWorkspace({
                 onChange={(filterPercent) => setDraft((current) => ({ ...current, filterPercent }))}
               />
             </>
+          ) : tool === 'logo' ? (
+            <>
+              <FileChoiceAction
+                acceptedTypes={logoFileTypes}
+                disabled={logoLoading}
+                onSelect={(file) => void importLogo(file)}
+              >
+                {draft.logo ? labels.replaceLogo : labels.chooseLogo}
+              </FileChoiceAction>
+              <p className="text-xs text-ink-muted">{labels.logoHint}</p>
+              {logoLoading ? (
+                <p role="status" className="text-sm text-ink-muted">
+                  {labels.logoLoading}
+                </p>
+              ) : null}
+              {logoError ? (
+                <p role="alert" className="text-sm text-danger">
+                  {labels[logoError]}
+                </p>
+              ) : null}
+              {draft.logo ? (
+                <>
+                  <p className="text-sm text-ink-muted" style={{ overflowWrap: 'anywhere' }}>
+                    {draft.logo.asset.name}
+                  </p>
+                  <SelectField
+                    label={labels.logoPosition}
+                    value={draft.logo.position}
+                    options={positions}
+                    onValueChange={(value) => {
+                      const position = watermarkPositions.find((item) => item === value);
+                      if (position) changeLogo({ position });
+                    }}
+                  />
+                  <ValueSlider
+                    label={labels.logoSize}
+                    value={draft.logo.sizePercent}
+                    {...imageLogoSize}
+                    display={draft.logo.sizePercent + '%'}
+                    onChange={(sizePercent) => changeLogo({ sizePercent })}
+                  />
+                  <ValueSlider
+                    label={labels.logoOpacity}
+                    value={draft.logo.opacityPercent}
+                    {...watermarkOpacity}
+                    display={draft.logo.opacityPercent + '%'}
+                    onChange={(opacityPercent) => changeLogo({ opacityPercent })}
+                  />
+                  <Action
+                    size="sm"
+                    variant="quiet"
+                    disabled={logoLoading}
+                    onPress={() => {
+                      setDraft((current) => ({ ...current, logo: null }));
+                      setLogoError(undefined);
+                      discardLogo();
+                    }}
+                  >
+                    {labels.removeLogo}
+                  </Action>
+                </>
+              ) : null}
+            </>
           ) : (
             <>
               <TextField
@@ -326,10 +509,7 @@ export function ImageAppearanceWorkspace({
                 <SelectField
                   label={labels.position}
                   value={draft.watermark.position}
-                  options={watermarkPositions.map((value, index) => ({
-                    value,
-                    label: labels.positions[index] ?? value,
-                  }))}
+                  options={positions}
                   onValueChange={(value) => {
                     const position = watermarkPositions.find((item) => item === value);
                     if (position) changeWatermark({ position });
@@ -351,9 +531,7 @@ export function ImageAppearanceWorkspace({
               <ValueSlider
                 label={labels.opacity}
                 value={draft.watermark.opacityPercent}
-                min={5}
-                max={100}
-                step={5}
+                {...watermarkOpacity}
                 display={draft.watermark.opacityPercent + '%'}
                 onChange={(opacityPercent) => changeWatermark({ opacityPercent })}
               />
@@ -378,17 +556,12 @@ export function ImageAppearanceWorkspace({
           <div className="flex flex-wrap items-center gap-2">
             <Action
               size="sm"
-              disabled={!pending || invalidText}
+              disabled={!pending || invalidText || logoLoading}
               onPress={() => onCommit({ ...edit, appearance })}
             >
               {labels.apply}
             </Action>
-            <Action
-              size="sm"
-              variant="quiet"
-              disabled={!pending}
-              onPress={() => setDraft(appearanceDraft(edit.appearance))}
-            >
+            <Action size="sm" variant="quiet" disabled={!pending} onPress={cancel}>
               {labels.cancel}
             </Action>
           </div>

@@ -171,3 +171,4 @@
 - [182 Draw.io 在线编辑](182-drawio-editor/README.md) 支持新建、编辑、版本保存和下载草稿。
 - [183 图片标注](183-image-annotations/README.md) 支持形状、画笔、文字、历史和带标注副本。
 - [184 图片外观调整](184-image-appearance/README.md) 提供色彩微调、滤镜、原色对比和文字水印。
+- [185 图片水印与 WebP 编辑](185-raster-watermarks/README.md) 提供本机图片水印、文字叠加及 WebP 编辑和副本。

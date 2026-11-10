@@ -15,7 +15,8 @@ import { FilesError, type FilesErrorCode } from '@clouddrive/surface/files';
 import type { FileMediaProps } from '@clouddrive/surface/files/runtime';
 
 import { rasterType } from './media-signatures';
-import { editableImageType, type ImageSize } from './image-edit';
+import type { ImageSize } from './image-edit';
+import { editableImageType } from './image-format';
 import { audioMediaType } from './audio-format';
 const videoTypes = new Set(['video/mp4', 'video/webm', 'video/ogg']);
 const ImageViewer = lazy(() => import('./image-viewer'));

@@ -179,6 +179,10 @@
       "owner": "Host 图片元数据 Worker：受限地读取 EXIF，只返回查看器所需字段",
       "allowed": ["apps/web"]
     },
+    "image-dimensions": {
+      "owner": "Host 图片水印导入：在栅格解码前检查本机文件的尺寸上限",
+      "allowed": ["apps/web"]
+    },
     "hls.js": {
       "owner": "Host 私有 HLS 播放：按需加载，所有资源通过账号文件读取适配器",
       "allowed": ["apps/web"]

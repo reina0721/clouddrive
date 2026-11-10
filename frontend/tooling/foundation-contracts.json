@@ -104,6 +104,7 @@
         "./feedback-context",
         "./feedback-provider",
         "./feedback-presence",
+        "./file-choice-action",
         "./form-field",
         "./form-error-summary",
         "./icon-action",

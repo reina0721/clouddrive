@@ -1,3 +1,5 @@
+import type { ImageLogoAsset } from './image-logo';
+
 export const toneLimits = {
   brightness: { min: -100, max: 100, step: 5 },
   contrast: { min: -100, max: 100, step: 5 },
@@ -55,17 +57,33 @@ export const defaultWatermark: ImageWatermark = {
   sizePercent: 8,
 };
 
+export type ImageLogo = Readonly<{
+  asset: ImageLogoAsset;
+  position: ImageWatermark['position'];
+  opacityPercent: number;
+  sizePercent: number;
+}>;
+export const imageLogoSize = { min: 5, max: 90, step: 5 };
+export const defaultImageLogo = {
+  position: defaultWatermark.position,
+  opacityPercent: defaultWatermark.opacityPercent,
+  sizePercent: 25,
+} satisfies Omit<ImageLogo, 'asset'>;
+export const watermarkOpacity = { min: 5, max: 100, step: 5 };
+
 export type ImageAppearance = Readonly<{
   tone: ImageTone;
   filter: ImageFilter;
   filterPercent: number;
   watermark: ImageWatermark | null;
+  logo: ImageLogo | null;
 }>;
 export const originalImageAppearance: ImageAppearance = {
   tone: neutralImageTone,
   filter: 'original',
   filterPercent: 100,
   watermark: null,
+  logo: null,
 };
 
 type ColorRow = readonly [red: number, green: number, blue: number, offset: number];
@@ -199,25 +217,53 @@ export function paintImageColor(context: CanvasRenderingContext2D, appearance: I
   }
 }
 
-/** paintImageWatermark 在输出坐标中绘制单行文字，裁剪后仍按所选边距定位。 */
-export function paintImageWatermark(
-  context: CanvasRenderingContext2D,
-  watermark: ImageWatermark | null,
+function watermarkAnchor(
+  { width, height }: HTMLCanvasElement,
+  position: ImageWatermark['position'],
 ) {
-  if (!watermark) return;
-  const { width, height } = context.canvas;
   const shorterSide = Math.min(width, height);
   const margin = Math.floor(shorterSide * 0.04);
-  const fontSize = Math.max(1, (shorterSide * watermark.sizePercent) / 100);
-  const [vertical, horizontal] = watermark.position.split('-');
+  const [vertical, horizontal] = position.split('-');
   const x = horizontal === 'left' ? margin : horizontal === 'right' ? width - margin : width / 2;
   const y = vertical === 'top' ? margin : vertical === 'bottom' ? height - margin : height / 2;
+  return { x, y, horizontal, vertical, margin, shorterSide };
+}
+
+function paintLogo(context: CanvasRenderingContext2D, logo: ImageLogo) {
+  const { bitmap } = logo.asset;
+  const { x, y, horizontal, vertical, shorterSide } = watermarkAnchor(
+    context.canvas,
+    logo.position,
+  );
+  const scale = (shorterSide * logo.sizePercent) / (100 * Math.max(bitmap.width, bitmap.height));
+  const width = bitmap.width * scale;
+  const height = bitmap.height * scale;
+  const left = horizontal === 'left' ? x : horizontal === 'right' ? x - width : x - width / 2;
+  const top = vertical === 'top' ? y : vertical === 'bottom' ? y - height : y - height / 2;
+  context.save();
+  context.globalAlpha = logo.opacityPercent / 100;
+  context.drawImage(bitmap, left, top, width, height);
+  context.restore();
+}
+
+/** paintImageWatermarks 在输出坐标中绘制图片和文字，文字位于两种水印的上层。 */
+export function paintImageWatermarks(
+  context: CanvasRenderingContext2D,
+  { logo, watermark }: ImageAppearance,
+) {
+  if (logo) paintLogo(context, logo);
+  if (!watermark) return;
+  const { x, y, horizontal, vertical, margin, shorterSide } = watermarkAnchor(
+    context.canvas,
+    watermark.position,
+  );
+  const fontSize = Math.max(1, (shorterSide * watermark.sizePercent) / 100);
   context.save();
   context.globalAlpha = watermark.opacityPercent / 100;
   context.fillStyle = watermark.color;
   context.font = '600 ' + fontSize + 'px sans-serif';
   context.textAlign = horizontal === 'left' ? 'left' : horizontal === 'right' ? 'right' : 'center';
   context.textBaseline = vertical === 'top' ? 'top' : vertical === 'bottom' ? 'bottom' : 'middle';
-  context.fillText(watermark.text, x, y, Math.max(1, width - margin * 2));
+  context.fillText(watermark.text, x, y, Math.max(1, context.canvas.width - margin * 2));
   context.restore();
 }

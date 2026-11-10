@@ -2,14 +2,14 @@ import { paintAnnotations, type ImageAnnotation, type ImagePoint } from './image
 import {
   originalImageAppearance,
   paintImageColor,
-  paintImageWatermark,
+  paintImageWatermarks,
   type ImageAppearance,
   type ImageFilter,
 } from './image-appearance';
+import type { ImageFormat } from './image-format';
 
 export type ImageSize = Readonly<{ width: number; height: number }>;
 export type ImageCrop = Readonly<ImageSize & { x: number; y: number }>;
-export type ImageFormat = 'image/png' | 'image/jpeg';
 export type ImageEdit = Readonly<{
   crop: ImageCrop;
   turns: number;
@@ -24,11 +24,7 @@ export const imageSizeLimit = { sidePixels: 8192, totalPixels: 16 * 1024 * 1024 
 const previewSidePixels = 1200;
 const maxPreviewScale = 4;
 const filterSampleSidePixels = 96;
-const jpegQuality = 0.9;
-
-export function editableImageType(type: string): type is ImageFormat {
-  return type === 'image/png' || type === 'image/jpeg';
-}
+const lossyImageQuality = 0.9;
 
 export function validImageSize({ width, height }: ImageSize) {
   return (
@@ -147,7 +143,7 @@ function drawImage(
   context.setTransform(transform);
   paintAnnotations(context, edit.annotations, selectedAnnotation);
   context.resetTransform();
-  paintImageWatermark(context, edit.appearance.watermark);
+  paintImageWatermarks(context, edit.appearance);
   if (background === 'image/jpeg') {
     // 白底最后铺在照片与覆盖层背后，不受色彩调整影响。
     context.globalCompositeOperation = 'destination-over';
@@ -204,7 +200,7 @@ export function drawFilterSample(
     {
       ...edit,
       annotations: [],
-      appearance: { ...edit.appearance, filter, filterPercent: 100, watermark: null },
+      appearance: { ...edit.appearance, filter, filterPercent: 100, watermark: null, logo: null },
     },
     scale,
   );
@@ -218,7 +214,9 @@ export async function encodeImage(
   const canvas = document.createElement('canvas');
   try {
     if (!drawImage(canvas, source, edit, 1, format)) return null;
-    return await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, format, jpegQuality));
+    return await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, format, lossyImageQuality),
+    );
   } finally {
     canvas.width = 0;
     canvas.height = 0;

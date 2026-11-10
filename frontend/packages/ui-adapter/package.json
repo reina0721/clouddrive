@@ -21,6 +21,7 @@
     "./feedback-context": "./src/feedback-context.ts",
     "./feedback-provider": "./src/feedback-provider.tsx",
     "./feedback-presence": "./src/feedback-presence.tsx",
+    "./file-choice-action": "./src/file-choice-action.tsx",
     "./form-field": "./src/form-field.tsx",
     "./form-error-summary": "./src/form-error-summary.tsx",
     "./icon-action": "./src/icon-action.tsx",

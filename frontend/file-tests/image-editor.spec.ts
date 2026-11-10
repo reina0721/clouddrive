@@ -67,7 +67,7 @@ async function uploadFixtures(page: Page, topLeftColor = '#ff0000') {
   ).setFiles([
     { name: 'source.png', mimeType: 'image/png', buffer: Buffer.from(images.source, 'base64') },
     {
-      name: 'unsupported.webp',
+      name: 'source.webp',
       mimeType: 'image/webp',
       buffer: Buffer.from(images.webp, 'base64'),
     },
@@ -76,7 +76,7 @@ async function uploadFixtures(page: Page, topLeftColor = '#ff0000') {
   const queue = page.getByRole('dialog', { name: '上传队列', exact: true });
   await expect(queue.getByText('上传完成', { exact: true })).toHaveCount(3);
   await queue.getByRole('button', { name: '关闭', exact: true }).click();
-  return images.source;
+  return images;
 }
 
 async function topLeft(canvas: Locator) {
@@ -137,6 +137,234 @@ async function downloadCopy(page: Page, editor: Locator, expectedName: string) {
   if (!path) throw new Error('没有收到下载文件');
   return readFile(path);
 }
+
+test('WebP 支持图片水印、透明副本和原件保留', async ({ page }, info) => {
+  test.setTimeout(150_000);
+  const parentId = await createWorkspace(page, 'image-logo-');
+  const { webp: original } = await uploadFixtures(page);
+  const assets = await page.evaluate(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 80;
+    canvas.height = 40;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('创建水印样本需要 Canvas');
+    ctx.fillStyle = '#f0cc20';
+    ctx.fillRect(0, 0, 40, 40);
+    const png = canvas.toDataURL('image/png').split(',')[1] ?? '';
+    const webp = canvas.toDataURL('image/webp').split(',')[1] ?? '';
+    ctx.fillStyle = '#e000a0';
+    ctx.fillRect(0, 0, 80, 40);
+    const jpeg = canvas.toDataURL('image/jpeg').split(',')[1] ?? '';
+    canvas.width = 1025;
+    canvas.height = 1;
+    const oversized = canvas.toDataURL('image/png').split(',')[1] ?? '';
+    return { png, webp, jpeg, oversized };
+  });
+  await page.evaluate(() => {
+    const probe = { closed: 0 };
+    Object.defineProperty(window, '__logoCloseProbe', { value: probe });
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- 调用时保留原位图的 this。
+    const close = ImageBitmap.prototype.close;
+    ImageBitmap.prototype.close = function () {
+      if (this.width === 80 && this.height === 40) probe.closed++;
+      close.call(this);
+    };
+  });
+  const closed = () =>
+    page.evaluate(
+      () => (window as unknown as { __logoCloseProbe: { closed: number } }).__logoCloseProbe.closed,
+    );
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole('button', { name: 'source.webp', exact: true }).click();
+  await expect(page.getByRole('img', { name: 'source.webp', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '编辑图片', exact: true }).click();
+  const editor = page.getByRole('dialog', { name: '图片编辑器', exact: true });
+  const button = (name: string) => editor.getByRole('button', { name, exact: true });
+  const canvas = editor.getByRole('img', { name: '图片编辑画布', exact: true });
+  const slider = (name: string) => editor.getByRole('slider', { name, exact: true });
+  const pixel = (x: number, y: number) => canvasPixel(canvas, x / 320, y / 240);
+  const select = (field: string) =>
+    editor
+      .locator('[data-slot="select-trigger"]')
+      .and(editor.getByRole('button', { name: new RegExp(field) }));
+  const choose = async (field: string, option: string) => {
+    await select(field).click();
+    await page.getByRole('option', { name: option, exact: true }).click();
+  };
+  const chooseFile = async (name: string, mimeType: string, buffer: Buffer) => {
+    const pending = page.waitForEvent('filechooser');
+    await editor.getByRole('button', { name: /^(选择|替换)水印图片$/ }).click();
+    await (await pending).setFiles({ name, mimeType, buffer });
+  };
+  const pngLogo = Buffer.from(assets.png, 'base64');
+  const isGold = ([r = 0, g = 0, b = 0, a = 0]: number[]) =>
+    r > 200 && g > 150 && b < 90 && a > 240;
+  await expect(select('输出格式')).toContainText('WebP');
+  await expect.poll(() => pixel(280, 220)).toEqual([0, 0, 0, 0]);
+  const originalAtTop = await pixel(20, 20);
+  await button('水印').click();
+  await expect(button('文字水印')).toBeVisible();
+  await button('图片水印').click();
+  await chooseFile('brand.png', 'image/png', pngLogo);
+  await expect(editor.getByText('brand.png', { exact: true })).toBeVisible();
+  await expect(button('下载副本')).toBeDisabled();
+  await slider('图片水印不透明度').press('End');
+
+  for (const [option, x, y] of [
+    ['左上', 24, 24],
+    ['上方居中', 145, 24],
+    ['右上', 266, 24],
+    ['左侧居中', 24, 120],
+    ['中央', 145, 120],
+    ['右侧居中', 266, 120],
+    ['左下', 24, 216],
+    ['下方居中', 145, 216],
+    ['右下', 266, 216],
+  ] as const) {
+    await choose('图片水印位置', option);
+    await expect.poll(async () => isGold(await pixel(x, y))).toBe(true);
+  }
+  await expect.poll(() => pixel(299, 216)).toEqual([0, 0, 0, 0]);
+  await slider('图片水印不透明度').press('Home');
+  await expect.poll(async () => (await pixel(266, 216))[3]).toBeLessThan(20);
+  await slider('图片水印不透明度').press('End');
+  await choose('图片水印位置', '左上');
+  const pastLogoHeight = await pixel(20, 43);
+  await slider('图片水印尺寸').press('Home');
+  await expect.poll(() => pixel(20, 20)).toEqual(originalAtTop);
+  for (let index = 0; index < 4; index++) await slider('图片水印尺寸').press('ArrowRight');
+  await expect.poll(async () => isGold(await pixel(20, 20))).toBe(true);
+  await expect.poll(() => pixel(20, 43)).toEqual(pastLogoHeight);
+
+  for (const [name, buffer, message] of [
+    [
+      'not-a-logo.png',
+      Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'),
+      /无法读取这张水印/,
+    ],
+    ['broken.png', pngLogo.subarray(0, 35), /无法读取这张水印/],
+    ['too-many-bytes.png', Buffer.concat([pngLogo, Buffer.alloc(2 * 1024 * 1024)]), /超过 2 MiB/],
+    ['too-wide.png', Buffer.from(assets.oversized, 'base64'), /每边最多 1024 像素/],
+  ] as const) {
+    await chooseFile(name, 'image/png', buffer);
+    await expect(editor.getByRole('alert')).toHaveText(message);
+    await expect(editor.getByText('brand.png', { exact: true })).toBeVisible();
+    await expect.poll(async () => isGold(await pixel(20, 20))).toBe(true);
+  }
+  await button('应用外观调整').click();
+  await chooseFile('brand.jpg', 'image/jpeg', Buffer.from(assets.jpeg, 'base64'));
+  await expect(editor.getByText('brand.jpg', { exact: true })).toBeVisible();
+  await expect.poll(async () => (await pixel(20, 20))[2]).toBeGreaterThan(120);
+  await button('取消外观调整').click();
+  await expect.poll(closed).toBe(1);
+  await expect.poll(async () => isGold(await pixel(20, 20))).toBe(true);
+  await chooseFile('brand.webp', 'image/webp', Buffer.from(assets.webp, 'base64'));
+  await expect(editor.getByText('brand.webp', { exact: true })).toBeVisible();
+  await button('应用外观调整').click();
+  await button('撤销').click();
+  await expect(editor.getByText('brand.png', { exact: true })).toBeVisible();
+  await button('重做').click();
+  await expect(editor.getByText('brand.webp', { exact: true })).toBeVisible();
+  await button('移除图片水印').click();
+  await expect.poll(() => pixel(20, 20)).toEqual(originalAtTop);
+  await button('应用外观调整').click();
+  await button('撤销').click();
+  await expect.poll(async () => isGold(await pixel(20, 20))).toBe(true);
+
+  await button('文字水印').click();
+  await editor.getByLabel('水印文字', { exact: true }).fill('CD');
+  await button('应用外观调整').click();
+  await button('图片水印').click();
+  const textVisible = () =>
+    canvas.evaluate((node: HTMLCanvasElement) => {
+      const context = node.getContext('2d');
+      if (!context) throw new Error('无法读取文字水印');
+      const data = context.getImageData(
+        node.width * 0.75,
+        node.height * 0.75,
+        node.width * 0.25,
+        node.height * 0.25,
+      ).data;
+      return data.some(
+        (red, index) =>
+          index % 4 === 0 &&
+          red > 240 &&
+          data[index + 1] > 240 &&
+          data[index + 2] > 240 &&
+          data[index + 3] > 120,
+      );
+    });
+  await expect.poll(textVisible).toBe(true);
+  await expect.poll(async () => isGold(await pixel(20, 20))).toBe(true);
+
+  await page.screenshot({ path: info.outputPath('logo-desktop.png'), animations: 'disabled' });
+  await page.setViewportSize({ width: 390, height: 760 });
+  await canvas.scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: info.outputPath('logo-mobile-canvas.png'),
+    animations: 'disabled',
+  });
+  await button('替换水印图片').scrollIntoViewIfNeeded();
+  expect((await canvas.boundingBox())!.width).toBeLessThan(390);
+  await page.screenshot({ path: info.outputPath('logo-mobile.png'), animations: 'disabled' });
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  await editor.getByLabel('副本名称（不含扩展名）').fill('logo-copy');
+  const webpCopy = await downloadCopy(page, editor, 'logo-copy.webp');
+  expect(webpCopy.toString('ascii', 0, 4)).toBe('RIFF');
+  expect(webpCopy.toString('ascii', 8, 12)).toBe('WEBP');
+  expect((await copyPixel(page, webpCopy, 'image/webp', 220, 180)).pixel[3]).toBe(0);
+  expect(isGold((await copyPixel(page, webpCopy, 'image/webp', 20, 20)).pixel)).toBe(true);
+  await button('上传副本到原文件夹').click();
+  await expect(editor.getByRole('status')).toContainText('副本已加入上传队列');
+  await choose('输出格式', 'PNG');
+  const png = await downloadCopy(page, editor, 'logo-copy.png');
+  expect(isGold((await copyPixel(page, png, 'image/png', 20, 20)).pixel)).toBe(true);
+  expect((await copyPixel(page, png, 'image/png', 220, 180)).pixel).toEqual([0, 0, 0, 0]);
+  await choose('输出格式', 'JPEG');
+  const jpeg = await downloadCopy(page, editor, 'logo-copy.jpg');
+  expect(isGold((await copyPixel(page, jpeg, 'image/jpeg', 20, 20)).pixel)).toBe(true);
+  expect((await copyPixel(page, jpeg, 'image/jpeg', 220, 180)).pixel).toEqual([255, 255, 255, 255]);
+
+  await button('关闭').click();
+  await expect.poll(closed).toBe(3);
+  const names = ['source.webp', 'logo-copy.webp'];
+  for (const [name, base64] of [
+    [names[0], original],
+    [names[1], webpCopy.toString('base64')],
+  ] as const) {
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            async ({ id, name }) => {
+              const listing = await fetch(
+                '/api/console/v1/native/files?parent=' + encodeURIComponent(id),
+              );
+              if (!listing.ok) throw new Error('无法读取副本目录，状态码 ' + listing.status);
+              const { items } = (await listing.json()) as {
+                items: { id: string; name: string; contentRevision: number }[];
+              };
+              const entry = items.find((item) => item.name === name);
+              if (!entry) return null;
+              const response = await fetch(
+                '/api/console/v1/native/files/' + encodeURIComponent(entry.id) + '/content',
+              );
+              if (response.status === 429) return null;
+              if (!response.ok) throw new Error('无法读取副本内容，状态码 ' + response.status);
+              return {
+                contentRevision: entry.contentRevision,
+                bytes: btoa(String.fromCharCode(...new Uint8Array(await response.arrayBuffer()))),
+              };
+            },
+            { id: parentId, name },
+          ),
+        { intervals: [500, 1000, 2500], timeout: 25_000 },
+      )
+      .toEqual({ contentRevision: 1, bytes: base64 });
+  }
+});
 
 test('图片外观调整支持色彩、滤镜、文字水印和副本导出', async ({ page }, info) => {
   test.setTimeout(120_000);
@@ -238,7 +466,7 @@ test('图片外观调整支持色彩、滤镜、文字水印和副本导出', as
       }
       return { left, right };
     });
-  await button('文字水印').click();
+  await button('水印').click();
   await editor.getByLabel('水印文字', { exact: true }).fill('CD');
   await choose('水印位置', '左上');
   await choose('水印颜色', '金色');
@@ -515,17 +743,13 @@ test('本人图片标注支持图形、样式、历史和带标注副本', async
 
 test('本人图片可裁剪、变换、调整尺寸、下载与上传独立副本', async ({ page, browser }, info) => {
   const parentId = await createWorkspace(page);
-  const original = await uploadFixtures(page);
+  const { source: original } = await uploadFixtures(page);
   const preview = page.getByRole('dialog');
   const editor = page.getByRole('dialog', { name: '图片编辑器', exact: true });
   const button = (name: string) => editor.getByRole('button', { name, exact: true });
   const canvas = editor.getByRole('img', { name: '图片编辑画布', exact: true });
   const editEntry = () => page.getByRole('button', { name: '编辑图片', exact: true }).click();
 
-  await page.getByRole('button', { name: 'unsupported.webp', exact: true }).click();
-  await expect(preview.getByRole('img', { name: 'unsupported.webp' })).toBeVisible();
-  await expect(preview.getByRole('button', { name: '编辑图片' })).toHaveCount(0);
-  await preview.getByRole('button', { name: '关闭', exact: true }).click();
   await page.getByRole('button', { name: 'oversize.png', exact: true }).click();
   await editEntry();
   await expect(editor.getByRole('alert')).toContainText('图片尺寸超出编辑上限');
