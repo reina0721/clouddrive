@@ -195,26 +195,24 @@ Storage 通过租约内的可寻址流读写内容，local/S3-compatible 都有�
 
 请使用凭据弹窗提供的实际服务器地址。Next开发代理保留32MiB克隆预算，只转发小JSON管理请求；WebDAV客户端直接连接展示的Go API端点，分端口开发时该地址与网页不同。生产应提供HTTPS和支持流式传输的网关，不通过提高整文件内存预算模拟流式传输。
 
-## 本地预览入口
+## 本地预览与验证
 
-执行 `./scripts/Start-FilePreview.ps1` 会构建最新后端、只迁移专用预览数据库、重启本脚本记录且启动时间吻合的进程，并验证独立预览账号。默认 WebUI `http://127.0.0.1:4180/home`、API 8120、management 9120。独立数据位于 `.data/file-preview/`，不会重置原有 `.data/app.db`。
+从根目录执行 `node scripts/dev.mjs --preview` 启动独立 SQLite、文件与传输环境，默认 WebUI 为 `http://127.0.0.1:4180/home`，API 8120，management 9120。数据与账号位于忽略的 `.data/preview/`；Ctrl+C 停止拥有的进程，重启保留数据。完整参数与环境隔离规则见[本地开发](../getting-started/local-development.md)。
 
-地址、用户名、密码、设置令牌及有有效期的 Cookie/CSRF 调试资料保存在 `.data/preview-access.json`；参考站资料由本次操作保存在 `.data/reference-access.json`。二者均应保持 Git 忽略，不能复制到源码或提交说明。预览进程在验收后持续运行，开发下一批时重新构建并重启，以预览最新实现。
+既有 Windows `Start-FilePreview.ps1` 仍使用 `.data/file-preview/` 与 `.data/preview-access.json`。浏览器配置优先读取新预览资料，缺少时兼容既有资料；可用 `CLOUDDRIVE_FILE_TEST_ACCESS` 明确指定文件。配置和阅读器用例共用一个入口，校验回环 HTTP 地址，不再绑定某次测试使用的端口。凭据、Cookie、截图与 trace 留在忽略目录；trace 可能包含会话信息，不提交或公开分享。
 
-现有 console 转发层在登录时保存 HttpOnly/Secure/SameSite 的 IAM CSRF 会话 Cookie，并沿用原有 Origin 与双提交 CSRF 校验。转发不再逐请求轮换原生 CSRF，以免并发写入互相失效。升级前已存在的旧会话可能需要重新登录。
+按改动选择真实链路；模拟和拦截式失败场景不能代替真实服务：
 
-## 验证入口
-
-先实现一批 20 项，再集中验收；失败后只对修复影响范围复测。
-
-```powershell
-# 受影响业务与真实 HTTP/数据库/重启验证
+```bash
+# 后端测试需要私有临时目录权限
+umask 077
 go test ./internal/module/files/... ./internal/composition ./pkg/storage/...
-# 启动或重启持久预览后，在 frontend 目录执行
-npx --yes pnpm@10.22.0 exec playwright test --config playwright.files.config.ts
+# 进入 frontend，使用已启动的独立预览
+pnpm exec playwright test --config playwright.files.config.ts file-tests/reader-session.spec.ts
+pnpm exec playwright test --config playwright.files.config.ts file-tests/code-editor.spec.ts file-tests/markdown-editor.spec.ts file-tests/epub-reader.spec.ts file-tests/pdf.spec.ts
 ```
 
-浏览器验收读取忽略目录里的预览资料，不将凭据写进测试源码；可用 `CLOUDDRIVE_FILE_TEST_ACCESS` 指定隔离账号资料的绝对路径。第十五批受众与继承的Go全量/vet、675单测、71项基础浏览器场景及5项最终权限复验通过；双生产构建和原体积预算通过，见[135记录](../changes/135-share-audience/verification.md)。以下是130历史范围：集中验收40条唯一浏览器流程：首轮34通过、4条离线夹具按环境跳过、1条密码分享快捷方式入口回退；修复后分享/导航/离线通过，旧富文件夹具改为独立目录后3条全部通过；新增深色英文、减少动态与窄屏浮层WCAG检查通过。新分享UI与散列按需加载后生产构建及原性能预算通过。Go HTTP/SQLite 检查覆盖两个 IAM owner、配额预留、实际进程重启、目标冲突修正及 206/416/条件下载。截图与 trace 位于 Git 忽略的 `frontend/test-results/`，trace 可能包含会话信息，不应提交或公开分享。外部 MySQL/PostgreSQL/S3/MinIO 实例与生产部署没有验收。
+全量浏览器入口为 `pnpm exec playwright test --config playwright.files.config.ts`；部分外部服务和跨账号场景需要各用例说明的独立夹具。测试结果以当前运行输出为准，不用历史功能计数或旧截图证明当前实现。外部数据库、对象存储和真实第三方编辑器必须分别验证。
 
 ## 与我共享和侧栏固定
 
@@ -271,6 +269,8 @@ v8 仅新增引用字段与固定集合表，已应用的 v1–v7 SQL 不变。�
 v9为三方言添加列，SQLite已验收v8旧行升级、重启持久化与回滚保护；有非空注解或使用过的注解版本时down拒绝，不能靠回滚丢弃整理信息。MySQL/PostgreSQL仍只有脚本与校验摘要检查，没有实例升级验收。第七批研究、20项明细与集中证据见[126变更](../changes/126-file-annotations/README.md)。
 
 ## 文件浏览与待处理操作
+
+文件打开由独立的阅读会话管理。选择应用、内置阅读器、媒体和网页应用互斥；目录、搜索或分页提交会取消尚未完成的打开意图，迟到的策略响应不能在新目录打开旧文件。已打开的编辑器持有本次文件快照与读取预算，后台上传刷新列表不会重建阅读器或丢弃未保存内容。文本、PDF、EPUB、图表、压缩包和媒体各自继续管理其读取、编辑与释放。
 
 桌面文件页采用固定宽度、独立滚动的侧栏，主文件区占剩余空间；移动端通过“文件导航”打开左侧抽屉，选择分类或目录后自动收起，关闭后焦点回到文件区。保留主应用已有的跳到内容入口，没有重复入口。空的普通目录提供直接上传文件按钮，仍进入同一传输队列；搜索无结果和回收站不提供误导的空目录上传入口。
 

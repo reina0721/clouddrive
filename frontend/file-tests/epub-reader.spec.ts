@@ -1,17 +1,9 @@
-import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import { epubFixture } from '../apps/web/src/test/epub-fixture';
-import { openReadingFixtureFolder } from './reading-fixture';
+import { openReadingFixtureFolder, readPreviewAccess } from './reading-fixture';
 
 test('真实 EPUB 的目录、章节、包内图片、字号及失败恢复', async ({ page }, info) => {
-  const access = process.env.CLOUDDRIVE_FILE_TEST_ACCESS;
-  test.skip(!access, '使用隔离文件预览。');
-  const account = JSON.parse((await readFile(access!, 'utf8')).replace(/^\uFEFF/, '')) as {
-    username: string;
-    password: string;
-    url: string;
-  };
-  expect(new URL(account.url).origin).toBe('http://127.0.0.1:4194');
+  const account = readPreviewAccess();
   let externalRequests = 0;
   await page.route('https://epub.example.test/**', async (route) => {
     externalRequests++;

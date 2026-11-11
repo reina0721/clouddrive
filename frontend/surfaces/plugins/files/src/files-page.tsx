@@ -17,16 +17,6 @@ import {
   useSyncExternalStore,
 } from 'react';
 import type { FileAnnotationSummary } from '../../../src/files/annotation-values';
-import { isEpubDocument } from '../../../src/files/epub-contract';
-import {
-  fileApplicationChoice,
-  fileApplicationDevice,
-  fileApplicationName,
-  isTextPreview,
-  type FileApplicationID,
-  type FileApplicationPolicy,
-  type WebFileApplicationItem,
-} from '../../../src/files/file-applications';
 import { fileIconExtension, type FileIconRule } from '../../../src/files/icon-rules';
 import { isMarkdownFile } from '../../../src/files/markdown';
 import { fileClipboardMaxEntries, type FileClipboardMode } from '../../../src/files/clipboard';
@@ -43,28 +33,19 @@ import {
 } from '../../../src/files/icons';
 import {
   FilesError,
-  isHlsPlaylist,
   type FileEntry,
   type FileListing,
   type FileQuery,
   type FileViewPreferences,
   type UploadCandidate,
 } from '../../../src/files/model';
-import { isPDFDocument, type FileDocumentProps } from '../../../src/files/pdf-contract';
 import {
   changeFileView,
   resolveFileView,
   type FilePreferenceSnapshot,
 } from '../../../src/files/preferences';
 import type { PinTarget } from '../../../src/files/navigation';
-import {
-  FileMedia,
-  useFileNavigation,
-  useFiles,
-  usePlayFileAudio,
-  useTransfers,
-  useTransferSnapshot,
-} from '../../../src/files/runtime';
+import { FileMedia, useFiles, useTransfers, useTransferSnapshot } from '../../../src/files/runtime';
 import { decodeFileFilters, encodeFileFilters, type FileFilters } from '../../../src/files/search';
 import { fileSelectionRange, nextFileFocus } from '../../../src/files/selection';
 import {
@@ -77,72 +58,24 @@ import { AdvancedSearchDialog } from './advanced-search-dialog';
 import { AnnotationPanel } from './annotation-panel';
 import { FileItem, FileListHeader, type FileSelectionGesture } from './file-item';
 import { CursorFilePagination, NumberedFilePagination } from './file-pagination';
-import { ImageCopyDestinationDialog } from './own-folder-picker';
 import { PinDialog } from './pinned-links';
 import { ShareDialog } from './share-dialog';
 import { directLinkBatchLimit } from '../../../src/files/direct-links';
 import { SaveShortcutDialog, ShortcutActionDialog } from './shortcut-dialogs';
 import { TagsBatchDialog } from './tags-batch-dialog';
-import { TextDialog, type TextRequest } from './text-dialog';
 import { VersionsPanel } from './versions-panel';
-import type { DrawioRequest } from './drawio-dialog';
 import { ViewOptionsDialog } from './view-options-dialog';
 import { useCursorFileFeed } from './use-cursor-file-feed';
+import { useFileReader } from './use-file-reader';
+import { FileReader } from './file-reader';
+import { archiveFile } from './file-reader-session';
 import type { TrashPurgeSelection } from '../../../src/files/trash-purge';
 
 const TrashPurgeDialog = lazy(() => import('./trash-purge-dialog'));
-const PdfDialog = lazy(() =>
-  import('./pdf-dialog').then((module) => ({ default: module.PdfDialog })),
-);
-const EpubDialog = lazy(() =>
-  import('./epub-dialog').then((module) => ({ default: module.EpubDialog })),
-);
-const ArchiveDialog = lazy(() =>
-  import('./archive-dialog').then((module) => ({ default: module.ArchiveDialog })),
-);
 const ArchiveCreateDialog = lazy(() =>
   import('./archive-create-dialog').then((module) => ({ default: module.ArchiveCreateDialog })),
 );
 const DirectLinksDialog = lazy(() => import('./direct-links-dialog'));
-const WebFilePreviewDialog = lazy(() =>
-  import('./web-file-preview-dialog').then((module) => ({ default: module.WebFilePreviewDialog })),
-);
-const DrawioDialog = lazy(() => import('./drawio-dialog'));
-const archiveFile = (entry: FileEntry) =>
-  entry.kind === 'file' &&
-  (/\.(zip|7z)$/i.test(entry.name) ||
-    entry.mediaType === 'application/zip' ||
-    entry.mediaType === 'application/x-7z-compressed');
-
-function compatibleFileApplications(entry: FileEntry, builtInText: boolean): FileApplicationID[] {
-  if (archiveFile(entry)) return ['archive'];
-  if (isPDFDocument(entry)) return ['pdf'];
-  if (isEpubDocument(entry)) return ['epub'];
-  if (isMarkdownFile(entry)) return ['markdown', 'text'];
-  if (isHlsPlaylist(entry)) return ['video'];
-  const media = entry.mediaType.split('/', 1)[0];
-  if (fileIconExtension(entry.name) === 'drawio') return ['drawio'];
-  if (media === 'image' || media === 'audio' || media === 'video') return [media];
-  return isTextPreview(entry) || builtInText ? ['text'] : [];
-}
-
-function configuredFileApplications(entry: FileEntry): FileApplicationID[] {
-  const options: FileApplicationID[] = ['pdf', 'epub', 'markdown', 'text', 'drawio'];
-  if (archiveFile(entry)) options.push('archive');
-  const media = entry.mediaType.split('/', 1)[0];
-  if (media === 'image' || media === 'audio' || media === 'video') options.push(media);
-  if (isHlsPlaylist(entry) && !options.includes('video')) options.push('video');
-  return options;
-}
-
-type FileApplicationPicker = Readonly<{
-  entry: FileEntry;
-  options?: readonly FileApplicationID[];
-  webOptions?: readonly WebFileApplicationItem[];
-  policy?: FileApplicationPolicy;
-  error?: string;
-}>;
-
 type Props = Readonly<{
   parent: string;
   category: string;
@@ -176,15 +109,11 @@ export function FilesPage({
 }: Props) {
   const filterKey = encodeFileFilters(filters);
   const port = useFiles();
-  const navigation = useFileNavigation();
   const transfers = useTransfers();
   const transferState = useTransferSnapshot();
   const { t, locale } = useFrontendTranslation();
   const chinese = locale.startsWith('zh');
   const openWithLabel = chinese ? '打开方式' : 'Open with';
-  const noApplicationLabel = chinese
-    ? '此文件在当前设备上没有可用的浏览应用。'
-    : 'No viewer is available for this file on this device.';
   const [listingSnapshot, setListingSnapshot] = useState<{
     query: FileQuery;
     revision: number;
@@ -192,23 +121,6 @@ export function FilesPage({
   }>();
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
-  const navigate = useCallback(
-    (query: Record<string, string>) => {
-      if (
-        (query.parent ?? '') !== parent ||
-        (query.category ?? '') !== category ||
-        (query.trash === 'true') !== trash ||
-        (query.search ?? '') !== search ||
-        (query.filter ?? '') !== filterKey ||
-        Number(query.page ?? 1) !== page ||
-        !!query.page !== numbered ||
-        (query.cursor ?? '') !== cursor
-      )
-        setNavigating(true);
-      routeNavigate(query);
-    },
-    [routeNavigate, parent, category, trash, search, filterKey, page, numbered, cursor],
-  );
   const [failure, setFailure] = useState('');
   const [notice, setNotice] = useState('');
   const [revision, setRevision] = useWorkspaceRevision();
@@ -239,32 +151,6 @@ export function FilesPage({
   const [shareTarget, setShareTarget] = useState<FileEntry>();
   const [directTargets, setDirectTargets] = useState<readonly FileEntry[]>();
   const [accessTarget, setAccessTarget] = useState<FileEntry>();
-  const [textEditor, setTextEditor] = useState<{ request: TextRequest; maxBytes: number }>();
-  const [drawio, setDrawio] = useState<{ request: DrawioRequest; maxBytes: number }>();
-  const [pdfPreview, setPdfPreview] = useState<Pick<FileDocumentProps, 'entry' | 'limits'>>();
-  const [epubEntry, setEpubEntry] = useState<FileEntry>();
-  const [mediaPreview, setMediaPreview] = useState<{
-    entry: FileEntry;
-    maxBytes: number;
-    videoPlaylist?: true;
-    savedImageVersion?: boolean;
-    album?: { entries: readonly FileEntry[]; index: number };
-  }>();
-  const album = mediaPreview?.album;
-  const imagePreview = album !== undefined;
-  const videoPreview =
-    mediaPreview?.videoPlaylist || mediaPreview?.entry.mediaType.startsWith('video/');
-  const moveImage = (delta: -1 | 1) => {
-    setMediaPreview((current) => {
-      if (!current?.album) return current;
-      const { entries, index } = current.album;
-      const next = index + delta;
-      const entry = entries[next];
-      if (!entry) return current;
-      return { ...current, entry, album: { entries, index: next }, savedImageVersion: false };
-    });
-  };
-  const [archiveEntry, setArchiveEntry] = useState<FileEntry>();
   const [zipSelection, setZIPSelection] = useState<{
     entries: readonly FileEntry[];
     parent: string;
@@ -288,12 +174,6 @@ export function FilesPage({
   const [galleryAnnotations, setGalleryAnnotations] = useState<FileAnnotationSummary[]>([]),
     [galleryAnnotationsLoading, setGalleryAnnotationsLoading] = useState(false),
     [galleryAnnotationFailure, setGalleryAnnotationFailure] = useState('');
-  const [applicationPicker, setApplicationPicker] = useState<FileApplicationPicker>();
-  const [webPreview, setWebPreview] = useState<{
-    entry: FileEntry;
-    application: WebFileApplicationItem;
-  }>();
-  const previewController = useRef<AbortController | undefined>(undefined);
   const fileContent = useRef<HTMLElement>(null);
   const errorText = useCallback(
     (error: unknown) =>
@@ -301,30 +181,6 @@ export function FilesPage({
     [t],
   );
   const reload = useCallback(() => setRevision((value) => value + 1), [setRevision]);
-  async function refreshPublishedImage(target: FileEntry, signal: AbortSignal) {
-    const { entry } = await port.detail(target.id, signal);
-    signal.throwIfAborted();
-    if (
-      entry.id !== target.id ||
-      entry.contentRevision <= target.contentRevision ||
-      entry.trashedAt !== null
-    )
-      throw new FilesError('conflict');
-    setMediaPreview((current) => {
-      if (current?.entry.id !== target.id) return current;
-      if (!current.album) return { ...current, entry, savedImageVersion: true };
-      return {
-        ...current,
-        entry,
-        savedImageVersion: true,
-        album: {
-          ...current.album,
-          entries: current.album.entries.map((item) => (item.id === entry.id ? entry : item)),
-        },
-      };
-    });
-    reload();
-  }
   const firstPage = () =>
     navigate({ parent, category, trash: trash ? 'true' : '', search, filter: filterKey });
   const preferenceReady = !!preferenceSnapshot || !!preferenceFailure;
@@ -561,7 +417,6 @@ export function FilesPage({
     [trash, listing, parent, port, transfers, errorText],
   );
   useEffect(() => port.subscribeDrop(enqueue), [port, enqueue]);
-  useEffect(() => () => previewController.current?.abort(), []);
   const completedRevision = useRef(transferState.completedRevision);
   useEffect(() => {
     if (completedRevision.current !== transferState.completedRevision) {
@@ -708,174 +563,48 @@ export function FilesPage({
         : [],
     [listing, preferences.view, currentGalleryPage],
   );
-  const maxTextBytes = listing?.maxTextBytes;
-  const pdfReaderLimits = listing?.pdfReader;
-  const playAudio = usePlayFileAudio();
-  const launchApplication = useCallback(
-    (entry: FileEntry, application: FileApplicationID, policy?: FileApplicationPolicy) => {
-      setApplicationPicker(undefined);
+  const reader = useFileReader({
+    scope: JSON.stringify([parent, category, trash, search, filterKey, page, numbered, cursor]),
+    entries: visibleItems,
+    maxMediaBytes,
+    maxTextBytes: listing?.maxTextBytes,
+    pdfReaderLimits: listing?.pdfReader,
+    onNotice: setNotice,
+    onChanged: reload,
+  });
+  const cancelPendingOpen = reader.cancelPending;
+  const navigate = useCallback(
+    (query: Record<string, string>) => {
       if (
-        application === 'audio' &&
-        playAudio &&
-        maxMediaBytes !== undefined &&
-        entry.trashedAt === null
+        (query.parent ?? '') !== parent ||
+        (query.category ?? '') !== category ||
+        (query.trash === 'true') !== trash ||
+        (query.search ?? '') !== search ||
+        (query.filter ?? '') !== filterKey ||
+        Number(query.page ?? 1) !== page ||
+        !!query.page !== numbered ||
+        (query.cursor ?? '') !== cursor
       ) {
-        playAudio(entry, maxMediaBytes);
-        return;
+        cancelPendingOpen();
+        setNavigating(true);
       }
-      switch (application) {
-        case 'archive':
-          setArchiveEntry(entry);
-          return;
-        case 'pdf':
-          // 文件列表刷新时保留已打开的阅读会话和本次读取预算。
-          if (pdfReaderLimits) setPdfPreview({ entry, limits: pdfReaderLimits });
-          else setNotice(t('files.errors.unavailable'));
-          return;
-        case 'epub':
-          setEpubEntry(entry);
-          return;
-        case 'drawio':
-          if (maxTextBytes === undefined || entry.trashedAt !== null)
-            setNotice(t('files.errors.unavailable'));
-          else setDrawio({ request: { entry }, maxBytes: maxTextBytes });
-          return;
-        case 'markdown':
-        case 'text':
-          if (maxTextBytes === undefined) setNotice(t('files.errors.unavailable'));
-          else
-            setTextEditor({
-              request:
-                application === 'text'
-                  ? { mode: 'edit', entry, code: true }
-                  : { mode: 'edit', entry, reading: true },
-              maxBytes: maxTextBytes,
-            });
-          return;
-        case 'image':
-        case 'audio':
-        case 'video':
-          // 上传完成会刷新列表，已打开的预览继续持有本次读取预算与文件。
-          if (maxMediaBytes === undefined) setNotice(t('files.errors.unavailable'));
-          else {
-            const device = fileApplicationDevice(window.innerWidth);
-            const neighbors =
-              application === 'image' && policy && entry.trashedAt === null
-                ? visibleItems.filter(
-                    (item) =>
-                      item.kind === 'file' &&
-                      item.parentId === entry.parentId &&
-                      item.trashedAt === null &&
-                      item.sizeBytes <= maxMediaBytes &&
-                      compatibleFileApplications(item, false).includes('image') &&
-                      fileApplicationChoice(
-                        policy,
-                        ['image'],
-                        ['image'],
-                        fileIconExtension(item.name),
-                        device,
-                      ).options.includes('image'),
-                  )
-                : undefined;
-            const position = neighbors?.findIndex((item) => item.id === entry.id) ?? -1;
-            setMediaPreview({
-              entry,
-              maxBytes: maxMediaBytes,
-              ...(application === 'image' && entry.trashedAt === null
-                ? {
-                    album:
-                      position >= 0 && neighbors
-                        ? { entries: neighbors, index: position }
-                        : { entries: [entry], index: 0 },
-                  }
-                : {}),
-              ...(application === 'video' && entry.trashedAt === null && isHlsPlaylist(entry)
-                ? { videoPlaylist: true }
-                : {}),
-            });
-          }
-          return;
-      }
+      routeNavigate(query);
     },
-    [t, maxMediaBytes, maxTextBytes, pdfReaderLimits, playAudio, visibleItems],
+    [
+      routeNavigate,
+      parent,
+      category,
+      trash,
+      search,
+      filterKey,
+      page,
+      numbered,
+      cursor,
+      cancelPendingOpen,
+    ],
   );
-  const showPreview = useCallback(
-    async (entry: FileEntry, requested?: 'choose' | 'archive') => {
-      if (entry.kind === 'shortcut') {
-        navigation.openShortcut(entry.id);
-        return;
-      }
-      if (entry.kind !== 'file') return;
-      previewController.current?.abort();
-      const controller = new AbortController();
-      previewController.current = controller;
-      if (requested === 'choose') setApplicationPicker({ entry });
-      try {
-        const policy = await port.readActiveFileApplications(controller.signal);
-        if (controller.signal.aborted) return;
-        const extension = fileIconExtension(entry.name);
-        const device = fileApplicationDevice(window.innerWidth);
-        const choice = fileApplicationChoice(
-          policy,
-          compatibleFileApplications(
-            entry,
-            policy.items.some(
-              (item) =>
-                item.id === 'text' && !item.customExtensions && item.extensions.includes(extension),
-            ),
-          ),
-          configuredFileApplications(entry),
-          extension,
-          device,
-        );
-        const webOptions =
-          requested === 'archive'
-            ? []
-            : policy.webItems.filter(
-                (app) =>
-                  app.enabled &&
-                  app.origin &&
-                  app.extensions.includes(extension) &&
-                  (app.platform === 'all' || app.platform === device),
-              );
-        const selectedWeb = requested
-          ? undefined
-          : (webOptions.find((app) => app.id === choice.defaultApp) ??
-            (webOptions.length === 1 && choice.options.length === 0 ? webOptions[0] : undefined));
-        if (selectedWeb) {
-          setApplicationPicker(undefined);
-          setWebPreview({ entry, application: selectedWeb });
-          return;
-        }
-        const selected =
-          requested === 'archive'
-            ? choice.options.find((id) => id === requested)
-            : requested === 'choose'
-              ? undefined
-              : webOptions.length
-                ? choice.options.find((id) => id === choice.defaultApp)
-                : choice.automatic;
-        if (selected) launchApplication(entry, selected, policy);
-        else
-          setApplicationPicker({
-            entry,
-            options: requested === 'archive' ? [] : choice.options,
-            webOptions,
-            policy,
-          });
-      } catch (error) {
-        if (!controller.signal.aborted) setApplicationPicker({ entry, error: errorText(error) });
-      }
-    },
-    [port, navigation, launchApplication, errorText],
-  );
-  async function download(entry: FileEntry) {
-    try {
-      await port.download(entry);
-    } catch (error) {
-      setNotice(errorText(error));
-    }
-  }
+  const showPreview = reader.open;
+  const download = reader.download;
   const selectedIds = useMemo(() => new Set(selected), [selected]);
   const targets = useMemo(
     () => listing?.items.filter((entry) => selectedIds.has(entry.id)) ?? [],
@@ -1084,6 +813,7 @@ export function FilesPage({
                 ) : null}
                 <MenuButton
                   ariaLabel={t('files.explorer.ancestors')}
+                  triggerVariant="icon"
                   label={<MoreHorizontal className="size-4" />}
                   triggerSize="sm"
                   items={[
@@ -1125,6 +855,7 @@ export function FilesPage({
                 <MenuButton
                   label={<MoreHorizontal className="size-5" />}
                   ariaLabel={t('files.discovery.folderActions')}
+                  triggerVariant="icon"
                   triggerSize="sm"
                   items={[
                     { id: 'save-shortcut', label: t('files.navigation.save') },
@@ -1569,7 +1300,7 @@ export function FilesPage({
           aria-label={title}
           aria-busy={loading || navigating}
           data-file-content
-          className={`min-h-96 min-w-0 flex-1 rounded-panel border border-border bg-surface p-3 ${!loading && !navigating && !failure && !listing?.items.length ? 'flex flex-col' : ''}`}
+          className={`min-h-96 min-w-0 flex-1 rounded-panel bg-surface p-1 ${!loading && !navigating && !failure && !listing?.items.length ? 'flex flex-col' : ''}`}
         >
           {loading || navigating ? (
             <StateSurface
@@ -1701,6 +1432,7 @@ export function FilesPage({
                     <MenuButton
                       label={<MoreHorizontal className="size-5" />}
                       ariaLabel={t('files.actionsFor', { name: entry.name })}
+                      triggerVariant="icon"
                       triggerSize="sm"
                       isOpen={contextEntry === entry.id}
                       onOpenChange={(open) => setContextEntry(open ? entry.id : undefined)}
@@ -1798,11 +1530,7 @@ export function FilesPage({
                         else if (action === 'direct-link') setDirectTargets([entry]);
                         else if (action === 'share') setShareTarget(entry);
                         else if (action === 'access') setAccessTarget(entry);
-                        else if (action === 'edit')
-                          setTextEditor({
-                            request: { mode: 'edit', entry },
-                            maxBytes: listing.maxTextBytes,
-                          });
+                        else if (action === 'edit') reader.edit(entry);
                         else if (
                           action === 'rename' ||
                           action === 'move' ||
@@ -2103,133 +1831,7 @@ export function FilesPage({
           }}
         />
       ) : null}
-      {textEditor ? (
-        <TextDialog
-          {...textEditor}
-          {...(textEditor.request.mode === 'edit'
-            ? {
-                onDownload: () => {
-                  if (textEditor.request.mode === 'edit') void download(textEditor.request.entry);
-                },
-              }
-            : {})}
-          onClose={() => setTextEditor(undefined)}
-          onSaved={() => {
-            setNotice(t('files.operationDone'));
-            reload();
-          }}
-        />
-      ) : null}
-      {drawio ? (
-        <Suspense fallback={<p role="status">{t('files.mediaLoading')}</p>}>
-          <DrawioDialog {...drawio} onClose={() => setDrawio(undefined)} onSaved={reload} />
-        </Suspense>
-      ) : null}
-      {pdfPreview ? (
-        <Suspense fallback={<p role="status">{pdfPreview.entry.name}</p>}>
-          <PdfDialog {...pdfPreview} onClose={() => setPdfPreview(undefined)} />
-        </Suspense>
-      ) : null}
-      {epubEntry ? (
-        <Suspense fallback={<p role="status">{epubEntry.name}</p>}>
-          <EpubDialog
-            key={`${epubEntry.id}:${epubEntry.contentRevision}`}
-            entry={epubEntry}
-            onClose={() => setEpubEntry(undefined)}
-            onDownload={() => void download(epubEntry)}
-          />
-        </Suspense>
-      ) : null}
-      {mediaPreview ? (
-        <DialogSurface
-          triggerLabel={t('files.mediaPreview')}
-          title={mediaPreview.entry.name}
-          description={t('files.mediaPreview')}
-          cancelLabel={t('files.close')}
-          size={videoPreview || imagePreview ? 'cover' : 'lg'}
-          layout={videoPreview || imagePreview ? 'workspace' : 'standard'}
-          isOpen
-          onOpenChange={(open) => {
-            if (!open) setMediaPreview(undefined);
-          }}
-        >
-          <div className={videoPreview ? 'flex h-full min-h-0 flex-col gap-4' : 'space-y-4'}>
-            {album ? (
-              // eslint-disable-next-line jsx-a11y-x/no-noninteractive-element-interactions -- 事件只从可聚焦的导航按钮冒泡。
-              <div
-                role="group"
-                aria-label={locale.startsWith('zh') ? '照片导航' : 'Photo navigation'}
-                className="flex flex-wrap items-center gap-2"
-                onKeyDown={(event) => {
-                  if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-                  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-                  event.preventDefault();
-                  moveImage(event.key === 'ArrowLeft' ? -1 : 1);
-                }}
-              >
-                <Action
-                  size="sm"
-                  variant="secondary"
-                  disabled={album.index === 0}
-                  onPress={() => moveImage(-1)}
-                >
-                  {locale.startsWith('zh') ? '上一张' : 'Previous photo'}
-                </Action>
-                <p role="status" className="text-sm text-ink-muted">
-                  {album.index + 1} / {album.entries.length}
-                </p>
-                <Action
-                  size="sm"
-                  variant="secondary"
-                  disabled={album.index + 1 >= album.entries.length}
-                  onPress={() => moveImage(1)}
-                >
-                  {locale.startsWith('zh') ? '下一张' : 'Next photo'}
-                </Action>
-                <Action
-                  size="sm"
-                  variant="secondary"
-                  onPress={() => void download(mediaPreview.entry)}
-                >
-                  {t('files.download')}
-                </Action>
-              </div>
-            ) : null}
-            {mediaPreview.savedImageVersion ? (
-              <p role="status" className="text-sm text-ink-muted">
-                {locale.startsWith('zh')
-                  ? '已保存图片新版本。'
-                  : 'The new image version was saved.'}
-              </p>
-            ) : null}
-            <FileMedia
-              key={mediaPreview.entry.id + ':' + mediaPreview.entry.contentRevision}
-              entry={mediaPreview.entry}
-              mode="preview"
-              maxBytes={mediaPreview.maxBytes}
-              {...(mediaPreview.videoPlaylist
-                ? { videoPlaylist: { download: () => void download(mediaPreview.entry) } }
-                : {})}
-              {...(mediaPreview.entry.kind === 'file' && mediaPreview.entry.trashedAt === null
-                ? {
-                    imageEditing: {
-                      entry: mediaPreview.entry,
-                      destinationPicker: ImageCopyDestinationDialog,
-                      onVersionPublished: refreshPublishedImage,
-                    },
-                  }
-                : {})}
-            />
-            {!mediaPreview.videoPlaylist && !imagePreview ? (
-              <div className="shrink-0">
-                <Action variant="secondary" onPress={() => void download(mediaPreview.entry)}>
-                  {t('files.download')}
-                </Action>
-              </div>
-            ) : null}
-          </div>
-        </DialogSurface>
-      ) : null}
+      <FileReader key={reader.identity} reader={reader} />
       {versionEntry ? (
         <VersionsPanel
           entry={versionEntry}
@@ -2262,15 +1864,6 @@ export function FilesPage({
           }}
         />
       ) : null}
-      {archiveEntry ? (
-        <Suspense fallback={<p role="status">{t('files.previewLoading')}</p>}>
-          <ArchiveDialog
-            entry={archiveEntry}
-            onClose={() => setArchiveEntry(undefined)}
-            onChanged={reload}
-          />
-        </Suspense>
-      ) : null}
       {zipSelection ? (
         <Suspense fallback={<p role="status">{t('files.previewLoading')}</p>}>
           <ArchiveCreateDialog
@@ -2281,81 +1874,6 @@ export function FilesPage({
               setZIPSelection(undefined);
               setQueuedZIPName(task.sourceName);
             }}
-          />
-        </Suspense>
-      ) : null}
-      {applicationPicker ? (
-        <DialogSurface
-          triggerLabel={openWithLabel}
-          title={openWithLabel}
-          description={applicationPicker.entry.name}
-          cancelLabel={t('files.close')}
-          isOpen
-          onOpenChange={(open) => {
-            if (!open) {
-              previewController.current?.abort();
-              setApplicationPicker(undefined);
-            }
-          }}
-        >
-          <div className="space-y-4">
-            {applicationPicker.error ? (
-              <p role="alert">{applicationPicker.error}</p>
-            ) : !applicationPicker.options ? (
-              <p role="status">{t('files.previewLoading')}</p>
-            ) : applicationPicker.options.length === 0 && !applicationPicker.webOptions?.length ? (
-              <p role="status">{noApplicationLabel}</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {applicationPicker.options.map((id) => (
-                  <Action
-                    key={id}
-                    variant="secondary"
-                    onPress={() => {
-                      const request = previewController.current;
-                      if (request && !request.signal.aborted)
-                        launchApplication(applicationPicker.entry, id, applicationPicker.policy);
-                    }}
-                  >
-                    {fileApplicationName(id, chinese)}
-                  </Action>
-                ))}
-                {applicationPicker.webOptions?.map((application) => (
-                  <Action
-                    key={application.id}
-                    variant="secondary"
-                    onPress={() => {
-                      setWebPreview({ entry: applicationPicker.entry, application });
-                      setApplicationPicker(undefined);
-                    }}
-                  >
-                    {application.name}
-                  </Action>
-                ))}
-              </div>
-            )}
-            <div className="flex flex-wrap gap-2">
-              {applicationPicker.error ? (
-                <Action
-                  variant="secondary"
-                  onPress={() => void showPreview(applicationPicker.entry, 'choose')}
-                >
-                  {t('files.retry')}
-                </Action>
-              ) : null}
-              <Action variant="secondary" onPress={() => void download(applicationPicker.entry)}>
-                {t('files.download')}
-              </Action>
-            </div>
-          </div>
-        </DialogSurface>
-      ) : null}
-      {webPreview ? (
-        <Suspense fallback={<p role="status">{t('files.previewLoading')}</p>}>
-          <WebFilePreviewDialog
-            entry={webPreview.entry}
-            application={webPreview.application}
-            onClose={() => setWebPreview(undefined)}
           />
         </Suspense>
       ) : null}

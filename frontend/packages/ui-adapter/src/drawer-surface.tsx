@@ -56,8 +56,8 @@ export function DrawerSurface({
             <Drawer.Body
               className={
                 composition === 'navigation'
-                  ? 'min-h-0 flex-1 overflow-hidden p-0'
-                  : 'min-h-0 px-6 py-5'
+                  ? 'min-h-0 flex-1 overflow-hidden p-0 text-ink'
+                  : 'min-h-0 px-6 py-5 text-ink'
               }
             >
               {children}

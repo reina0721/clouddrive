@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { inflateRawSync } from 'node:zlib';
 import { expect, test, type Page } from '@playwright/test';
-import { openReadingFixtureFolder } from './reading-fixture';
+import { openReadingFixtureFolder, readPreviewAccess } from './reading-fixture';
 import { drawioEndpoint } from '../surfaces/plugins/files/src/drawio-protocol';
 
 const editorURL = process.env.CLOUDDRIVE_DRAWIO_TEST_URL;
@@ -17,14 +17,7 @@ const diagram = (label: string) =>
   '<mxGeometry x="120" y="100" width="120" height="60" as="geometry"/></mxCell></root></mxGraphModel>';
 
 async function login(page: Page) {
-  const access = process.env.CLOUDDRIVE_FILE_TEST_ACCESS;
-  test.skip(!access, '使用隔离文件预览。');
-  const account = JSON.parse((await readFile(access!, 'utf8')).replace(/^\uFEFF/, '')) as {
-    username: string;
-    password: string;
-    url: string;
-  };
-  expect(new URL(account.url).origin).toBe('http://127.0.0.1:4194');
+  const account = readPreviewAccess();
   await page.goto('/login?returnTo=%2Fhome');
   await page.getByLabel('邮箱', { exact: true }).fill(account.username);
   await page.getByLabel('密码', { exact: true }).fill(account.password);

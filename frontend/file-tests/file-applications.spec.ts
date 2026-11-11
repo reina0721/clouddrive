@@ -1,8 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
 import type { FileApplicationView } from '../surfaces/src/files/file-applications';
-import { openReadingFixtureFolder } from './reading-fixture';
+import { openReadingFixtureFolder, readPreviewAccess } from './reading-fixture';
 import { siteProfileAPI } from './site-profile-api';
 
 async function filesAPI<T>(page: Page, path: string, method = 'GET', body?: unknown): Promise<T> {
@@ -30,14 +29,7 @@ async function filesAPI<T>(page: Page, path: string, method = 'GET', body?: unkn
 }
 
 async function loginQA(page: Page) {
-  const access = process.env.CLOUDDRIVE_FILE_TEST_ACCESS;
-  test.skip(!access, '应用配置只使用隔离预览。');
-  const account = JSON.parse((await readFile(access!, 'utf8')).replace(/^\uFEFF/, '')) as {
-    username: string;
-    password: string;
-    url: string;
-  };
-  expect(new URL(account.url).origin).toBe('http://127.0.0.1:4194');
+  const account = readPreviewAccess();
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/login?returnTo=%2Fhome');
   await page.getByLabel('邮箱', { exact: true }).fill(account.username);

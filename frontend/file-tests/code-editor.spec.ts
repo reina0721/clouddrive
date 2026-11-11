@@ -1,23 +1,16 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test, type Locator } from '@playwright/test';
-import { openReadingFixtureFolder } from './reading-fixture';
+import { openReadingFixtureFolder, readPreviewAccess } from './reading-fixture';
 
 test.use({ actionTimeout: 15_000 });
 
 test('代码编辑、搜索替换、版本冲突及原始编码保存', async ({ page, context }, info) => {
   test.setTimeout(120_000);
-  const access = process.env.CLOUDDRIVE_FILE_TEST_ACCESS;
-  test.skip(!access, '使用隔离文件预览。');
-  const account = JSON.parse((await readFile(access!, 'utf8')).replace(/^\uFEFF/, '')) as {
-    username: string;
-    password: string;
-    url: string;
-  };
+  const account = readPreviewAccess();
   const select = async (trigger: Locator, option: string) => {
     await trigger.click();
     await page.getByRole('option', { name: option, exact: true }).click();
   };
-  expect(new URL(account.url).origin).toBe('http://127.0.0.1:4194');
   await page.goto('/login?returnTo=%2Fhome');
   await page.getByLabel('邮箱', { exact: true }).fill(account.username);
   await page.getByLabel('密码', { exact: true }).fill(account.password);

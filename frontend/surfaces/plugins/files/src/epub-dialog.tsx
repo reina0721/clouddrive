@@ -311,7 +311,11 @@ export function EpubDialog({
       }}
     >
       <div ref={workspace} className="flex h-full min-h-0 min-w-0 flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2">
+        <div
+          role="toolbar"
+          aria-label={labels.title}
+          className="flex shrink-0 items-center gap-2 overflow-x-auto"
+        >
           <IconAction label={t('files.download')} size="sm" tooltip onPress={onDownload}>
             <Download className="size-icon-sm" aria-hidden="true" />
           </IconAction>
@@ -326,7 +330,7 @@ export function EpubDialog({
               >
                 <ChevronLeft className="size-icon-sm" aria-hidden="true" />
               </IconAction>
-              <span className="text-sm text-ink-muted" role="status">
+              <span className="shrink-0 whitespace-nowrap text-sm text-ink-muted" role="status">
                 {labels.chapter(chapter + 1, book.chapters.length)}
               </span>
               <IconAction

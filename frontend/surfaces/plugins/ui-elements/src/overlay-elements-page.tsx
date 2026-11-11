@@ -12,7 +12,7 @@ import {
   PopoverCard,
   TooltipAction,
 } from '@clouddrive/ui-adapter/overlays';
-import { Archive, Copy, Pencil, Trash2 } from 'lucide-react';
+import { Archive, Copy, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useFrontendTranslation } from '@clouddrive/i18n';
@@ -76,6 +76,28 @@ export function OverlayElementsPage() {
                     },
                   ]}
                 />
+              </ComponentPreview>
+              <ComponentPreview
+                name="MenuButton · Material triggers"
+                description={t('uiElements.catalog.menuDescription')}
+                states={['Default', 'Icon', 'Keyboard', 'Touch']}
+              >
+                <div className="flex items-center gap-3">
+                  <MenuButton
+                    ariaLabel={t('uiElements.tonalMenu')}
+                    label={t('uiElements.menu')}
+                    triggerVariant="primary"
+                    items={[{ id: 'edit', label: t('uiElements.menuEdit') }]}
+                    onAction={setLastAction}
+                  />
+                  <MenuButton
+                    ariaLabel={t('uiElements.iconMenu')}
+                    label={<MoreHorizontal className="size-5" />}
+                    triggerVariant="icon"
+                    items={[{ id: 'copy', label: t('uiElements.menuCopy') }]}
+                    onAction={setLastAction}
+                  />
+                </div>
               </ComponentPreview>
               <ComponentPreview
                 name="MenuButton · Groups / Submenu"

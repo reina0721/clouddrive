@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
-import { openReadingFixtureFolder } from './reading-fixture';
+import { openReadingFixtureFolder, readPreviewAccess } from './reading-fixture';
 
 type Tag = readonly [id: number, type: number, count: number, value: Buffer];
 const ascii = (id: number, text: string): Tag => [
@@ -107,14 +107,7 @@ function photoWithExif(jpeg: Buffer) {
 
 test('同目录切图、真实 EXIF、定位隐私和窄屏照片查看', async ({ page }, info) => {
   test.setTimeout(120_000);
-  const access = process.env.CLOUDDRIVE_FILE_TEST_ACCESS;
-  test.skip(!access, '使用隔离文件预览。');
-  const account = JSON.parse((await readFile(access!, 'utf8')).replace(/^\uFEFF/, '')) as {
-    username: string;
-    password: string;
-    url: string;
-  };
-  expect(new URL(account.url).origin).toBe('http://127.0.0.1:4194');
+  const account = readPreviewAccess();
   await page.goto('/login?returnTo=%2Fhome');
   await page.getByLabel('邮箱', { exact: true }).fill(account.username);
   await page.getByLabel('密码', { exact: true }).fill(account.password);

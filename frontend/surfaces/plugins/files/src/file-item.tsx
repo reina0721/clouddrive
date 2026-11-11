@@ -171,7 +171,7 @@ export function FileItem({
         onContext();
       }}
       data-file-cut={cut || undefined}
-      className={`${isList ? 'flex min-w-0 items-center gap-2 border-b border-border py-2' : 'min-w-0 rounded-control border border-border p-2'} ${selected ? 'bg-brand-soft' : 'hover:bg-surface-muted'} ${cut ? 'opacity-50' : ''}`}
+      className={`${isList ? 'flex min-w-0 items-center gap-2 border-b border-border py-2' : 'min-w-0 rounded-panel border border-border p-3'} ${selected ? 'bg-brand-soft' : isList ? 'hover:bg-surface-muted' : 'bg-surface hover:bg-surface-muted'} ${cut ? 'opacity-50' : ''}`}
     >
       {isList ? (
         <>
