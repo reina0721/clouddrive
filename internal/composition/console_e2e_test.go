@@ -132,7 +132,15 @@ func TestConsoleSQLiteDataIsolationAndRestart(t *testing.T) {
 	}
 	department := owner.request(t, "POST", "/native/organization/departments", map[string]any{"code": "engineering", "name": "Engineering", "leader": "Owner", "remark": "real data"}, 201)
 	owner.request(t, "PATCH", "/native/organization/departments/"+department["id"].(string), map[string]any{"version": department["version"], "name": "Engineering team", "active": true, "archived": false}, 200)
-	owner.request(t, "POST", "/todos", map[string]any{"title": "Integration todo"}, 200)
+	todo := owner.request(t, "POST", "/todos", map[string]any{"title": "Integration todo"}, 200)
+	completed := owner.request(t, "PATCH", "/todos/"+todo["id"].(string)+"/complete", map[string]any{}, 200)
+	if completed["status"] != "completed" || completed["completedAt"] == nil {
+		t.Fatal("completing a todo must persist its completed status and timestamp")
+	}
+	repeated := owner.request(t, "PATCH", "/todos/"+todo["id"].(string)+"/complete", map[string]any{}, 200)
+	if repeated["completedAt"] != completed["completedAt"] {
+		t.Fatal("repeating completion changed its timestamp")
+	}
 	issued := owner.request(t, "POST", "/native/iam/api-tokens", map[string]any{"name": "Integration token", "description": "", "scopes": []string{"todos:read"}}, 200)
 
 	tokenID := issued["id"].(string)

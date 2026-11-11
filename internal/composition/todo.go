@@ -141,16 +141,12 @@ func newTodoOperationSupervisor(participants []supervisor.Participant) (*supervi
 	return supervisor.New(supervisor.Config{}, participants...)
 }
 
-// todoPolicyName 是 Todo 模块引用的命名执行策略名（见 config execution.policies.todo）。
-const todoPolicyName = "todo"
-
 // todoExecutionAdapter 把底层 execution 能力（Capabilities.Execution）适配为 Todo Service 的窄 port。
-// 幂等键透传；执行体返回真实写入实体；重复完成（Duplicate）不重跑写操作。
+// 使用已配置的默认执行策略，幂等键透传；重复完成（Duplicate）不重跑写操作。
 func todoExecutionAdapter(access executionapp.Access) service.Executor {
 	return func(ctx context.Context, key string, operation func(context.Context) (model.Todo, error)) (saved model.Todo, duplicate bool, err error) {
 		result, execErr := access.Execute(ctx, pkgexecution.Execution{
-			Key:        pkgexecution.Key(key),
-			PolicyName: todoPolicyName,
+			Key: pkgexecution.Key(key),
 			Operation: func(operationCtx context.Context) (any, error) {
 				value, opErr := operation(operationCtx)
 				if opErr == nil {

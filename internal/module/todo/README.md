@@ -27,6 +27,7 @@ HTTP handler 层位于模块顶层 `handler/`：`handler.go` 实现窄 `Operatio
 - 按 ID 查询真实记录后执行 owner 授权；跨 actor 与不存在对象使用相同 Not Found 语义。
 - 按 owner 与状态分页列表，稳定排序并返回总数。
 - 读取真实记录并授权后将 `pending` Todo 完成为 `completed`；串行重复完成保持幂等，并发修改由 Version 冲突保护。
+- 完成操作经 composition 注入的执行能力使用默认策略；不要求额外配置 `todo` 命名策略。
 
 HTTP 路由与 CLI 命令的运行方式见根 [README](../../../README.md) 和[首次使用与最小验收](../../../docs/getting-started/first-use.md)。模块边界、配置和 Schema 的当前规则以本 README、[应用模块开发指南](../../../docs/development/application-module-development.md)和[API 文档](../../../api/README.md)为准。
 

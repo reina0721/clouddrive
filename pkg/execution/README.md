@@ -15,14 +15,14 @@ result, err := executor.Execute(ctx, execution.Execution{
 	Key:       execution.Key("todo.cleanup:2026-08-22"),
 	Trigger:   "scheduler",
 	LeaseTTL:  time.Minute,
-	PolicyName: "todo",
 	Operation: func(ctx context.Context) (any, error) {
 		return nil, service.Cleanup(ctx)
 	},
 })
 ```
 
-业务代码不要创建第二套 Store 或 Executor 绕过注入。通常以 `PolicyName` 引用 composition 解析的命名策略；直接构造 `RetryPolicy` 只适合明确拥有预算的技术边界。
+业务代码不要创建第二套 Store 或 Executor 绕过注入。缺省使用配置的默认策略；需要独立预算时，
+以 `PolicyName` 引用已经配置的命名策略，未知名称会直接失败。直接构造 `RetryPolicy` 只适合明确拥有预算的技术边界。
 
 ## 策略与资源边界
 

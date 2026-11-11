@@ -62,13 +62,15 @@ execution:
 
 ```go
 res, err := executor.Execute(ctx, pkgexecution.Execution{
-    Key:        pkgexecution.Key("todo:complete:" + command.ID),
-    PolicyName: "todo",
+    Key: pkgexecution.Key("todo:complete:" + command.ID),
     Operation: func(ctx context.Context) (any, error) {
         return s.repository.Save(ctx, todo)
     },
 })
 ```
+
+Todo 完成使用已配置的默认执行策略；不依赖示例中的 `todo` 命名策略。业务确需独立预算时，
+先配置该命名策略，再设置 `PolicyName`。幂等键与持久化 Version 仍分别处理执行去重和写入冲突。
 
 消息 consumer 明确使用单次 attempt，让 broker redelivery 保持唯一 delivery retry owner；Scheduler 的协调重试也不并入 Execution attempts，避免 N×M 放大。
 
