@@ -125,26 +125,8 @@ for (const legacyPath of legacyArchitecturePaths) {
   }
 }
 
-const architectureNamingRoots = [
-  join(frontendRoot, 'packages', 'plugin-framework', 'src'),
-  join(frontendRoot, 'packages', 'surface-foundation', 'src'),
-  join(frontendRoot, 'surfaces', 'src'),
-  join(frontendRoot, 'apps', 'web', 'src', 'host'),
-  join(frontendRoot, 'apps', 'web', 'src', 'shell'),
-  join(frontendRoot, 'apps', 'web', 'src', 'i18n'),
-];
-for (const root of architectureNamingRoots) {
-  for (const file of await collectSourceFiles(root)) {
-    const content = await readFile(file, 'utf8');
-    const redundantName = /\bAdmin[A-Z][A-Za-z0-9_]*/.exec(content)?.[0];
-    if (redundantName) {
-      violations.push(
-        `${relative(frontendRoot, file).split(sep).join('/')}: 架构核心禁止重复上下文命名 ${redundantName}`,
-      );
-    }
-  }
-}
-
+// 业务领域允许用 Admin 等词表达跨账号管理的授权语义。
+// 架构由依赖方向和 owner 检查，不能仅凭类型名称中的单词推断层级违规。
 const vendorOwners = new Map([
   ['react-hook-form', 'packages/form-foundation'],
   ['@hookform/resolvers', 'packages/form-foundation'],

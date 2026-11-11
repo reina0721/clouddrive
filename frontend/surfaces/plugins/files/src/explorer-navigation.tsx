@@ -31,8 +31,8 @@ export function ExplorerNavigation({
     <>
       <aside
         className={
-          'hidden h-full overflow-y-auto py-2 md:block md:shrink-0 ' +
-          (collapsed ? 'px-1 md:w-20' : 'px-3 md:w-60')
+          'hidden h-full min-h-0 py-4 md:block md:shrink-0 ' +
+          (collapsed ? 'px-1 md:w-20' : 'px-3 md:w-64')
         }
       >
         {children(() => {}, false)}

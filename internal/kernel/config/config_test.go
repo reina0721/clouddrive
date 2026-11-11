@@ -16,6 +16,47 @@ type databaseConfig struct {
 	PingTimeout time.Duration `mapstructure:"pingTimeout"`
 }
 
+func TestEnvironmentStringListsUseExplicitJSONArrays(t *testing.T) {
+	for _, test := range []struct {
+		name    string
+		input   string
+		want    []string
+		invalid bool
+	}{
+		{name: "origins", input: `["http://127.0.0.1:4173","https://example.test/path,a"]`, want: []string{"http://127.0.0.1:4173", "https://example.test/path,a"}},
+		{name: "clear defaults", input: `[]`, want: []string{}},
+		{name: "plain comma separated rejected", input: `one,two`, invalid: true},
+		{name: "null rejected", input: `null`, invalid: true},
+		{name: "mixed types rejected", input: `["one",2]`, invalid: true},
+		{name: "null element rejected", input: `["one",null]`, invalid: true},
+		{name: "malformed rejected", input: `["one"`, invalid: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Setenv("CONFIG_LIST_TEST_HTTP__ORIGINS", test.input)
+			snapshot, err := New(EnvSource("CONFIG_LIST_TEST_")).Load(t.Context())
+			if err != nil {
+				t.Fatal(err)
+			}
+			decoded := struct {
+				Origins []string `mapstructure:"origins"`
+			}{Origins: []string{"default"}}
+			err = snapshot.DecodeSection("http", &decoded)
+			if test.invalid {
+				if err == nil {
+					t.Fatal("invalid string list accepted")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(decoded.Origins, test.want) {
+				t.Fatalf("origins = %#v, want %#v", decoded.Origins, test.want)
+			}
+		})
+	}
+}
+
 func TestLoaderMergesSourcesAndRedactsSecrets(t *testing.T) {
 	t.Setenv("GO_SCAFFOLD_TEST_DATABASE__PINGTIMEOUT", "9s")
 	loader := New(

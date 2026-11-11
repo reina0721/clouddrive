@@ -6,16 +6,17 @@ Go 服务位于根目录，完整 Next.js/pnpm 工作区位于 frontend/。浏�
 
 ## 本地启动
 
-需要 Go 1.26.10、Node >=22.18、pnpm 10.22.0。脚本通过 npx 调用指定 pnpm，不修改全局版本。Go 可使用已安装版本或通过 -GoExecutable 指定独立工具路径。
+需要 Go 1.26.10、Node >=22.18（验证工具采用 Node 24）、pnpm 10.22.0。完整前置与跨平台命令见[本地开发](docs/getting-started/local-development.md)。
 
-```powershell
-./scripts/Start-Dev.ps1
-# 首次打开 http://127.0.0.1:4173/setup
-# 设置令牌：.data/dev-setup-token；也可预先提供 APP_IAM__LOCAL__SETUPTOKEN
-./scripts/Stop-Dev.ps1
+```bash
+node scripts/dev.mjs --prepare
+# 首次访问 http://127.0.0.1:4173/setup；Ctrl+C 停止所拥有的服务
+# 隔离真实预览：node scripts/dev.mjs --preview
 ```
 
-脚本复制 config.example.yaml 为本地 config.yaml，迁移 SQLite 数据库，再启动两个进程。日志和进程记录保存在 .data/，不会提交数据库、令牌或凭据。默认使用真实后端；接口失败会显示错误，不回退模拟数据。
+统一入口使用 Node 24，按需生成本地配置、迁移数据库并验证前后端就绪；已有数据保留。日志在 `.data/dev/`，设置令牌在 `.data/dev/setup-token`。Windows 既有 `Start-Dev.ps1` / `Stop-Dev.ps1` 仍可使用。完整参数、预览账号与排障见[本地开发](docs/getting-started/local-development.md)。
+
+界面统一采用 [Material Design 3](frontend/docs/ui-visual-calibration.md)，设计 Token 与交互组件由公共基础层管理。
 
 ## 构建与验证
 

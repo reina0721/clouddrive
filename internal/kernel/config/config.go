@@ -688,6 +688,29 @@ func strictStringScalarHook(from reflect.Type, to reflect.Type, data any) (any, 
 	}
 	value := data.(string)
 	switch to.Kind() {
+	case reflect.Slice:
+		if to.Elem().Kind() != reflect.String {
+			return data, nil
+		}
+		// 环境变量没有数组类型。只接受显式 JSON 字符串数组，避免逗号切分
+		// 破坏 URL/名称，也不启用会放松其它配置类型的 WeaklyTypedInput。
+		if !strings.HasPrefix(strings.TrimSpace(value), "[") {
+			return nil, fmt.Errorf("string list must be a JSON array")
+		}
+		var items []json.RawMessage
+		if err := json.Unmarshal([]byte(value), &items); err != nil {
+			return nil, fmt.Errorf("decode string list as JSON array: %w", err)
+		}
+		for _, item := range items {
+			if string(item) == "null" {
+				return nil, fmt.Errorf("string list cannot contain null")
+			}
+		}
+		parsed := reflect.New(to)
+		if err := json.Unmarshal([]byte(value), parsed.Interface()); err != nil {
+			return nil, fmt.Errorf("decode string list as JSON array: %w", err)
+		}
+		return parsed.Elem().Interface(), nil
 	case reflect.Bool:
 		parsed, err := strconv.ParseBool(value)
 		if err != nil {

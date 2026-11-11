@@ -116,6 +116,7 @@
         "./overlay-trigger",
         "./panel",
         "./progress-meter",
+        "./range-slider",
         "./ready-image",
         "./search-box",
         "./skeleton",

@@ -72,7 +72,7 @@ export function Toolbar({
   return (
     <div
       aria-label={label}
-      className="flex flex-wrap items-center justify-between gap-3 rounded-panel border border-border bg-surface p-3 shadow-sm"
+      className="flex flex-wrap items-center justify-between gap-3 rounded-panel bg-surface-muted p-3"
       role="toolbar"
     >
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">{primary}</div>

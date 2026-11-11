@@ -1,6 +1,7 @@
 import { AlertDialog } from '@heroui/react/alert-dialog';
 import { Button as HeroButton } from '@heroui/react/button';
 import { OverlayTriggerAction } from './overlay-trigger';
+import { actionStyles } from './action-styles';
 import { useRef, useState, type ReactNode } from 'react';
 
 export type ConfirmDialogProps = Readonly<{
@@ -83,7 +84,7 @@ export function ConfirmDialog({
       <AlertDialog.Backdrop
         isDismissable={!pending}
         isKeyboardDismissDisabled={pending}
-        className="ui-overlay-motion bg-scrim backdrop-blur-sm"
+        className="ui-overlay-motion bg-scrim"
       >
         <AlertDialog.Container className="ui-overlay-motion" placement="center" size="md">
           <AlertDialog.Dialog className="ui-overlay-surface ui-dialog-layout w-full">
@@ -105,13 +106,13 @@ export function ConfirmDialog({
             <AlertDialog.Footer className="flex flex-wrap justify-end gap-3 border-t border-border px-6 py-4">
               <AlertDialog.CloseTrigger
                 aria-label={cancelLabel}
-                className="static inline-flex min-h-control w-auto min-w-20 items-center justify-center rounded-control border border-border bg-surface px-4 text-sm font-semibold leading-none text-ink shadow-sm hover:bg-surface-muted"
+                className={actionStyles({ variant: 'quiet' }) + ' static w-auto min-w-20'}
                 isDisabled={pending}
               >
                 {cancelLabel}
               </AlertDialog.CloseTrigger>
               <HeroButton
-                className={`inline-flex min-h-control items-center justify-center rounded-control px-4 text-sm font-semibold ${tone === 'danger' ? 'bg-danger text-on-danger hover:bg-danger/90' : 'bg-brand text-on-brand hover:bg-brand-strong'}`}
+                className={actionStyles({ variant: tone === 'danger' ? 'danger' : 'primary' })}
                 isDisabled={confirmDisabled || pending}
                 isPending={pending}
                 onPress={() => void confirm()}

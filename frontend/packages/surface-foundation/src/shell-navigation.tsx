@@ -69,7 +69,7 @@ function ExpandedNode({
   onNavigate,
 }: TreeNodeProps) {
   const active = node.kind === 'leaf' ? node.id === activeLeafId : activeAncestorIds.has(node.id);
-  const linkClassName = `ui-navigation-focus group flex min-h-10 items-center gap-3 rounded-control ${scopeKey === accordionRootScope ? 'surface-shell-navigation-root-item' : 'px-3'} py-2 text-sm font-semibold transition-colors active:bg-surface-inset ${
+  const linkClassName = `ui-navigation-focus group flex min-h-control items-center gap-3 rounded-action ${scopeKey === accordionRootScope ? 'surface-shell-navigation-root-item' : 'px-3'} py-2 text-sm font-semibold transition-colors active:bg-surface-inset ${
     active ? 'bg-brand-soft text-brand' : 'text-ink-muted hover:bg-surface-muted hover:text-ink'
   }`;
 

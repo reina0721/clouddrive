@@ -40,23 +40,24 @@
   --color-chart-3: var(--ds-chart-3);
   --color-chart-4: var(--ds-chart-4);
   --color-chart-5: var(--ds-chart-5);
-  --radius-control: 0.75rem;
+  --radius-control: 0.25rem;
   --radius-panel: 1rem;
-  --radius-shell: 1.25rem;
-  --spacing-control-sm: 2.25rem;
-  --spacing-control: 2.75rem;
+  --radius-shell: 1.75rem;
+  --radius-action: 9999px;
+  --spacing-control-sm: 2.5rem;
+  --spacing-control: 3rem;
   --spacing-control-lg: 3rem;
   --spacing-progress-bar: 0.1875rem;
   --spacing-icon-sm: 1rem;
   --spacing-icon: 1.25rem;
   --spacing-icon-lg: 1.5rem;
-  --spacing-option: 2.5rem;
+  --spacing-option: 3rem;
   --spacing-overlay: 18rem;
   --spacing-focus-ring-width: 0.125rem;
   --spacing-focus-ring-offset: 0.125rem;
-  --shadow-panel: 0 1px 2px rgb(15 23 42 / 0.04), 0 12px 32px rgb(15 23 42 / 0.06);
-  --shadow-overlay: 0 24px 64px rgb(15 23 42 / 0.18);
-  --ease-product: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --shadow-panel: 0 1px 3px rgb(0 0 0 / 0.12), 0 1px 2px rgb(0 0 0 / 0.08);
+  --shadow-overlay: 0 4px 8px rgb(0 0 0 / 0.16), 0 2px 4px rgb(0 0 0 / 0.12);
+  --ease-product: cubic-bezier(0.2, 0, 0, 1);
   --default-transition-duration: var(
     --motion-duration-control
   ); /* 未显式 duration 的 transition-* 统一归 control 语义 */
@@ -107,24 +108,24 @@
   --motion-distance-enter: 1.5rem; /* 页面内容方向进入位移（forward 方向 recipe 消费：右入克制位移，非手机重横滑） */
   /* @ds-region:root-motion-properties:end */
   /* @ds-region:root-color-properties:start */
-  --ds-canvas: #f6f7fb;
-  --ds-surface: #ffffff;
-  --ds-surface-raised: #ffffff;
-  --ds-surface-muted: #f0f2f7;
-  --ds-surface-inset: #e9ecf3;
-  --ds-border: #e4e7ee;
-  --ds-border-strong: #cfd5df;
-  --ds-ink: #172033;
-  --ds-ink-muted: #596579;
-  --ds-brand: #5d49d6;
-  --ds-brand-strong: #4e3bc3;
-  --ds-brand-soft: #eeebff;
+  --ds-canvas: #f0f1f7;
+  --ds-surface: #f9f9ff;
+  --ds-surface-raised: #eceef4;
+  --ds-surface-muted: #f0f1f7;
+  --ds-surface-inset: #e1e2e9;
+  --ds-border: #c4c6d0;
+  --ds-border-strong: #74777f;
+  --ds-ink: #191c20;
+  --ds-ink-muted: #44474e;
+  --ds-brand: #415f91;
+  --ds-brand-strong: #284777;
+  --ds-brand-soft: #d6e3ff;
   --ds-success: #10703f;
   --ds-success-soft: #e8f7ef;
   --ds-warning: #b54708;
   --ds-warning-soft: #fff2df;
-  --ds-danger: #c4323d;
-  --ds-danger-soft: #ffeaec;
+  --ds-danger: #ba1a1a;
+  --ds-danger-soft: #ffdad6;
   --ds-info: #2463eb;
   --ds-info-soft: #e9f0ff;
   --ds-on-brand: #ffffff;
@@ -132,7 +133,7 @@
   --ds-on-warning: #2b1600;
   --ds-on-danger: #ffffff;
   --ds-on-info: #ffffff;
-  --ds-focus-ring: #5d49d6;
+  --ds-focus-ring: #415f91;
   --ds-scrim: rgb(15 23 42 / 0.38);
   --ds-chart-1: #5d49d6;
   --ds-chart-2: #2463eb;
@@ -145,32 +146,32 @@
 [data-theme='dark'] {
   color-scheme: dark;
   /* @ds-region:dark-color-properties:start */
-  --ds-canvas: #0d111c;
-  --ds-surface: #141a27;
-  --ds-surface-raised: #1a2232;
-  --ds-surface-muted: #20293a;
-  --ds-surface-inset: #101622;
-  --ds-border: #273247;
-  --ds-border-strong: #36435b;
-  --ds-ink: #f5f7fb;
-  --ds-ink-muted: #9aa6ba;
-  --ds-brand: #9b8cff;
-  --ds-brand-strong: #b0a5ff;
-  --ds-brand-soft: #29244d;
+  --ds-canvas: #111318;
+  --ds-surface: #191c20;
+  --ds-surface-raised: #282a2f;
+  --ds-surface-muted: #202329;
+  --ds-surface-inset: #0c0e13;
+  --ds-border: #44474e;
+  --ds-border-strong: #8e9099;
+  --ds-ink: #e2e2e9;
+  --ds-ink-muted: #c4c6d0;
+  --ds-brand: #aac7ff;
+  --ds-brand-strong: #d6e3ff;
+  --ds-brand-soft: #284777;
   --ds-success: #57d08b;
   --ds-success-soft: #153827;
   --ds-warning: #f3b55a;
   --ds-warning-soft: #3d2d18;
-  --ds-danger: #ff7a86;
-  --ds-danger-soft: #422129;
+  --ds-danger: #ffb4ab;
+  --ds-danger-soft: #93000a;
   --ds-info: #78a5ff;
   --ds-info-soft: #192d55;
-  --ds-on-brand: #17122d;
+  --ds-on-brand: #0a305f;
   --ds-on-success: #082416;
   --ds-on-warning: #2a1800;
-  --ds-on-danger: #2d1015;
+  --ds-on-danger: #690005;
   --ds-on-info: #0b1b3a;
-  --ds-focus-ring: #b0a5ff;
+  --ds-focus-ring: #aac7ff;
   --ds-scrim: rgb(0 0 0 / 0.58);
   --ds-chart-1: #9b8cff;
   --ds-chart-2: #78a5ff;
@@ -185,41 +186,41 @@
 html[data-accent='purple'],
 [data-accent-preview='purple'] {
   /* @ds-region:accent-purple-light:start */
-  --ds-brand: #5d49d6;
-  --ds-brand-strong: #4e3bc3;
-  --ds-brand-soft: #eeebff;
+  --ds-brand: #6750a4;
+  --ds-brand-strong: #4f378b;
+  --ds-brand-soft: #eaddff;
   --ds-on-brand: #ffffff;
-  --ds-focus-ring: #5d49d6;
+  --ds-focus-ring: #6750a4;
   /* @ds-region:accent-purple-light:end */
 }
 html[data-theme='dark'][data-accent='purple'],
 html[data-theme='dark'] [data-accent-preview='purple'] {
   /* @ds-region:accent-purple-dark:start */
-  --ds-brand: #9b8cff;
-  --ds-brand-strong: #b0a5ff;
-  --ds-brand-soft: #29244d;
-  --ds-on-brand: #17122d;
-  --ds-focus-ring: #b0a5ff;
+  --ds-brand: #d0bcff;
+  --ds-brand-strong: #eaddff;
+  --ds-brand-soft: #4f378b;
+  --ds-on-brand: #381e72;
+  --ds-focus-ring: #eaddff;
   /* @ds-region:accent-purple-dark:end */
 }
 html[data-accent='blue'],
 [data-accent-preview='blue'] {
   /* @ds-region:accent-blue-light:start */
-  --ds-brand: #2563eb;
-  --ds-brand-strong: #1e40af;
-  --ds-brand-soft: #e9f0ff;
+  --ds-brand: #415f91;
+  --ds-brand-strong: #284777;
+  --ds-brand-soft: #d6e3ff;
   --ds-on-brand: #ffffff;
-  --ds-focus-ring: #2563eb;
+  --ds-focus-ring: #415f91;
   /* @ds-region:accent-blue-light:end */
 }
 html[data-theme='dark'][data-accent='blue'],
 html[data-theme='dark'] [data-accent-preview='blue'] {
   /* @ds-region:accent-blue-dark:start */
-  --ds-brand: #8ab0ff;
-  --ds-brand-strong: #a5c3ff;
-  --ds-brand-soft: #1c2d52;
-  --ds-on-brand: #17122d;
-  --ds-focus-ring: #8ab0ff;
+  --ds-brand: #aac7ff;
+  --ds-brand-strong: #d6e3ff;
+  --ds-brand-soft: #284777;
+  --ds-on-brand: #0a305f;
+  --ds-focus-ring: #aac7ff;
   /* @ds-region:accent-blue-dark:end */
 }
 html[data-accent='green'],

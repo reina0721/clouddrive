@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState, useSyncExternalStore } from 'react';
-import { useFrontendTranslation } from '@clouddrive/i18n';
+import { formatNumber, useFrontendTranslation } from '@clouddrive/i18n';
 import { formatInstant } from '@clouddrive/i18n/format';
 import { usePreferencesPort } from '@clouddrive/plugin-framework/preferences';
 import { Page, PageHeader } from '@clouddrive/surface-foundation/layout';
@@ -101,17 +101,17 @@ function UsageSnapshot({ labels }: { labels: typeof zh }) {
   if ('error' in usage.result)
     return <CatalogFailure error={usage.result.error} retry={usage.refresh} />;
   const value = usage.result.value;
-  const number = new Intl.NumberFormat(locale);
+  const number = (value: number) => formatNumber(locale, value);
   return (
     <>
       <dl className="space-y-2 text-sm">
         {(
           [
-            [labels.blobCount, number.format(value.blobCount)],
+            [labels.blobCount, number(value.blobCount)],
             [labels.blobBytes, formatFileBytes(value.blobBytes)],
-            [labels.currentReferences, number.format(value.currentReferences)],
-            [labels.historyReferences, number.format(value.historyReferences)],
-            [labels.pendingCount, number.format(value.pendingCount)],
+            [labels.currentReferences, number(value.currentReferences)],
+            [labels.historyReferences, number(value.historyReferences)],
+            [labels.pendingCount, number(value.pendingCount)],
             [labels.pendingBytes, formatFileBytes(value.pendingBytes)],
             [labels.checked, formatInstant(locale, region, value.checkedAt)],
           ] as const

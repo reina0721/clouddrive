@@ -5,7 +5,7 @@ import { DateField } from '@heroui/react/date-field';
 import { DatePicker } from '@heroui/react/date-picker';
 import { Description } from '@heroui/react/description';
 import { Label } from '@heroui/react/label';
-import { parseDate } from '@internationalized/date';
+import { parseDate, type CalendarDate } from '@internationalized/date';
 
 export type DatePickerFieldProps = Readonly<{
   label: string;
@@ -28,12 +28,12 @@ export function DatePickerField({
   onValueChange,
 }: DatePickerFieldProps) {
   return (
-    <DatePicker
+    <DatePicker<CalendarDate>
       className="ui-field"
       defaultOpen={defaultOpen}
       isDisabled={disabled}
       {...(value === undefined ? {} : { value: value === null ? null : parseDate(value) })}
-      onChange={(value) => onValueChange?.(value?.toString() ?? null)}
+      onChange={(date: CalendarDate | null) => onValueChange?.(date?.toString() ?? null)}
     >
       <Label className="ui-field-label">{label}</Label>
       <DateField.Group className="ui-field-control flex items-center">

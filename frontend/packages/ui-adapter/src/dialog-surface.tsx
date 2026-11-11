@@ -1,6 +1,7 @@
 import { Button as HeroButton } from '@heroui/react/button';
 import { Modal } from '@heroui/react/modal';
 import { OverlayTriggerAction } from './overlay-trigger';
+import { actionStyles } from './action-styles';
 import { useRef, useState, type ReactNode } from 'react';
 
 export type DialogSurfaceProps = Readonly<{
@@ -87,7 +88,7 @@ export function DialogSurface({
       <Modal.Backdrop
         isDismissable={!pending}
         isKeyboardDismissDisabled={pending}
-        className="ui-overlay-motion bg-scrim backdrop-blur-sm"
+        className="ui-overlay-motion bg-scrim"
       >
         <Modal.Container className="ui-overlay-motion" placement="center" size={size}>
           <Modal.Dialog
@@ -133,14 +134,14 @@ export function DialogSurface({
             >
               <Modal.CloseTrigger
                 aria-label={cancelLabel}
-                className="static inline-flex min-h-control w-auto min-w-20 items-center justify-center rounded-control border border-border bg-surface px-4 text-sm font-semibold leading-none text-ink shadow-sm hover:bg-surface-muted"
+                className={actionStyles({ variant: 'quiet' }) + ' static w-auto min-w-20'}
                 isDisabled={pending}
               >
                 {cancelLabel}
               </Modal.CloseTrigger>
               {showConfirm ? (
                 <HeroButton
-                  className="inline-flex min-h-control items-center justify-center rounded-control bg-brand px-4 text-sm font-semibold text-on-brand hover:bg-brand-strong"
+                  className={actionStyles({ variant: 'primary' })}
                   isDisabled={confirmDisabled || pending}
                   aria-busy={pending || undefined}
                   onPress={() => void confirm()}

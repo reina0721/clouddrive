@@ -21,11 +21,11 @@ export type IconActionProps = Readonly<{
   IconActionBehavior;
 
 const iconActionStyles = tv({
-  base: 'shrink-0 rounded-control border outline-none transition-colors',
+  base: 'ui-action shrink-0 rounded-action border-0 outline-none transition-colors',
   compoundVariants: [
     {
       active: true,
-      class: 'border-brand bg-brand-soft text-brand',
+      class: 'bg-brand-soft text-brand',
       tone: 'neutral',
     },
   ],
@@ -44,8 +44,8 @@ const iconActionStyles = tv({
       sm: 'size-control-sm min-w-control-sm',
     },
     tone: {
-      danger: 'border-danger/35 bg-danger-soft text-danger hover:bg-danger/15',
-      neutral: 'border-border bg-surface text-ink-muted hover:bg-surface-muted hover:text-ink',
+      danger: 'bg-danger-soft text-danger hover:bg-danger/15',
+      neutral: 'bg-transparent text-ink-muted hover:bg-ink/8 hover:text-ink',
     },
   },
 });

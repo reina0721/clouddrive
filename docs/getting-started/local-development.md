@@ -2,7 +2,29 @@
 
 当前启动权威为根 README 及本页。后端沿用 Go 1.26.10，前端采用 Node >=22.18 与 pnpm 10.22.0。无需修改全局工具版本。
 
-## Windows
+## 跨平台统一入口
+
+使用 Node 24、Go 1.26.10 与 pnpm 10.22.0，从仓库根目录执行：
+
+```bash
+node scripts/dev.mjs --prepare  # 首次安装依赖；以后不需要 --prepare
+```
+
+工具在前台拥有前后端及生成器进程。先检查端口，再构建、迁移并等待 Go readiness、前端登录页和同源 API 全部成功。Ctrl+C 或任一服务退出时清理其余进程；日志在 `.data/dev/`，数据保留。普通开发使用根 `config.yaml`，不存在时运行原生 `config init`；已有数据库不重置；浏览器 Origin 仅在子进程环境中按实际端口覆盖。首次设置令牌位于 `.data/dev/setup-token`，不写入聊天或 Git。
+
+需要真实浏览器验收时使用隔离环境：
+
+```bash
+node scripts/dev.mjs --preview
+```
+
+预览使用独立的 `.data/preview/` SQLite、文件、传输目录和账号，默认端口 4180 / 8120 / 9120。账号信息位于 `.data/preview/access.json`，重启复用账号与数据，不继承调用者的 `APP_` 数据库和存储环境。`run.lock` 防止同一环境并发启动；异常退出留下锁时，先确认原进程已停止再移除锁。设置 `CLOUDDRIVE_FILE_TEST_ACCESS` 为该文件的**绝对路径**后，在 frontend 运行 `pnpm exec playwright test --config playwright.files.config.ts file-tests/material-workspace.spec.ts`。该环境与原 Windows 文件预览分离。
+
+`--web-port`、`--api-port`、`--management-port` 可覆盖端口，不会终止占用端口的其它进程。默认使用 Turbopack；需要明确选择 webpack 时加 `--webpack`，不会在失败后静默更换编译器。
+
+Linux 上出现 `inotify` / `EMFILE` 时先检查 `fs.inotify.max_user_instances` 与 `fs.inotify.max_user_watches`；进程文件句柄上限和用户监听配额是不同限制。启动器不修改系统配额。SQLite 使用私有目录权限；在宽松 umask 的环境执行后端测试时使用 `umask 077`，不放宽数据库检查。
+
+## Windows 既有入口
 
 从仓库根目录执行 scripts/Start-Dev.ps1。若 Go 不在 PATH，传入 -GoExecutable 指定 go.exe；脚本也识别本机 LOCALAPPDATA/clouddrive-tools/go1.26.10/go/bin/go.exe。
 

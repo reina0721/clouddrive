@@ -1,4 +1,10 @@
 import {
+  ChevronDown,
+  ChevronRight,
+  Link2,
+  Share2,
+  Users,
+  UserRound,
   Cloud,
   Folder,
   FileText,
@@ -31,6 +37,12 @@ import {
 import { useState, type ReactNode } from 'react';
 import { fileIconImageAllowed, type FileIconRule } from './icon-rules';
 export {
+  ChevronDown,
+  ChevronRight,
+  Link2,
+  Share2,
+  Users,
+  UserRound,
   Cloud,
   Home,
   Trash2,

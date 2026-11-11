@@ -17,7 +17,6 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { filesAccentStyle } from '../../../src/files/appearance';
 import { formatFileBytes } from '../../../src/files/format';
 import {
   fileApplicationDevice,
@@ -30,6 +29,13 @@ import {
   FolderPlus,
   HardDrive,
   Home,
+  Download,
+  Link2,
+  Share2,
+  Users,
+  UserRound,
+  ChevronDown,
+  ChevronRight,
   Menu,
   Package,
   Settings,
@@ -233,15 +239,30 @@ export function FileWorkspace({
     [port, isFiles],
   );
   const refresh = () => setRevision((value) => value + 1);
-  const navigation = [
-    { target: 'shared', label: 'files.navigation.title', icon: <Cloud /> },
-    { target: 'shares', label: 'files.myShares', icon: <Cloud /> },
-    { target: 'connections', label: 'files.connections.title', icon: <HardDrive /> },
-    { target: 'transfers', label: 'files.transferCenter', icon: <Upload /> },
-    { target: 'downloads', label: 'files.downloads.title', icon: <HardDrive /> },
-    { target: 'tasks', label: 'files.archives.tasks.title', icon: <Package /> },
-    { target: 'workspace', label: 'files.management', icon: <Settings /> },
-    { target: 'account', label: 'files.account', icon: <Settings /> },
+  const navigationGroups = [
+    {
+      id: 'collaboration',
+      items: [
+        { target: 'shared', label: 'files.navigation.title', icon: <Users /> },
+        { target: 'shares', label: 'files.myShares', icon: <Share2 /> },
+        { target: 'connections', label: 'files.connections.title', icon: <Link2 /> },
+      ],
+    },
+    {
+      id: 'activity',
+      items: [
+        { target: 'transfers', label: 'files.transferCenter', icon: <Upload /> },
+        { target: 'downloads', label: 'files.downloads.title', icon: <Download /> },
+        { target: 'tasks', label: 'files.archives.tasks.title', icon: <Package /> },
+      ],
+    },
+    {
+      id: 'administration',
+      items: [
+        { target: 'workspace', label: 'files.management', icon: <Settings /> },
+        { target: 'account', label: 'files.account', icon: <UserRound /> },
+      ],
+    },
   ] as const;
   const categoryItems = [
     { key: '', label: 'files.nav', icon: <Home /> },
@@ -305,13 +326,12 @@ export function FileWorkspace({
           </Action>
         ) : null}
       </div>
-      <nav
-        aria-label={t('files.nav')}
-        className={
-          'mt-2 flex flex-col ' +
-          (!rail && directoryTree.snapshot.rootOpen ? 'min-h-0 flex-1 overflow-y-auto' : 'shrink-0')
-        }
-      >
+      <nav aria-label={t('files.nav')} className={'mt-3 min-h-0 flex-1 overflow-y-auto space-y-1'}>
+        {!rail ? (
+          <h2 className="px-4 pb-2 pt-1 text-xs font-medium text-ink-muted">
+            {t('files.workspace.library')}
+          </h2>
+        ) : null}
         {categoryItems.map((item) => {
           const active =
             isFiles &&
@@ -327,8 +347,8 @@ export function FileWorkspace({
               onNavigate={close}
               {...(active ? { 'aria-current': 'page' as const } : {})}
               className={
-                'flex items-center gap-2 rounded-control py-1.5 text-sm hover:bg-surface-muted ' +
-                (rail ? 'justify-center px-2 ' : 'px-3 ') +
+                'ui-navigation-focus flex min-h-control items-center gap-3 rounded-action py-2 text-sm transition-colors hover:bg-ink/8 ' +
+                (rail ? 'justify-center px-2 ' : 'px-4 ') +
                 (active ? 'bg-brand-soft text-brand font-semibold' : 'text-ink-muted')
               }
             >
@@ -340,7 +360,7 @@ export function FileWorkspace({
           );
           return item.key === '' && !rail ? (
             <Fragment key={item.key}>
-              <div className="flex min-w-0 items-center gap-1">
+              <div className="flex min-w-0 items-center gap-1 [&>a]:flex-1">
                 <IconAction
                   size="sm"
                   expanded={directoryTree.snapshot.rootOpen}
@@ -352,7 +372,11 @@ export function FileWorkspace({
                   )}
                   onPress={directoryTree.controller.toggleRoot}
                 >
-                  <span aria-hidden="true">{directoryTree.snapshot.rootOpen ? '▾' : '▸'}</span>
+                  {directoryTree.snapshot.rootOpen ? (
+                    <ChevronDown className="size-4" />
+                  ) : (
+                    <ChevronRight className="size-4" />
+                  )}
                 </IconAction>
                 {link}
               </div>
@@ -388,8 +412,8 @@ export function FileWorkspace({
           onNavigate={close}
           {...(isFiles && query.trash === 'true' ? { 'aria-current': 'page' as const } : {})}
           className={
-            'flex items-center gap-2 rounded-control py-1.5 text-sm hover:bg-surface-muted ' +
-            (rail ? 'justify-center px-2 ' : 'px-3 ') +
+            'ui-navigation-focus flex min-h-control items-center gap-3 rounded-action py-2 text-sm transition-colors hover:bg-ink/8 ' +
+            (rail ? 'justify-center px-2 ' : 'px-4 ') +
             (isFiles && query.trash === 'true'
               ? 'bg-brand-soft text-brand font-semibold'
               : 'text-ink-muted')
@@ -398,43 +422,49 @@ export function FileWorkspace({
           <Trash2 className="size-5 shrink-0" />
           <span className={rail ? 'sr-only' : ''}>{t('files.trash')}</span>
         </FileLink>
-        {navigation.map((item) => {
-          const active = pathname === port.destinationHref(item.target);
-          return (
-            <FileLink
-              key={item.target}
-              target={item.target}
-              title={t(item.label)}
-              onNavigate={close}
-              {...(active ? { 'aria-current': 'page' as const } : {})}
-              className={
-                'flex items-center gap-2 rounded-control py-1.5 text-sm hover:bg-surface-muted ' +
-                (rail ? 'justify-center px-2 ' : 'px-3 ') +
-                (active ? 'bg-brand-soft text-brand font-semibold' : 'text-ink-muted')
-              }
-            >
-              <span className="size-5 shrink-0" aria-hidden="true">
-                {item.icon}
-              </span>
-              <span className={rail ? 'sr-only' : ''}>{t(item.label)}</span>
-            </FileLink>
-          );
-        })}
+        {navigationGroups.map((group) => (
+          <section key={group.id} aria-label={t('files.workspace.' + group.id)} className="pt-3">
+            {!rail ? (
+              <h2 className="px-4 pb-2 text-xs font-medium text-ink-muted">
+                {t('files.workspace.' + group.id)}
+              </h2>
+            ) : (
+              <div className="mx-3 mb-2 border-t border-border" />
+            )}
+            {group.items.map((item) => {
+              const active = pathname === port.destinationHref(item.target);
+              return (
+                <FileLink
+                  key={item.target}
+                  target={item.target}
+                  title={t(item.label)}
+                  onNavigate={close}
+                  {...(active ? { 'aria-current': 'page' as const } : {})}
+                  className={
+                    'ui-navigation-focus flex min-h-control items-center gap-3 rounded-action py-2 text-sm transition-colors hover:bg-ink/8 ' +
+                    (rail ? 'justify-center px-2 ' : 'px-4 ') +
+                    (active ? 'bg-brand-soft text-brand font-semibold' : 'text-ink-muted')
+                  }
+                >
+                  <span className="size-5 shrink-0" aria-hidden="true">
+                    {item.icon}
+                  </span>
+                  <span className={rail ? 'sr-only' : ''}>{t(item.label)}</span>
+                </FileLink>
+              );
+            })}
+          </section>
+        ))}
+        {!rail ? (
+          <div data-file-pins-region className="pt-4">
+            <PinnedLinks refreshKey={revision} onNavigate={close} />
+          </div>
+        ) : null}
       </nav>
       {!rail ? (
         <>
-          <div
-            data-file-pins-region
-            className={
-              directoryTree.snapshot.rootOpen
-                ? 'max-h-24 shrink-0 overflow-y-auto'
-                : 'min-h-0 flex-1 overflow-y-auto'
-            }
-          >
-            <PinnedLinks refreshKey={revision} onNavigate={close} />
-          </div>
           <section
-            className="mt-3 shrink-0 space-y-2 rounded-panel border border-border bg-surface p-3 text-xs text-ink-muted"
+            className="mt-3 shrink-0 space-y-2 border-t border-border px-3 pt-4 pb-2 text-xs text-ink-muted"
             aria-label={t('files.storage')}
           >
             <h2 className="flex items-center gap-2 font-semibold">
@@ -465,8 +495,6 @@ export function FileWorkspace({
   );
   return (
     <div
-      data-accent-preview="blue"
-      style={filesAccentStyle}
       data-file-workspace
       className="flex h-dvh flex-col overflow-hidden bg-canvas font-sans text-ink"
     >
@@ -477,7 +505,7 @@ export function FileWorkspace({
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <header
             data-file-workspace-header
-            className="flex shrink-0 flex-wrap items-center gap-2 bg-canvas px-3 py-2"
+            className="flex min-h-20 shrink-0 flex-wrap items-center gap-3 bg-canvas px-4 py-3"
           >
             {isTrash ? (
               <>
@@ -501,7 +529,8 @@ export function FileWorkspace({
             ) : (
               <MenuButton
                 ariaLabel={t('files.new')}
-                triggerSize="sm"
+                triggerSize="md"
+                triggerVariant="primary"
                 label={
                   <span className="flex items-center gap-2">
                     <FolderPlus className="size-5" />
@@ -631,7 +660,7 @@ export function FileWorkspace({
             id="main-content"
             tabIndex={-1}
             data-file-scroll-region
-            className="min-h-0 min-w-0 flex-1 overflow-auto px-3 pb-3 pt-1"
+            className="min-h-0 min-w-0 flex-1 overflow-auto rounded-t-shell bg-surface px-4 pb-4 pt-3 md:mr-3 md:rounded-shell md:mb-3"
           >
             <WorkspaceCreateContext value={(action) => setCreate({ action })}>
               {children}

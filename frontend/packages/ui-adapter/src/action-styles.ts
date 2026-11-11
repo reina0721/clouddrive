@@ -1,7 +1,7 @@
 import { tv } from '@heroui/styles';
 
 export const actionStyles = tv({
-  base: 'inline-flex rounded-control font-semibold outline-none transition-colors',
+  base: 'ui-action inline-flex items-center justify-center rounded-action font-medium outline-none transition-colors',
   defaultVariants: {
     fullWidth: false,
     size: 'md',
@@ -18,10 +18,10 @@ export const actionStyles = tv({
       sm: 'h-control-sm gap-1.5 px-3 text-sm',
     },
     variant: {
-      danger: 'bg-danger text-on-danger shadow-sm hover:brightness-95',
-      primary: 'bg-brand text-on-brand shadow-sm hover:bg-brand-strong',
-      quiet: 'bg-transparent text-ink-muted hover:bg-surface-muted hover:text-ink',
-      secondary: 'border border-border bg-surface text-ink shadow-sm hover:bg-surface-muted',
+      danger: 'border-0 bg-danger text-on-danger hover:brightness-95',
+      primary: 'border-0 bg-brand text-on-brand hover:bg-brand-strong',
+      quiet: 'border-0 bg-transparent text-brand hover:bg-brand/8',
+      secondary: 'border border-border-strong bg-transparent text-brand hover:bg-brand/8',
     },
   },
 });

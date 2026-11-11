@@ -38,23 +38,27 @@ export function DrawerSurface({
   return (
     <Drawer isOpen={open} onOpenChange={setOpen}>
       {controlled ? null : <OverlayTriggerAction>{triggerLabel}</OverlayTriggerAction>}
-      <Drawer.Backdrop className="ui-overlay-motion bg-scrim backdrop-blur-sm">
+      <Drawer.Backdrop className="ui-overlay-motion bg-scrim">
         <Drawer.Content className="ui-overlay-motion" placement={placement}>
           <Drawer.Dialog
-            className={`ui-overlay-surface relative h-full w-full rounded-none ${composition === 'navigation' ? 'max-w-sm' : 'max-w-lg'}`}
+            className={`ui-overlay-surface relative flex h-full w-full flex-col border-0 rounded-none ${placement === 'left' ? 'rounded-r-panel' : 'rounded-l-panel'} ${composition === 'navigation' ? 'max-w-sm' : 'max-w-lg'}`}
           >
-            <Drawer.Header className="border-b border-border px-6 py-5 pr-20">
+            <Drawer.Header className="shrink-0 px-6 py-5 pr-20">
               <Drawer.Heading className="text-lg font-bold text-ink">{title}</Drawer.Heading>
               <p className="mt-1 text-sm leading-6 text-ink-muted">{description}</p>
               <Drawer.CloseTrigger
                 aria-label={closeLabel}
-                className="absolute right-5 top-5 grid size-10 place-items-center rounded-control border border-border bg-surface text-xl leading-none text-ink shadow-sm hover:bg-surface-muted"
+                className="ui-action absolute right-5 top-5 grid size-control min-w-control place-items-center rounded-action border-0 bg-transparent text-xl leading-none text-ink hover:bg-surface-muted"
               >
                 <span aria-hidden="true">×</span>
               </Drawer.CloseTrigger>
             </Drawer.Header>
             <Drawer.Body
-              className={composition === 'navigation' ? 'min-h-0 p-0' : 'min-h-0 px-6 py-5'}
+              className={
+                composition === 'navigation'
+                  ? 'min-h-0 flex-1 overflow-hidden p-0'
+                  : 'min-h-0 px-6 py-5'
+              }
             >
               {children}
             </Drawer.Body>

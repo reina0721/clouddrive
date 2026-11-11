@@ -39,6 +39,7 @@ export type MenuButtonProps = Readonly<
     onOpenChange?: (open: boolean) => void;
     /** Trigger 控件高度：`sm` 用于工具条内与其它 sm 控件同排。 */
     triggerSize?: 'sm' | 'md';
+    triggerVariant?: 'standard' | 'primary';
     onAction: (id: string) => void;
   } & (
     | { items: readonly MenuAction[]; groups?: never }
@@ -57,6 +58,7 @@ export function MenuButton({
   isOpen,
   onOpenChange,
   triggerSize = 'md',
+  triggerVariant = 'standard',
   onAction,
 }: MenuButtonProps) {
   const renderAction = (item: MenuAction, selectable = false) => (
@@ -122,7 +124,7 @@ export function MenuButton({
     >
       <Dropdown.Trigger
         aria-label={ariaLabel}
-        className={`ui-overlay-trigger ${triggerSize === 'sm' ? 'min-h-control-sm px-3' : ''}`}
+        className={`ui-overlay-trigger ${triggerSize === 'sm' ? 'min-h-control-sm px-4' : ''} ${triggerVariant === 'primary' ? 'ui-overlay-trigger-primary' : ''}`}
       >
         {label}
       </Dropdown.Trigger>

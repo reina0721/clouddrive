@@ -32,7 +32,7 @@ export type OverlayTriggerActionProps = Readonly<{
   OverlayTriggerBehavior;
 
 const overlayTriggerStyles = tv({
-  base: 'inline-flex min-h-control items-center justify-center gap-2 rounded-control px-3.5 text-sm font-semibold shadow-sm outline-none transition-colors',
+  base: 'inline-flex min-h-control items-center justify-center gap-2 rounded-action px-4 text-sm font-medium shadow-none outline-none transition-colors',
   defaultVariants: {
     fullWidth: false,
     tone: 'default',
@@ -43,9 +43,9 @@ const overlayTriggerStyles = tv({
       true: 'w-full',
     },
     tone: {
-      // 中性：白底 + 边框；pressed/hover 用 surface-muted 深浅反馈，绝不切 Brand。
+      // Material outlined：保持同一语义的状态层。
       default:
-        'border border-border bg-surface text-ink hover:bg-surface-muted data-[hovered=true]:bg-surface-muted data-[pressed=true]:bg-surface-muted focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
+        'border border-border-strong bg-transparent text-brand hover:bg-surface-muted data-[hovered=true]:bg-surface-muted data-[pressed=true]:bg-surface-muted focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
       // 危险：保持 danger 语义；pressed/hover 用 danger-soft，绝不切 Brand。
       danger:
         'border border-danger/30 bg-surface text-danger hover:bg-danger-soft data-[hovered=true]:bg-danger-soft data-[pressed=true]:bg-danger-soft focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2',

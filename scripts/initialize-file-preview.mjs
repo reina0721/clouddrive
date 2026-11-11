@@ -23,6 +23,8 @@ try {
   const response = await fetch(base + '/auth/login', { method: 'POST', headers, body: JSON.stringify(login), signal: AbortSignal.timeout(requestTimeoutMs) });
   if (!response.ok) throw new Error('Preview login verification failed: ' + response.status);
   const session = await response.json();
+  if (!session.user || typeof session.user.id !== 'string') throw new Error('Preview session did not contain a user');
+  configuration.userId = session.user.id;
   configuration.apiSession = {
     cookieHeader: [cookies, ...response.headers.getSetCookie().map((cookie) => cookie.split(';')[0])].filter(Boolean).join('; '),
     csrfToken: token,

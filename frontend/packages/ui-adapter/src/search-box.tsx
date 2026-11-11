@@ -23,7 +23,7 @@ export function SearchBox({
       {...(value !== undefined ? { value } : {})}
       {...(onValueChange ? { onChange: onValueChange } : {})}
     >
-      <SearchField.Group className="flex min-w-0 min-h-control items-center gap-2 rounded-control border border-border bg-surface px-3.5 shadow-sm data-[focus-within]:border-brand">
+      <SearchField.Group className="flex min-w-0 min-h-control items-center gap-2 rounded-action border border-transparent bg-surface-muted px-4 shadow-none data-[focus-within]:border-brand">
         <SearchField.SearchIcon className="size-4 shrink-0 text-ink-muted" />
         <SearchField.Input
           className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted/70"

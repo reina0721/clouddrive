@@ -97,11 +97,7 @@ describe('Schema Runtime 集成（临时 workspace + 真实 fixture）', () => {
     try {
       const cssPath = join(workspace, 'packages/design-system/src/tokens.css');
       const css = await readFile(cssPath, 'utf8');
-      await writeFile(
-        cssPath,
-        css.replace('--ds-canvas: #f6f7fb;', '--ds-canvas: #000000;'),
-        'utf8',
-      );
+      await writeFile(cssPath, css.replace(/--ds-canvas: [^;]+;/, '--ds-canvas: #000000;'), 'utf8');
       const freshness = await runtime.checkFreshness();
       const tokens = freshness.find((f) => f.target.includes('tokens.css'))!;
       expect(tokens.ok).toBe(false);

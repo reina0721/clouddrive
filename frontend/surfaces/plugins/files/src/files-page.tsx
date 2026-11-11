@@ -1571,7 +1571,6 @@ export function FilesPage({
           data-file-content
           className={`min-h-96 min-w-0 flex-1 rounded-panel border border-border bg-surface p-3 ${!loading && !navigating && !failure && !listing?.items.length ? 'flex flex-col' : ''}`}
         >
-          <h1 className="sr-only">{title}</h1>
           {loading || navigating ? (
             <StateSurface
               state="loading"
@@ -1820,7 +1819,11 @@ export function FilesPage({
             </div>
           )}
         </section>
-        {listing && !loading && !navigating && preferences.view !== 'gallery' ? (
+        {listing &&
+        listing.total > 0 &&
+        !loading &&
+        !navigating &&
+        preferences.view !== 'gallery' ? (
           listing.cursorPage ? (
             preferenceReady ? (
               <CursorFilePagination

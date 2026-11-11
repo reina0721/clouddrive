@@ -1,4 +1,8 @@
 export const zhWorkspace = {
+  library: '文件',
+  collaboration: '协作',
+  activity: '传输与任务',
+  administration: '管理',
   collapse: '收起文件导航',
   expand: '展开文件导航',
   quotaLoading: '正在读取存储空间',
@@ -22,6 +26,10 @@ export const zhWorkspace = {
   unknown: '无法确定保存位置',
 };
 export const enWorkspace = {
+  library: 'Library',
+  collaboration: 'Collaboration',
+  activity: 'Transfers & tasks',
+  administration: 'Administration',
   collapse: 'Collapse file navigation',
   expand: 'Expand file navigation',
   quotaLoading: 'Loading storage usage',

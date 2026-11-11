@@ -2,6 +2,12 @@
 
 本目录是当前架构阅读入口。项目采用显式 composition root，把启动期 immutable `applicationBlueprint`、底层能力、Application Generation、业务模块和进程生命周期连接成单轨运行模型；不依赖包扫描、运行期 Service Locator 或隐式全局状态。
 
+## 当前产品与重构原则
+
+CloudDrive 的主要使用链路是文件的保存、组织、获取与协作。管理能力支持这条链路。先通过独立数据环境运行和验证，再决定架构调整；保留已经证明有效的模块边界，不以更换框架或改名作为重构成果。
+
+界面统一采用 [Material Design 3](../../frontend/docs/ui-visual-calibration.md)：Schema 拥有主题，Adapter 拥有组件状态，Surface 组合导航与页面，Host 拥有浏览器资源和进程外连接。启动工具 `scripts/dev.mjs` 在应用之外管理开发与隔离预览的进程树、就绪检查和失败清理，不把开发编排注入业务 Kernel。数据库迁移仍由同一个 Go CLI 执行。
+
 ## 阅读主线
 
 1. [当前运行结构](#当前运行结构)：先确认入口、composition、Application Generation、模块和 `pkg` 的实际关系。

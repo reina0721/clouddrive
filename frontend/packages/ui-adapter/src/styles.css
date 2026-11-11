@@ -63,19 +63,34 @@
 @import '@heroui/styles/components/toggle-button-group.css' layer(components);
 @import '@heroui/styles/components/toolbar.css' layer(components);
 @import '@heroui/styles/components/tooltip.css' layer(components);
-@import '@heroui/styles/components/typography.css' layer(components);
 @import '@heroui/styles/components/calendar-year-picker.css' layer(components);
 @import '@heroui/styles/components/scroll-shadow.css' layer(components);
 @import '@heroui/styles/components/autocomplete.css' layer(components);
-@import '@heroui/styles/components/time-field.css' layer(components);
 @import '@heroui/styles/components/progress-circle.css' layer(components);
 @import '@heroui/styles/components/slider.css' layer(components);
-@import '@heroui/styles/components/meter.css' layer(components);
 @import '@heroui/styles/themes/default' layer(theme);
 @import '@heroui/styles/utilities';
 @import '@heroui/styles/variants';
 
 @layer components {
+  /* Material 3 的状态层由 Adapter 拥有；不继承 vendor 的按钮阴影或按压位移。 */
+  .ui-action {
+    box-shadow: none;
+    transform: none;
+    &:active,
+    &[data-pressed='true'] {
+      background-image: linear-gradient(
+        color-mix(in srgb, currentColor 12%, transparent),
+        color-mix(in srgb, currentColor 12%, transparent)
+      );
+      transform: none;
+    }
+    &:focus-visible,
+    &[data-focus-visible='true'] {
+      outline: var(--spacing-focus-ring-width) solid var(--color-focus-ring);
+      outline-offset: var(--spacing-focus-ring-offset);
+    }
+  }
   .ui-navigation-focus {
     outline: none;
   }
@@ -139,7 +154,7 @@
   }
 
   .ui-field-control {
-    @apply min-h-control w-full rounded-control border border-border bg-surface px-3.5 text-sm font-normal text-ink shadow-sm outline-none placeholder:text-ink-muted/70 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-55 data-[focus-visible]:border-focus-ring data-[focus-within]:border-focus-ring data-[invalid]:border-danger;
+    @apply min-h-control w-full rounded-control border border-border-strong bg-transparent px-3.5 text-sm font-normal text-ink shadow-none outline-none placeholder:text-ink-muted/70 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-55 data-[focus-visible]:border-focus-ring data-[focus-within]:border-focus-ring data-[invalid]:border-danger;
   }
 
   .ui-field-hint {
@@ -151,7 +166,7 @@
   }
 
   .ui-overlay-trigger {
-    @apply inline-flex min-h-control items-center justify-center gap-2 rounded-control border border-border bg-surface px-3.5 text-sm font-semibold text-ink shadow-sm outline-none transition-colors hover:bg-surface-muted;
+    @apply inline-flex min-h-control items-center justify-center gap-2 rounded-action border border-border-strong bg-transparent px-4 text-sm font-medium text-ink shadow-none outline-none transition-colors hover:bg-surface-muted;
     /* 复合 Overlay Trigger（Popover/Tooltip/Dropdown 的 Trigger 子组件）的交互状态：
        pressed/hover 保持中性 surface-muted 深浅反馈，不切换到任何语义主色；
        focus-visible 保留项目 focus ring（可访问性反馈不删除）。 */
@@ -172,7 +187,22 @@
     }
   }
 
+  .ui-overlay-trigger-primary {
+    @apply border-transparent bg-brand-soft text-brand;
+    &:hover,
+    &[data-hovered='true'],
+    &:active,
+    &[data-pressed='true'] {
+      background-color: var(--color-brand-soft);
+      background-image: linear-gradient(
+        color-mix(in srgb, currentColor 12%, transparent),
+        color-mix(in srgb, currentColor 12%, transparent)
+      );
+    }
+  }
+
   .ui-dialog-layout {
+    border-radius: var(--radius-shell);
     display: flex;
     flex-direction: column;
     max-height: calc(100dvh - var(--spacing) * 8);

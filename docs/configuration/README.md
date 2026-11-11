@@ -23,6 +23,14 @@ $env:APP_MESSAGING__PROVIDERS__PRIMARY__RABBITMQ__URI = 'amqps://<user>:<passwor
 
 配置解析是 strict 的：未知配置节、未知字段、重复逻辑路径、大小写别名和错误类型都会在创建资源或绑定 listener 前失败。
 
+字符串列表通过 JSON 数组覆盖，保持元素类型，不按逗号切分。例如：
+
+```bash
+export APP_HTTP__CORS__ALLOWEDORIGINS='["http://127.0.0.1:4173"]'
+```
+
+`[]` 显式清空默认列表；普通逗号文本、顶层 `null`、`null` 元素和混合类型会被拒绝。此规则只适用于字符串列表，不启用全局弱类型转换。统一开发启动器只为本次子进程设置实际本地 Origin，保留配置文件中的部署值。
+
 ## 生成配置与示例文件
 
 首次本地开发推荐使用：
@@ -43,32 +51,31 @@ go run ./cmd/app config init --output .data/generated-config.yaml
 
 ## 配置节 ownership
 
-| 配置节 | Owner | 主要用途 |
-| --- | --- | --- |
-| `logger` | Kernel Logger App | 进程日志级别、编码、输出路径 |
-| `database` | Kernel Database App | 数据库 driver、DSN、连接池和 ping timeout |
-| `migration` | Migration 模块 | one-shot migration 锁等待和操作期限 |
-| `cache` | Kernel Cache App | 缓存 backend 与 Redis 参数 |
-| `i18n` | Kernel I18n App | 默认语言、消息文件（统一维护于 `./locales`）和缺失翻译策略 |
-| `storage` | Kernel Storage App | 本地、S3、MinIO 对象存储配置 |
-| `execution` | Kernel Execution App | 单进程幂等、同步记录与完整重试预算的命名策略 |
-| `scheduler` | Application Schedule Component | cron/fixedDelay、全局并发、关闭预算、执行权租约与任务级运维覆盖 |
-| `messaging` | Application Messaging Component | 命名 Provider、逻辑 Route、confirm/handoff/恢复与 RabbitMQ topology 要求 |
-| `todo` | Todo 模块 | Todo 业务约束 |
-| `auth` | Auth 模块 | development-anonymous 或 JWT 鉴权配置 |
-| `iam` | IAM 模块 | 本地 setup、登录锁定、Session timeout 安全预算、密码策略（`local.passwordPolicy`：`minLength`/`maxLength` 默认 15/128、`requireComplexity` 默认 false、`historySize`/`maxPasswordAge` 默认关闭）、会话上限（`local.maxSessionsPerAccount` 默认 0=不限，超限主动剔最旧）与 API 令牌（`local.apiTokenMaxPerAccount` 默认 5、`local.apiTokenDefaultTTL` 默认永不过期） |
-| `http` | Kernel HTTP composition | 业务 HTTP listener 与请求治理 |
-| `console` | Console 模块 | API 工作台转发策略及站点地址发布许可 |
-| `management` | Ops 模块 | management listener、readiness、metrics access |
-| `observability` | Kernel Observability composition | service name、tracing exporter 与采样参数 |
-| `alerting` | Kernel Alerting App（`application.alerting`） | 安全告警 webhook 通道（默认关闭；webhookUrl/signingKey 属配置秘密） |
+| 配置节          | Owner                                         | 主要用途                                                                                                                                                                                                                                                                                                                                                            |
+| --------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `logger`        | Kernel Logger App                             | 进程日志级别、编码、输出路径                                                                                                                                                                                                                                                                                                                                        |
+| `database`      | Kernel Database App                           | 数据库 driver、DSN、连接池和 ping timeout                                                                                                                                                                                                                                                                                                                           |
+| `migration`     | Migration 模块                                | one-shot migration 锁等待和操作期限                                                                                                                                                                                                                                                                                                                                 |
+| `cache`         | Kernel Cache App                              | 缓存 backend 与 Redis 参数                                                                                                                                                                                                                                                                                                                                          |
+| `i18n`          | Kernel I18n App                               | 默认语言、消息文件（统一维护于 `./locales`）和缺失翻译策略                                                                                                                                                                                                                                                                                                          |
+| `storage`       | Kernel Storage App                            | 本地、S3、MinIO 对象存储配置                                                                                                                                                                                                                                                                                                                                        |
+| `execution`     | Kernel Execution App                          | 单进程幂等、同步记录与完整重试预算的命名策略                                                                                                                                                                                                                                                                                                                        |
+| `scheduler`     | Application Schedule Component                | cron/fixedDelay、全局并发、关闭预算、执行权租约与任务级运维覆盖                                                                                                                                                                                                                                                                                                     |
+| `messaging`     | Application Messaging Component               | 命名 Provider、逻辑 Route、confirm/handoff/恢复与 RabbitMQ topology 要求                                                                                                                                                                                                                                                                                            |
+| `todo`          | Todo 模块                                     | Todo 业务约束                                                                                                                                                                                                                                                                                                                                                       |
+| `auth`          | Auth 模块                                     | development-anonymous 或 JWT 鉴权配置                                                                                                                                                                                                                                                                                                                               |
+| `iam`           | IAM 模块                                      | 本地 setup、登录锁定、Session timeout 安全预算、密码策略（`local.passwordPolicy`：`minLength`/`maxLength` 默认 15/128、`requireComplexity` 默认 false、`historySize`/`maxPasswordAge` 默认关闭）、会话上限（`local.maxSessionsPerAccount` 默认 0=不限，超限主动剔最旧）与 API 令牌（`local.apiTokenMaxPerAccount` 默认 5、`local.apiTokenDefaultTTL` 默认永不过期） |
+| `http`          | Kernel HTTP composition                       | 业务 HTTP listener 与请求治理                                                                                                                                                                                                                                                                                                                                       |
+| `console`       | Console 模块                                  | API 工作台转发策略及站点地址发布许可                                                                                                                                                                                                                                                                                                                                |
+| `management`    | Ops 模块                                      | management listener、readiness、metrics access                                                                                                                                                                                                                                                                                                                      |
+| `observability` | Kernel Observability composition              | service name、tracing exporter 与采样参数                                                                                                                                                                                                                                                                                                                           |
+| `alerting`      | Kernel Alerting App（`application.alerting`） | 安全告警 webhook 通道（默认关闭；webhookUrl/signingKey 属配置秘密）                                                                                                                                                                                                                                                                                                 |
 
 Bootstrap CLI、migration one-shot、Todo CLI 和长期 Service 都必须识别同一套官方应用配置节。某个运行模式可以只创建自己需要的资源，但不能把其他官方配置节当作未知字段拒绝。
 
 `console.siteOrigins` 默认为空，可登记最多 32 个供管理页面选择的站点 Origin。地址应转发到同一实例，使用 HTTPS；本机预览可以明确登记回环 HTTP。该名单独立于 `http.cors.allowedOrigins`。
 
 ## WebUI 托管
-
 
 - 同源请求不依赖 `http.cors.allowedOrigins`；Session Cookie 带 `Secure` 属性，纯 HTTP 仅限 loopback，生产部署需 TLS 终结。启动与切换步骤见 [WebUI 本地启动指南](../getting-started/webui.md)。
 
@@ -106,7 +113,6 @@ memory backend 只在单进程内可见，记录同步写入，不提供外部�
 ## Reload 行为
 
 长期 Service 监听配置文件变化，并把文件与进程启动时继承的环境变量重新合并成候选配置。被环境变量覆盖的字段即使文件发生变化，也不会改变最终有效值。scheduler、消息 Provider/Binding 与模块对象图随完整 Application Generation 重建；Prepare 不触发任务或消息消费，Commit 才切换准入。reload 的底层机制见 [Kernel 运行与配置](../../internal/kernel/README.md)。
-
 
 ## clouddrive 控制台
 

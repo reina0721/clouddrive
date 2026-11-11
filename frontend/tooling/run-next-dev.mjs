@@ -11,6 +11,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { loadConfig } from '@clouddrive/config/node';
+import { nextDevOptions } from './next-dev-options.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -40,7 +41,7 @@ const port = String(config.web.port);
 
 const child = spawn(
   process.execPath,
-  [resolveNextBin(), 'dev', '--hostname', host, '--port', port],
+  [resolveNextBin(), 'dev', ...nextDevOptions(), '--hostname', host, '--port', port],
   {
     cwd: webRoot,
     stdio: 'inherit',

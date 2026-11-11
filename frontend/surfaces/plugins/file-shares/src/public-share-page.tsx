@@ -13,7 +13,6 @@ import {
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
 import { Cloud, FileGlyph } from '../../../src/files/icons';
 import { usePublicFiles } from '../../../src/files/runtime';
-import { filesAccentStyle } from '../../../src/files/appearance';
 import { formatFileBytes } from '../../../src/files/format';
 import {
   FilesError,
@@ -144,12 +143,7 @@ export function PublicSharePage() {
     refresh();
   };
   return (
-    <main
-      id="main-content"
-      data-accent-preview="blue"
-      style={filesAccentStyle}
-      className="min-h-screen bg-canvas p-5 text-ink"
-    >
+    <main id="main-content" className="min-h-screen bg-canvas p-5 text-ink">
       <Page>
         <Toolbar
           label={t('publicFiles.title')}
