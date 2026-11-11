@@ -10,6 +10,7 @@ export type TextFieldProps = FieldTextProps &
   FieldValueProps &
   Readonly<{
     name?: string;
+    presentation?: 'label' | 'control-only';
     ref?: Ref<HTMLInputElement>;
     placeholder?: string;
     maxLength?: number;
@@ -30,6 +31,7 @@ export function TextField({
   value,
   defaultValue,
   purpose = 'text',
+  presentation = 'label',
   ...inputProps
 }: TextFieldProps) {
   return (
@@ -41,7 +43,9 @@ export function TextField({
       {...(value !== undefined ? { value } : {})}
       {...(defaultValue !== undefined ? { defaultValue } : {})}
     >
-      <Label className="ui-field-label">{label}</Label>
+      <Label className={presentation === 'control-only' ? 'sr-only' : 'ui-field-label'}>
+        {label}
+      </Label>
       <Input className="ui-field-control" type={purpose} {...inputProps} />
       {error ? (
         <FieldError className="ui-field-error">{error}</FieldError>

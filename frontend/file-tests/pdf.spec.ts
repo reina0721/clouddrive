@@ -52,6 +52,7 @@ test('F261–277：真实PDF分页显示文字查找导航与本地组件', asyn
   await d.getByRole('button', { name: '跳转', exact: true }).click();
   await expect(d.getByText('第 4 / 10 页', { exact: true })).toBeVisible();
   await d.getByRole('button', { name: '查找文字', exact: true }).click();
+  await expect(d.getByRole('searchbox', { name: '全文查找', exact: true })).toBeFocused();
   await d.getByRole('searchbox', { name: '全文查找', exact: true }).fill('Alpha');
   await d.getByRole('button', { name: '查找', exact: true }).click();
   await expect(d.getByText(/匹配 \d+ \/ 40/)).toBeVisible();
@@ -68,8 +69,59 @@ test('F261–277：真实PDF分页显示文字查找导航与本地组件', asyn
   await d.getByRole('button', { name: '上个匹配', exact: true }).click();
   await d.getByRole('button', { name: '清除查找', exact: true }).click();
   await expect(frame.locator('.textLayer .highlight')).toHaveCount(0);
+  const readingArea = await d.locator('iframe').boundingBox();
+  expect(readingArea?.height, '查找打开时仍应保留至少半屏的文档阅读空间').toBeGreaterThanOrEqual(
+    360,
+  );
   await page.screenshot({ path: info.outputPath('pdf-reader-desktop.png'), fullPage: false });
   expect(errors).toEqual([]);
+});
+test('阅读内容在窄屏、侧栏和查找打开时保持可用，键盘能回到阅读', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  const d = await upload(page, fixture('reader.pdf'));
+  await expect(d.frameLocator('iframe').locator('canvas').first()).toBeVisible();
+  const search = d.getByRole('button', { name: '查找文字', exact: true });
+  await search.click();
+  const input = d.getByRole('searchbox', { name: '全文查找', exact: true });
+  await expect(input).toBeFocused();
+  await input.fill('Alpha');
+  await input.press('Enter');
+  await expect(d.getByText(/匹配 \d+ \/ 40/)).toBeVisible();
+  const metrics: Record<string, unknown> = {};
+  for (const size of [
+    { width: 1280, height: 720 },
+    { width: 320, height: 800 },
+    { width: 844, height: 390 },
+  ]) {
+    await page.setViewportSize(size);
+    const bounds = await d.locator('iframe').boundingBox();
+    metrics[`${size.width}x${size.height}`] = bounds;
+    expect(bounds?.height).toBeGreaterThanOrEqual(
+      size.height < 400 ? 100 : size.width < 400 ? 360 : 360,
+    );
+    expect(bounds?.width).toBeGreaterThanOrEqual(240);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+  await page.setViewportSize({ width: 320, height: 800 });
+  const before = await d.locator('iframe').boundingBox();
+  await choose(page, d, '文档导航', '页面缩略图');
+  const side = d.getByRole('complementary', { name: '页面缩略图' });
+  await expect(side).toBeVisible();
+  expect((await d.locator('iframe').boundingBox())?.height).toBeGreaterThanOrEqual(
+    before!.height - 1,
+  );
+  await side.getByRole('button', { name: '收起侧栏', exact: true }).click();
+  await input.press('Escape');
+  await expect(input).toHaveCount(0);
+  await expect(d).toBeVisible();
+  await expect(search).toBeFocused();
+  await page.screenshot({ path: info.outputPath('reading-mobile.png'), fullPage: false });
+  await info.attach('reading-area.json', {
+    body: JSON.stringify(metrics, null, 2),
+    contentType: 'application/json',
+  });
 });
 test('F278：真实加密PDF密码错误后重试', async ({ page }) => {
   const d = await upload(page, fixture('encrypted.pdf'));
@@ -255,6 +307,8 @@ test('PDF 本机图片标注可跨页编辑、缩放、撤销并导出真实副�
     await page.mouse.move(x + dx, y + dy, { steps: 8 });
     await page.mouse.up();
   };
+  // 与用户操作一致：先选中图片，再拖动；首次按下可能只恢复编辑器选择。
+  await stamp.click();
   await drag(box.x + box.width * 0.25, box.y + box.height / 2, 24, 16);
   await expect.poll(async () => (await artwork.boundingBox())?.x).toBeGreaterThan(box.x + 10);
   const resizer = stamp.locator('.resizer.bottomRight');

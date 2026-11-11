@@ -58,6 +58,7 @@ export function DialogSurface({
   const pendingRef = useRef(false);
   const [failed, setFailed] = useState(false);
   const showConfirm = Boolean(onConfirm) && Boolean(confirmLabel);
+  const headerClose = layout === 'workspace' && !showConfirm;
 
   const confirm = async () => {
     if (!onConfirm || pendingRef.current) return;
@@ -90,28 +91,45 @@ export function DialogSurface({
         isKeyboardDismissDisabled={pending}
         className="ui-overlay-motion bg-scrim"
       >
-        <Modal.Container className="ui-overlay-motion" placement="center" size={size}>
+        <Modal.Container
+          className={`ui-overlay-motion ${layout === 'workspace' ? 'ui-dialog-workspace-container' : ''}`}
+          placement="center"
+          size={size}
+        >
           <Modal.Dialog
-            className="ui-overlay-surface ui-dialog-layout w-full"
-            {...(layout === 'workspace' ? { style: { height: '100dvh' } } : {})}
+            className={`ui-overlay-surface ui-dialog-layout w-full ${layout === 'workspace' ? 'ui-dialog-workspace' : ''}`}
           >
             <Modal.Header
               className={
                 layout === 'workspace'
-                  ? 'shrink-0 border-b border-border px-3 py-3'
-                  : 'shrink-0 border-b border-border px-6 py-5'
+                  ? 'flex-row items-center justify-between gap-3 shrink-0 border-b border-border px-4 py-3'
+                  : 'gap-0 shrink-0 border-b border-border px-6 py-5'
               }
             >
-              <Modal.Heading className="text-lg font-bold text-ink">{title}</Modal.Heading>
-              <p
-                className={
-                  layout === 'workspace'
-                    ? 'mt-1 text-xs leading-5 text-ink-muted'
-                    : 'mt-1 text-sm leading-6 text-ink-muted'
-                }
-              >
-                {description}
-              </p>
+              <div className="min-w-0">
+                <Modal.Heading
+                  className={`text-lg font-semibold text-ink ${layout === 'workspace' ? 'truncate' : ''}`}
+                >
+                  {title}
+                </Modal.Heading>
+                <p
+                  className={
+                    layout === 'workspace'
+                      ? 'mt-1 line-clamp-2 sm:line-clamp-1 text-xs leading-5 text-ink-muted'
+                      : 'mt-1 text-sm leading-6 text-ink-muted'
+                  }
+                >
+                  {description}
+                </p>
+              </div>
+              {headerClose ? (
+                <Modal.CloseTrigger
+                  aria-label={cancelLabel}
+                  className="ui-action static grid size-control shrink-0 place-items-center rounded-action border-0 bg-transparent text-xl leading-none text-ink-muted hover:bg-surface-muted"
+                >
+                  <span aria-hidden="true">×</span>
+                </Modal.CloseTrigger>
+              ) : null}
             </Modal.Header>
             <Modal.Body
               className={
@@ -125,31 +143,33 @@ export function DialogSurface({
                 {failureMessage}
               </p>
             ) : null}
-            <Modal.Footer
-              className={
-                layout === 'workspace'
-                  ? 'flex shrink-0 flex-wrap justify-end gap-3 border-t border-border px-3 py-2'
-                  : 'flex shrink-0 flex-wrap justify-end gap-3 border-t border-border px-6 py-4'
-              }
-            >
-              <Modal.CloseTrigger
-                aria-label={cancelLabel}
-                className={actionStyles({ variant: 'quiet' }) + ' static w-auto min-w-20'}
-                isDisabled={pending}
+            {!headerClose ? (
+              <Modal.Footer
+                className={
+                  layout === 'workspace'
+                    ? 'ui-dialog-footer flex shrink-0 flex-wrap justify-end gap-3 border-t border-border px-3 py-2'
+                    : 'ui-dialog-footer flex shrink-0 flex-wrap justify-end gap-3 border-t border-border px-6 py-4'
+                }
               >
-                {cancelLabel}
-              </Modal.CloseTrigger>
-              {showConfirm ? (
-                <HeroButton
-                  className={actionStyles({ variant: 'primary' })}
-                  isDisabled={confirmDisabled || pending}
-                  aria-busy={pending || undefined}
-                  onPress={() => void confirm()}
+                <Modal.CloseTrigger
+                  aria-label={cancelLabel}
+                  className={actionStyles({ variant: 'quiet' }) + ' static w-auto min-w-20'}
+                  isDisabled={pending}
                 >
-                  {pending ? <span role="status">{confirmLabel}…</span> : confirmLabel}
-                </HeroButton>
-              ) : null}
-            </Modal.Footer>
+                  {cancelLabel}
+                </Modal.CloseTrigger>
+                {showConfirm ? (
+                  <HeroButton
+                    className={actionStyles({ variant: 'primary' })}
+                    isDisabled={confirmDisabled || pending}
+                    aria-busy={pending || undefined}
+                    onPress={() => void confirm()}
+                  >
+                    {pending ? <span role="status">{confirmLabel}…</span> : confirmLabel}
+                  </HeroButton>
+                ) : null}
+              </Modal.Footer>
+            ) : null}
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>

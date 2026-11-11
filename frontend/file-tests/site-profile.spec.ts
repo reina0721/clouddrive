@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { siteProfileAPI } from './site-profile-api';
+import { readPreviewAccess } from './reading-fixture';
 
 const adminPath = '/system/site-profile';
 
@@ -28,11 +29,8 @@ async function write<T>(page: Page, path: string, method: string, body: unknown)
 test('站点信息保存后应用到文件区、访客登录注册和公开分享', async ({ page, browser }, info) => {
   const accessPath = process.env.CLOUDDRIVE_FILE_TEST_ACCESS;
   test.skip(!accessPath, '站点信息写入只在隔离 QA 中验证。');
-  const account = JSON.parse(
-    (await readFile(resolve(__dirname, accessPath!), 'utf8')).replace(/^\uFEFF/, ''),
-  ) as { url: string; username: string; password: string };
-  const origin = new URL(account.url).origin;
-  expect(origin).toBe('http://127.0.0.1:4194');
+  const account = readPreviewAccess();
+  const origin = account.origin;
   await page.setViewportSize({ width: 1280, height: 850 });
   await page.goto('/login?returnTo=%2Fsystem-settings');
   await page.getByLabel('邮箱', { exact: true }).fill(account.username);

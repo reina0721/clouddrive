@@ -146,6 +146,8 @@ Listbox 的滚动属于列表内部责任：Overlay Surface 提供外壳，Listb
 
 `ui-overlay-surface` 是 Dropdown、Select、Combobox、Popover、DatePicker、Dialog、Drawer 和 Command 共用的 Surface 语义，统一 Background、Border、Radius、Shadow 和文字颜色。不同 Overlay 只决定内容 Padding、宽度策略和结构，不复制一套 Surface。
 
+Dialog 的外层不叠加 vendor padding 或相邻 slot margin，Header / Body / Footer 各自拥有项目边距。`DialogSurface layout="workspace"` 用于连续阅读与编辑：桌面保留轻量外边距，窄屏和短窗口贴合视口；关闭入口固定在标题栏，不再附加只含关闭按钮的 Footer。正文把高度交给内容的 flex 布局，滚动由阅读内容或独立侧栏拥有，不用页面级 ResizeObserver 反算弹窗尺寸。标准表单与确认 Dialog 保留 Footer 和短窗口滚动。两种构成均在 `/ui-elements/overlays` 验证。
+
 `MenuButton` 使用互斥的平铺 `items` 或分组 `groups`。组可包含动作或单选偏好
 （当前值、selectedId、options）；身份摘要组合在首组Header，装饰头像隐藏重复名称。
 Section/Header/Separator、SubmenuTrigger、单选Menu和ItemIndicator使用HeroUI公开
@@ -212,13 +214,13 @@ Hover/Focus 与 Selected 不得合并为同一种状态；Selected 不能只依�
 
 ## 响应式空间、配置行与可调整数据列
 
-- SearchBox 根、输入组与所在 Grid 必须允许收缩；清除和图标保留命中区。Field 的说明和错误占独立区域，不由父 Grid 拉长单行输入。
+- SearchBox 根、输入组与所在 Grid 必须允许收缩；清除和图标保留命中区。Field 的说明和错误占独立区域，不由父 Grid 拉长单行输入。 TextField 的 `presentation="control-only"` 仅供紧凑工具栏，label 仍必填并作为无障碍名称保留；不隐藏表单所需说明。SearchBox 的 inputRef 和 IconAction 的 ref 用于明确的用户操作焦点，不在普通刷新时抢焦点。
 - RadioGroupField 的 cards 默认保留解释型选项表面；rows 用于短配置选项。SwitchField 的 card 默认不变，row 适用于已有容器内的紧凑配置行。TextField 的 ref 指向输入控件，供 Form Foundation 注册、首错定位和显式用户偏好焦点使用。
 - RadioGroupField 的 tiles 用于少量互斥模式的图标选择卡片：分组可通过 labelIcon 提供装饰图标，标题与 hint 先于选项；容器空间充足时 icon 在上、label 在下，三列等宽；窄容器回退单列“图标＋标题”，避免英文大字号逐字竖排。长文字允许合理换行。保留 RadioGroup/Radio.Content 的原生单选、整卡点击、方向键、焦点与禁用语义，不使用 Tabs 内容切换替代表单值选择。内层图标透明且 aria-hidden，选中表面由外层卡片承担，沿用语义 brand Token。cards/rows 默认视觉与行为不变。权威示例为 /ui-elements/forms 的 RadioGroupField，真实消费者为 /settings 的主题模式。
 - RadioGroupField 的 inline 用于短选项：自然宽度、可换行，不压缩实际热区；可带装饰 icon，例如受控预设色样，此时选中表面与文字承担状态表达，不重复显示圆点。previews 为少量需要比较的选项提供预览卡：以Field自身容器宽度判断，空间充足时三列纵向卡片，窄容器使用单列“预览＋标题”的横向行，避免嵌套面板中逐字竖排。preview 是 aria-hidden 的非交互内容（不得嵌套按钮、链接、输入或 tabIndex），名称仍由 label 提供。卡片布局可省略圆点视觉，不能省略 HeroUI 原生 input、选择、键盘和焦点机制。真实比较图案由 Feature composition 提供，不将颜色/密度业务语义硬编码到公共单选组件。设置的颜色、密度、字号和宽度使用同源能力；UI Elements/forms提供两种呈现、真实装饰预览、长标签与禁用示例。
 - 单选 ToggleGroup 保持连续组并在内部横滚；多选保持独立项并换行。TabsView 选择、尺寸和文本变化时只调整自身列表，不持续抢回用户手动滚动；vertical 在 md 以下同时回退布局、ARIA 和键盘方向。溢出提示来自实际滚动范围。
 - DrawerSurface 的 placement 为 left/right，缺省 right；navigation composition 用于共享导航内容，缺省 standard。Overlay 的焦点、Escape、背景锁定和焦点返回均由 HeroUI 管理。
-- Dialog 正常采用正文滚动；短高度允许整个对话框滚动，操作必须处于可达滚动区域。异步确认阻止重复提交和提前关闭；重试先清除旧错误。
+- 标准 Dialog 采用正文滚动；短高度允许整个对话框滚动，操作必须可达。workspace 保持视口内的内容与工具分区，标题栏关闭入口不随正文滚动。异步确认阻止重复提交和提前关闭；重试先清除旧错误。
 - DataTable 通过 columnWidths 与 onColumnWidthsChange 表达稳定 column id 的数值宽度，Adapter 组合官方 ResizableContainer/ColumnResizer 管理指针和键盘交互；不向消费者暴露 vendor Map、slot 或 props。未保存宽度使用官方自动布局。宽度、显隐、列序和排序独立合并，记忆开关只控制恢复和持久化。
 - 默认单行控件使用 min-h-control 并响应 density；small/embedded 的用途尺寸允许受控例外，不把普通控件的旧固定高度当作默认。外观 profile 的 fontScale/density/contentWidth/contrast 数值由 design-system schema 的 appearanceProfiles 及生成绑定管理，不手改生成区域。
 

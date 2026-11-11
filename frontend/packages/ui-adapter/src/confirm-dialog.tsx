@@ -103,7 +103,7 @@ export function ConfirmDialog({
                 </p>
               ) : null}
             </AlertDialog.Body>
-            <AlertDialog.Footer className="flex flex-wrap justify-end gap-3 border-t border-border px-6 py-4">
+            <AlertDialog.Footer className="ui-dialog-footer flex flex-wrap justify-end gap-3 border-t border-border px-6 py-4">
               <AlertDialog.CloseTrigger
                 aria-label={cancelLabel}
                 className={actionStyles({ variant: 'quiet' }) + ' static w-auto min-w-20'}

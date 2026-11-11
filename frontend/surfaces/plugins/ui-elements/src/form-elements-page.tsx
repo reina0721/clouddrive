@@ -86,6 +86,21 @@ export function FormElementsPage({
             <div className={`grid p-5 lg:grid-cols-2 ${spacing}`}>
               <ComponentPreview
                 fullWidth
+                name="TextField · Control only"
+                description={t('uiElements.controlOnlyFieldHint')}
+                states={['Accessible label', 'Keyboard', 'Toolbar']}
+              >
+                <div className="w-24">
+                  <TextField
+                    label={t('uiElements.controlOnlyField')}
+                    presentation="control-only"
+                    inputMode="numeric"
+                    defaultValue="12"
+                  />
+                </div>
+              </ComponentPreview>
+              <ComponentPreview
+                fullWidth
                 name="TextField"
                 description={t('uiElements.catalog.textFieldDescription')}
                 states={['Default', 'Hint', 'Invalid', 'Disabled', 'Placeholder', 'Long content']}

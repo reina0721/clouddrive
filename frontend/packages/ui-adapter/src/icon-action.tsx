@@ -1,6 +1,6 @@
 import { tv } from '@heroui/styles';
 import { Button as HeroButton } from '@heroui/react/button';
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 
 type IconActionBehavior =
   | Readonly<{ onPress: () => void; disabled?: boolean }>
@@ -8,6 +8,7 @@ type IconActionBehavior =
 
 export type IconActionProps = Readonly<{
   label: string;
+  ref?: Ref<HTMLButtonElement>;
   children: ReactNode;
   active?: boolean;
   controls?: string;
@@ -52,6 +53,7 @@ const iconActionStyles = tv({
 
 export function IconAction({
   label,
+  ref,
   children,
   controls,
   expanded,
@@ -67,6 +69,7 @@ export function IconAction({
 
   return (
     <HeroButton
+      ref={ref}
       aria-busy={loading || undefined}
       aria-label={label}
       className={iconActionStyles({ active, size, tone })}

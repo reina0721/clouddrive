@@ -1,7 +1,7 @@
 export const zhPDF = {
   imageBudget: '单张图像最多 {{pixels}} 像素，超限图像不显示；完整内容请下载原件。',
   title: 'PDF阅读器',
-  hint: '在浏览器中阅读；临时标注只导出为副本，不覆盖原文件。',
+  hint: '标注导出为副本，原文件保持不变。',
   loading: '正在打开PDF…',
   retry: '重新打开',
   frame: 'PDF文档视图',
@@ -90,7 +90,7 @@ export const enPDF = {
   imageBudget:
     'Images above {{pixels}} pixels are omitted. Download the original for complete content.',
   title: 'PDF reader',
-  hint: 'Read in your browser. Export temporary annotations as a copy; the original stays unchanged.',
+  hint: 'Export annotations as a copy. Your original stays unchanged.',
   loading: 'Opening PDF…',
   retry: 'Open again',
   frame: 'PDF document view',

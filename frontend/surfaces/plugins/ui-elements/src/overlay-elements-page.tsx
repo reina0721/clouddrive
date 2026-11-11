@@ -2,6 +2,7 @@
 
 import { CommandMenu } from '@clouddrive/ui-adapter/command-menu';
 import { SwitchField, TextField } from '@clouddrive/ui-adapter/form-field';
+import { SearchBox } from '@clouddrive/ui-adapter/search-box';
 import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
 import { NavigationFlyout, NavigationHint } from '@clouddrive/ui-adapter/navigation-flyout';
 import {
@@ -205,6 +206,30 @@ export function OverlayElementsPage() {
                   onConfirm={() => setLastAction(t('uiElements.confirm'))}
                 >
                   <TextField label={t('uiElements.dialogField')} defaultValue="Community" />
+                </DialogSurface>
+              </ComponentPreview>
+              <ComponentPreview
+                name="DialogSurface · Workspace"
+                description={t('uiElements.workspaceDialogHint')}
+                states={['Reading space', 'Header close', 'Keyboard', 'Narrow viewport']}
+              >
+                <DialogSurface
+                  triggerLabel={t('uiElements.workspaceDialog')}
+                  title={t('uiElements.workspaceDialog')}
+                  description={t('uiElements.workspaceDialogHint')}
+                  cancelLabel={t('uiElements.close')}
+                  layout="workspace"
+                  size="cover"
+                >
+                  <div className="flex h-full min-h-0 flex-col gap-3">
+                    <SearchBox
+                      label={t('uiElements.searchLabel')}
+                      placeholder={t('uiElements.searchLabel')}
+                    />
+                    <div className="grid min-h-0 flex-1 place-items-center rounded-panel bg-surface-muted p-4 text-ink-muted">
+                      {t('uiElements.workspaceDialogContent')}
+                    </div>
+                  </div>
                 </DialogSurface>
               </ComponentPreview>
               <ComponentPreview

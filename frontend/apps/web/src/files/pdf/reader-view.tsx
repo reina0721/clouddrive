@@ -1,8 +1,9 @@
 'use client';
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { FilesError, type FileDocumentProps } from '@clouddrive/surface/files';
 import { Action } from '@clouddrive/ui-adapter/action';
+import { IconAction } from '@clouddrive/ui-adapter/icon-action';
 import { FileChoiceAction } from '@clouddrive/ui-adapter/file-choice-action';
 import { MenuButton } from '@clouddrive/ui-adapter/menu-button';
 import { CheckboxField, PasswordField, TextField } from '@clouddrive/ui-adapter/form-field';
@@ -16,6 +17,7 @@ import {
   Undo2,
   Redo2,
   Search,
+  X,
 } from 'lucide-react';
 import { downloadBlob } from '../native-download';
 import { imageOverlayLimit, imageOverlayTypes } from '../image-overlay';
@@ -85,8 +87,10 @@ export function PDFReaderView(props: Props) {
     caseSensitive: boolean;
     wholeWord: boolean;
   }>();
+  const searchId = useId();
+  const searchInput = useRef<HTMLInputElement>(null);
+  const searchTrigger = useRef<HTMLButtonElement>(null);
   const frame = useRef<HTMLIFrameElement>(null),
-    root = useRef<HTMLElement>(null),
     session = useRef<PDFFrameSession | null>(null);
   const activeState = useRef(state),
     operation = useRef(false),
@@ -124,18 +128,8 @@ export function PDFReaderView(props: Props) {
     }
   }, [closeRequestSequence]);
   useEffect(() => {
-    const element = root.current,
-      parent = element?.parentElement;
-    if (!element || !parent) return;
-    const observer = new ResizeObserver(() => {
-      const style = getComputedStyle(parent),
-        padding = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom);
-      const height = parent.clientHeight - (Number.isFinite(padding) ? padding : 0);
-      if (height > 0) element.style.setProperty('--pdf-reader-height', Math.floor(height) + 'px');
-    });
-    observer.observe(parent);
-    return () => observer.disconnect();
-  }, []);
+    if (searchOpen) searchInput.current?.focus();
+  }, [searchOpen]);
   useEffect(() => {
     const element = frame.current;
     if (!element) return;
@@ -389,32 +383,27 @@ export function PDFReaderView(props: Props) {
     submitted.caseSensitive === caseSensitive &&
     submitted.wholeWord === wholeWord;
   return (
-    <section
-      ref={root}
-      aria-label={p('title')}
-      className="flex min-h-0 flex-col gap-3"
-      style={{ height: 'var(--pdf-reader-height,65dvh)' }}
-    >
+    <section aria-label={p('title')} className="flex h-full min-h-0 min-w-0 flex-col gap-2">
       <div className="shrink-0 overflow-x-auto">
         <div
-          className="flex items-end gap-2"
+          className="flex items-center gap-2"
           style={{ minWidth: 'max-content' }}
           role="toolbar"
           aria-label={p('title')}
         >
-          <Action
+          <IconAction
+            label={p('previous')}
+            tooltip
             size="sm"
-            variant="secondary"
             disabled={!available || state.page <= 1}
-            leadingIcon={<ChevronLeft />}
             onPress={() => {
               void act({ kind: 'page', page: state.page - 1 });
             }}
           >
-            <span className="sr-only">{p('previous')}</span>
-          </Action>
+            <ChevronLeft className="size-icon-sm" aria-hidden="true" />
+          </IconAction>
           <form
-            className="flex items-end gap-2"
+            className="flex items-center gap-2"
             onSubmit={(event) => {
               event.preventDefault();
               const page = Number(pageDraft);
@@ -430,9 +419,11 @@ export function PDFReaderView(props: Props) {
               void act({ kind: 'page', page });
             }}
           >
-            <div className="w-20">
+            <div className="w-16">
               <TextField
                 label={p('page')}
+                presentation="control-only"
+                inputMode="numeric"
                 value={pageDraft}
                 disabled={phase !== 'ready'}
                 onChange={(event) => setPageDraft(event.target.value.slice(0, 12))}
@@ -442,20 +433,20 @@ export function PDFReaderView(props: Props) {
               {p('go')}
             </Action>
           </form>
-          <Action
+          <IconAction
+            label={p('next')}
+            tooltip
             size="sm"
-            variant="secondary"
             disabled={!available || state.page >= state.pages}
-            leadingIcon={<ChevronRight />}
             onPress={() => {
               void act({ kind: 'page', page: state.page + 1 });
             }}
           >
-            <span className="sr-only">{p('next')}</span>
-          </Action>
+            <ChevronRight className="size-icon-sm" aria-hidden="true" />
+          </IconAction>
           <MenuButton
             triggerSize="sm"
-            label={p('display') + ' · ' + Math.round(state.scale * 100) + '%'}
+            label={Math.round(state.scale * 100) + '%'}
             ariaLabel={p('display')}
             items={displayItems}
             onAction={displayAction}
@@ -473,37 +464,41 @@ export function PDFReaderView(props: Props) {
               openPanel(id === 'thumbnails' ? 'thumbnails' : id === 'outline' ? 'outline' : 'none')
             }
           />
-          <Action
+          <IconAction
+            ref={searchTrigger}
             size="sm"
-            variant="secondary"
+            label={p('search')}
             disabled={!available}
-            leadingIcon={<Search />}
+            controls={searchId}
+            expanded={searchOpen}
+            active={searchOpen}
+            tooltip
             onPress={() => setSearchOpen((value) => !value)}
           >
-            <span className="sr-only">{p('search')}</span>
-          </Action>
-          <Action
+            <Search className="size-icon-sm" aria-hidden="true" />
+          </IconAction>
+          <IconAction
+            label={p('back')}
+            tooltip
             size="sm"
-            variant="quiet"
             disabled={!available || !state.historyBack}
-            leadingIcon={<ArrowLeft />}
             onPress={() => {
               void act({ kind: 'history', direction: -1 });
             }}
           >
-            <span className="sr-only">{p('back')}</span>
-          </Action>
-          <Action
+            <ArrowLeft className="size-icon-sm" aria-hidden="true" />
+          </IconAction>
+          <IconAction
+            label={p('forward')}
+            tooltip
             size="sm"
-            variant="quiet"
             disabled={!available || !state.historyForward}
-            leadingIcon={<ArrowRight />}
             onPress={() => {
               void act({ kind: 'history', direction: 1 });
             }}
           >
-            <span className="sr-only">{p('forward')}</span>
-          </Action>
+            <ArrowRight className="size-icon-sm" aria-hidden="true" />
+          </IconAction>
           <MenuButton
             triggerSize="sm"
             label={p('editor')}
@@ -525,31 +520,31 @@ export function PDFReaderView(props: Props) {
           >
             {p('stamp')}
           </FileChoiceAction>
-          <Action
+          <IconAction
+            label={p('undo')}
+            tooltip
             size="sm"
-            variant="quiet"
             disabled={!available || !state.undo}
-            leadingIcon={<Undo2 />}
             onPress={() => {
               void act({ kind: 'edit', action: 'undo' });
             }}
           >
-            <span className="sr-only">{p('undo')}</span>
-          </Action>
-          <Action
+            <Undo2 className="size-icon-sm" aria-hidden="true" />
+          </IconAction>
+          <IconAction
+            label={p('redo')}
+            tooltip
             size="sm"
-            variant="quiet"
             disabled={!available || !state.redo}
-            leadingIcon={<Redo2 />}
             onPress={() => {
               void act({ kind: 'edit', action: 'redo' });
             }}
           >
-            <span className="sr-only">{p('redo')}</span>
-          </Action>
+            <Redo2 className="size-icon-sm" aria-hidden="true" />
+          </IconAction>
           <Action
             size="sm"
-            variant="secondary"
+            variant={state.modified ? 'primary' : 'quiet'}
             disabled={!available || !state.modified}
             onPress={() => {
               void act({ kind: 'save' }, async (value) => {
@@ -572,9 +567,9 @@ export function PDFReaderView(props: Props) {
           </Action>
         </div>
       </div>
-      <div className="flex shrink-0 flex-wrap gap-3 text-sm" role="status">
+      <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs" role="status">
         <span>{p('pageCount', { page: state.page, pages: state.pages })}</span>
-        <span className="text-xs text-ink-muted">
+        <span className="text-ink-muted">
           {p('imageBudget', { pixels: limits.maxImagePixels.toLocaleString(locale) })}
         </span>
         {state.modified ? <span>{p('modified')}</span> : null}
@@ -643,55 +638,55 @@ export function PDFReaderView(props: Props) {
       ) : null}
       {searchOpen && phase === 'ready' ? (
         <form
-          className="shrink-0 space-y-2"
+          id={searchId}
+          role="search"
+          aria-label={p('query')}
+          className="flex shrink-0 flex-col gap-1 rounded-panel bg-surface-muted p-2 md:flex-row md:items-center"
+          onKeyDownCapture={(event) => {
+            if (event.key !== 'Escape') return;
+            event.preventDefault();
+            event.stopPropagation();
+            setSearchOpen(false);
+            searchTrigger.current?.focus();
+          }}
           onSubmit={(event) => {
             event.preventDefault();
             find();
           }}
         >
-          <SearchBox
-            label={p('query')}
-            placeholder={p('query')}
-            value={query}
-            onValueChange={(value) => setQuery(value.slice(0, pdfSearchMaxLength))}
-          />
-          <div className="flex flex-wrap gap-3">
-            <div className="w-40">
-              <CheckboxField
-                label={p('caseSensitive')}
-                checked={caseSensitive}
-                onCheckedChange={setCaseSensitive}
-              />
-            </div>
-            <div className="w-40">
-              <CheckboxField
-                label={p('wholeWord')}
-                checked={wholeWord}
-                onCheckedChange={setWholeWord}
-              />
-            </div>
+          <div className="flex min-w-0 flex-1 items-center gap-1">
+            <SearchBox
+              inputRef={searchInput}
+              label={p('query')}
+              placeholder={p('query')}
+              value={query}
+              onValueChange={(value) => setQuery(value.slice(0, pdfSearchMaxLength))}
+            />
             <Action size="sm" type="submit" disabled={busy || state.searchPending}>
               {p('find')}
             </Action>
-            <Action
+            <IconAction
               size="sm"
-              variant="secondary"
+              label={p('previousMatch')}
+              tooltip
               disabled={!searchCurrent || state.searchPending || !state.matchesTotal}
               onPress={() => find(true, true)}
             >
-              {p('previousMatch')}
-            </Action>
-            <Action
+              <ChevronLeft className="size-icon-sm" aria-hidden="true" />
+            </IconAction>
+            <IconAction
               size="sm"
-              variant="secondary"
+              label={p('nextMatch')}
+              tooltip
               disabled={!searchCurrent || state.searchPending || !state.matchesTotal}
               onPress={() => find(true, false)}
             >
-              {p('nextMatch')}
-            </Action>
-            <Action
+              <ChevronRight className="size-icon-sm" aria-hidden="true" />
+            </IconAction>
+            <IconAction
               size="sm"
-              variant="quiet"
+              label={p('clearSearch')}
+              tooltip
               disabled={state.searchPending}
               onPress={() => {
                 setQuery('');
@@ -706,22 +701,54 @@ export function PDFReaderView(props: Props) {
                 });
               }}
             >
-              {p('clearSearch')}
-            </Action>
+              <X className="size-icon-sm" aria-hidden="true" />
+            </IconAction>
           </div>
-          <p role="status">
-            {state.searchPending
-              ? p('searching')
-              : submitted
-                ? p('matches', { current: state.matchesCurrent, total: state.matchesTotal })
-                : p('queryHint')}
-          </p>
+          <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1">
+            <div className="shrink-0">
+              <CheckboxField
+                label={p('caseSensitive')}
+                checked={caseSensitive}
+                onCheckedChange={setCaseSensitive}
+              />
+            </div>
+            <div className="shrink-0">
+              <CheckboxField
+                label={p('wholeWord')}
+                checked={wholeWord}
+                onCheckedChange={setWholeWord}
+              />
+            </div>
+            <p
+              role="status"
+              className={submitted || state.searchPending ? 'text-xs text-ink-muted' : 'sr-only'}
+            >
+              {state.searchPending
+                ? p('searching')
+                : submitted
+                  ? p('matches', { current: state.matchesCurrent, total: state.matchesTotal })
+                  : p('queryHint')}
+            </p>
+          </div>
         </form>
       ) : null}
-      <div className="flex min-h-0 flex-1 flex-col gap-3 md:flex-row">
+      <div className="relative flex min-h-0 flex-1 gap-2">
         {panel !== 'none' ? (
-          <aside className="max-h-60 overflow-y-auto space-y-2" aria-label={p(panel)}>
-            <h3 className="font-semibold">{p(panel)}</h3>
+          <aside
+            className="absolute inset-y-0 left-0 z-10 w-60 max-w-full overflow-y-auto space-y-2 rounded-panel border border-border bg-surface-raised p-3 shadow-overlay md:static md:shrink-0 md:shadow-none"
+            aria-label={p(panel)}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="font-semibold">{p(panel)}</h3>
+              <IconAction
+                label={p('hidePanel')}
+                size="sm"
+                tooltip
+                onPress={() => openPanel('none')}
+              >
+                <X className="size-icon-sm" aria-hidden="true" />
+              </IconAction>
+            </div>
             {sideFailure ? <p role="alert">{sideFailure}</p> : null}
             {panel === 'outline' ? (
               outline ? (

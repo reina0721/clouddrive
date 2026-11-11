@@ -1,10 +1,12 @@
 import { SearchField } from '@heroui/react/search-field';
+import type { Ref } from 'react';
 
 export type SearchBoxProps = Readonly<{
   label: string;
   placeholder: string;
   value?: string;
   disabled?: boolean;
+  inputRef?: Ref<HTMLInputElement>;
   onValueChange?: (value: string) => void;
 }>;
 
@@ -13,6 +15,7 @@ export function SearchBox({
   placeholder,
   value,
   disabled = false,
+  inputRef,
   onValueChange,
 }: SearchBoxProps) {
   return (
@@ -26,6 +29,7 @@ export function SearchBox({
       <SearchField.Group className="flex min-w-0 min-h-control items-center gap-2 rounded-action border border-transparent bg-surface-muted px-4 shadow-none data-[focus-within]:border-brand">
         <SearchField.SearchIcon className="size-4 shrink-0 text-ink-muted" />
         <SearchField.Input
+          ref={inputRef}
           className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted/70"
           placeholder={placeholder}
         />

@@ -28,6 +28,7 @@ import {
   LayoutGrid,
   MoreHorizontal,
   RefreshCw,
+  Search,
   Trash2,
   Upload,
 } from '../../../src/files/icons';
@@ -1322,28 +1323,39 @@ export function FilesPage({
             <div data-file-empty className="grid min-h-80 flex-1 place-items-center">
               <StateSurface
                 state="empty"
-                icon={trash ? <Trash2 /> : <Upload />}
+                icon={
+                  search || category || filterKey ? <Search /> : trash ? <Trash2 /> : <Upload />
+                }
                 title={t(
-                  trash
-                    ? 'files.emptyTrash'
-                    : search || category
-                      ? 'files.emptySearch'
+                  search || category || filterKey
+                    ? 'files.emptySearch'
+                    : trash
+                      ? 'files.emptyTrash'
                       : 'files.empty',
                 )}
                 description={t(
-                  search || category ? 'files.emptySearchDescription' : 'files.emptyDescription',
+                  search || category || filterKey
+                    ? 'files.emptySearchDescription'
+                    : trash
+                      ? 'files.emptyTrashDescription'
+                      : 'files.emptyDescription',
                 )}
-                {...(!trash && !search && !category && !filterKey
+                {...(search || category || filterKey
                   ? {
-                      actionLabel: t('files.upload'),
-                      onAction: () => {
-                        void port
-                          .chooseFiles()
-                          .then(enqueue)
-                          .catch((error: unknown) => setNotice(errorText(error)));
-                      },
+                      actionLabel: t('files.clearFileFilters'),
+                      onAction: () => navigate({ parent, ...(trash ? { trash: 'true' } : {}) }),
                     }
-                  : {})}
+                  : !trash
+                    ? {
+                        actionLabel: t('files.upload'),
+                        onAction: () => {
+                          void port
+                            .chooseFiles()
+                            .then(enqueue)
+                            .catch((error: unknown) => setNotice(errorText(error)));
+                        },
+                      }
+                    : {})}
               />
             </div>
           ) : (

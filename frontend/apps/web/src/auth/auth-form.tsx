@@ -13,9 +13,7 @@ import { useAuth } from './context';
 import { AuthFrame } from './frame';
 import { authPageHref, authReturnDestination } from './contract';
 import { readAuthConfig } from './config';
-import { demoAccountPassword, type DemoAccount } from './demo-accounts';
-import { rememberDemoAccount } from './demo-session';
-import { resetDemoData } from './demo-reset';
+import type { DemoAccount } from './demo-accounts';
 import { readRegistrationAvailability } from './registration-policy';
 import type { AuthFormValues } from './form-schema';
 import { AlertTriangle, CheckCircle2, Clock, Eye, EyeOff } from 'lucide-react';
@@ -53,13 +51,16 @@ export function AuthForm({ kind }: Readonly<{ kind: 'login' | 'register' | 'expi
     }
   });
   const signInAsDemo = async (account: DemoAccount) => {
+    const [{ demoAccountPassword }, { rememberDemoAccount }] = await Promise.all([
+      import('./demo-accounts'),
+      import('./demo-session'),
+    ]);
     const accepted = await auth.login({ email: account.email, password: demoAccountPassword });
     if (!accepted) return;
     rememberDemoAccount(account.id);
     window.location.replace(destination());
   };
   useEffect(() => {
-    if (!register) return;
     let cancelled = false;
     void readRegistrationAvailability().then(
       (enabled) => {
@@ -75,7 +76,7 @@ export function AuthForm({ kind }: Readonly<{ kind: 'login' | 'register' | 'expi
     return () => {
       cancelled = true;
     };
-  }, [register, policyRetry]);
+  }, [policyRetry]);
   const visibilityIcons = {
     show: <Eye aria-hidden="true" className="size-4" />,
     hide: <EyeOff aria-hidden="true" className="size-4" />,
@@ -98,11 +99,6 @@ export function AuthForm({ kind }: Readonly<{ kind: 'login' | 'register' | 'expi
               : t('auth.loginDescription')
           }
         />
-        {!demoMode && !register ? (
-          <Link href="/setup" className="text-brand underline">
-            {t('auth.setupTitle')}
-          </Link>
-        ) : null}
         {kind === 'expired' ? (
           <AlertBanner
             tone="warning"
@@ -236,20 +232,29 @@ export function AuthForm({ kind }: Readonly<{ kind: 'login' | 'register' | 'expi
           >
             <DemoAccessPanel
               busy={auth.busy}
-              onReset={() => resetDemoData()}
+              onReset={async () => {
+                const { resetDemoData } = await import('./demo-reset');
+                resetDemoData();
+              }}
               onSignIn={signInAsDemo}
             />
           </Suspense>
         ) : null}
-        <p className="text-sm text-ink-muted">
-          {t(register ? 'auth.hasAccount' : 'auth.noAccount')}{' '}
-          <Link
-            className="font-semibold text-brand underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-            href={authPageHref(register ? '/login' : '/register', target)}
-          >
-            {t(register ? 'auth.loginLink' : 'auth.registerLink')}
-          </Link>
-        </p>
+        {register || availability === true ? (
+          <p className="text-sm text-ink-muted">
+            {t(register ? 'auth.hasAccount' : 'auth.noAccount')}{' '}
+            <Link
+              className="font-semibold text-brand underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+              href={authPageHref(register ? '/login' : '/register', target)}
+            >
+              {t(register ? 'auth.loginLink' : 'auth.registerLink')}
+            </Link>
+          </p>
+        ) : availability === false || policyFailure ? (
+          <p className="text-sm text-ink-muted">
+            {t(availability === false ? 'auth.registrationClosed' : 'auth.accountHelp')}
+          </p>
+        ) : null}
       </Page>
     </AuthFrame>
   );
