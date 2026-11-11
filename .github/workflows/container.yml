@@ -27,3 +27,16 @@ jobs:
             --tag clouddrive:ci .
       - name: Verify runtime profile
         run: bash scripts/container-smoke.sh clouddrive:ci
+  web-smoke:
+    name: Standalone web runtime smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Build and verify relocatable runtime
+        run: docker build --pull -f frontend/Dockerfile --tag clouddrive-web:ci .
+      - name: Verify nonroot runtime entry
+        run: >-
+          docker run --rm clouddrive-web:ci node -e
+          'if (process.getuid() === 0) throw new Error("runtime must be nonroot");
+          require("node:fs").accessSync("server.js");'

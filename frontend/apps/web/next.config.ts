@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
+import { resolve } from 'node:path';
 
 import { loadWebConfig } from '@clouddrive/config/node';
 
@@ -17,20 +18,9 @@ export default function nextConfig(phase: string): NextConfig {
     },
     // Playwright 的 dev server 使用独立目录，避免 production build 覆盖正在运行的开发缓存。
     distDir: config.distDir ?? (phase === PHASE_DEVELOPMENT_SERVER ? '.next' : 'dist'),
-    // server Mode 不设 output（真实 Next Runtime Server）；static / static-enumerated 用静态导出。
-    ...(deploymentMode === 'server' ? {} : { output: 'export' as const }),
-    ...(deploymentMode === 'server'
-      ? {
-          rewrites() {
-            const backend = process.env.CLOUDDRIVE_BACKEND_URL ?? 'http://127.0.0.1:8080';
-            return Promise.resolve([
-              { source: '/api/:path*', destination: backend + '/api/:path*' },
-              { source: '/wopi/:path*', destination: backend + '/wopi/:path*' },
-              { source: '/management/:path*', destination: backend + '/management/:path*' },
-            ]);
-          },
-        }
-      : {}),
+    // Trace workspace dependencies into a relocatable runtime, not the whole repo.
+    outputFileTracingRoot: resolve(import.meta.dirname, '../..'),
+    output: deploymentMode === 'server' ? 'standalone' : 'export',
     headers() {
       return Promise.resolve([
         {

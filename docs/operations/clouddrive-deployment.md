@@ -2,11 +2,30 @@
 
 ## 构建与进程
 
-使用 Go 1.26.10 和 pnpm 10.22.0。Windows 执行 scripts/Build.ps1；Linux 执行 go build -trimpath -buildvcs=false -o dist/clouddrive ./cmd/app，再在 frontend 执行 npx --yes pnpm@10.22.0 build。
+使用 Go 1.26.10、Node 24 和 pnpm 10.22.0。Windows 可执行 `scripts/Build.ps1`；已安装工具链的 Linux 环境执行：
 
-Next.js 需要 Node 服务进程和整个 frontend 工作区依赖，构建产物位于 frontend/apps/web/dist；使用 npx --yes pnpm@10.22.0 --filter @clouddrive/web exec next start --hostname 127.0.0.1 --port 4173。Go 二进制独立运行，数据库迁移应在启动或升级前执行。
+```bash
+go build -trimpath -buildvcs=false -o dist/clouddrive ./cmd/app
+pnpm --dir frontend build
+pnpm --dir frontend standalone:check
+```
 
-根 Dockerfile 仅构建后端镜像，不再装配旧静态前端。前端使用 frontend/Dockerfile；两个容器通过内部网络通信，前端构建时提供 CLOUDDRIVE_BACKEND_URL=http://backend:8080。未经用户操作，本次不会推送或部署。
+Go 二进制独立运行，数据库迁移在启动或升级前显式执行。前端默认 server 模式产出 `frontend/apps/web/dist/standalone/`，该目录已包含 Next 追踪的运行依赖、编译页面、静态资源和本地 PDF 组件。复制整个目录即可部署；目标机器只需 Node 24，不再安装 pnpm 或复制源码工作区。入口为目录内的 `apps/web/server.js`：
+
+```bash
+CLOUDDRIVE_BACKEND_URL=http://127.0.0.1:8080 HOSTNAME=127.0.0.1 PORT=4173 \
+  node frontend/apps/web/dist/standalone/apps/web/server.js
+```
+
+PowerShell 对应设置 `$env:CLOUDDRIVE_BACKEND_URL`、`$env:HOSTNAME`、`$env:PORT` 后执行同一个入口。`PORT` / `HOSTNAME` 属于 standalone 进程，开发期的 `WEB_PORT` 不用于配置这个入口。
+
+`CLOUDDRIVE_BACKEND_URL` 在服务端处理请求时读取，同一份产物可在不同环境连接不同 Go 服务。值必须是 HTTP(S) 根 Origin，不含路径、凭据、query 或 fragment；默认 `http://127.0.0.1:8080`。Host 的 Next Proxy 只转发 `/api/`、`/wopi/`、`/management/`，保留原有请求、Cookie、CSRF 和范围响应；Go 继续执行认证授权。此变量不进入浏览器公开配置。`NEXT_PUBLIC_*` 仍属于构建期参数，不能在运行时切换认证产品形态。
+
+根 `Dockerfile` 仅构建 Go 镜像；`frontend/Dockerfile` 的运行层只复制上述独立产物，以 node 用户运行，默认监听 `0.0.0.0:4173`。构建上下文排除 `.env`、本地数据和依赖目录。镜像内默认后端为 `http://backend:8080`，通过运行时环境变量指向同一私有网络中的 Go 服务，无需为后端地址重新构建镜像。完整容器构建入口见[构建与容器](build-and-container.md)。
+
+`standalone:check` 把产物复制到仓库外，启动两个不同上游的传输夹具，检查依赖闭包、页面资源、Cookie/CSRF 透传、POST 请求体、范围字节及本地 PDF worker。它不代替真实 Go 会话、文件写入或线上代理验收。容器构建同样执行该检查；CI 分别构建 Go 与 Web 镜像。
+
+静态导出模式仍生成静态站点，包含资源但不包含 Node Proxy；API 必须由部署方的同源反向代理提供。上述 standalone 启动与检查只适用于默认 server 模式。
 
 ## 同源与会话
 

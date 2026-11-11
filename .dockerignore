@@ -22,6 +22,8 @@ config.yml
 config.json
 
 **/node_modules
+**/.env
+**/.env.*
 **/.next
 frontend/apps/web/dist
 frontend/test-results

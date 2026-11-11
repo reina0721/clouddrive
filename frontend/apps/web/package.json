@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node ../../tooling/prepare-pdf-assets.mjs && node ../../tooling/run-next-dev.mjs",
-    "build": "node ../../tooling/prepare-pdf-assets.mjs && next build",
+    "build": "node ../../tooling/prepare-pdf-assets.mjs && next build && node ../../tooling/complete-standalone.mjs",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run --config vitest.config.ts"
   },

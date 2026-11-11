@@ -8,6 +8,8 @@ CloudDrive 的主要使用链路是文件的保存、组织、获取与协作。
 
 界面统一采用 [Material Design 3](../../frontend/docs/ui-visual-calibration.md)：Schema 拥有主题，Adapter 拥有组件状态，Surface 组合导航与页面，Host 拥有浏览器资源和进程外连接。启动工具 `scripts/dev.mjs` 在应用之外管理开发与隔离预览的进程树、就绪检查和失败清理，不把开发编排注入业务 Kernel。数据库迁移仍由同一个 Go CLI 执行。
 
+生产 Web Host 使用 Next standalone 追踪产物部署，构建不绑定 Go 地址。`apps/web/src/proxy.ts` 在运行时把 API、WOPI 与 management 请求交给配置的 Go Origin，复用 Next 的传输实现；不新增 BFF 业务状态或第二套认证授权。Go 与 Web 的生命周期仍分别由部署环境管理。
+
 ## 阅读主线
 
 1. [当前运行结构](#当前运行结构)：先确认入口、composition、Application Generation、模块和 `pkg` 的实际关系。
