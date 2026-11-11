@@ -3,12 +3,44 @@ name: Database
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Classify validation scope
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.scope.outputs.backend }}
+      frontend: ${{ steps.scope.outputs.frontend }}
+      docs: ${{ steps.scope.outputs.docs }}
+      database: ${{ steps.scope.outputs.database }}
+      api: ${{ steps.scope.outputs.api }}
+      fuzz: ${{ steps.scope.outputs.fuzz }}
+      full: ${{ steps.scope.outputs.full }}
+      base: ${{ steps.scope.outputs.base }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@1e60f620b9541dca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.11.1
+      - id: scope
+        env:
+          VALIDATION_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          VALIDATION_FULL: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
+        run: node scripts/ci-validation.mjs classify
+
   sqlite:
+    needs: changes
+    if: needs.changes.outputs.database == 'true'
     name: SQLite migration and repository contracts
     runs-on: ubuntu-latest
     steps:
@@ -23,6 +55,8 @@ jobs:
         run: go test ./internal/module/migration ./pkg/database -count=1
 
   postgres:
+    needs: changes
+    if: needs.changes.outputs.database == 'true'
     name: PostgreSQL contract
     runs-on: ubuntu-latest
     services:
@@ -55,6 +89,8 @@ jobs:
           go test ./pkg/database -run TestConfiguredServerDrivers/postgres -count=1
 
   mysql:
+    needs: changes
+    if: needs.changes.outputs.database == 'true'
     name: MySQL contract
     runs-on: ubuntu-latest
     services:
@@ -85,3 +121,15 @@ jobs:
         run: |
           go test ./internal/module/migration -run TestConfiguredServerMigrations/mysql -count=1
           go test ./pkg/database -run TestConfiguredServerDrivers/mysql -count=1
+
+  summary:
+    name: Database summary
+    if: always()
+    needs: [changes, sqlite, postgres, mysql]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require success or intentional skip
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node -e 'const jobs=JSON.parse(process.env.RESULTS); if(Object.values(jobs).some(job=>!["success","skipped"].includes(job.result))) process.exit(1)'

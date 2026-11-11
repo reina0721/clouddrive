@@ -81,7 +81,7 @@ for (const width of [320, 390, 768, 1440, 2048]) {
       expect(axe.violations).toEqual([]);
       if (path === '/login' || path === '/register')
         await saveEvidenceScreenshot(page, {
-          path: `docs/changes/109-ui-ux-optimization/evidence/authentication/${path.slice(1)}-${width}.png`,
+          path: `authentication/${path.slice(1)}-${width}.png`,
           fullPage: true,
         });
       if ((width === 320 || width === 1440) && (path === '/login' || path === '/register'))
@@ -213,7 +213,7 @@ for (const width of [320, 1440]) {
       .analyze();
     expect(axe.violations).toEqual([]);
     await saveEvidenceScreenshot(page, {
-      path: `docs/changes/109-ui-ux-optimization/evidence/authentication/register-en-dark-${width}.png`,
+      path: `authentication/register-en-dark-${width}.png`,
       fullPage: true,
     });
   });
@@ -249,7 +249,7 @@ test('Large English dark mobile registration keeps password entry usable', async
   const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
   expect(axe.violations).toEqual([]);
   await saveEvidenceScreenshot(page, {
-    path: 'docs/changes/109-ui-ux-optimization/evidence/authentication/register-320-en-dark-large.png',
+    path: 'authentication/register-320-en-dark-large.png',
     fullPage: true,
   });
   await expect.soft(page).toHaveScreenshot('authentication-register-320-en-dark-large.png', {

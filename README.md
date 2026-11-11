@@ -1,8 +1,12 @@
 # clouddrive
 
-基于 community-go 后端和 console-web 前端整合的文件与管理工作区。当前提供私有文件目录、目录/剪贴板上传、复制/编辑/ZIP、搜索分类、回收恢复、媒体画廊和分享链接协作，同时保留账户、权限、组织、导航、字典、通知、待办、运行状态和 API 工作台。文件入口为 `/home`，管理入口为 `/workspace`。
+基于 community-go 后端和 console-web 前端整合的文件与管理工作区。提供私有目录、上传续传、复制与编辑、ZIP/7Z、搜索、回收恢复、媒体阅读和分享协作，以及账户、权限、组织、导航、通知、待办与运维能力。文件入口 `/home`，管理入口 `/workspace`。
 
-Go 服务位于根目录，完整 Next.js/pnpm 工作区位于 frontend/。浏览器默认访问 http://127.0.0.1:4173，通过同源代理访问 Go API（8080）及受保护的 management 接口（9090）。Go 不再构建或托管旧前端。
+## 当前项目目标语境
+
+当前处于本地整合阶段，没有对外发布兼容承诺。已导入源码快照，不导入上游数据库或凭据；本地数据库与文件必须保留，不因尚未发布而重置。当前范围与限制见[项目范围](docs/repository-scope.md)，具体使用方式以[文件管理](docs/operations/file-management.md)为准。
+
+Go 服务位于根目录，Next.js/pnpm 工作区位于 frontend/。网页默认 http://127.0.0.1:4173，同源代理访问 Go API 8080 与 management 9090；Go 不构建或托管旧前端。
 
 ## 本地启动
 
@@ -18,105 +22,24 @@ node scripts/dev.mjs --prepare
 
 界面统一采用 [Material Design 3](frontend/docs/ui-visual-calibration.md)，设计 Token 与交互组件由公共基础层管理。
 
-## 构建与验证
+## 开发与验证
 
-文件管理的独立预览使用 `./scripts/Start-FilePreview.ps1`：默认网页端口 4180、API 8120、management 9120。脚本保留原有开发数据库，使用 `.data/file-preview/`，每次重启后验证登录；预览地址、独立账号、密码与设置令牌保存在被 Git 忽略的 `.data/preview-access.json`。完整行为、限制与集中验收见[文件管理](docs/operations/file-management.md)。
+普通任务按[Agent 日常流程](docs/development/agent-workflow.md)执行，不要求整套任务档案。日常检查先看影响范围：
 
-```powershell
-./scripts/Build.ps1
-# 生产前端启动：在 frontend 下执行
-npx --yes pnpm@10.22.0 --filter @clouddrive/web exec next start --hostname 127.0.0.1 --port 4173
-# 返回项目根目录，启动后端前先执行迁移
-./dist/clouddrive.exe db migrate up
-./dist/clouddrive.exe
+```bash
+node scripts/verify-changed.mjs --dry-run
+node scripts/verify-changed.mjs
 ```
 
-Go 检查入口：scripts/Verify-Quality.ps1；前端检查入口：scripts/Verify-WebUI.ps1。全新数据库的真实浏览器验收：scripts/Test-Integration.ps1。该验收使用独立目录和 8088/9098/4185 端口。
+[验证策略](docs/development/validation.md)说明环境准备、缓存、定向浏览器与完整回归。完整后端入口为 `scripts/Verify-Quality.ps1` / `verify-quality.sh`；完整前端入口为 `scripts/Verify-WebUI.ps1` / `verify-webui.sh`，首次准备显式使用 `-Prepare` / `--prepare`。`scripts/Test-Integration.ps1` 使用独立数据库做真实浏览器验收。
 
-- [本地开发](docs/getting-started/local-development.md)
-- [文档总入口](docs/README.md)
-- [部署与安全配置](docs/operations/clouddrive-deployment.md)
-- [接口说明](api/README.md)
-- [来源与完整提交号](SOURCES.json)
-- [实施状态与验证记录](docs/changes/118-clouddrive-integration/tasks.md)
-- [前端架构与工作区命令](frontend/README.md)
+独立文件预览使用 `scripts/Start-FilePreview.ps1`，默认 4180/8120/9120 端口，保留开发数据库并使用 `.data/file-preview/`；账号与预览资料仅保存于本地忽略目录。不要把共享用户数据当测试夹具。
 
-源仓库以源码快照导入，未合并提交历史，保留当前仓库 origin。原许可证、版权及来源记录保留；各组件适用其原许可证。
+## 文档与来源
 
-## 当前项目目标语境
+- [文档入口](docs/README.md)、[前端工程](frontend/README.md)
+- [部署与安全配置](docs/operations/clouddrive-deployment.md)、[API](api/README.md)
+- [架构](docs/architecture/README.md)、[重要 ADR](docs/architecture/adr/README.md)
+- [完整来源与提交号](SOURCES.json)、[来源记录](docs/provenance/README.md)
 
-文件区新增后台解压任务页。无密码 ZIP/7Z 支持排队、进度、结果和取消待处理任务。有密码的 7Z 继续在当前页面解压。详见[144变更](docs/changes/144-background-archive-tasks/README.md)。
-
-文件和目录菜单以及多选工具栏支持后台创建 ZIP。指定文件名和保存目录后，可在任务页定位或下载结果。详见[145变更](docs/changes/145-background-zip-creation/README.md)。
-
-后台任务页汇总本人 ZIP 创建、解压、HTTP 和 BitTorrent 下载，支持类型、状态及名称筛选。下载卡片可跳到对应详情。详见[146变更](docs/changes/146-unified-background-tasks/README.md)。
-
-本人视频预览支持同目录 VTT、SRT、ASS 外挂字幕。播放器自动选择同名字幕，也可手动切换或关闭。详见[147变更](docs/changes/147-external-video-subtitles/README.md)。
-
-回收站支持永久删除本人文件和目录，可单选、多选或一键清空本人回收站。确认前展示实际范围和可释放的账户配额。详见[148变更](docs/changes/148-trash-permanent-removal/README.md)。
-
-在回收站可设置本人保留天数。默认手动清理；启用后，今后移入的项目会显示到期时间，服务后台按该时间清理。详见[149变更](docs/changes/149-trash-retention/README.md)。
-
-文件菜单和多选工具栏可获取直链，同一文件复用已有地址。“我的分享”提供直链管理和撤销。详见[150变更](docs/changes/150-file-direct-links/README.md)。
-
-管理面板提供只读文件清单，持有独立权限的用户可跨账号过滤、排序和查阅文件详情。详见[151变更](docs/changes/151-admin-file-inventory/README.md)。
-
-管理面板的“文件 Blob”可查阅已引用的主存储对象、当前和历史引用、关联文件及对象存在状态。详见[152变更](docs/changes/152-admin-blob-catalog/README.md)。
-
-文件 Blob 的“待回收”页显示失去引用的已登记对象。独立授权的管理员可在保护期后清理；自动回收可由运维开启。详见[153变更](docs/changes/153-blob-reclamation/README.md)。
-
-管理区的“文件系统”页显示部署值、已保存值与当前生效值，可调整文本、批量、版本和回收参数。保存后通过服务重启统一应用。详见[154变更](docs/changes/154-filesystem-settings/README.md)。
-
-同一页面可设置本人文件列表和网格的分页方式及页大小上限，文件搜索支持游标翻页。详见[162变更](docs/changes/162-workspace-pagination/README.md)。
-
-游标模式在文件列表或网格尾端追加条目，页码模式提供直接跳页。详见[163变更](docs/changes/163-continuous-file-list/README.md)。
-
-“文件系统”的“自定义属性”页可管理全局属性定义。文件所有者可在属性侧栏选择定义并填写对应类型的值。详见[155变更](docs/changes/155-property-definitions/README.md)。
-
-“文件系统”的“文件图标”页可按扩展名设置图形、浅深色或 HTTPS 图片。详见[164变更](docs/changes/164-file-icon-rules/README.md)。
-
-本人文件页可打开 EPUB 电子书，通过目录、章节按钮和包内链接阅读。详见[165变更](docs/changes/165-epub-reader/README.md)。
-
-本人文件页可编辑和预览 Markdown，支持源码、并排视图及同目录图片。详见[166变更](docs/changes/166-markdown-editor/README.md)。
-
-“文件系统”的“文件浏览应用”可管理内置阅读器和默认打开方式。本人文件菜单可以另选兼容应用。详见[167变更](docs/changes/167-file-applications/README.md)。
-
-内置文件应用支持编辑或恢复扩展名关联，保存后作用于已有文件。详见[168变更](docs/changes/168-file-app-extensions/README.md)。
-
-文本和 Markdown 应用支持配置文件工作区“新建”菜单的名称、扩展名和顺序。详见[169变更](docs/changes/169-file-creation-mappings/README.md)。
-
-“文件浏览应用”支持配置 HTTPS 网页阅读器。文件所有者确认接收站点后，可在页面内或新标签预览当前版本。详见[170变更](docs/changes/170-web-file-viewers/README.md)。
-
-“文件浏览应用”也可从 HTTPS 发现地址导入 WOPI 阅读器，按文件格式打开只读文档。详见[171变更](docs/changes/171-wopi-view/README.md)。
-
-启用 WOPI 在线编辑后，文件所有者可授权编辑并保存新版本。外部编辑锁与网页、WebDAV 和上传共用写入保护。详见[172变更](docs/changes/172-wopi-edit/README.md)。
-
-「系统配置」提供站点信息，管理员可设置公开名称、描述、深浅色标志、浏览器图标和条款链接。详见[站点设置](docs/operations/clouddrive-deployment.md#站点信息)。
-
-站点信息中的主站及备选地址适用于分享、直链和外部文档回调，候选地址由部署登记。详见[174变更](docs/changes/174-site-origins/README.md)。
-
-管理区的“分享管理”页可按分享者、源文件和状态查看链接与活动。获准的管理者可单独或批量撤销链接，源文件仍由原所有者管理。详见[156变更](docs/changes/156-admin-share-management/README.md)。
-
-管理区的“后台任务管理”页提供跨账号归档和下载查询。获准的管理者可以预览并清理终态任务，保留已发布文件。详见[157变更](docs/changes/157-admin-background-tasks/README.md)。
-
-后台任务管理也可按来源查看回收站到期扫描及定时 Blob 回收的实际执行记录，并检查状态和耗时。详见[158变更](docs/changes/158-maintenance-run-history/README.md)。
-
-管理区的“节点管理”显示主机任务职责、部署配置的 BitTorrent 节点、实时连接检查和 aria2 实例统计，并可打开按节点筛选的后台任务。详见[159变更](docs/changes/159-file-worker-nodes/README.md)。
-
-管理区的“存储策略”显示默认发布后端和 Blob 用量，可保存单文件与分片上限，在服务重启后应用。详见[160变更](docs/changes/160-storage-policy/README.md)。
-
-存储策略支持扩展名和文件名正则的允许、拒绝及试测。生效后，新上传、离线下载和归档输出按最终文件名校验。详见[161变更](docs/changes/161-storage-name-rules/README.md)。
-
-当前会话密码解锁已补齐，输错可重试、共享账号失败预算，详见[142变更](docs/changes/142-session-password-unlock/README.md)。本批20项使用行为不增加20个独立功能计数；客户端遮挡仍不是服务端授权边界。
-
-WebDAV持久独占写锁已接入真实协议、所有文件保存及上传最终发布；连接页可查看和按版本解除占用，详见[141变更](docs/changes/141-webdav-write-locks/README.md)。本批20项按使用行为验收，不等同Office服务或系统驱动全量兼容。
-
-账号版本保留设置已接入真实文本、上传及WebDAV覆盖，详见[140变更](docs/changes/140-history-preferences/README.md)。数量上限仅在后续成功覆盖时处理旧关联，服务端预算继续有效；本批仍按20项使用行为验收，验证状态以任务清单为准。
-
-文件时间现统一消费区域偏好，分享自定义到期时间支持明确时区与夏令时校验，详见[139变更](docs/changes/139-file-time-zones/README.md)。本批仍按20项使用行为验收，不虚增独立功能计数；可配置版本保留由140补齐，边界见文件管理手册。
-
-新增真实私有目录树、逐层分页、路径跟随、设备开关和键盘导航；桌面与移动导航共用缓存及上传运行域，详见[138变更](docs/changes/138-directory-tree/README.md)。本批20项为使用行为验收，功能累计仍按原300项口径，不等同于Cloudreve全量对齐。
-
-文件偏好新增按账号的服务器同步、各目录视图记忆、全局默认与重置，以及文件夹单击操作；实现与验证见[137变更](docs/changes/137-file-preferences/README.md)。本批20项使用行为包含既有能力的保存语义改进，不据此增加20项独立功能计数。
-
-当前处于本地整合阶段，没有对外发布兼容承诺；仅导入源码快照，不导入源数据库或凭据。本地数据库与文件必须保留，不能因项目尚未发布而重置。文件专项已验收十五批共 300 项能力；第十五批新增分享受众与子项继承权限。第十四批新增真实PDF阅读、分页缩放旋转、文字选择查找、缩略图与大纲、内部导航、加密密码重试、临时文字/高亮/手绘标注与含标注副本导出；第十三批新增本人ZIP/7Z浏览、目录导航、搜索排序、文本与图像预览、成员与所选打包下载、目标选择、三种冲突策略、原子解压、7Z密码及结果回执；第十二批统一六页文件工作区，提供全局创建、目标选择、搜索、存储配额、上传队列与账户工具；第十一批新增分享权限、链接设置、访客文字与媒体预览、真实上传、目录整理及逐项批量协作；第十批新增HTTP/HTTPS离线下载、真实进度、暂停续传、任务恢复、目标修正与批量控制；第九批新增私有版本历史、上传新版本、旧版预览/下载/恢复/另存/清理和并排比较；前八批包含紧凑导航、目录路径操作、选择反选、跨目录剪切/复制/粘贴、私有标签、自定义属性、Emoji/目录颜色、原子批量整理、属性筛选、高级搜索、分页视图、列偏好、范围选择、文件、只读分享、持久续传、WebDAV 连接、分享快捷方式与侧栏固定，提供 `/home/shared`、`/home/transfers` 和 `/home/connections`。另完成[136视觉收口](docs/changes/136-file-workspace-density/README.md)的20项布局与交互修正；功能数量仍为300项。分享受众验收见[135变更](docs/changes/135-share-audience/README.md)，第十四批见[134变更](docs/changes/134-pdf-reader/README.md)，第十三批见[133变更](docs/changes/133-archive-browser/README.md)，第十二批见[131变更](docs/changes/131-file-workspace/README.md)，其剩余4组截图检查已由[132视觉收口](docs/changes/132-visual-regression-closeout/README.md)定向验证通过，不表示全站423例已重新运行。[143变更](docs/changes/143-bittorrent-downloads/README.md)接入受信aria2节点的BT v1磁力与种子、多文件选择、恢复和真实转存；无共享挂载的远程下载代理、脱离链接的账号挂载共享和 Office 仍未实现；文件页已接入当前会话密码解锁，仍只是当前标签页的客户端遮挡，详见142变更；其他差距后续按批次补齐。
+原许可证、版权及来源记录保留。历史变更通过 Git 查阅，工作树不保存按任务编号的变更档案。

@@ -112,7 +112,7 @@ for (const width of [1440, 390, 320]) {
       ).toEqual([]);
       await saveEvidenceScreenshot(page, {
         animations: 'disabled',
-        path: `docs/changes/109-ui-ux-optimization/evidence/semantic-final/theme-tiles-${width}-${language}-dark.png`,
+        path: `semantic-final/theme-tiles-${width}-${language}-dark.png`,
       });
       await dark.focus();
       await page.keyboard.press('ArrowRight');
@@ -138,7 +138,7 @@ for (const width of [1440, 390, 320]) {
       await page.getByRole('heading', { level: 1 }).click();
       await saveEvidenceScreenshot(page, {
         animations: 'disabled',
-        path: `docs/changes/109-ui-ux-optimization/evidence/semantic-final/theme-tiles-${width}-${language}-system.png`,
+        path: `semantic-final/theme-tiles-${width}-${language}-system.png`,
       });
       await context.close();
     });
@@ -227,7 +227,7 @@ test('Switch thumb endpoint inset matches vertical inset in row, card and disabl
       await page.getByRole('heading', { level: 1 }).click();
       await saveEvidenceScreenshot(page, {
         animations: 'disabled',
-        path: `docs/changes/109-ui-ux-optimization/evidence/semantic-final/switch-geometry-${width}-${colorScheme}.png`,
+        path: `semantic-final/switch-geometry-${width}-${colorScheme}.png`,
       });
     }
   }
@@ -268,7 +268,7 @@ for (const width of [1440, 390, 320]) {
       await row.hover();
       await saveEvidenceScreenshot(page, {
         animations: 'disabled',
-        path: `docs/changes/109-ui-ux-optimization/evidence/semantic-final/switch-row-hover-${width}-${density}.png`,
+        path: `semantic-final/switch-row-hover-${width}-${density}.png`,
       });
     });
   }
@@ -321,7 +321,7 @@ test('Sticky consumers resolve actual chrome height across live tabs and viewpor
         width,
       );
       await saveEvidenceScreenshot(page, {
-        path: `docs/changes/109-ui-ux-optimization/evidence/semantic-final/layout-${width}-${state}.png`,
+        path: `semantic-final/layout-${width}-${state}.png`,
       });
       await page.evaluate(() => window.scrollTo(0, 0));
     }
@@ -371,7 +371,7 @@ test('Short desktop window retains access to the last settings category', async 
   await expect(page.getByRole('heading', { name: '快捷键', level: 2, exact: true })).toBeVisible();
   await saveEvidenceScreenshot(page, {
     animations: 'disabled',
-    path: 'docs/changes/109-ui-ux-optimization/evidence/semantic-final/layout-short-desktop.png',
+    path: 'semantic-final/layout-short-desktop.png',
   });
 });
 
@@ -463,7 +463,7 @@ for (const width of [320, 390, 430, 768, 1024, 1279]) {
       width,
     );
     await saveEvidenceScreenshot(page, {
-      path: `docs/changes/109-ui-ux-optimization/evidence/semantic-final/settings-${width}.png`,
+      path: `semantic-final/settings-${width}.png`,
     });
   });
 }
@@ -542,7 +542,7 @@ test('Settings drawer and form authority retain WCAG AA semantics in dark Englis
       .violations,
   ).toEqual([]);
   await saveEvidenceScreenshot(page, {
-    path: 'docs/changes/109-ui-ux-optimization/evidence/semantic-final/settings-dark-en.png',
+    path: 'semantic-final/settings-dark-en.png',
   });
 });
 

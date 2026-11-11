@@ -50,23 +50,23 @@ Provider 边界见[业务模块接入消息系统适配能力](./messaging-capab
 
 每个新增模块的研究报告必须填写以下评估。字段必须出现；不适用时写明原因。即使结论为“不需要新能力”，也必须列出现有能力复用证据，不能用未提及表示已经检查。
 
-| 维度 | 必答问题 | 交付结果 |
-| --- | --- | --- |
-| 用例 | 哪个 actor 触发什么行为，有哪些外部副作用 | 用例、约束与非目标 |
-| 现有能力 | `pkg` 和 production composition 已有哪些能力可复用 | 能力、入口与代码证据 |
-| 新能力 | 是否新增外部系统、SDK、协议或跨模块能力 | 有/无及理由 |
-| 技术候选 | 标准库、成熟第三方与当前自研实现分别能否满足需求 | 候选、版本、安全/维护证据与取舍 |
-| 归属 | 是否只服务本模块；若拟升级底层，是否同时有跨业务消费者和进程统一选择证据 | 唯一语义 owner 与分类矩阵结论 |
-| 资源 | 是否有连接、Client、listener、订阅、goroutine、缓存或派生句柄 | 构造和释放 owner |
-| 运行 | 是否需要 Start、Ready、Health、Run、Stop、Wait | 运行 owner 和顺序 |
-| 配置 | 是否有配置、Secret、Defaults、严格校验和变化分类 | section owner 与失败语义 |
-| 出口 | 普通接口、稳定 facade 还是 Lease Access | 最小调用契约 |
-| Reload | 新旧实例能否并存、排空和回滚，还是只能重启 | 适用策略与证据 |
-| 契约适配 | 当前项目契约能否表达全部保证 | 适用、不适用或待研究 |
-| 架构适配 | 当前模块、Kernel、Generation 与 composition 边界是否适合作为承载基础 | 保留、局部调整或架构重构及收益 |
-| 失败 | 取消、超时、重试、幂等、背压、降级和清理错误如何处理 | 可识别错误与诊断 |
-| 日志 | 哪些生命周期、外部结果和状态变化必须记录；谁是唯一 owner；level、字段、脱敏和验证是什么 | 引用[开发日志规范](logging.md)的事件与验收清单 |
-| 影响 | composition、Host、HTTP、CLI、配置、迁移和测试受何影响 | 文件与验收清单 |
+| 维度     | 必答问题                                                                                | 交付结果                                       |
+| -------- | --------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| 用例     | 哪个 actor 触发什么行为，有哪些外部副作用                                               | 用例、约束与非目标                             |
+| 现有能力 | `pkg` 和 production composition 已有哪些能力可复用                                      | 能力、入口与代码证据                           |
+| 新能力   | 是否新增外部系统、SDK、协议或跨模块能力                                                 | 有/无及理由                                    |
+| 技术候选 | 标准库、成熟第三方与当前自研实现分别能否满足需求                                        | 候选、版本、安全/维护证据与取舍                |
+| 归属     | 是否只服务本模块；若拟升级底层，是否同时有跨业务消费者和进程统一选择证据                | 唯一语义 owner 与分类矩阵结论                  |
+| 资源     | 是否有连接、Client、listener、订阅、goroutine、缓存或派生句柄                           | 构造和释放 owner                               |
+| 运行     | 是否需要 Start、Ready、Health、Run、Stop、Wait                                          | 运行 owner 和顺序                              |
+| 配置     | 是否有配置、Secret、Defaults、严格校验和变化分类                                        | section owner 与失败语义                       |
+| 出口     | 普通接口、稳定 facade 还是 Lease Access                                                 | 最小调用契约                                   |
+| Reload   | 新旧实例能否并存、排空和回滚，还是只能重启                                              | 适用策略与证据                                 |
+| 契约适配 | 当前项目契约能否表达全部保证                                                            | 适用、不适用或待研究                           |
+| 架构适配 | 当前模块、Kernel、Generation 与 composition 边界是否适合作为承载基础                    | 保留、局部调整或架构重构及收益                 |
+| 失败     | 取消、超时、重试、幂等、背压、降级和清理错误如何处理                                    | 可识别错误与诊断                               |
+| 日志     | 哪些生命周期、外部结果和状态变化必须记录；谁是唯一 owner；level、字段、脱敏和验证是什么 | 引用[开发日志规范](logging.md)的事件与验收清单 |
+| 影响     | composition、Host、HTTP、CLI、配置、迁移和测试受何影响                                  | 文件与验收清单                                 |
 
 能力评估的第一步是核对真实代码，而不是只读能力名称：
 
@@ -153,18 +153,18 @@ HTTP 的固定构造顺序是 `模块顶层 typed Handler + binding Huma registr
 
 业务模块按需提供以下 binding / 接入契约，每类的声明位置、接入方式、维护位置统一如下。仅按真实需要建立对应的 binding，不为了目录对称创建空层。
 
-| Binding / 契约 | 声明位置 | 接入方式 | 维护位置 |
-| --- | --- | --- | --- |
-| HTTP binding | 模块顶层 `handler/`（Operations/DTO/ActorAccess/错误呈现）+ `binding/http`（Huma typed input/output 与 registration） | 同一 registration 同时注册到 `contract-gen` 和 `internal/composition`；`internal/transport/http` 绑定 | `internal/module/<name>/handler` 与 `binding/http` |
-| config binding | `binding/config` | composition 连接模块 Config | `internal/module/<name>/binding/config` |
-| cli binding | `binding/cli` | cmd（command）装配 | `internal/module/<name>/binding/cli` |
-| migration binding | `binding/migration` 的独立 Set/版本表/checksum | composition 显式注册到 application Migration Catalog | `internal/module/<name>/binding/migration` |
-| permission binding | `binding/permission` 的精确 Key/owner/description message ID | composition 显式聚合 Permission Catalog，并校验 operation/WebUI 引用 | `internal/module/<name>/binding/permission` |
-| i18n binding | `binding/i18n`（模块自有语言资源 + 窄契约，如 `MessageFiles()`/`fs.FS`/catalog） | composition 显式聚合进 Non-Essential I18n 装配，再按模块注入 `pkg/i18n.Translator` | `internal/module/<name>/binding/i18n` 与模块内语言资源 |
-| middleware | `middleware/`（横切策略） | composition 挂载 | `internal/module/<name>/middleware` |
-| WebUI binding | `binding/webui`（Route/Navigation/Locale/MockSource + 分区注入点 HeaderActions/SidebarPanels/PageHeaderItems/FooterStatusItems 与 ActionPermissions；Route 可声明 WorkspaceTabPolicy 成独立工作区，085） | `internal/composition` 唯一 WebUI 模块列表选中；Go 保留后端元数据，浏览器目录由 console-web Plugin 生成 | `frontend/surfaces/plugins/`（页面、组件、locale；通过 Host Port 接入服务） |
-| schedule binding | `module.go` 构造 `pkg/schedule.Binding` | `module.Contribution.Schedules`，由 application composition 统一聚合 | 模块 Service 与 `module.go` |
-| message binding | 模块 `binding/message` 或 `module.go` 构造 `pkg/messaging` Contract/Producer/Consumer Binding | `module.Contribution.Messages`，由 application composition 聚合 Catalog、解析 Route 并注入窄 Publisher | 模块 wire contract、payload Adapter、Service Handler 与 `module.go` |
+| Binding / 契约     | 声明位置                                                                                                                                                                                                 | 接入方式                                                                                                | 维护位置                                                                    |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| HTTP binding       | 模块顶层 `handler/`（Operations/DTO/ActorAccess/错误呈现）+ `binding/http`（Huma typed input/output 与 registration）                                                                                    | 同一 registration 同时注册到 `contract-gen` 和 `internal/composition`；`internal/transport/http` 绑定   | `internal/module/<name>/handler` 与 `binding/http`                          |
+| config binding     | `binding/config`                                                                                                                                                                                         | composition 连接模块 Config                                                                             | `internal/module/<name>/binding/config`                                     |
+| cli binding        | `binding/cli`                                                                                                                                                                                            | cmd（command）装配                                                                                      | `internal/module/<name>/binding/cli`                                        |
+| migration binding  | `binding/migration` 的独立 Set/版本表/checksum                                                                                                                                                           | composition 显式注册到 application Migration Catalog                                                    | `internal/module/<name>/binding/migration`                                  |
+| permission binding | `binding/permission` 的精确 Key/owner/description message ID                                                                                                                                             | composition 显式聚合 Permission Catalog，并校验 operation/WebUI 引用                                    | `internal/module/<name>/binding/permission`                                 |
+| i18n binding       | `binding/i18n`（模块自有语言资源 + 窄契约，如 `MessageFiles()`/`fs.FS`/catalog）                                                                                                                         | composition 显式聚合进 Non-Essential I18n 装配，再按模块注入 `pkg/i18n.Translator`                      | `internal/module/<name>/binding/i18n` 与模块内语言资源                      |
+| middleware         | `middleware/`（横切策略）                                                                                                                                                                                | composition 挂载                                                                                        | `internal/module/<name>/middleware`                                         |
+| WebUI binding      | `binding/webui`（Route/Navigation/Locale/MockSource + 分区注入点 HeaderActions/SidebarPanels/PageHeaderItems/FooterStatusItems 与 ActionPermissions；Route 可声明 WorkspaceTabPolicy 成独立工作区，085） | `internal/composition` 唯一 WebUI 模块列表选中；Go 保留后端元数据，浏览器目录由 console-web Plugin 生成 | `frontend/surfaces/plugins/`（页面、组件、locale；通过 Host Port 接入服务） |
+| schedule binding   | `module.go` 构造 `pkg/schedule.Binding`                                                                                                                                                                  | `module.Contribution.Schedules`，由 application composition 统一聚合                                    | 模块 Service 与 `module.go`                                                 |
+| message binding    | 模块 `binding/message` 或 `module.go` 构造 `pkg/messaging` Contract/Producer/Consumer Binding                                                                                                            | `module.Contribution.Messages`，由 application composition 聚合 Catalog、解析 Route 并注入窄 Publisher  | 模块 wire contract、payload Adapter、Service Handler 与 `module.go`         |
 
 **新增业务模块必须接入的基础契约**：
 
@@ -198,14 +198,14 @@ HTTP 的固定构造顺序是 `模块顶层 typed Handler + binding Huma registr
 
 只有能力评估已经判定为“由当前进程选择并注入的底层 Capability”后，才进入本节。可编译 API 和完整约束以 [Kernel App 组件开发](../../internal/kernel/app/README.md) 为准。
 
-| 真实能力特征 | 当前形态 | 输出与 Reload |
-| --- | --- | --- |
-| 代码固定且无资源生命周期 | `app.Value` | 普通项目接口，不进入运行节点 |
-| 无运行期配置但需要 Start/Stop | `app.ManagedFixed` | 稳定 Lease facade，`NoReload` |
-| 配置化且新旧实例可安全并存 | `app.ManagedConfigured` | 稳定 Lease facade，`KernelInstanceSwap` |
-| 配置变化不能安全热换 | `app.ManagedConfigured` | 稳定 Lease facade，`RestartRequired` |
-| 明确替换同一既有稳定 target | `app.ManagedConfiguredReplacement` | 复用 target 输出，`KernelInstanceSwap` |
-| 影响当前同步 HTTP 模块对象图 | Application Generation | 完整重建 Router/Server，对新连接提交并排空旧代 |
+| 真实能力特征                  | 当前形态                           | 输出与 Reload                                  |
+| ----------------------------- | ---------------------------------- | ---------------------------------------------- |
+| 代码固定且无资源生命周期      | `app.Value`                        | 普通项目接口，不进入运行节点                   |
+| 无运行期配置但需要 Start/Stop | `app.ManagedFixed`                 | 稳定 Lease facade，`NoReload`                  |
+| 配置化且新旧实例可安全并存    | `app.ManagedConfigured`            | 稳定 Lease facade，`KernelInstanceSwap`        |
+| 配置变化不能安全热换          | `app.ManagedConfigured`            | 稳定 Lease facade，`RestartRequired`           |
+| 明确替换同一既有稳定 target   | `app.ManagedConfiguredReplacement` | 复用 target 输出，`KernelInstanceSwap`         |
+| 影响当前同步 HTTP 模块对象图  | Application Generation             | 完整重建 Router/Server，对新连接提交并排空旧代 |
 
 分别回答以下问题，不能因为某个 API 已存在就机械套用：
 
@@ -234,7 +234,7 @@ HTTP 的固定构造顺序是 `模块顶层 typed Handler + binding Huma registr
 
 1. 在当前模块研究中记录具体用例、缺口和受影响契约。
 2. 比较 Application Generation、`RestartRequired`、模块级受管运行单元和专用 Handoff 四条路径。
-3. 改变公共生命周期、依赖模型或资源切换语义时建立新的 `docs/changes/<seq-num-name>/`。
+3. 改变公共生命周期、依赖模型或资源切换语义时记录设计与必要 ADR，并按风险取得确认。
 4. 难以逆转的长期决策使用 ADR。
 5. 新方案确认前，模块任务保持待确认，不增加空 Hook、静默回退或临时兼容层。
 

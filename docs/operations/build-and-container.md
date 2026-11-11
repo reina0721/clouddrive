@@ -18,3 +18,5 @@ Next 的 server 构建输出为 `frontend/apps/web/dist/standalone/`；其中 `a
 运行时显式提供配置与可写数据库卷，management 监听仅暴露给受信网络。Go runtime 为 nonroot；探针使用 management `/startupz`、`/livez`、`/readyz`。`scripts/container-smoke.sh` 检查后端探针和 API 不回退 HTML，前端由独立部署和浏览器验收覆盖。迁移应在启动前显式执行，不隐藏在容器启动中。
 
 容器构建、外部数据库及线上发布必须分别验证；本地源码构建不证明这些检查已经通过。
+
+日常增量检查见[验证策略](../development/validation.md)。上述脚本是完整回归，前端首次准备使用 `Verify-WebUI.ps1 -Prepare` 或 `verify-webui.sh --prepare`，不会在每次局部更新时自动安装。

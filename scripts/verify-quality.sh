@@ -4,9 +4,19 @@ set -euo pipefail
 repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${repository_root}"
 
-unformatted="$(gofmt -l . | grep -v '^old-backend/' || true)"
+go_executable=go
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --go-executable) [[ $# -ge 2 ]] || { echo 'Missing Go executable' >&2; exit 2; }; go_executable="$2"; shift 2 ;;
+    *) echo "Unknown argument: $1" >&2; exit 2 ;;
+  esac
+done
+function go() { command "${go_executable}" "$@"; }
+
+unformatted="$(gofmt -l .)"
+unformatted="$(printf '%s\n' "$unformatted" | awk '$0 !~ /^old-backend\//')"
 if [[ -n "${unformatted}" ]]; then
-  printf '%s\n' "${unformatted}" | xargs gofmt -d
+  while IFS= read -r source_file; do gofmt -d -- "$source_file"; done <<< "$unformatted"
   exit 1
 fi
 go mod tidy -diff
@@ -15,7 +25,7 @@ go run ./internal/tools/project-layout --check-webui
 go generate ./...
 openapi_output="$(node scripts/project-layout.mjs --field openapiOutput)"
 operation_inventory_output="$(node scripts/project-layout.mjs --field operationInventoryOutput)"
-git diff --exit-code -- "${openapi_output}" "${operation_inventory_output}"
+git diff --exit-code -- "${openapi_output}" "${operation_inventory_output}" frontend/apps/web/src/generated/native-openapi.json
 go test ./... -count=1
 go test -race ./... -count=1
 go vet ./...

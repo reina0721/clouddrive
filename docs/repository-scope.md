@@ -1,88 +1,21 @@
 # clouddrive 项目范围
 
-当前构建范围是根目录 Go 后端与 frontend/ 内完整 console-web 工作区。后端来自 community-go main，前端来自 dsh/117-page-transitions；完整提交号见 SOURCES.json。
+当前构建范围为根 Go 后端与 frontend/ 内完整 Next.js 工作区。后端来自 community-go，前端来自 console-web；导入分支和完整提交号见根 SOURCES.json。只导入源码快照，不导入上游数据库、凭据、嵌套 Git 或提交历史。
 
-源码快照导入保留当前 Git 仓库和 origin，不引入源仓库历史或嵌套 Git。community-go 的 frontend、webui、old-frontend、old-backend 未导入。后端纯 Go 菜单、模块及权限元数据保留；不再加载旧浏览器源码或构建旧 SPA。
+## 当前产品与边界
 
-Next.js 4173 与 Go 8080/9090 分进程运行；默认 Cookie 会话及真实接口模式。原生 /api/v1 保留，/api/console/v1 投影复用 IAM、组织、导航、Todo、执行和调度能力，不建立第二套认证授权。
+文件入口为 `/home`，管理入口为 `/workspace`。私有文件与身份、权限、组织、导航、字典、通知、工作台、运维及 API 工作台共用现有 IAM、数据库和 Storage。具体文件能力、预算与未实现项以[文件管理说明](operations/file-management.md)为 authority，不用历史功能计数代替当前行为。
 
-当前范围为私有文件管理以及身份、权限、组织、导航、字典、通知、工作台、分析、运维和 API 工作台。文件专项已验收十五批共300项，包含分享受众与子项继承权限。已验收范围包含真实PDF阅读、分页缩放旋转、文字选择查找、缩略图与大纲、内部导航、加密密码重试、临时文字/高亮/手绘标注与含标注副本导出，以及本人ZIP/7Z结构浏览、目录与路径导航、搜索排序、选择、安全文本与图像预览、成员与所选ZIP下载、目标选择、包裹目录、拒绝/跳过/改名的原子解压、加密7Z密码和结果回执，以及统一六页工作区、全局创建与目标选择、搜索、配额、上传队列与账户工具，以及分享链接权限与访客协作、HTTP/HTTPS离线任务、暂停续传与批量清理、私有版本历史、覆盖保留、上传新版本、历史恢复与清理、并排比较、响应式文件导航、路径与选择操作、同账号剪切/复制/粘贴、私有标签、自定义属性、图标与目录颜色、批量整理、高级条件检索、普通分页视图、列偏好、范围选择、分享快捷方式、侧栏固定、目录、分块续传、持久传输中心、WebDAV 连接与挂载管理、复制、文本编辑、媒体、搜索视图与回收恢复能力，采用现有 IAM、数据库和 Storage；[文件管理运行说明](operations/file-management.md)是其限制与使用方式的 authority。131通用 UI 检查留下的4组截图差异已由[132视觉收口](changes/132-visual-regression-closeout/verification.md)修复并通过相关41例，未重跑完整423例，不宣称全量质量命令通过。[143变更](changes/143-bittorrent-downloads/README.md)实现受信节点的BT v1磁力、种子和多文件转存；无共享挂载的远程代理、脱离分享链接的账号挂载共享及 Office 在线协作仍未实现；文件页支持当前会话密码解锁，仍为当前标签页的客户端遮蔽，详见[142变更](changes/142-session-password-unlock/README.md)。纯 UI 展示与参考页面保留演示用途。
+Next.js 4173 与 Go 8080/9090 分进程运行，默认真实 Cookie 会话与同源 API 代理。原生 `/api/v1` 保留；`/api/console/v1` 投影复用业务能力，不建立第二套认证授权。完整启动与部署见[本地开发](getting-started/local-development.md)和[部署说明](operations/clouddrive-deployment.md)。
 
-[当前开发入口](getting-started/local-development.md) 与 [部署说明](operations/clouddrive-deployment.md) 优先于源项目历史变更记录。docs/changes 和 frontend/docs/changes 中的旧记录用于追溯，不作为当前启动命令。
+当前包含持久上传、WebDAV、私有版本、HTTP/BT 下载、ZIP/7Z、PDF 与媒体应用、文件权限和分享协作。BT 面向受信节点；无共享挂载的远程下载代理、脱离分享链接的跨账号挂载共享仍不在已实现范围。WOPI 的发现与编辑已有宿主和协议适配，真实外部 Office 服务仍须单独联调，不能由本地模拟通过推定兼容。客户端密码遮蔽不构成服务端授权边界。
 
-第十三批的[133验收](changes/133-archive-browser/verification.md)覆盖受限Windows解析、31个不同的相关浏览器场景、Go全量和前端检查。Linux仅交叉构建。当前后台解压由[144变更](changes/144-background-archive-tasks/README.md)提供，格式和任务范围以文件管理运行说明为准。
+community-go 的 frontend、webui、old-frontend、old-backend 未导入；Go 不再加载旧浏览器源码或构建旧 SPA。部分 Reference 页面保留演示用途，不能当成真实业务验收。
 
-第十四批的[134验收](changes/134-pdf-reader/verification.md)覆盖私有当前及历史PDF；源字节、页数、画布、图像和工作时限受控。超过单张图像像素预算时PDF.js省略该图像，界面明确提示并可下载原件，不承诺全保真。临时标注只导出副本，不回写原文件；不包含Office、ePub、OCR或公开分享PDF阅读。
+## 项目阶段与数据
 
-第十五批[135验收](changes/135-share-audience/verification.md)覆盖精确账号及角色受众、子项继承、当前身份与下载票据绑定；71项基础浏览器场景及最终5项定向复验通过，含320px英文深色长主体名称的局部溢出与无障碍检查。两库已追加迁移至v13并校验原数据保留。
+当前是本地整合阶段，没有对外发布兼容承诺。不能把 origin/main、历史迁移或本地运行数据等同于正式发布。已有本地数据库、文件和审计数据必须保留；清理文档与源码不授权重置数据。迁移、清空或破坏性操作仍须检查实际数据与明确影响。
 
-[136视觉收口](changes/136-file-workspace-density/verification.md)另修正20项文件工作区布局与交互：独立滚动、紧凑导航与六列网格、窄屏路径、空态居中和固定项区域。功能累计仍为300项；78项不同文件流程的组合证据与已知QA并行登录风险见验收记录，不扩大为全站一致或并发验收。
+## 开发与证据
 
-[137目录偏好](changes/137-file-preferences/README.md)实现服务器同步、各目录覆盖、全局默认与重置、文件夹点击行为及冲突恢复；本批20项为使用行为验收，不作为20项独立新增功能计数。原两库已追加迁移至v14并核对所有既有files表数据保留，验收状态以任务清单为准。
-
-[138私有目录树](changes/138-directory-tree/README.md)补齐真实目录分页、自动跟随、按设备的开关和键盘/移动导航；不新增Go接口或数据迁移。缓存和自动展开有明确预算，20项仍按使用行为验收，不改变累计300项口径；范围和限制以文件管理手册为准。
-
-[139文件时间与时区](changes/139-file-time-zones/README.md)统一时间显示与现有区域偏好，补齐自定义分享到期时间的明确时区和夏令时校验。无Go接口或数据库迁移；20项为使用行为，服务端到期上限和原数据均保留。版本保留设置由140补齐；该批不包含BT与Office。
-
-
-[140账号版本保留](changes/140-history-preferences/README.md)新增服务器策略、扩展名筛选及最近数量限制，内容覆盖事务读取同一账号规则并核算逻辑空间；v15仅新增独立策略表，不改写原文件或视图偏好。当前验证与交付状态见任务清单，不扩大为无界历史或物理垃圾回收。
-
-[141持久写锁](changes/141-webdav-write-locks/README.md)补齐WebDAV独占锁、条件写入、跨入口事务保护和本人占用管理；20项仍按使用行为验收，不支持共享锁或Office服务。v16追加锁表和传输条件列，原数据保留；完整验证与部署状态以任务清单为准。
-
-[144后台解压](changes/144-background-archive-tasks/README.md)覆盖本人无密码 ZIP/7Z 的持久任务、结果及排队取消，迁移 v18 增加一张任务表。[145后台创建 ZIP](changes/145-background-zip-creation/README.md)在原表增加类型和结果信息，覆盖文件及目录压缩、下载和结果定位。[146任务汇总](changes/146-unified-background-tasks/README.md)将归档和两类离线下载汇总到同一列表，支持筛选、分页和精确下载详情入口。
-
-[147视频外挂字幕](changes/147-external-video-subtitles/README.md)接入本人当前视频的同目录 VTT、SRT 和 ASS 字幕。播放格式仍取决于浏览器，ASS 保留时间和文本，HLS、内嵌字幕、样式设置、公开分享和历史版本外挂字幕不在此次范围。
-
-[148回收站永久移除](changes/148-trash-permanent-removal/README.md)实现本人已回收文件、目录及其后代的永久移除和一键清空。[149回收站保留规则](changes/149-trash-retention/README.md)增加本人可选期限与后台到期清理。两条路径均释放逻辑配额，最后一项引用解除后进入对象回收保护期。
-
-[150文件直链](changes/150-file-direct-links/README.md)提供单文件或批量生成、复制、范围下载和本人撤销，支持明确安全类型的浏览器预览。目录直链、直通存储和跨账号管理独立规划。
-
-[151管理端文件清单](changes/151-admin-file-inventory/README.md)允许单独授权跨账号查阅已发布条目、逻辑占用、链接关联和版本摘要。[152管理端文件 Blob](changes/152-admin-blob-catalog/README.md)提供已引用对象、历史及副本引用和主存储存在性。[153文件 Blob 回收](changes/153-blob-reclamation/README.md)允许处理本版本开始登记的无引用已发布对象。导入、未发布传输、历史孤立对象和跨账号内容访问独立规划。
-
-[154文件系统参数](changes/154-filesystem-settings/README.md)提供文件策略的持久管理覆盖及生效状态。[162工作区分页](changes/162-workspace-pagination/README.md)提供列表和网格的游标、页码切换及页大小上限。[163连续浏览](changes/163-continuous-file-list/README.md)提供滚动追加、失败恢复和直接跳页。通用部署配置及 Office 设置独立规划。
-
-[155全局文件属性定义](changes/155-property-definitions/README.md)提供七种属性类型、管理权限、文件编辑和事务校验。文件原有属性值及现有私有搜索条件保持兼容。
-
-[164文件图标](changes/164-file-icon-rules/README.md)在本人文件工作区应用扩展名规则，提供内置图形、浅深色及合规的外部图片。
-
-[165 EPUB 阅读](changes/165-epub-reader/README.md)在本人文件工作区阅读当前版本的可重排 XHTML 电子书。支持目录、章节、包内栅格图片及字号。
-
-[166 Markdown 编辑](changes/166-markdown-editor/README.md)支持本人当前 Markdown 文件的创建、源码编辑、渲染和同目录栅格图片。使用既有文件权限、版本及文本限制。
-
-[167 文件应用](changes/167-file-applications/README.md)提供本人文件的内置应用选择和全局默认规则。[168 扩展名关联](changes/168-file-app-extensions/README.md)支持编辑或清空内置应用列表及恢复继承。[169 新建映射](changes/169-file-creation-mappings/README.md)允许配置文本和 Markdown 应用的新建菜单项。[170 网页式文件应用](changes/170-web-file-viewers/README.md)为本人当前文件提供配置外部阅读器和限时读取。[171 WOPI](changes/171-wopi-view/README.md)提供发现导入和只读浏览。[172 WOPI 编辑](changes/172-wopi-edit/README.md)支持本人文件的独占编辑和版本写回。跨账号协作与外部新建映射另行对齐。
-
-[156管理端分享](changes/156-admin-share-management/README.md)提供独立授权的跨账号清单、浏览与下载授权计数及批量撤销。活动计数从升级后累计。
-
-[173 站点信息](changes/173-site-profile/README.md)管理公开名称、描述、标志、浏览器图标及条款链接，并应用于登录、文件和分享页面。
-
-[174 站点地址](changes/174-site-origins/README.md)管理部署许可的主站和备选地址，生成分享、直链及文档回调。
-
-[175 图片编辑](changes/175-image-editor/README.md)支持本人当前 PNG 和 JPEG 的裁剪、旋转、镜像、缩放、历史及独立副本导出。上传副本沿用现有传输队列。
-
-[176 音乐播放器](changes/176-music-player/README.md)支持本人音频同目录队列、时间轴、音量、循环及浏览器读取内嵌歌曲标签和封面。
-
-[177 Markdown 编写](changes/177-markdown-authoring/README.md)提供格式、链接、撤销和同目录图片上传。图片发布成功后插入相对引用，草稿保持独立保存。
-
-[178 EPUB 续读](changes/178-epub-reading-progress/README.md)提供翻页、连续滚动、侧边目录和书签。当前内容版本的阅读位置和字号保存在本机浏览器。
-
-[179 私有 HLS 视频](changes/179-hls-playback/README.md)可读取本人目录内的 M3U8 清单、分片及 AES-128 密钥，支持自动和手动清晰度、直播清单刷新及外挂字幕。浏览器需支持 Media Source Extensions 与相应视频编码。
-
-[180 文本与代码编辑](changes/180-text-code-editor/README.md)支持本人文本文件的语言识别、代码导航、查找替换及历史编码读取，以 UTF-8 保存并检查内容修订。
-
-[181 照片查看工作区](changes/181-photo-viewer/README.md)提供本人图片的同目录切换和浏览器端按需 EXIF 查看。
-
-[182 Draw.io 在线编辑](changes/182-drawio-editor/README.md)提供本人图表的绘制与版本保存，支持使用独立部署的编辑器。
-
-[183 图片标注](changes/183-image-annotations/README.md)提供本人图片的形状、画笔和文字标注，沿用已有编辑历史及图片副本上传。
-[184 图片外观调整](changes/184-image-appearance/README.md)为本人图片增加色彩微调、滤镜预览和文字水印，支持撤销、重做与 PNG/JPEG 副本。
-[185 图片水印与 WebP 编辑](changes/185-raster-watermarks/README.md)增加本机图片水印，以及本人 WebP 的编辑和副本导出。
-[186 图片编辑视图与导出设置](changes/186-image-editor-viewport/README.md)增加画布实际尺寸、缩放和平移、完整原图对比，以及 JPEG/WebP 压缩质量。
-[187 图片版本保存与另存目录](changes/187-image-version-save/README.md)提供本人图片的新版本发布、修订保护与选目录另存。
-[188 图片标注叠层](changes/188-image-annotation-overlays/README.md)支持本人图片导入、调整和排序本机图片标注，合成到副本或新版本。
-[189 PDF 图片标注](changes/189-pdf-image-annotations/README.md)在本人 PDF 阅读器中加入本机图片标注，可移动、缩放、撤销并导出独立 PDF。
-
-[157管理端后台任务](changes/157-admin-background-tasks/README.md)提供 ZIP、解压、HTTP 与 BT 跨账号查询、诊断详情及终态清理。[158文件维护运行历史](changes/158-maintenance-run-history/README.md)增加回收站到期扫描和定时 Blob 回收的终态记录。运行中跟踪和跨请求关联仍在本范围之外。
-
-[159文件任务节点](changes/159-file-worker-nodes/README.md)提供主机文件职责、已装配 aria2 节点、通信及负载检查、关联任务筛选。节点接入由部署配置管理。Cloudreve 从机注册、远端归档和从机存储仍为后续范围。
-
-[160默认存储策略](changes/160-storage-policy/README.md)提供发布后端摘要、引用去重统计及单文件和分片限额。[161文件名规则](changes/161-storage-name-rules/README.md)增加扩展名与 RE2 正则的允许及拒绝模式、试测与新内容准入。仍使用单一发布位置，多策略分配、迁移、CDN 与加密为后续范围。
+普通任务遵循[轻量协作流程](development/agent-workflow.md)和[范围验证](development/validation.md)，当前功能说明写入主题文档，重要决定保留 [ADR](architecture/adr/README.md)。历史任务目录已退出工作树，原始记录通过 Git 查阅；验证只证明具体平台、环境与范围，不把局部或模拟通过写成全量/真实部署通过。

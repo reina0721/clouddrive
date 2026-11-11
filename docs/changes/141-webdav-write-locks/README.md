@@ -1,7 +1,0 @@
-# WebDAV 持久写锁
-
-状态：本批实现、验证及提交推送完成，总体Cloudreve对齐继续。基线 `1d2f33a81696ea9fccd8889fa3ac977cfabb3708`。用户当前 goal 明确要求不中途确认、直接实施、每20项接通后集中测试及重启预览；沿用该项任务授权，不新增审批步骤。
-
-范围为连接级 WebDAV 独占写锁及所有文件写入入口的事务保护，不包含 Office 服务、共享锁、BT 或完整操作系统客户端兼容承诺。20项是使用行为，不把同一功能拆成20项独立能力计数。
-
-阅读顺序：[研究](research/R141-001-write-lock-boundaries/report.md) → [需求](requirements/README.md) → [设计](design/README.md) → [唯一任务清单](tasks.md)。现行运行规范仍由文件管理手册负责；本记录不得把计划能力写成已实现。

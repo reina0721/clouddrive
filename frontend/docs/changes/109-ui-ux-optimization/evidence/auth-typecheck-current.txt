@@ -1,6 +1,0 @@
-
-> @clouddrive/web@0.1.0 typecheck C:\rin\coder\i0721\console-web\apps\web
-> next typegen && tsc --noEmit
-
-Generating route types...
-✓ Types generated successfully

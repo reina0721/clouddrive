@@ -1,7 +1,0 @@
-schema_version: 1
-change: 177-markdown-authoring
-areas:
-  - id: frontend
-    decision: updated
-    documents: [docs/repository-scope.md, docs/operations/file-management.md]
-    reason: 记录 Markdown 编写、同目录上传与独立保存边界。

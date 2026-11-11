@@ -1,13 +1,7 @@
-# OpenAPI WebUI 模块
+# OpenAPI 后端导航声明
 
-本模块承载 WebUI「API 文档」模块（`/openapi`）：**工作台式骨架的 API 文档与在线调试（R075-009）**，控件基座 HeroUI，呈现融入后台设计语言。
+本目录保留 Go 模块的 WebUI 元数据，`binding.go` 声明 `/openapi` 工作区、导航、语言资源和访问操作。它不是当前浏览器页面的源码目录，也不负责生成或部署前端。
 
-- 数据源：`webui/src/generated/openapi-spec.ts`（`webui generate` 从 `api/openapi.yaml` 生成的 JSON 快照，见 [075 变更记录](../../../../../docs/changes/075-openapi-webui-render/README.md)）；页面直接 import，mock 浏览零请求，`mock.ts` 为空路由表。
-- 页面与路由：**单路由 `/openapi` 工作台**（`OpenAPIPage` 工作台壳）：
-  - `ApiTree` 左资源区（Disclosure 递归接口树：分组/方法徽标叶子、顶部搜索、可折叠）；
-  - `WorkspaceTabs` 顶部多标签（HeroUI Tabs 受控、关闭/横滑/激活高亮）；
-  - `OperationWorkspace` + `RequestPane`（URL+发送 + Params/Body/Headers/Cookies/Auth 动态表单）+ `Resizer`（模块内窄可拖动分割线）+ `ResponsePane`（状态/耗时/大小/高亮 JSON）；
-  - `CommandPalette`（Cmd+K 平台 Modal，选择后打开/激活标签）；`?op=&mode=` 深链。
-- 逻辑：`openapi-data.ts` 解析与请求构建纯函数（`buildRequest`/`bodyTypeOptions`/`formFieldRows`/`executionParameters`/`buildApiTree`/`filterApiTree`）、`run-store.ts` 执行状态机、`highlight.ts` JSON 高亮（highlight.js）、`api.ts` 会话 CSRF 快照。
-- 访问门槛：单路由绑定 `iam.session.read`（未登录跳 /login、菜单隐藏，mock 恒 allowed）。
-- 页面候选键与 locale 覆盖由生成器校验；菜单/路由声明见 `binding.go`。
+当前 API 工作台实现位于 [Surface 契约与 Port](../../../../../frontend/surfaces/src/api-workbench/README.md)及其私有插件，浏览器路由由 [Plugin Framework](../../../../../frontend/docs/plugin-framework.md)生成装配。原生 API 的事实源与生成入口以 [API 说明](../../../../../api/README.md)为准。
+
+旧 `webui/src`、`OpenAPIPage.tsx` 和 mock 源路径是此声明保留的来源元数据，不能作为当前可执行页面位置。调整后端导航声明时，先核对实际 composition 使用方与前端目录，避免把历史声明误认为第二套浏览器运行时。

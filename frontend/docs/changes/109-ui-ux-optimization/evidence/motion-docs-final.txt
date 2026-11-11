@@ -1,5 +1,0 @@
-
-> clouddrive-frontend@0.1.0 docs:check D:\coder\i721\console-web
-> node tooling/check-docs.mjs
-
-Docs structure check passed: entry + 8 authorities, 15 change records indexed.

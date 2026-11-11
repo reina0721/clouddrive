@@ -1,4 +1,4 @@
-// docs-guard 校验当前文档拓扑和代码变更对应的文档影响记录。
+// docs-guard 校验当前文档的链接、索引和可达性，不要求每次变更建立任务账本。
 package main
 
 import (
@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -22,7 +21,6 @@ type config struct {
 	ExcludedRoots   []string        `yaml:"excluded_roots"`
 	RequiredDocs    []string        `yaml:"required_documents"`
 	RequiredIndexes []requiredIndex `yaml:"required_indexes"`
-	Areas           []area          `yaml:"areas"`
 }
 
 type entrypoints struct {
@@ -36,25 +34,6 @@ type requiredIndex struct {
 	Children bool   `yaml:"children"`
 }
 
-type area struct {
-	ID          string   `yaml:"id"`
-	Paths       []string `yaml:"paths"`
-	Authorities []string `yaml:"authorities"`
-}
-
-type impactManifest struct {
-	SchemaVersion int          `yaml:"schema_version"`
-	Change        string       `yaml:"change"`
-	Areas         []impactArea `yaml:"areas"`
-}
-
-type impactArea struct {
-	ID        string   `yaml:"id"`
-	Decision  string   `yaml:"decision"`
-	Documents []string `yaml:"documents"`
-	Reason    string   `yaml:"reason"`
-}
-
 type link struct {
 	From   string
 	Target string
@@ -65,9 +44,7 @@ var heading = regexp.MustCompile(`^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$`)
 
 func main() {
 	var configPath string
-	var baseRef string
 	flag.StringVar(&configPath, "config", "docs/documentation.yaml", "文档治理配置路径")
-	flag.StringVar(&baseRef, "base", "", "用于 diff 文档影响检查的 Git base ref")
 	flag.Parse()
 
 	root, err := os.Getwd()
@@ -79,9 +56,6 @@ func main() {
 		fail(err)
 	}
 	issues := append([]string{}, staticIssues(root, cfg)...)
-	if baseRef != "" || hasWorkingChanges(root) {
-		issues = append(issues, diffIssues(root, cfg, baseRef)...)
-	}
 	if len(issues) > 0 {
 		fmt.Fprintln(os.Stderr, "docs-guard failed:")
 		for _, issue := range issues {
@@ -89,7 +63,7 @@ func main() {
 		}
 		os.Exit(1)
 	}
-	fmt.Println("docs-guard passed: current documentation topology and applicable impact records are valid")
+	fmt.Println("docs-guard passed: current documentation links, indexes and reachability are valid")
 }
 
 func loadConfig(root, path string) (config, error) {
@@ -123,7 +97,10 @@ func staticIssues(root string, cfg config) []string {
 	for _, item := range cfg.RequiredIndexes {
 		issues = append(issues, indexIssues(root, item)...)
 	}
-	files := markdownFiles(root, cfg)
+	files, scanErr := markdownFiles(root, cfg)
+	if scanErr != nil {
+		issues = append(issues, fmt.Sprintf("scan current documentation: %v", scanErr))
+	}
 	graph := map[string][]string{}
 	for _, file := range files {
 		links, err := parseLinks(root, file)
@@ -217,9 +194,9 @@ func reachabilityIssues(root string, cfg config, graph map[string][]string) []st
 	return issues
 }
 
-func markdownFiles(root string, cfg config) []string {
+func markdownFiles(root string, cfg config) ([]string, error) {
 	var files []string
-	_ = filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+	walkErr := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -238,7 +215,7 @@ func markdownFiles(root string, cfg config) []string {
 		return nil
 	})
 	sort.Strings(files)
-	return files
+	return files, walkErr
 }
 
 func parseLinks(root, path string) ([]link, error) {
@@ -280,7 +257,7 @@ func isInsideInlineCode(line string, position int) bool {
 
 func isGeneratedDir(name string) bool {
 	switch name {
-	case ".git", ".nuxt", ".output", "dist", "node_modules":
+	case ".git", ".tools", ".data", ".next", ".nuxt", ".output", ".pnpm-store", "coverage", "test-results", "playwright-report", "dist", "node_modules":
 		return true
 	default:
 		return false
@@ -358,155 +335,6 @@ func slug(value string) string {
 		lastDash = false
 	}
 	return strings.Trim(string(out), "-")
-}
-
-func diffIssues(root string, cfg config, base string) []string {
-	changed := changedFiles(root, base)
-	if len(changed) == 0 {
-		return nil
-	}
-	var source []string
-	for _, file := range changed {
-		if isDocumentationChange(file) || strings.HasPrefix(file, "old-backend/") || strings.HasSuffix(file, "/documentation-impact.yaml") {
-			continue
-		}
-		source = append(source, file)
-	}
-	if len(source) == 0 {
-		return nil
-	}
-	manifests := []string{}
-	for _, file := range changed {
-		if strings.HasPrefix(file, "docs/changes/") && strings.HasSuffix(file, "/documentation-impact.yaml") {
-			manifests = append(manifests, file)
-		}
-	}
-	if len(manifests) == 0 {
-		return []string{"non-documentation changes require docs/changes/<seq>/documentation-impact.yaml"}
-	}
-	decisions := map[string]impactArea{}
-	var issues []string
-	for _, manifest := range manifests {
-		data, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(manifest)))
-		if err != nil {
-			issues = append(issues, fmt.Sprintf("read impact manifest %s: %v", manifest, err))
-			continue
-		}
-		var parsed impactManifest
-		if err := yaml.Unmarshal(data, &parsed); err != nil {
-			issues = append(issues, fmt.Sprintf("parse impact manifest %s: %v", manifest, err))
-			continue
-		}
-		if parsed.SchemaVersion != 1 || parsed.Change == "" {
-			issues = append(issues, fmt.Sprintf("impact manifest %s must define schema_version 1 and change", manifest))
-		}
-		for _, item := range parsed.Areas {
-			if item.ID == "" {
-				issues = append(issues, fmt.Sprintf("impact manifest %s contains area without id", manifest))
-				continue
-			}
-			decisions[item.ID] = item
-		}
-	}
-	for _, changedPath := range source {
-		for _, matched := range matchingAreas(cfg.Areas, changedPath) {
-			item, ok := decisions[matched.ID]
-			if !ok {
-				issues = append(issues, fmt.Sprintf("changed path %s hits area %s without an impact decision", changedPath, matched.ID))
-				continue
-			}
-			switch item.Decision {
-			case "reviewed-no-change":
-				if strings.TrimSpace(item.Reason) == "" {
-					issues = append(issues, fmt.Sprintf("area %s uses reviewed-no-change without a reason", matched.ID))
-				}
-			case "updated":
-				if !authorityChanged(matched, item.Documents, changed) {
-					issues = append(issues, fmt.Sprintf("area %s is updated but no allowed authority is in the diff", matched.ID))
-				}
-			default:
-				issues = append(issues, fmt.Sprintf("area %s has invalid decision %q", matched.ID, item.Decision))
-			}
-		}
-	}
-	return unique(issues)
-}
-
-func authorityChanged(a area, documents, changed []string) bool {
-	allowed := map[string]bool{}
-	for _, path := range a.Authorities {
-		allowed[filepath.ToSlash(filepath.Clean(path))] = true
-	}
-	for _, doc := range documents {
-		if !allowed[filepath.ToSlash(filepath.Clean(doc))] {
-			return false
-		}
-		for _, file := range changed {
-			if file == filepath.ToSlash(filepath.Clean(doc)) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func matchingAreas(areas []area, path string) []area {
-	var matched []area
-	for _, item := range areas {
-		for _, prefix := range item.Paths {
-			prefix = filepath.ToSlash(prefix)
-			if strings.HasSuffix(prefix, "/") {
-				if strings.HasPrefix(path, prefix) {
-					matched = append(matched, item)
-					break
-				}
-			} else if path == prefix {
-				matched = append(matched, item)
-				break
-			}
-		}
-	}
-	return matched
-}
-
-func changedFiles(root, base string) []string {
-	args := []string{"diff", "--name-only"}
-	if base != "" {
-		args = append(args, base+"...HEAD")
-	} else {
-		args = append(args, "HEAD")
-	}
-	result := runGit(root, args...)
-	if base == "" {
-		result = append(result, runGit(root, "diff", "--cached", "--name-only")...)
-		result = append(result, runGit(root, "ls-files", "--others", "--exclude-standard")...)
-	}
-	return unique(result)
-}
-
-func runGit(root string, args ...string) []string {
-	command := exec.Command("git", args...)
-	command.Dir = root
-	output, err := command.Output()
-	if err != nil {
-		return nil
-	}
-	var result []string
-	for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
-		line = filepath.ToSlash(strings.TrimSpace(line))
-		if line != "" {
-			result = append(result, line)
-		}
-	}
-	return result
-}
-
-func hasWorkingChanges(root string) bool {
-	return len(runGit(root, "status", "--porcelain")) > 0
-}
-
-func isDocumentationChange(path string) bool {
-	return strings.HasPrefix(path, "docs/") || strings.HasSuffix(path, ".md")
 }
 
 func exists(root, path string) bool {

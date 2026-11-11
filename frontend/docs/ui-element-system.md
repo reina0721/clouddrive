@@ -226,7 +226,7 @@ Hover/Focus 与 Selected 不得合并为同一种状态；Selected 不能只依�
 - DataTable 通过 columnWidths 与 onColumnWidthsChange 表达稳定 column id 的数值宽度，Adapter 组合官方 ResizableContainer/ColumnResizer 管理指针和键盘交互；不向消费者暴露 vendor Map、slot 或 props。未保存宽度使用官方自动布局。宽度、显隐、列序和排序独立合并，记忆开关只控制恢复和持久化。
 - 默认单行控件使用 min-h-control 并响应 density；small/embedded 的用途尺寸允许受控例外，不把普通控件的旧固定高度当作默认。外观 profile 的 fontScale/density/contentWidth/contrast 数值由 design-system schema 的 appearanceProfiles 及生成绑定管理，不手改生成区域。
 
-当前行为证据见 [109 实施记录](changes/109-ui-ux-optimization/README.md)；人工视觉和真实设备限制单独保留。
+当前行为证据见 [前端架构](frontend-foundation.md)；人工视觉和真实设备限制单独保留。
 
 ## 选择控件的可点击边界
 
@@ -258,11 +258,11 @@ Flyout 有标题和完整子树，键盘内部焦点不会因指针离开关闭�
 
 ## 受控日期值
 
-`DatePickerField` 的可选 `value` 使用 ISO Gregorian 日期字符串 `YYYY-MM-DD`，`null` 清空，省略保留原有非受控用法；`onValueChange` 返回同样语义字符串或 null。公开契约不暴露 HeroUI DateValue，Adapter 通过官方 `@internationalized/date` 解析并映射 HeroUI 的受控值，Selection、Keyboard、Focus 和 Popup 保持 vendor 管理。样式及未传 value 的消费者不改变。真实消费者为 UI Elements Forms 和审计日期筛选；URL 恢复与清空的证据见 [110 实施](changes/110-management-completion/README.md)。
+`DatePickerField` 的可选 `value` 使用 ISO Gregorian 日期字符串 `YYYY-MM-DD`，`null` 清空，省略保留原有非受控用法；`onValueChange` 返回同样语义字符串或 null。公开契约不暴露 HeroUI DateValue，Adapter 通过官方 `@internationalized/date` 解析并映射 HeroUI 的受控值，Selection、Keyboard、Focus 和 Popup 保持 vendor 管理。样式及未传 value 的消费者不改变。真实消费者为 UI Elements Forms 和审计日期筛选；URL 恢复与清空的证据见 [前端架构](frontend-foundation.md)。
 
 ## 容器编排 Browser Adapter
 
-`@clouddrive/ui-adapter/container-layout` 的 `useContainerBreakpoint` 只在内容需要改变编排时提供容器阈值与 ref（4xl/7xl，读取 Design System 保留的 Tailwind 原有命名尺度）。ResizeObserver、所属文档字号换算与卸载清理留在 Browser Adapter；普通视觉响应式继续使用 Tailwind 容器 utility。它不提供第二套路由、浮层、选择或 Motion 状态机，也不更改已有 Element 默认值。当前消费为 API Workbench 单套编辑器的窄屏/主从编排，证据见 [容器测试](../apps/web/src/test/container-layout.test.tsx) 和 [113 多端验收](changes/113-api-workbench-ui-ux/README.md)。
+`@clouddrive/ui-adapter/container-layout` 的 `useContainerBreakpoint` 只在内容需要改变编排时提供容器阈值与 ref（4xl/7xl，读取 Design System 保留的 Tailwind 原有命名尺度）。ResizeObserver、所属文档字号换算与卸载清理留在 Browser Adapter；普通视觉响应式继续使用 Tailwind 容器 utility。它不提供第二套路由、浮层、选择或 Motion 状态机，也不更改已有 Element 默认值。当前消费为 API Workbench 单套编辑器的窄屏/主从编排，证据见 [容器测试](../apps/web/src/test/container-layout.test.tsx) 和 [113 多端验收](../surfaces/src/api-workbench/README.md)。
 
 ## 图表 Charts（116）
 

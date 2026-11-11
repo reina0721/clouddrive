@@ -3,48 +3,107 @@ name: Quality
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Classify validation scope
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.scope.outputs.backend }}
+      frontend: ${{ steps.scope.outputs.frontend }}
+      docs: ${{ steps.scope.outputs.docs }}
+      database: ${{ steps.scope.outputs.database }}
+      api: ${{ steps.scope.outputs.api }}
+      fuzz: ${{ steps.scope.outputs.fuzz }}
+      full: ${{ steps.scope.outputs.full }}
+      base: ${{ steps.scope.outputs.base }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@1e60f620b9541dca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.11.1
+      - name: Test validation selection and failure boundaries
+        run: node --test scripts/verify-changed.test.mjs scripts/verify-artifacts.test.mjs
+      - id: scope
+        env:
+          VALIDATION_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          VALIDATION_FULL: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
+        run: node scripts/ci-validation.mjs classify
+
   windows:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     name: Windows quality gates
     runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
           go-version-file: go.mod
           cache-dependency-path: go.sum
+      - name: Set up Node for validation
+        uses: actions/setup-node@1e60f620b9541dca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.11.1
       - name: Run quality gates
         shell: pwsh
-        run: ./scripts/Verify-Quality.ps1
+        env:
+          VALIDATION_BASE: ${{ needs.changes.outputs.base }}
+          VALIDATION_FULL: ${{ needs.changes.outputs.full }}
+        run: node scripts/ci-validation.mjs backend
 
   linux:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     name: Linux quality gates
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
           go-version-file: go.mod
           cache-dependency-path: go.sum
+      - name: Set up Node for validation
+        uses: actions/setup-node@1e60f620b9541dca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.11.1
       - name: Run quality gates
-        run: bash scripts/verify-quality.sh
+        env:
+          VALIDATION_BASE: ${{ needs.changes.outputs.base }}
+          VALIDATION_FULL: ${{ needs.changes.outputs.full }}
+        run: node scripts/ci-validation.mjs backend
       - name: Run bounded fuzz gate
+        if: needs.changes.outputs.fuzz == 'true'
         run: go test ./internal/kernel/config -run '^$' -fuzz '^FuzzJSONObject$' -fuzztime 15s
 
   webui-windows:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     name: Windows frontend quality gates
     runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
       - name: Set up Node
         uses: actions/setup-node@1e60f620b9541dca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -52,28 +111,47 @@ jobs:
       - name: Set up pnpm
         shell: pwsh
         run: |
-          npx --yes pnpm@10.22.0 --version
+          $pnpmRoot = Join-Path $env:RUNNER_TEMP 'clouddrive-pnpm'
+          & npm install --prefix $pnpmRoot --no-package-lock --no-save pnpm@10.22.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          (Join-Path $pnpmRoot 'node_modules/.bin') >> $env:GITHUB_PATH
       - name: Run frontend quality gates
         shell: pwsh
-        run: ./scripts/Verify-WebUI.ps1
+        env:
+          VALIDATION_BASE: ${{ needs.changes.outputs.base }}
+          VALIDATION_FULL: ${{ needs.changes.outputs.full }}
+        run: node scripts/ci-validation.mjs frontend
 
   webui-linux:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     name: Linux frontend quality gates
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
       - name: Set up Node
         uses: actions/setup-node@1e60f620b9541dca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24.11.1
       - name: Set up pnpm
+        shell: pwsh
         run: |
-          npx --yes pnpm@10.22.0 --version
+          $pnpmRoot = Join-Path $env:RUNNER_TEMP 'clouddrive-pnpm'
+          & npm install --prefix $pnpmRoot --no-package-lock --no-save pnpm@10.22.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          (Join-Path $pnpmRoot 'node_modules/.bin') >> $env:GITHUB_PATH
       - name: Run frontend quality gates
-        run: bash scripts/verify-webui.sh
+        env:
+          VALIDATION_BASE: ${{ needs.changes.outputs.base }}
+          VALIDATION_FULL: ${{ needs.changes.outputs.full }}
+        run: node scripts/ci-validation.mjs frontend
 
   docs-windows:
+    needs: changes
+    if: needs.changes.outputs.docs == 'true'
     name: Windows documentation quality gates
     runs-on: windows-latest
     steps:
@@ -86,13 +164,20 @@ jobs:
         with:
           go-version-file: go.mod
           cache-dependency-path: go.sum
+      - name: Set up Node for validation
+        uses: actions/setup-node@1e60f620b9541dca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.11.1
       - name: Run documentation quality gates
         shell: pwsh
         env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: ./scripts/Verify-Docs.ps1 -BaseRef $env:BASE_REF
+          VALIDATION_BASE: ${{ needs.changes.outputs.base }}
+          VALIDATION_FULL: ${{ needs.changes.outputs.full }}
+        run: node scripts/ci-validation.mjs docs
 
   docs-linux:
+    needs: changes
+    if: needs.changes.outputs.docs == 'true'
     name: Linux documentation quality gates
     runs-on: ubuntu-latest
     steps:
@@ -105,14 +190,20 @@ jobs:
         with:
           go-version-file: go.mod
           cache-dependency-path: go.sum
+      - name: Set up Node for validation
+        uses: actions/setup-node@1e60f620b9541dca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.11.1
       - name: Run documentation quality gates
         env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: bash scripts/verify-docs.sh "$BASE_REF"
+          VALIDATION_BASE: ${{ needs.changes.outputs.base }}
+          VALIDATION_FULL: ${{ needs.changes.outputs.full }}
+        run: node scripts/ci-validation.mjs docs
 
   openapi-breaking:
+    needs: changes
+    if: needs.changes.outputs.api == 'true' && github.event_name == 'pull_request'
     name: OpenAPI breaking gate
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout full history
@@ -161,3 +252,26 @@ jobs:
         run: gitleaks git --config .gitleaks.toml --redact --no-banner --verbose .
       - name: Tracked artifact allowlist
         run: bash scripts/verify-artifacts.sh
+
+  summary:
+    name: Validation summary
+    if: always()
+    needs:
+      [
+        changes,
+        windows,
+        linux,
+        webui-windows,
+        webui-linux,
+        docs-windows,
+        docs-linux,
+        openapi-breaking,
+        security,
+      ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require success or intentional skip
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node -e 'const jobs=JSON.parse(process.env.RESULTS); if(Object.values(jobs).some(job=>!["success","skipped"].includes(job.result))) process.exit(1)'

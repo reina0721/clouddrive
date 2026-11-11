@@ -1,7 +1,0 @@
-
-> clouddrive-frontend@0.1.0 performance:check C:\rin\coder\i0721\console-web
-> node tooling/check-performance-budget.mjs
-
-Performance budget failed: initial=379491, maxRoute=/page-archetypes/resource-list:442018, union=962452, css=47949, largest=C:\rin\coder\i0721\console-web\apps\web\dist\_next\static\chunks\2cued8itecehc.js:84658.
-- maxRouteJsGzipBytes: 442018 > 440320
- ELIFECYCLE  Command failed with exit code 1.

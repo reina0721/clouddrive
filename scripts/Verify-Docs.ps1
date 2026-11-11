@@ -1,18 +1,9 @@
 [CmdletBinding()]
-param(
-    [string]$BaseRef = ''
-)
-
+param()
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-Set-Location -LiteralPath $root
-
-$args = @('run', './internal/tools/docs-guard', '--config', 'docs/documentation.yaml')
-if (-not [string]::IsNullOrWhiteSpace($BaseRef)) {
-    $args += @('--base', $BaseRef)
-}
-
-& go @args
-if ($LASTEXITCODE -ne 0) {
-    exit $LASTEXITCODE
-}
+Push-Location $root
+try {
+    & go run ./internal/tools/docs-guard --config docs/documentation.yaml
+    if ($LASTEXITCODE -ne 0) { throw 'Documentation validation failed' }
+} finally { Pop-Location }

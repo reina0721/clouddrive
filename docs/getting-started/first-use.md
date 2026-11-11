@@ -10,4 +10,4 @@
 
 公开注册默认关闭。管理员启用注册前必须指定可公开授予的默认角色；所有者、管理权限及高风险执行权限不能作为公开注册默认权限。首次管理员受到最后管理员保护。
 
-真实验收脚本为 scripts/Test-Integration.ps1；接口和重启测试见 internal/composition/console_e2e_test.go。完整检查结果见 [任务与证据](../changes/118-clouddrive-integration/tasks.md)，未通过的检查不视为完成。
+真实验收脚本为 scripts/Test-Integration.ps1；接口和重启测试见 internal/composition/console_e2e_test.go。完整检查结果见 [架构决策记录](../architecture/adr/README.md)，未通过的检查不视为完成。

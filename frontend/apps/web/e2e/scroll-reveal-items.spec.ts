@@ -1,9 +1,8 @@
 import { saveEvidenceScreenshot } from './evidence-screenshot';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 
-const evidence = 'docs/changes/109-ui-ux-optimization/evidence/scroll-items';
 async function slowlyScroll(page: Page, to: number) {
   const from = await page.evaluate(() => scrollY);
   for (let y = from; y < to; y += 20) {
@@ -63,11 +62,10 @@ for (const width of [1440, 390]) {
       (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
         .violations,
     ).toEqual([]);
-    await mkdir(evidence, { recursive: true });
     await page.getByRole('heading', { level: 1 }).click();
     await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
     await saveEvidenceScreenshot(page, {
-      path: `${evidence}/settings-${width}.png`,
+      path: `settings-${width}.png`,
       fullPage: true,
       animations: 'disabled',
     });
@@ -186,6 +184,8 @@ test('all primary routes use independent semantic reveal units and retain layout
     results.push({ route, ...sample });
   }
   expect(errors).toEqual([]);
-  await mkdir(evidence, { recursive: true });
-  await writeFile(`${evidence}/route-audit.json`, JSON.stringify(results, null, 2) + '\n');
+  await writeFile(
+    test.info().outputPath('route-audit.json'),
+    JSON.stringify(results, null, 2) + '\n',
+  );
 });

@@ -3,7 +3,7 @@ name: Release candidate
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -44,7 +44,7 @@ jobs:
       - name: Verify release gates
         run: |
           bash scripts/verify-docs.sh
-          bash scripts/verify-webui.sh
+          bash scripts/verify-webui.sh --prepare
           bash scripts/verify-quality.sh
       - name: Build draft release
         env:

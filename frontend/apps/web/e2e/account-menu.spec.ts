@@ -7,7 +7,7 @@ async function expectHydrated(page: Page) {
   await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
 }
 
-const evidence = 'docs/changes/109-ui-ux-optimization/evidence/account-menu';
+const evidence = 'account-menu';
 
 async function openAccount(page: Page) {
   const trigger = page.getByRole('button', { name: /^(当前用户|Current user)$/ });

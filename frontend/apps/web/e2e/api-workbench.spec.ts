@@ -79,7 +79,7 @@ test.describe('API workbench execution and state', () => {
     await expect(page.getByText('成功 2 · 失败 1 · 总计 3', { exact: true })).toBeVisible();
     await expect(page.getByText('HTTP 错误；断言通过不改变请求失败的判定。')).toBeVisible();
     await page.screenshot({
-      path: 'docs/changes/114-api-workbench-refinement/evidence/runner-result.png',
+      path: test.info().outputPath('runner-result.png'),
       fullPage: true,
       animations: 'disabled',
     });
@@ -89,7 +89,7 @@ test.describe('API workbench execution and state', () => {
     await expect(page.getByText('成功 2 · 失败 1 · 总计 3', { exact: true })).toBeVisible();
     await expect(page.getByText('手动运行完成，全部断言通过')).toHaveCount(0);
     await page.screenshot({
-      path: 'docs/changes/114-api-workbench-refinement/evidence/task-result.png',
+      path: test.info().outputPath('task-result.png'),
       fullPage: true,
       animations: 'disabled',
     });
@@ -371,7 +371,7 @@ test('dark English layout, keyboard collection navigation and floating layer bou
   await page.keyboard.press('Escape');
   await assertAccessible(page);
   await page.screenshot({
-    path: 'test-results/api-workbench-ux/1440-dark-english.png',
+    path: test.info().outputPath('test-results/api-workbench-ux/1440-dark-english.png'),
     fullPage: true,
   });
 });
@@ -407,7 +407,7 @@ test('history restores full request configuration as a separate request without 
   await page.getByRole('menuitem', { name: /^历史 ·/ }).click();
   await expect(url).toHaveValue('mock://auth/login');
   await page.screenshot({
-    path: 'docs/changes/114-api-workbench-refinement/evidence/history-draft.png',
+    path: test.info().outputPath('history-draft.png'),
     fullPage: true,
     animations: 'disabled',
   });

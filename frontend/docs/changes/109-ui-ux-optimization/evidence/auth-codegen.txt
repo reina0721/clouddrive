@@ -1,5 +1,0 @@
-
-> clouddrive-frontend@0.1.0 codegen:plugins C:\rin\coder\i0721\console-web
-> node tooling/plugin-codegen/codegen.mjs
-
-Plugin codegen generated: 9 plugins, 38 routes.

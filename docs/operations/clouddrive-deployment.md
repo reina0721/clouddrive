@@ -31,7 +31,7 @@ PowerShell 对应设置 `$env:CLOUDDRIVE_BACKEND_URL`、`$env:HOSTNAME`、`$env:
 
 生产只对外暴露 HTTPS 站点，反向代理 / 到 Next.js，/api/ 和 /management/ 到 Go 的业务端口8080；9090 只监听内网/loopback。Go 业务端口的 management facade 同样保留身份和 management:read 权限检查。公开探针按原后端配置开放；不要将 management 或 API 整段配置为免认证。
 
-~~~nginx
+```nginx
 server {
   listen 443 ssl;
   server_name clouddrive.example.com;
@@ -54,7 +54,7 @@ server {
     proxy_set_header Connection "upgrade";
   }
 }
-~~~
+```
 
 配置 http.cors.allowedOrigins 为唯一真实站点 Origin，按实际代理配置 trusted proxy CIDR；保留 Cookie Secure/HttpOnly，不把会话凭据写入 localStorage。开发浏览器的 localhost/127.0.0.1 允许 Secure Cookie；生产必须 HTTPS。登录失效后页面返回登录流程。
 
@@ -80,6 +80,6 @@ API 请求默认禁止私网、loopback、链路本地及元数据地址，重�
 
 ## 验证记录
 
-本机验证结果、未通过项及平台限制见 docs/changes/118-clouddrive-integration/tasks.md。容器、MySQL/PostgreSQL 外部实例和线上代理必须在目标环境再次验证，不能以 SQLite 验收代替。
+验证结果必须记录实际命令、环境、范围和未通过项，见[验证策略](../development/validation.md)。容器、MySQL/PostgreSQL 外部实例和线上代理必须在目标环境再次验证，不能以 SQLite 验收代替。
 
 若使用独立 Go 工具目录执行 Verify-Quality.ps1，先将其 bin 加入当前终端 PATH。race 需要当前终端 CGO_ENABLED=1，并通过 CC 或 PATH 指定 C 编译器；本次使用用户目录中的 w64devkit，不修改全局工具。Start-Dev、Build、Test-Integration 支持 -GoExecutable，也会识别用户目录中的 clouddrive-tools/go。

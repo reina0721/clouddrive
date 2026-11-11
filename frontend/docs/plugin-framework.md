@@ -1,7 +1,7 @@
 # Plugin Framework 与 Surface File Routes / Sidebar Navigation
 
 本主题的当前唯一 authority。实现证据与决策历史见
-[101 变更记录](changes/101-admin-surface-file-routes/README.md)；本文件只描述当前有效设计与使用方式。
+[前端架构](frontend-foundation.md)；本文件只描述当前有效设计与使用方式。
 
 > **最高架构判定标准**：这是一个被拆成很多可自动装配业务块的 Next.js 项目，而不是
 > Plugin Framework 寄宿着 Next。「没有 Plugin 化时原本是 Next 负责的（页面、Layout、
@@ -416,7 +416,7 @@ export function generateStaticParams() {
   使用 Route Target API；Root Provider 只安装一次 Host Navigation Port。
 - `system-tools`：Group `system` 下 leaf Parent `system-tools.root`，routeId 指向
   Icon 大全（`icons`，经 `NavigationIcon` 渲染受控 vocabulary）。原偏好设置
-  （`preferences`）已迁出为独立 `settings` 插件（见 docs/changes/107-settings-center，
+  （`preferences`）已迁出为独立 `settings` 插件（
   单轨清理：不保留旧入口/旧路由别名）。
 - Shell 不再按 navigationId/pluginId 手工映射业务图标（统一 iconId → 唯一
   components map resolver）；Sidebar 只渲染 Registry resolved model。

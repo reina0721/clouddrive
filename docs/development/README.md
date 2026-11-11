@@ -16,16 +16,16 @@
 
 业务模块只创建真实需要的 binding，不为对称制造空层：
 
-| Binding | 当前 authority |
-| --- | --- |
-| HTTP | [API 文档](../../api/README.md) 与 [应用模块开发指南](application-module-development.md) |
-| Config | [配置说明](../configuration/README.md) 与模块自己的 `binding/config` |
-| CLI | [CLI 契约](../../pkg/cli/README.md) 与模块自己的 `binding/cli` |
+| Binding   | 当前 authority                                                                               |
+| --------- | -------------------------------------------------------------------------------------------- |
+| HTTP      | [API 文档](../../api/README.md) 与 [应用模块开发指南](application-module-development.md)     |
+| Config    | [配置说明](../configuration/README.md) 与模块自己的 `binding/config`                         |
+| CLI       | [CLI 契约](../../pkg/cli/README.md) 与模块自己的 `binding/cli`                               |
 | Migration | [数据库迁移与回滚](../operations/migration-and-rollback.md) 与模块自己的 `binding/migration` |
-| I18n | [应用模块开发指南](application-module-development.md) 与模块自己的 `binding/i18n` |
-| WebUI | [WebUI 开发指南](webui.md) 与模块自己的 `binding/webui` |
-| Schedule | [定时调度能力](scheduled-task-capability.md) |
-| Message | [消息系统适配能力](messaging-capability.md) |
+| I18n      | [应用模块开发指南](application-module-development.md) 与模块自己的 `binding/i18n`            |
+| WebUI     | [WebUI 开发指南](webui.md) 与模块自己的 `binding/webui`                                      |
+| Schedule  | [定时调度能力](scheduled-task-capability.md)                                                 |
+| Message   | [消息系统适配能力](messaging-capability.md)                                                  |
 
 ## 相关入口
 
@@ -36,4 +36,6 @@
 
 ## 权威边界
 
-本目录描述当前开发方式。包级 README 只说明局部公共类型和资源边界，模块级 README 只说明本模块局部目录和已落地 binding；项目级开发流程回到本目录。历史任务中的设计、研究和验证证据保存在 [任务级变更记录](../changes/README.md)，用于追溯，不替代这里的现行开发说明。
+本目录描述当前开发方式。包级 README 只说明局部公共类型和资源边界，模块级 README 只说明本模块局部目录和已落地 binding；项目级开发流程回到本目录。历史通过 Git 查阅，当前规范以主题文档为准。
+
+日常协作见[Agent 流程](agent-workflow.md)，验证入口与停止条件见[验证策略](validation.md)。普通功能不强制生成研究、需求、设计和任务档案。

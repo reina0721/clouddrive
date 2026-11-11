@@ -3,9 +3,7 @@ entrypoints:
   root: README.md
   handbook: docs/README.md
 history_roots:
-  - docs/changes
   - docs/research
-  - frontend/docs/changes
   - frontend/docs/research
 excluded_roots:
   - old-backend
@@ -30,37 +28,3 @@ required_indexes:
   - root: pkg
     index: pkg/README.md
     children: true
-areas:
-  - id: repository
-    paths: [README.md, docs/repository-scope.md, .scaffold/]
-    authorities: [README.md, docs/repository-scope.md]
-  - id: startup
-    paths: [cmd/, internal/bootstrap/, internal/composition/]
-    authorities: [README.md, docs/getting-started/local-development.md, docs/getting-started/first-use.md]
-  - id: webui
-    paths: [frontend/, internal/module/navigation/binding/consolecatalog/]
-    authorities: [README.md, frontend/README.md, docs/getting-started/webui.md, docs/getting-started/first-use.md]
-  - id: frontend
-    paths: [frontend/]
-    authorities: [frontend/README.md, docs/repository-scope.md]
-  - id: module
-    paths: [internal/module/]
-    authorities: [internal/module/README.md, docs/development/application-module-development.md]
-  - id: capability
-    paths: [pkg/, internal/kernel/app/]
-    authorities: [pkg/README.md, docs/architecture/README.md, docs/architecture/technology-selection.md, docs/operations/runtime-capabilities.md]
-  - id: api
-    paths: [api/, internal/transport/http/, internal/tools/contract-gen/]
-    authorities: [api/README.md, docs/getting-started/first-use.md]
-  - id: configuration
-    paths: [config/, internal/kernel/config/, internal/kernel/app/]
-    authorities: [docs/configuration/README.md, docs/operations/runtime-capabilities.md]
-  - id: delivery
-    paths: [.github/workflows/, Dockerfile, .goreleaser.yaml, scripts/]
-    authorities: [docs/operations/build-and-container.md, docs/operations/release.md, docs/operations/runtime-capabilities.md]
-  - id: operations
-    paths: [internal/module/ops/, internal/kernel/app/observability/, internal/kernel/app/execution/]
-    authorities: [docs/operations/README.md, docs/operations/runtime-capabilities.md]
-  - id: documentation
-    paths: [internal/tools/docs-guard/, scripts/Verify-Docs.ps1, scripts/verify-docs.sh]
-    authorities: [docs/development/documentation-governance.md, docs/documentation.yaml]

@@ -38,13 +38,13 @@ Fx、Kratos、go-zero 和常见手工 composition root 的默认路径主要解�
 
 每个应用组件必须显式选择：
 
-| 策略 | 适用条件 | Kernel 职责 |
-| --- | --- | --- |
-| `NativeAtomicReload` | 底层库能原子应用配置，失败后旧状态仍有效 | 委托调用、验证结果并记录诊断 |
-| `KernelInstanceSwap` | 底层库不能原子重载，但新旧实例可并存 | 构建候选、租约排空、切换、观察和回滚 |
-| `ComponentHandoff` | 资源排他，但组件有可靠所有权交接协议 | 编排组件专用交接状态机 |
-| `RestartRequired` | 不能并存，也没有可靠交接协议 | 报告需要重启，不伪装无感重载 |
-| `NoReload` | 组件没有运行期配置，或实现由代码固定 | 不建立配置监听和换代协议 |
+| 策略                 | 适用条件                                 | Kernel 职责                          |
+| -------------------- | ---------------------------------------- | ------------------------------------ |
+| `NativeAtomicReload` | 底层库能原子应用配置，失败后旧状态仍有效 | 委托调用、验证结果并记录诊断         |
+| `KernelInstanceSwap` | 底层库不能原子重载，但新旧实例可并存     | 构建候选、租约排空、切换、观察和回滚 |
+| `ComponentHandoff`   | 资源排他，但组件有可靠所有权交接协议     | 编排组件专用交接状态机               |
+| `RestartRequired`    | 不能并存，也没有可靠交接协议             | 报告需要重启，不伪装无感重载         |
+| `NoReload`           | 组件没有运行期配置，或实现由代码固定     | 不建立配置监听和换代协议             |
 
 `KernelInstanceSwap` 的目标语义是带观察期的两阶段切换：新实例通过 Build、Start、Ready 后接管新租约；上一代暂时保留但不接收新租约；观察期健康失败时排空新租约并切回上一代；观察期通过后才异步关闭上一代。Kernel 同时最多保留当前代和上一代。
 
@@ -63,18 +63,18 @@ Fx、Kratos、go-zero 和常见手工 composition root 的默认路径主要解�
 
 ## 状态边界
 
-| 内容 | 状态 |
-| --- | --- |
-| `pkg` 与 Kernel 单向依赖，Logger、Database、Cache、I18n、Storage 显式 composition | 当前已实现 |
-| 初始 Build/Start、Reload 候选构造、旧租约排空、失败恢复旧实例 | 当前已实现 |
-| Supervisor 按顺序启动、反向停止，配置文件 Watch | 当前已实现 |
-| `pkg/health` 健康检查库 | 当前已实现，但未接入 Kernel/Host 组件观察期 |
-| Logger、Database、Clock、ID Generator、Validator 统一进入 `internal/kernel/app/<name>` 和 composition | 006 已实现 |
-| Cache、I18n、Storage 按各自资源边界进入 App 与 composition | 011 已实现 |
-| Value/Configured/ManagedFixed、Direct/Leased、typed `Binding/Input` | 006 已实现 |
-| `NoReload`、`KernelInstanceSwap`、`RestartRequired` | 006 已实现 |
-| `NativeAtomicReload`、`ComponentHandoff` | 目标设计，尚未实现 |
-| 切换后观察期、自动回切、最多保留两代 | 目标设计，尚未实现 |
-| HTTP 入站服务及 middleware、handler、service、repository、model | 尚未建设，全部排除在本报告设计与验收之外 |
+| 内容                                                                                                  | 状态                                        |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `pkg` 与 Kernel 单向依赖，Logger、Database、Cache、I18n、Storage 显式 composition                     | 当前已实现                                  |
+| 初始 Build/Start、Reload 候选构造、旧租约排空、失败恢复旧实例                                         | 当前已实现                                  |
+| Supervisor 按顺序启动、反向停止，配置文件 Watch                                                       | 当前已实现                                  |
+| `pkg/health` 健康检查库                                                                               | 当前已实现，但未接入 Kernel/Host 组件观察期 |
+| Logger、Database、Clock、ID Generator、Validator 统一进入 `internal/kernel/app/<name>` 和 composition | 006 已实现                                  |
+| Cache、I18n、Storage 按各自资源边界进入 App 与 composition                                            | 011 已实现                                  |
+| Value/Configured/ManagedFixed、Direct/Leased、typed `Binding/Input`                                   | 006 已实现                                  |
+| `NoReload`、`KernelInstanceSwap`、`RestartRequired`                                                   | 006 已实现                                  |
+| `NativeAtomicReload`、`ComponentHandoff`                                                              | 目标设计，尚未实现                          |
+| 切换后观察期、自动回切、最多保留两代                                                                  | 目标设计，尚未实现                          |
+| HTTP 入站服务及 middleware、handler、service、repository、model                                       | 尚未建设，全部排除在本报告设计与验收之外    |
 
-本报告保留研究结论；第一阶段实施证据见 [006 变更记录](../../changes/006-kernel-app-polymorphic-composition/README.md)，三项能力扩展证据见 [011 变更记录](../../changes/011-cache-i18n-storage-composition/README.md)。后续观察期、Native Reload 或 Handoff 仍须建立新的任务级变更方案并获得确认。
+本报告保留研究结论；第一阶段实施证据见 006 变更记录（原材料见 `git show 0f6efdf5976c1f1f3c806a77138f8cf93f6ee2c3:docs/changes/006-kernel-app-polymorphic-composition/README.md`），三项能力扩展证据见 011 变更记录（原材料见 `git show 0f6efdf5976c1f1f3c806a77138f8cf93f6ee2c3:docs/changes/011-cache-i18n-storage-composition/README.md`）。后续观察期、Native Reload 或 Handoff 仍须根据风险补充单篇设计或 ADR 并取得必要确认。

@@ -1,10 +1,9 @@
 import { saveEvidenceScreenshot } from './evidence-screenshot';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { mkdir } from 'node:fs/promises';
 import { defaultPreferences, PREFERENCES_VERSION } from '@clouddrive/surface/preferences-model';
 
-const evidence = 'docs/changes/109-ui-ux-optimization/evidence/scroll-items';
+const evidence = 'scroll-items';
 
 test('settings keeps its shell stable and enters semantic regions inside the nested Page', async ({
   page,
@@ -101,7 +100,6 @@ for (const width of [1440, 390, 320]) {
       (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
         .violations,
     ).toEqual([]);
-    await mkdir(evidence, { recursive: true });
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await saveEvidenceScreenshot(page, {
       animations: 'disabled',
@@ -228,7 +226,6 @@ for (const width of [320, 2048]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
-    await mkdir(evidence, { recursive: true });
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await saveEvidenceScreenshot(page, {
       animations: 'disabled',

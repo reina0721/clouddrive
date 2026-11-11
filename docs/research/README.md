@@ -1,79 +1,14 @@
-# 研究档案与报告
+# 研究档案
 
-本目录保存面向架构判断的阶段性研究。研究报告描述特定时间点的仓库事实、外部样本和推导结论，不替代根 [README](../../README.md) 或主题文档中的当前实现说明，也不等同于已经确认的实施方案。
+本目录保存需要长期复核的专题研究，描述特定时间点的证据、推断与适用边界，不替代根 README 或当前主题文档。
 
-## 任务研究门禁
+日常任务不强制建立研究档案。存在重要事实缺口、技术选型或架构判断时，先检索已有结论，只复核命中版本、接口或适用场景刷新条件的部分。确认方案后不因阶段切换重复全量研究；测试用于验证验收，只有推翻前提的新事实才触发复研。
 
-所有仓库任务先研究、再计划、后实现。完整门禁以根 [AGENTS.md](../../AGENTS.md) 为准；本节统一研究档案的检索、记录和复用格式。
+有长期价值的研究说明问题、证据快照、事实与推断、局限、刷新条件和对决策的影响即可。重要难以逆转的结论进入 [ADR](../architecture/adr/README.md)；普通任务范围与验证结果记录在聊天和提交说明中，不生成整套任务档案。
 
-开始研究时先执行以下步骤：
+## 专题
 
-1. 明确需要回答的问题和完成计划所缺少的事实，不先选方案再寻找佐证。
-2. 使用 `rg --files docs -g metadata.yaml` 列出既有档案，再按 question、topic、keyword、technology 和 scenario 检索 metadata。
-3. 检查命中记录的状态、证据快照、验证日期、适用边界、刷新触发器和替代关系；只有仍适用的结论才能直接复用。
-4. 内部研究从代码、配置、测试、运行入口和 Git 事实出发；外部研究优先官方源码、官方文档、标准、官方示例和测试，二手材料只作为导航。
-5. 打开命中记录的 `report.md` 核对完整证据，不只引用 metadata 的一行摘要。易漂移或会决定当前计划的事实必须重新验证。
+- [Go 脚手架能力装配对比](001-go-capability-composition/README.md)
+- [Kernel App 手动装配与安全重载](002-kernel-app-manual-composition/README.md)
 
-新增应用模块、通用能力、外部系统接入，或继续扩展现有自研通用机制时，还必须按 [应用模块开发指南](../development/application-module-development.md) 和[技术选型与架构复核基线](../architecture/technology-selection.md)完成能力评估。研究报告必须显式说明真实用例和外部副作用、当前实现分类、现有 Capability 复用、标准库与成熟第三方候选、维护/版本/安全证据、新 Capability 与第三方边界、资源/运行/配置 owner、生命周期与 Reload 分类、当前契约适配性、承载架构是否仍然合适，以及 composition、Host、入口、迁移和验证影响。结论必须落到保留、升级、替换、合理自研、退役或架构重构之一；结论为“无新能力”时也要列出核对证据。当前契约无法表达真实需求，或现有承载架构会迫使方案增加无价值兼容层时，研究门禁不得通过。
-
-每个 `docs/changes/<seq-num-name>/research/` 至少包含一个 `Rxxx-<semantic-name>/`，其中固定包含 `metadata.yaml` 和 `report.md`。任务级 `research/README.md` 负责说明研究范围、检索方式和记录索引。
-
-`metadata.yaml` 使用以下最小结构；任务可以增加语言、框架、技术等检索字段，但不得删除这些语义：
-
-```yaml
-schema_version: 1
-id: R001
-title: "研究标题"
-question: "需要回答的问题"
-research_type: current-project
-topics: ["主题"]
-keywords: ["检索词"]
-applicable_scenarios: ["适用场景"]
-non_applicable_scenarios: ["不适用场景"]
-status: active
-summary: "一行结论"
-evidence:
-  types: ["source-code", "tests"]
-  primary_sources:
-    - title: "来源"
-      locator: "仓库路径或 URL"
-      snapshot: "Commit、版本或日期"
-researched_at: "YYYY-MM-DD"
-verified_at: "YYYY-MM-DD"
-validity:
-  mode: snapshot
-  review_after: "YYYY-MM-DD"
-  refresh_triggers: ["需要重新研究的条件"]
-relations:
-  extends: []
-  related: []
-  supersedes: []
-  superseded_by: []
-report: report.md
-```
-
-`report.md` 必须说明研究问题、方法与范围、证据、当前事实、推断或比较、适用与不适用场景、局限、剩余未知和对当前任务的影响。事实、推断、用户决策和目标设计必须分别标识；框架能力不能写成项目已实现能力。
-
-研究状态使用 `draft`、`active`、`partial`、`needs-refresh`、`superseded`、`rejected`。过时记录不删除；新记录通过 `supersedes` 与旧记录的 `superseded_by` 双向关联，形成单轨当前结论。研究门禁通过只表示证据足以形成计划，不表示计划已确认或代码已经授权实施。
-
-## 实施时复用研究基线
-
-研究门禁通过后，`metadata.yaml` 中的证据快照、适用场景、不适用场景和 `refresh_triggers` 是实施入口的判定依据，不是要在确认后重做一遍的阅读清单。
-
-实施入口按以下顺序处理：
-
-1. 记录研究快照和当前 revision，检查 Git 状态及快照后变更路径。
-2. 只把与研究边界或计划文件相交的变更与 `refresh_triggers` 比较；无交集的用户变更只需保护，不触发复研。
-3. 未命中触发器时，在任务证据中记录基线未漂移，直接实施；不重新打开全部报告、追踪全部调用方或重跑候选调研。
-4. 命中触发器时，只定向复核受影响结论；前提仍成立就继续实施，前提失效才将记录转为 `needs-refresh` 并返回研究。
-
-失败用例、运行态复现和修改后测试用于证明计划的问题与验收标准，属于实施证据。只有它们产生了推翻研究前提的新事实时，才转化为新研究输入。具体规则及示例见 [088 研究基线复用](../changes/088-research-baseline-reuse/README.md)。
-
-## 报告
-
-- [001 Go 脚手架底层能力装配架构对比](001-go-capability-composition/README.md)：比较当前 Kernel Capability 模型与 Kratos/Wire、go-zero、Uber Fx、go-clean-template 的装配方式，并给出分轨演进建议。
-- [002 Kernel 底层组件手动装配与安全重载](002-kernel-app-manual-composition/README.md)：解释当前扩展路径为何复杂，提出所有底层能力统一进入 `pkg -> kernel/app -> composition -> Kernel/Host`、按 `Fixed/Configured` 与 `Direct/Leased` 选择治理强度的多态装配模型，以及组件级安全重载目标；不提前设计尚未建设的业务层。
-- [012 业务模块架构研究档案](../changes/012-business-module-architecture/research/README.md)：任务级、可检索的结构化研究档案，覆盖当前仓库、手工/生成/运行时装配、模块化单体、分布式组件和插件机制；其中底层闭环已实施，业务详细设计仍被真实用例阻塞。
-- [013 研究优先任务门禁](../changes/013-research-plan-implementation-gate/research/README.md)：从 012 提炼可复用的结构化研究方法，并审计原“计划 -> 确认 -> 实施”流程缺少独立研究门禁的问题。
-
-项目级研究使用递增三位序号和语义名称建立独立目录；任务级研究在所属变更的 `research/` 下使用 `Rxxx`。两者都必须说明研究快照、样本范围、事实与推断边界、适用性、时效和来源。
+历史研究保留其原始语境；当前能力和边界以[架构说明](../architecture/README.md)为准。已退出工作树的任务材料可使用明确 revision 的 Git 历史定位查阅。

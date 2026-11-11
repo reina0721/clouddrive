@@ -47,7 +47,7 @@ surface-route-content 使用 overflow-x:clip 收敛绘制范围，该属性不�
 新当前标签；不增加拖拽重排或额外动效系统。
 
 验证见 [设置与导航回归](../apps/web/e2e/settings-ux-review.spec.ts)，审查理由见
-[108 报告](changes/108-ui-ux-audit/README.md)。
+[前端架构](frontend-foundation.md)。
 
 ## Shell 展开与纯图标模式
 
@@ -65,7 +65,7 @@ Nav 控制使用 data-navigation-control 标记：Flyout Trigger/侧栏模式切
 仍由 Overlay 管理。移动端小于 lg 保持完整 Navigation Drawer，不使用图标 Rail。
 Host 的 remember 在原 v1 key 中追加可选上次模式字段，缺字段旧记录保持默认行为；
 主题/语言等无关偏好更新不复位侧栏。设计与验证见
-[Sidebar 专项](changes/109-ui-ux-optimization/design/sidebar-review.md)。
+[前端架构](frontend-foundation.md)。
 
 ## 布局模式与菜单呈现覆盖（116）
 

@@ -70,13 +70,15 @@ func TestAnchorSlug(t *testing.T) {
 	}
 }
 
-func TestAuthorityChangedRequiresAllowedDocument(t *testing.T) {
-	item := area{ID: "webui", Authorities: []string{"webui/README.md", "docs/getting-started/webui.md"}}
-	if authorityChanged(item, []string{"docs/README.md"}, []string{"docs/README.md"}) {
-		t.Fatalf("unexpectedly accepted document outside authority")
-	}
-	if authorityChanged(item, []string{"webui/README.md"}, []string{"webui/README.md"}) != true {
-		t.Fatalf("expected changed authority to pass")
+// TestStaticIssuesWithoutChangeHistory 验证无任务历史目录时的当前文档拓扑。
+func TestStaticIssuesWithoutChangeHistory(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, root, "README.md", "[手册](docs/README.md)\n")
+	writeFile(t, root, "docs/README.md", "# 手册\n")
+	writeFile(t, root, ".tools/README.md", "[工具内部链接](not-in-repository.md)\n")
+	cfg := config{SchemaVersion: 1, Entrypoints: entrypoints{Root: "README.md", Handbook: "docs/README.md"}, RequiredDocs: []string{"README.md", "docs/README.md"}}
+	if issues := staticIssues(root, cfg); len(issues) != 0 {
+		t.Fatalf("unexpected issues: %v", issues)
 	}
 }
 

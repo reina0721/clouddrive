@@ -7,13 +7,13 @@
 - 当前根 Go module、README、Docker 与 `.scaffold/identity.yaml` 使用 `clouddrive` 身份。
 - 当前 Git remote 是 `git@github.com:rin721/clouddrive.git`。
 - 当前提交 `8e98d44` 把既有 `backend/**` 路径导入为 `old-backend/**`，并在根目录导入脚手架快照；`old-backend/` 不属于当前文档治理范围。
-- `docs/changes/001`–`041` 是随导入基线带入的任务档案；当前仓库原生变更从 042 及之后的提交记录开始识别。
+- 上游任务档案随快照导入，现已退出工作树；来源以 SOURCES.json、ADR 与 Git 历史为准。
 - `.scaffold/identity.yaml` 要求该基线文档存在；本文件补齐这一 provenance contract，但不完成仓库身份迁移。
 
 ## 使用边界
 
-该基线说明用于解释历史档案来源，不作为当前架构、启动、配置或发布 authority。当前行为必须以根 README、`docs/` 当前主题文档和代码为准；身份迁移、frontend 集成和旧后端处置必须另立研究与确认任务。
+该基线说明用于解释历史档案来源，不作为当前架构、启动、配置或发布 authority。当前行为必须以根 README、`docs/` 当前主题文档和代码为准；身份、导入范围或数据边界发生变化时，按当前协作流程评估影响与授权。
 
 ## 刷新条件
 
-当 Go module、remote、产物命名、导入边界或任务历史来源发生变化时，必须重新核对本文和 `docs/documentation.yaml`，并在同一变更中提交文档影响记录。
+当 Go module、remote、产物命名、导入边界或任务历史来源发生变化时，必须重新核对本文和 `docs/documentation.yaml`，同步更新受影响的当前说明；不建立独立影响账本。

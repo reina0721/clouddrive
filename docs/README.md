@@ -2,13 +2,13 @@
 
 本手册把项目资料收束成一条连续路径。根 [README](../README.md) 保留项目定位和最短启动入口；这里承接完整说明、开发约束、能力使用、架构脉络、调试运维和历史证据。
 
-当前操作说明优先放在主题文档中。`docs/changes/**` 是任务账本，`docs/research/**` 是研究快照；它们用于追溯为什么这样做，不替代这里的当前使用说明。
+当前操作说明优先放在主题文档中。`docs/research/**` 保存专题快照，重要决定见 ADR；普通任务不生成整套变更档案，历史通过 Git 查阅。
 
 ## 1. 认识项目
 
 - [根 README](../README.md)：项目定位、五分钟启动、架构摘要和文档权威边界。
 - [项目范围与当前状态](repository-scope.md)：当前构建范围、WebUI、frontend、排除目录、生产交付和身份边界。
-- [AGENTS.md](../AGENTS.md)：AI Agent 协作规则、工程红线和研究计划门禁。
+- [Agent 日常开发流程](development/agent-workflow.md)：AI Agent 协作规则、工程底线与风险分级。
 - [API 文档](../api/README.md)：当前 OpenAPI、operation inventory 和 code-first 契约生成入口。
 
 ## 2. 启动项目
@@ -33,6 +33,9 @@
 
 ## 4. 开发业务
 
+- [Agent 日常流程](development/agent-workflow.md)：范围判断、实施、停止条件与重要决策。
+- [验证策略](development/validation.md)：按影响检查、准备分离与完整回归。
+
 - [开发指南](development/README.md)：业务模块开发和能力接入的统一入口。
 - [应用模块开发指南](development/application-module-development.md)：新增业务模块时的能力评估、目录职责、HTTP/config/cli/migration/i18n/schedule/message binding。
 - [开发日志规范](development/logging.md)：结构化日志事件、级别、字段、脱敏和验证要求。
@@ -52,7 +55,7 @@
 ## 6. 理解架构
 
 - [架构说明](architecture/README.md)：composition、Application Generation、Kernel App、模块边界、pkg 能力链路和生命周期治理。
-- [技术选型与架构复核基线](architecture/technology-selection.md)：通用能力的保留、升级、替换、自研、退役与架构重构判定，以及当前候选和实施门禁。
+- [技术选型与架构复核](architecture/technology-selection.md)：通用能力的保留、升级、替换、自研、退役与架构重构判定，以及当前实现职责与复核条件。
 - [应用模块边界](../internal/module/README.md)：业务模块目录职责、Contribution 和允许依赖。
 - [Kernel 与 App 组件装配](../internal/kernel/README.md)：底层 App 组件、Plan、typed Input、生命周期、重载和诊断。
 - [Kernel App 组件开发](../internal/kernel/app/README.md)：底层组件形态、Definition、Lease、Replacement 和接入验收。
@@ -60,7 +63,7 @@
 ## 7. 扩展能力
 
 - 业务模块扩展先从 [应用模块开发指南](development/application-module-development.md) 开始，确认真实用例、能力归属、技术候选、承载架构、Binding 和 owner。
-- 继续扩展现有自研通用机制前，先按[技术选型与架构复核基线](architecture/technology-selection.md)比较成熟候选和实际收益。
+- 继续扩展现有自研通用机制前，先按[技术选型与架构复核](architecture/technology-selection.md)比较成熟候选和实际收益。
 - 跨业务复用且由进程统一选择的底层能力，再进入 [Kernel App 组件开发](../internal/kernel/app/README.md)。
 - 新增公开 HTTP operation 时，遵守 [API 文档](../api/README.md) 的 code-first 生成链。
 
@@ -80,11 +83,12 @@
 ## 10. 深入底层设计
 
 - [研究档案与报告](research/README.md)：结构化研究格式、复用规则和项目级研究索引。
-- [任务级变更记录](changes/README.md)：每个变更的需求、设计、任务和验证证据。
-- [任务级变更记录](changes/README.md)：历史实施、研究、计划和验证证据；不作为当前行为 authority。
 
 ## 维护边界
 
 - 项目级契约、Binding、生命周期、配置、装配方式、业务模块接入、基础能力使用、架构原则和门禁规范，只写入对应主题 authority。
 - `pkg/**/README.md` 和 `internal/**/README.md` 只说明本包或本模块局部实现、资源所有权和链接入口。
-- `docs/changes/**` 和 `docs/research/**` 保存历史证据，不替代当前手册。
+- 专题研究与 ADR 保留适用边界，历史任务通过 Git 查阅。
+
+- [架构决策记录](architecture/adr/README.md)
+- [来源记录](provenance/README.md)

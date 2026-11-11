@@ -1,8 +1,0 @@
-
-> clouddrive-frontend@0.1.0 format:check C:\rin\coder\i0721\console-web
-> prettier --check .
-
-Checking formatting...
-[warn] docs/changes/109-ui-ux-optimization/evidence/account-menu/visual-differences/index.html
-[warn] Code style issues found in the above file. Run Prettier with --write to fix.
- ELIFECYCLE  Command failed with exit code 1.

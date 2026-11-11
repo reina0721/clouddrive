@@ -34,14 +34,14 @@ Linux 上出现 `inotify` / `EMFILE` 时先检查 `fs.inotify.max_user_instances
 
 ## 分别启动
 
-~~~powershell
+```powershell
 $env:APP_IAM__LOCAL__SETUPTOKEN = '<自行生成的随机设置令牌>'
 go run ./cmd/app db migrate up
 go run ./cmd/app
 # 另一个终端进入 frontend
 npx --yes pnpm@10.22.0 install --frozen-lockfile
 npx --yes pnpm@10.22.0 dev
-~~~
+```
 
 config.yaml 必须存在，可复制 config.example.yaml 或运行 go run ./cmd/app config init。使用 config init 后，应配置 http.cors.allowedOrigins 为实际前端 Origin，如 http://127.0.0.1:4173。
 
@@ -55,8 +55,8 @@ config.yaml 必须存在，可复制 config.example.yaml 或运行 go run ./cmd/
 
 ## 验证
 
-Go：go test ./...、go vet ./...、go build ./...；有可用 C 编译器时执行 go test -race ./...。
+日常从仓库根运行 `node scripts/verify-changed.mjs --dry-run` 查看选择，再执行 `node scripts/verify-changed.mjs`。环境准备、按包及调用方选择、浏览器配置与完整回归见[验证策略](../development/validation.md)。
 
-前端：在 frontend 下用 npx --yes pnpm@10.22.0 check。其中浏览器回归明确启用模拟模式和拦截式契约模式；它们不代替真实后端验收。scripts/Test-Integration.ps1 使用新的 SQLite 数据库，实际创建管理员、待办和部门，并验证真实页面及退出。
+前端完整 `pnpm check` 包含模拟与拦截式契约测试，不能代替真实后端验收。`scripts/Test-Integration.ps1` 使用独立数据库验证实际创建与登录退出。
 
-[完整部署说明](../operations/clouddrive-deployment.md)；[验证状态](../changes/118-clouddrive-integration/tasks.md)。
+[完整部署说明](../operations/clouddrive-deployment.md)

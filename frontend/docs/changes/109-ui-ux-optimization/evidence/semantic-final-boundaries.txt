@@ -1,6 +1,0 @@
-
-> clouddrive-frontend@0.1.0 architecture:check D:\coder\i721\console-web
-> node tooling/check-boundaries-fixtures.mjs && node tooling/check-boundaries.mjs
-
-Boundary fixtures passed: 18 cases.
-Architecture checks passed for 506 source files.

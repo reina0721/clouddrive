@@ -1,56 +1,60 @@
 # 架构说明
 
-本目录是当前架构阅读入口。项目采用显式 composition root，把启动期 immutable `applicationBlueprint`、底层能力、Application Generation、业务模块和进程生命周期连接成单轨运行模型；不依赖包扫描、运行期 Service Locator 或隐式全局状态。
-
-## 当前产品与重构原则
-
-CloudDrive 的主要使用链路是文件的保存、组织、获取与协作。管理能力支持这条链路。先通过独立数据环境运行和验证，再决定架构调整；保留已经证明有效的模块边界，不以更换框架或改名作为重构成果。
-
-界面统一采用 [Material Design 3](../../frontend/docs/ui-visual-calibration.md)：Schema 拥有主题，Adapter 拥有组件状态，Surface 组合导航与页面，Host 拥有浏览器资源和进程外连接。启动工具 `scripts/dev.mjs` 在应用之外管理开发与隔离预览的进程树、就绪检查和失败清理，不把开发编排注入业务 Kernel。数据库迁移仍由同一个 Go CLI 执行。
-
-生产 Web Host 使用 Next standalone 追踪产物部署，构建不绑定 Go 地址。`apps/web/src/proxy.ts` 在运行时把 API、WOPI 与 management 请求交给配置的 Go Origin，复用 Next 的传输实现；不新增 BFF 业务状态或第二套认证授权。Go 与 Web 的生命周期仍分别由部署环境管理。
-
-## 阅读主线
-
-1. [当前运行结构](#当前运行结构)：先确认入口、composition、Application Generation、模块和 `pkg` 的实际关系。
-2. [应用模块边界](../../internal/module/README.md)：业务模块如何收口 Model、Service、Adapter、Handler、binding 和 contribution。
-3. [Kernel 与 App 组件装配](../../internal/kernel/README.md)：底层组件如何通过 Plan、typed Input、Lease、Replacement、生命周期和重载治理进入进程。
-4. [Kernel App 组件开发](../../internal/kernel/app/README.md)：跨业务复用且由进程统一选择的底层能力如何声明、构造、输出和验证。
-5. [技术选型与架构复核基线](technology-selection.md)：判断现有能力应保留、升级、替换、自研还是通过架构重构解决，并记录当前候选与实施顺序。
-6. [pkg 封装规范与能力清单](../../pkg/README.md)：面向业务模块开放的项目自有能力、第三方封装边界和暂缓路线。
-7. [应用模块开发指南](../development/application-module-development.md)：新增模块时如何做能力评估、选择模块专属 Adapter 或底层 Capability，并接入 HTTP/config/cli/migration/i18n/schedule/message binding。
+CloudDrive 围绕文件的保存、组织、获取与协作运行。账户、权限和管理能力服务于同一套文件与身份事实；浏览器体验、协议适配和内容存储各有明确的所有者。当前范围与尚未验证的能力见[项目范围](../repository-scope.md)，用户行为见[文件管理](../operations/file-management.md)。
 
 ## 当前运行结构
 
-- `cmd/app` 只负责进程 I/O、基线日志、参数分支和信号入口。
-- `internal/composition` 是唯一应用 composition root，显式装配 Bootstrap CLI、migration one-shot 与长期 Service。
-- `Application.New` 一次构造并校验 `applicationBlueprint`，冻结 permission/WebUI/operation policy/HTTP definition；长期 Service 的所有 Generation 与 one-shot CLI 都只引用该 Blueprint。
-- 长期 Service 通过 Application Generation 管理配置快照、资源复用、runtime module/Handler、listener、HTTP route、定时任务、消息 Consumer 准入、compatibility、ready 状态和优雅停止。
-- 业务模块位于 `internal/module/<name>`，通过 typed contribution 交给 composition 聚合，不扫描、不隐式注册。
-- `pkg/<name>` 只暴露项目自有能力契约；第三方具体类型留在 Adapter 或 Kernel App 实现内。
+```mermaid
+flowchart LR
+  Browser[浏览器] --> Web[Next.js Web Host]
+  Web --> Proxy[同源 API 代理]
+  Proxy --> HTTP[Go HTTP 与认证授权]
+  HTTP --> Modules[应用模块与用例]
+  Modules --> Database[(元数据数据库)]
+  Modules --> Storage[(内容存储)]
+  Modules --> Adapters[协议与受限任务适配]
+```
 
-## 关键边界
+Web 与 Go 是两个独立进程。Web Host 拥有路由、浏览器资源和交互装配；Go 拥有会话、权限、业务事务、持久任务和存储。Next standalone 构建不绑定 Go 地址，运行时代理复用既有 API，不保存另一份认证或业务状态。部署、地址和代理限制以[部署说明](../operations/clouddrive-deployment.md)为准。
 
-| 边界 | 当前规则 |
-| --- | --- |
-| 进程入口 | `cmd/app` 不装配业务对象；所有模式进入 `internal/composition.Application`。 |
-| 配置 owner | `internal/composition/configuration.go` 集中应用配置节，Kernel composition 补齐底层配置节；未知配置在资源副作用前失败。 |
-| HTTP 契约 | `internal/composition/httpcatalog.Registrations()` 是运行时 Blueprint 与生成器共用的无资源模块清单；仅可导入模块 HTTP 声明，不可接触 Kernel、配置或 Service。`internal/transport/http` 是唯一 route binding owner。 |
-| 模块贡献 | `module.Contribution` 只输出 Participant、Schedule Binding 和 Message Contribution；composition 校验后集中安装。 |
-| 技术与承载架构 | 先按[技术选型与架构复核基线](technology-selection.md)比较成熟候选和实际收益；现有 Kernel/Generation 形态不是不可调整前提。 |
-| 底层能力 | 只有跨业务复用且由进程统一选择、并且确有进程级生命周期治理收益的资源进入 `pkg -> internal/kernel/app -> internal/kernel/composition`。 |
-| 历史设计 | `docs/research/**` 和 `docs/changes/**` 保留研究与任务证据；当前架构以本页链接的正式主题为准。 |
+`cmd/app` 只处理进程入口；`internal/composition` 显式连接底层能力和业务模块。模块通过 typed contribution 交给应用组合根，资源由 Kernel 装配与租约管理。业务用例依赖消费方需要的窄接口，不接收万能容器，也不通过包扫描或全局注册寻找依赖。
 
-## 生命周期治理
+## 状态与资源由谁拥有
 
-Service 使用 `applicationBlueprint -> GenerationCoordinator -> GenerationFactory -> typed resource pools -> ListenerHub`。候选 Generation 从同一配置快照构造 Logger、Database、Cache、I18n、Storage、Execution、Scheduler、Messaging、IAM、Organization、Navigation、Todo、Auth、Ops、HTTP route 和 management route，并引用启动期 Blueprint；Prepare 失败时 current 不变，Commit 后旧代排空并释放资源，清理失败进入 cleanup debt 并撤销 readiness。Navigation 每次 Manifest 请求读取当前数据库策略并投影 Blueprint 的静态 Catalog，不创建 watcher、cache 或独立生命周期资源。
+| 范围         | 所有者                                    | 边界                                                                   |
+| ------------ | ----------------------------------------- | ---------------------------------------------------------------------- |
+| 静态声明     | 启动期 `applicationBlueprint`             | 冻结 HTTP 定义、权限目录、操作策略与 WebUI 目录，各代及 CLI 共享。     |
+| 服务运行态   | Application Generation                    | 同一配置快照构造资源与运行模块；候选失败保持当前代，提交后旧代排空。   |
+| 监听器与进程 | ListenerHub 与进程入口                    | listener 不随对象图重建而先关后开；停止与清理有明确等待边界。          |
+| 文件与协作   | files 用例及仓储                          | 目录、归属、配额、分享、版本、写锁与发布状态在相应事务内判断。         |
+| 内容字节     | Storage 租约                              | 数据库事实与不可变内容对象分别持久化，发布意图和补偿处理跨资源失败。   |
+| 浏览器传输   | 账号所属的 FilesRuntime / TransferRuntime | 应用内导航保持同一队列；账号变化或卸载取消请求并释放资源。             |
+| 阅读与编辑   | 每次打开的阅读会话与 Host renderer        | 各会话独立拥有取消、Worker、frame 与临时 URL；关闭不取消其它阅读会话。 |
 
-one-shot CLI 走 Bootstrap 或 invocation-scoped Kernel 路径，不启动长期 watcher、HTTP listener、schedule 或 messaging Consumer。
+配置节由 composition 集中声明，未知配置在资源副作用前失败。不是所有变化都需要热替换：没有候选构造、准入、排空与回滚语义的能力应明确要求重启。one-shot CLI 使用自己的 invocation 资源，不启动长期 watcher、listener 或 Consumer。
 
-## 当前权威与历史证据
+## 一条文件链路如何跨越边界
 
-当前架构说明以本页链接的主题文档为准。历史研究和设计过程保存在 [研究档案](../research/README.md) 与 [任务级变更记录](../changes/README.md)，用于解释决策来源和验证证据，不作为并列的当前规范。新增架构能力必须同步更新本页或对应主题页，不能只在最近代码目录旁新增说明。
+文件页面在 Surface 表达浏览、编辑或分享意图，Host Port 执行浏览器 I/O；Next 将同源请求交给 Go 的现有认证、CSRF 和 operation 授权链。files 用例复核主体、范围、内容版本与配额，再通过仓储和 Storage 完成操作。公开分享使用单独的公开 Port 和当前分享策略，不复用私有文件授权。
 
-压缩解析是按请求创建的受限子进程，由files模块公开工厂装配，并通过模块入口分派私有worker参数。worker在读取源字节前建立操作系统资源限制，不初始化Application、配置、数据库、监听器或第二个Logger；父请求拥有取消、终止、Wait及句柄清理。它不是新的常驻Service或任务调度系统；详细技术边界见[技术选型](technology-selection.md#有界压缩解析)。
+上传由 tus 处理有界的字节接续，files 负责会话、摘要、配额与最终发布；WebDAV 和外部编辑适配也进入同一业务边界。压缩解析由父任务拥有的受限子进程执行，解析器不装配第二个应用。PDF 等浏览器阅读器由 Host 隔离 SDK 与临时资源，Go 继续提供获准的内容。具体取舍见[技术选型](technology-selection.md)。
 
-私有PDF阅读使用Host注入的普通文档renderer及本地PDF.js组件；Go只提供经认证的现有内容和统一预算，不承担浏览器解析。frame、module Worker、文字/查找/标注和临时URL由Host拥有，关闭/账号失效时销毁，不形成新的Kernel资源或跨模块依赖。边界与取舍见[技术选型](technology-selection.md#私有pdf阅读（134）)，使用方式见[文件管理](../operations/file-management.md#本人-pdf-阅读与临时批注)。
+界面采用 [Material Design 3](../../frontend/docs/ui-visual-calibration.md)。Design Schema 拥有主题，Adapter 拥有控件及交互状态，Surface Foundation 提供页面结构，业务 Surface 组合用户任务，Web Host 负责运行时。页面差异不能演变为第二套组件或状态语言。
+
+## 从问题找到实现
+
+| 要处理的问题         | 当前入口                                                                                                  |
+| -------------------- | --------------------------------------------------------------------------------------------------------- |
+| 选择、保留或替换技术 | [技术选型与复核](technology-selection.md)                                                                 |
+| 新增业务与跨模块能力 | [模块边界](../../internal/module/README.md)、[模块开发](../development/application-module-development.md) |
+| 底层资源、租约与重载 | [Kernel 装配](../../internal/kernel/README.md)、[组件开发](../../internal/kernel/app/README.md)           |
+| 文件事务与协议       | [files 模块](../../internal/module/files/README.md)                                                       |
+| 浏览器界面与资源     | [前端工程](../../frontend/README.md)                                                                      |
+| API 与生成契约       | [API 契约](../../api/README.md)                                                                           |
+| 运行、部署与故障     | [运维入口](../operations/README.md)                                                                       |
+
+## 当前说明与历史决定
+
+本页说明当前结构，主题手册拥有各自的使用与约束。重要决定及其当时的限制保留在 [ADR](adr/README.md)，原始研究通过明确 Git revision 查阅。历史 ADR 的“已接受”不自动成为今天的技术、版本或验收结论；旧脚手架定位、spec-first 路线和当时的平台验证范围不得覆盖当前实现。
+
+维护架构时先核对调用方和资源所有权，再决定保留、删除或替换。技术版本由依赖清单与锁文件记录，接口规模由生成契约记录，验证范围由实际检查证明；不在架构入口重复维护易失效的计数与完成清单。

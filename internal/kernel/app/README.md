@@ -6,13 +6,13 @@
 
 ## 选择组件形态
 
-| 能力特征 | 构造入口 | 输出 | 重载 |
-| --- | --- | --- | --- |
-| 代码固定、无资源生命周期 | `app.Value` | 普通项目接口 | 不进入运行节点 |
-| 无运行期配置但需 Start/终结 | `app.ManagedFixed` | 稳定 Lease facade | `NoReload` |
-| 配置化且新旧实例可并存 | `app.ManagedConfigured` | 稳定 Lease facade | `KernelInstanceSwap` |
-| 配置变化只能随进程重启 | `app.ManagedConfigured` | 稳定 Lease facade | `RestartRequired` |
-| 明确替换既有稳定 target | `app.ManagedConfiguredReplacement` | 复用 target 输出，不发布第二份输出 | `KernelInstanceSwap` |
+| 能力特征                    | 构造入口                           | 输出                               | 重载                 |
+| --------------------------- | ---------------------------------- | ---------------------------------- | -------------------- |
+| 代码固定、无资源生命周期    | `app.Value`                        | 普通项目接口                       | 不进入运行节点       |
+| 无运行期配置但需 Start/终结 | `app.ManagedFixed`                 | 稳定 Lease facade                  | `NoReload`           |
+| 配置化且新旧实例可并存      | `app.ManagedConfigured`            | 稳定 Lease facade                  | `KernelInstanceSwap` |
+| 配置变化只能随进程重启      | `app.ManagedConfigured`            | 稳定 Lease facade                  | `RestartRequired`    |
+| 明确替换既有稳定 target     | `app.ManagedConfiguredReplacement` | 复用 target 输出，不发布第二份输出 | `KernelInstanceSwap` |
 
 006 不支持运行时构造后直接暴露裸实例：Managed 组件必须输出稳定 Lease facade。`NativeAtomicReload`、排他资源 Handoff 和切换观察期是后续能力，不应以空接口或先停旧再启新代替。
 
@@ -142,4 +142,4 @@ dependencies, err := app.DependencySet(func(values app.Values) (Dependencies, er
 
 当前 Service 在 Kernel App Plan 外接入 application-owned HTTP listener、Todo 业务模块、Auth 横切模块、Ops management 模块、Migration one-shot 模块以及 Application Generation。业务 middleware、handler、service、repository、model 和 binding 位于 `internal/module/<name>`，由 `internal/composition` 显式装配；本组件模型不替业务对象定义容器职责，也不允许业务代码查询 Kernel。
 
-Observability 的项目契约、稳定 Metrics identity 与 generation-owned Telemetry 分裂实现见 [027](../../../docs/changes/027-business-module-third-party-isolation/README.md)。Application Generation 通过底层 composition 选择 Definition，不直接构造 Prometheus/OTel，也不把技术类型交给 Ops。
+Observability 的项目契约、稳定 Metrics identity 与 generation-owned Telemetry 分裂实现见 [架构决策记录](../../../docs/architecture/adr/README.md)。Application Generation 通过底层 composition 选择 Definition，不直接构造 Prometheus/OTel，也不把技术类型交给 Ops。

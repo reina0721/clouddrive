@@ -1,18 +1,15 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, isAbsolute, join } from 'node:path';
+import { dirname } from 'node:path';
 import { setTimeout } from 'node:timers/promises';
-import type { Page } from '@playwright/test';
+import { test, type Page } from '@playwright/test';
 
-/** Capture once; retry only transient Windows file-open failures when saving evidence. */
+/** 单次截图写入用例产物目录，仅重试 Windows 临时文件占用。 */
 export async function saveEvidenceScreenshot(
   page: Page,
   options: NonNullable<Parameters<Page['screenshot']>[0]> & { path: string },
 ) {
   const { path: requestedPath, ...captureOptions } = options;
-  const path =
-    process.env.UPDATE_EVIDENCE === 'true' || isAbsolute(requestedPath)
-      ? requestedPath
-      : join('test-results/evidence', requestedPath);
+  const path = test.info().outputPath(requestedPath);
   const screenshot = await page.screenshot(captureOptions);
   await mkdir(dirname(path), { recursive: true });
   for (let attempt = 0; attempt < 3; attempt += 1) {

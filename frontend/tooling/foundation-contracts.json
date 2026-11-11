@@ -30,8 +30,7 @@
       "evidence": [
         "packages/design-system/src/tokens.css",
         "packages/design-system/src/motion.css",
-        "apps/web/e2e/ui-ux-109.spec.ts",
-        "docs/changes/109-ui-ux-optimization/README.md"
+        "apps/web/e2e/ui-ux-109.spec.ts"
       ]
     },
     "@clouddrive/form-foundation": {
@@ -40,11 +39,7 @@
       "maturity": "stable",
       "exports": ["."],
       "authorityRoutes": ["/ui-elements/forms"],
-      "evidence": [
-        "packages/form-foundation/src/index.test.tsx",
-        "apps/web/e2e/ui-ux-109.spec.ts",
-        "docs/changes/109-ui-ux-optimization/tasks.md"
-      ]
+      "evidence": ["packages/form-foundation/src/index.test.tsx", "apps/web/e2e/ui-ux-109.spec.ts"]
     },
     "@clouddrive/i18n": {
       "layer": "universal",
@@ -142,7 +137,6 @@
         "apps/web/e2e/data-display.spec.ts",
         "apps/web/e2e/analytics-workspace.spec.ts",
         "apps/web/e2e/ui-ux-109.spec.ts",
-        "docs/changes/109-ui-ux-optimization/README.md",
         "apps/web/e2e/management-completion.spec.ts",
         "apps/web/src/test/date-picker-contract.test.tsx",
         "apps/web/src/test/container-layout.test.tsx",
@@ -190,7 +184,6 @@
         "apps/web/e2e/settings-product-review.spec.ts",
         "apps/web/e2e/design-contract.spec.ts",
         "apps/web/e2e/ui-ux-109.spec.ts",
-        "docs/changes/109-ui-ux-optimization/README.md",
         "apps/web/src/test/motion-reveal.test.tsx",
         "apps/web/e2e/motion-progressive.spec.ts",
         "apps/web/e2e/scroll-reveal-items.spec.ts",
@@ -224,8 +217,7 @@
         "packages/plugin-framework/src/plugin.test.tsx",
         "packages/plugin-framework/src/schemas.test.ts",
         "packages/plugin-framework/src/schemas-runtime.test.ts",
-        "apps/web/e2e/ui-ux-109.spec.ts",
-        "docs/changes/109-ui-ux-optimization/README.md"
+        "apps/web/e2e/ui-ux-109.spec.ts"
       ]
     },
     "@clouddrive/surface": {
@@ -267,11 +259,9 @@
         "surfaces/src/preferences-model.test.ts",
         "surfaces/src/identity/model.test.ts",
         "apps/web/src/test/identity-contract.test.ts",
-        "docs/changes/108-ui-ux-audit/product-implementation.md",
         "apps/web/src/test/account-security.test.ts",
         "apps/web/e2e/management-completion.spec.ts",
         "apps/web/e2e/management-completion-backend.spec.ts",
-        "docs/changes/110-management-completion/README.md",
         "surfaces/plugins/api-workbench/src/model/workbench-ux.test.ts",
         "apps/web/e2e/api-workbench.spec.ts",
         "surfaces/src/api-workbench/README.md",
