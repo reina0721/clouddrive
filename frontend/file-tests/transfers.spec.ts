@@ -79,9 +79,45 @@ test('大文件暂停、跨路由、刷新重选校验、断点接续和原生�
     const correctSource = page.waitForEvent('filechooser');
     await row.getByRole('button', { name: '重新选择源文件', exact: true }).click();
     await (await correctSource).setFiles(source);
+    await expect
+      .poll(
+        () =>
+          page.evaluate(async (name) => {
+            let cursor = '';
+            do {
+              const response = await fetch(
+                '/api/console/v1/native/files/transfers?' +
+                  new URLSearchParams({ limit: '100', cursor }).toString(),
+              );
+              if (!response.ok) throw new Error('读取本次传输 HTTP ' + response.status);
+              const page = (await response.json()) as {
+                items: { name: string; state: string }[];
+                nextCursor: string;
+              };
+              const item = page.items.find((item) => item.name === name);
+              if (item) return item.state;
+              cursor = page.nextCursor;
+            } while (cursor);
+            return 'missing';
+          }, name),
+        { timeout: 60_000 },
+      )
+      .toBe('completed');
     await page.getByRole('button', { name: '等待处理 任务状态', exact: true }).click();
     await page.getByRole('option', { name: '已完成', exact: true }).click();
-    await expect(row).toContainText('上传完成', { timeout: 60_000 });
+    // 服务端记录按游标分页；不能把本次记录固定假设在第一页。
+    while (!(await row.count())) {
+      const next = page.getByRole('button', { name: '下一页记录', exact: true });
+      const response = page.waitForResponse(
+        (value) =>
+          new URL(value.url()).pathname.endsWith('/files/transfers') &&
+          value.request().method() === 'GET',
+      );
+      await next.click();
+      await (await response).finished();
+      await expect(page.getByText('正在加载文件', { exact: true })).toHaveCount(0);
+    }
+    await expect(row).toContainText('上传完成');
     await page.screenshot({ path: 'test-results/files/transfers-desktop.png', fullPage: true });
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(row).toBeVisible();

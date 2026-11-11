@@ -116,7 +116,7 @@ const zh = {
   copyLink: '复制链接',
   linkCopied: '链接已复制',
   noShares: '没有分享记录',
-  noSharesHint: '从我的文件中选择文件或目录创建只读分享。',
+  noSharesHint: '从我的文件中选择文件或文件夹，创建适合对方的分享链接。',
   shareProtected: '密码保护',
   revokeShare: '撤销分享',
   revokeShareHint: '撤销后链接及已有访问凭据立即失效。',
@@ -363,7 +363,8 @@ const en: typeof zh = {
   copyLink: 'Copy link',
   linkCopied: 'Link copied',
   noShares: 'No shares',
-  noSharesHint: 'Select a file or folder in My files to create a read-only share.',
+  noSharesHint:
+    'Choose a file or folder in My files, then create a link with the access others need.',
   shareProtected: 'Password protected',
   revokeShare: 'Revoke share',
   revokeShareHint: 'The link and all existing access grants will stop working immediately.',

@@ -46,7 +46,7 @@ export function SelectField({
 
   return (
     <Select
-      className={isToolbar ? 'inline-flex shrink-0' : 'ui-field'}
+      className={isToolbar ? 'inline-flex min-w-0 max-w-full shrink-0' : 'ui-field'}
       defaultOpen={defaultOpen}
       disabledKeys={disabledKeys}
       fullWidth={!isToolbar}
@@ -68,7 +68,7 @@ export function SelectField({
       <Select.Trigger
         className={
           isToolbar
-            ? 'flex h-control-sm min-w-32 items-center justify-between gap-2 rounded-control border border-border bg-surface px-3 text-sm text-ink outline-none transition-colors hover:bg-surface-muted focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-focus'
+            ? 'flex h-control-sm min-w-32 max-w-full items-center justify-between gap-2 rounded-control border border-border bg-surface px-3 text-sm text-ink outline-none transition-colors hover:bg-surface-muted focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-focus'
             : 'ui-field-control flex items-center justify-between gap-3'
         }
       >

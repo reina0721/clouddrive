@@ -68,19 +68,13 @@ async function noAccessibilityErrors(page: Page) {
       ),
     )
     .toBe(true);
-  await page.evaluate(async () => {
-    await Promise.all(
-      document
-        .getAnimations()
-        .filter(
-          (animation) => animation instanceof CSSTransition && animation.playState === 'running',
-        )
-        .map((animation) => animation.finished.catch(() => undefined)),
-    );
-  });
-  expect(
-    (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()).violations,
-  ).toEqual([]);
+  await expect
+    .poll(
+      async () =>
+        (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()).violations,
+      { message: '浮层稳定后应满足对比度与无障碍要求' },
+    )
+    .toEqual([]);
 }
 
 test('分享先明确访问与能力，创建过程保留窗口，结果能复制并让访客打开', async ({
@@ -213,7 +207,7 @@ test('手机分享与详情可达，登录范围真正拒绝匿名访问', async
   await page.getByRole('button', { name: '搜索', exact: true }).click();
   const card = page.locator('[data-share-id]').filter({ hasText: name });
   await expect(card).toHaveCount(1);
-  await card.getByRole('button', { name: '分享详情', exact: true }).click();
+  await card.getByRole('button', { name: /^查看 .* 的分享详情$/ }).click();
   const detail = page.getByRole('dialog', { name, exact: true });
   await expect(detail.getByText('已登录本站的用户', { exact: true })).toBeVisible();
   await expect(detail.getByRole('button', { name: '复制链接', exact: true })).toBeVisible();

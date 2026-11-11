@@ -1,78 +1,169 @@
 'use client';
-import { Cloud } from '../../../src/files/icons';
+import { Cloud, RefreshCw, Share2 } from '../../../src/files/icons';
 import { useFrontendTranslation } from '@clouddrive/i18n';
-import { useFileTime } from './use-file-time';
-import { Page, PageHeader, Section } from '@clouddrive/surface-foundation/layout';
+import { Page, PageHeader, Toolbar } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
-import { SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
-import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
+import { IconAction } from '@clouddrive/ui-adapter/icon-action';
+import { SelectField } from '@clouddrive/ui-adapter/form-field';
+import { SearchBox } from '@clouddrive/ui-adapter/search-box';
+import { ConfirmDialog } from '@clouddrive/ui-adapter/overlays';
 import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   FilesError,
   type FileShare,
   type ShareListing,
   type ShareQuery,
+  type FilesPort,
 } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
-import { sharePermissionPreset } from '../../../src/files/sharing';
 import { ShareDetailDrawer, ShareSettingsDialog } from './share-settings-dialog';
+import { ShareListItem, type ShareListAction, type ShareListFeedback } from './share-list-item';
+import { readShareCatalogQuery, shareCatalogHref } from './share-catalog-query';
+import { FileLink } from './file-link';
 
 const DirectLinksDialog = lazy(() => import('./direct-links-dialog'));
 
 export function MySharesPage() {
   const port = useFiles(),
-    { t } = useFrontendTranslation();
-  const time = useFileTime();
-  const [query, setQuery] = useState<ShareQuery>({
-      search: '',
-      state: '',
-      sort: 'newest',
-      page: 1,
-    }),
-    [search, setSearch] = useState('');
-  const [listing, setListing] = useState<ShareListing>(),
-    [loading, setLoading] = useState(true),
-    [failure, setFailure] = useState(''),
-    [notice, setNotice] = useState(''),
-    [revision, setRevision] = useState(0);
-  const [opening, setOpening] = useState(false);
+    { t, locale } = useFrontendTranslation();
+  const router = useRouter();
+  const params = useSearchParams().toString();
+  const query = useMemo(() => readShareCatalogQuery(new URLSearchParams(params)), [params]);
+  const [draft, setDraft] = useState<{ source: string; value: string }>();
+  const search = draft?.source === query.search ? draft.value : query.search;
+  const [revision, setRevision] = useState(0);
+  const key = shareCatalogHref('', query) + ':' + revision + ':' + locale;
+  const [result, setResult] = useState<{
+    port: FilesPort;
+    key: string;
+    listing?: ShareListing;
+    failure?: string;
+  }>();
+  const current = result?.port === port && result.key === key ? result : undefined;
+  const listing = current?.listing,
+    failure = current?.failure;
+  const loading = !current;
+  const [feedback, setFeedback] = useState<ShareListFeedback>();
+  const [opening, setOpening] = useState<string>();
+  const editRequest = useRef<AbortController | null>(null);
+  const copyPending = useRef(false);
+  const [copying, setCopying] = useState(false);
   const [directLinks, setDirectLinks] = useState(false);
   const [editing, setEditing] = useState<FileShare>(),
-    [detail, setDetail] = useState<FileShare>(),
-    [confirmation, setConfirmation] =
-      useState<Readonly<{ kind: 'revoke' | 'state'; share: FileShare; enabled: boolean }>>();
+    [detail, setDetail] = useState<FileShare>();
+  const [confirmation, setConfirmation] = useState<{
+    kind: 'revoke' | 'state';
+    share: FileShare;
+    enabled: boolean;
+  }>();
+  const [confirmationFailure, setConfirmationFailure] = useState('');
   const errorText = (error: unknown) =>
     t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`);
+  const cancelOpening = useCallback(() => {
+    editRequest.current?.abort();
+    editRequest.current = null;
+    setOpening(undefined);
+  }, []);
+  useEffect(() => () => editRequest.current?.abort(), [port, key]);
   const refresh = () => {
-    setLoading(true);
-    setFailure('');
+    cancelOpening();
+    setFeedback(undefined);
     setRevision((value) => value + 1);
   };
   const filter = (patch: Partial<ShareQuery>) => {
-    setLoading(true);
-    setFailure('');
-    setQuery((value) => ({ ...value, ...patch, page: patch.page ?? 1 }));
+    cancelOpening();
+    setFeedback(undefined);
+    const next = { ...query, ...patch, page: patch.page ?? 1 };
+    const path = port.destinationHref('shares');
+    if (shareCatalogHref(path, next) === shareCatalogHref(path, query))
+      setRevision((value) => value + 1);
+    else router.push(shareCatalogHref(path, next), { scroll: false });
   };
   useEffect(() => {
     const controller = new AbortController();
-    void port
-      .shares(query, controller.signal)
-      .then((value) => {
-        if (!controller.signal.aborted) {
-          setListing(value);
-          setFailure('');
-        }
-      })
-      .catch((error: unknown) => {
+    void port.shares(query, controller.signal).then(
+      (value) => {
+        if (!controller.signal.aborted) setResult({ port, key, listing: value });
+      },
+      (error: unknown) => {
         if (!controller.signal.aborted)
-          setFailure(t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
+          setResult({
+            port,
+            key,
+            failure: t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`),
+          });
+      },
+    );
     return () => controller.abort();
-  }, [port, query, revision, t]);
+  }, [port, query, key, t]);
+
+  const act = (action: ShareListAction, share: FileShare) => {
+    cancelOpening();
+    if (action === 'details') {
+      setDetail(share);
+      return;
+    }
+    if (action === 'copy') {
+      if (copyPending.current) return;
+      copyPending.current = true;
+      setCopying(true);
+      setFeedback(undefined);
+      void port
+        .copyShareLink(share.token)
+        .then(
+          () => setFeedback({ shareId: share.id, error: false, message: t('files.linkCopied') }),
+          (error: unknown) =>
+            setFeedback({
+              shareId: share.id,
+              error: true,
+              message: t('files.collaboration.copyFailed', { reason: errorText(error) }),
+            }),
+        )
+        .finally(() => {
+          copyPending.current = false;
+          setCopying(false);
+        });
+      return;
+    }
+    setFeedback(undefined);
+    if (action === 'settings') {
+      const controller = new AbortController();
+      editRequest.current = controller;
+      setOpening(share.id);
+      void port
+        .readShare(share.id, controller.signal)
+        .then(
+          (value) => {
+            if (!controller.signal.aborted) setEditing(value);
+          },
+          (error: unknown) => {
+            if (!controller.signal.aborted)
+              setFeedback({ shareId: share.id, error: true, message: errorText(error) });
+          },
+        )
+        .finally(() => {
+          if (editRequest.current === controller) {
+            editRequest.current = null;
+            setOpening(undefined);
+          }
+        });
+      return;
+    }
+    setConfirmationFailure('');
+    setConfirmation({
+      kind: action === 'revoke' ? 'revoke' : 'state',
+      share,
+      enabled: action === 'resume',
+    });
+  };
+  const hasFilters = Boolean(query.search || query.state);
+  const outOfRange = Boolean(listing?.total && !listing.items.length && query.page > 1);
+  const confirmationLabel =
+    confirmation?.kind === 'revoke'
+      ? t('files.revokeShare')
+      : t(confirmation?.enabled ? 'files.collaboration.resume' : 'files.collaboration.pause');
   return (
     <>
       {directLinks ? (
@@ -83,220 +174,183 @@ export function MySharesPage() {
       <Page>
         <PageHeader
           title={t('files.myShares')}
+          description={t('files.collaboration.managementHint')}
           actions={
             <>
-              <Action variant="secondary" disabled={loading} onPress={refresh}>
-                {t('files.refresh')}
-              </Action>
-              <Action variant="secondary" onPress={() => setDirectLinks(true)}>
+              <IconAction label={t('files.refresh')} disabled={loading} onPress={refresh} tooltip>
+                <RefreshCw className="size-5" aria-hidden="true" />
+              </IconAction>
+              <Action
+                variant="quiet"
+                onPress={() => {
+                  cancelOpening();
+                  setDirectLinks(true);
+                }}
+              >
                 {t('files.directLinks.manage')}
               </Action>
+              <FileLink
+                target="files"
+                className="inline-flex min-h-control items-center gap-2 rounded-action bg-brand px-5 text-sm font-medium text-on-brand outline-none hover:bg-brand-strong focus-visible:ring-2 focus-visible:ring-focus-ring"
+              >
+                <Share2 className="size-4" aria-hidden="true" />
+                {t('files.collaboration.shareFile')}
+              </FileLink>
             </>
           }
-          description={t('files.collaboration.managementHint')}
         />
-        <Section title={t('files.collaboration.links')} contentInset>
-          <form
-            className="my-5 flex flex-wrap items-end gap-3"
-            onSubmit={(event) => {
-              event.preventDefault();
-              filter({ search });
+        <form
+          role="search"
+          aria-label={t('files.collaboration.searchShares')}
+          onSubmit={(event) => {
+            event.preventDefault();
+            filter({ search: search.trim() });
+          }}
+        >
+          <Toolbar
+            label={t('files.collaboration.searchShares')}
+            primary={
+              <>
+                <div className="min-w-48 flex-1">
+                  <SearchBox
+                    label={t('files.collaboration.search')}
+                    placeholder={t('files.collaboration.search')}
+                    value={search}
+                    onValueChange={(value) => setDraft({ source: query.search, value })}
+                  />
+                </div>
+                <Action type="submit" variant="quiet" size="sm">
+                  {t('files.collaboration.searchAction')}
+                </Action>
+              </>
+            }
+            secondary={
+              <>
+                <SelectField
+                  presentation="toolbar"
+                  label={t('files.collaboration.stateFilter')}
+                  value={query.state}
+                  onValueChange={(state) => filter({ state: state as ShareQuery['state'] })}
+                  options={(['', 'active', 'paused', 'expired', 'revoked'] as const).map(
+                    (value) => ({
+                      value,
+                      label: t(`files.collaboration.filters.${value || 'all'}`),
+                    }),
+                  )}
+                />
+                <SelectField
+                  presentation="toolbar"
+                  label={t('files.collaboration.sort')}
+                  value={query.sort}
+                  onValueChange={(sort) => filter({ sort: sort as ShareQuery['sort'] })}
+                  options={(['newest', 'oldest', 'name'] as const).map((value) => ({
+                    value,
+                    label: t(`files.collaboration.sorts.${value}`),
+                  }))}
+                />
+              </>
+            }
+          />
+        </form>
+        {listing?.metadataLimited ? (
+          <p role="status" className="text-sm text-ink-muted">
+            {t('files.collaboration.metadataLimited')}
+          </p>
+        ) : null}
+        {failure ? (
+          <StateSurface
+            state="error"
+            announcement="urgent"
+            icon={<Cloud />}
+            title={failure}
+            description={t('files.collaboration.refreshHint')}
+            actionLabel={t('files.refresh')}
+            onAction={refresh}
+          />
+        ) : loading ? (
+          <StateSurface
+            state="loading"
+            icon={<Share2 />}
+            title={t('files.collaboration.loadingShares')}
+            description={t('files.collaboration.managementHint')}
+          />
+        ) : !listing?.items.length ? (
+          <StateSurface
+            state="empty"
+            icon={<Share2 />}
+            title={t(
+              outOfRange
+                ? 'files.collaboration.emptyPage'
+                : hasFilters
+                  ? 'files.collaboration.noMatches'
+                  : 'files.noShares',
+            )}
+            description={t(
+              outOfRange
+                ? 'files.collaboration.emptyPageHint'
+                : hasFilters
+                  ? 'files.collaboration.noMatchesHint'
+                  : 'files.noSharesHint',
+            )}
+            actionLabel={t(
+              outOfRange
+                ? 'files.collaboration.firstPage'
+                : hasFilters
+                  ? 'files.clearFileFilters'
+                  : 'files.collaboration.shareFile',
+            )}
+            onAction={() => {
+              if (outOfRange) filter({ page: 1 });
+              else if (hasFilters) {
+                setDraft(undefined);
+                filter({ search: '', state: '' });
+              } else port.navigate('files');
             }}
-          >
-            <div className="min-w-48 flex-1">
-              <TextField
-                label={t('files.collaboration.search')}
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-              />
-            </div>
-            <div className="w-full sm:w-52">
-              <SelectField
-                label={t('files.collaboration.stateFilter')}
-                value={query.state}
-                onValueChange={(state) => filter({ state: state as ShareQuery['state'] })}
-                options={(['', 'active', 'paused', 'expired', 'revoked'] as const).map((value) => ({
-                  value,
-                  label: t(`files.collaboration.filters.${value || 'all'}`),
-                }))}
-              />
-            </div>
-            <div className="w-full sm:w-40">
-              <SelectField
-                label={t('files.collaboration.sort')}
-                value={query.sort}
-                onValueChange={(sort) => filter({ sort: sort as ShareQuery['sort'] })}
-                options={(['newest', 'oldest', 'name'] as const).map((value) => ({
-                  value,
-                  label: t(`files.collaboration.sorts.${value}`),
-                }))}
-              />
-            </div>
-            <Action type="submit" variant="secondary">
-              {t('files.collaboration.searchAction')}
-            </Action>
-          </form>
-          {listing?.metadataLimited ? (
-            <p role="status" className="mb-4 text-sm text-ink-muted">
-              {t('files.collaboration.metadataLimited')}
+          />
+        ) : (
+          <section aria-label={t('files.collaboration.links')}>
+            <p role="status" className="mb-1 text-sm text-ink-muted">
+              {t('files.collaboration.resultCount', { count: listing.total })}
             </p>
-          ) : null}
-          {notice ? (
-            <p role="status" className="mb-4 text-sm text-ink-muted">
-              {notice}
-            </p>
-          ) : null}
-          {failure ? (
-            <StateSurface
-              state="error"
-              icon={<Cloud />}
-              title={failure}
-              description={t('files.collaboration.refreshHint')}
-            />
-          ) : loading ? (
-            <StateSurface
-              state="loading"
-              icon={<Cloud />}
-              title={t('files.loading')}
-              description={t('files.collaboration.managementHint')}
-            />
-          ) : !listing?.items.length ? (
-            <StateSurface
-              state="empty"
-              icon={<Cloud />}
-              title={t('files.noShares')}
-              description={t('files.noSharesHint')}
-            />
-          ) : (
-            <ul className="grid gap-4 lg:grid-cols-2">
+            <ul className="divide-y divide-border">
               {listing.items.map((share) => (
-                <li
+                <ShareListItem
                   key={share.id}
-                  data-share-id={share.id}
-                  className="min-w-0 rounded-panel border border-border bg-surface p-4"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <h2 className="break-words font-semibold">
-                        {share.title || share.name || t('files.collaboration.unavailableName')}
-                      </h2>
-                      {share.title ? (
-                        <p className="mt-1 break-words text-sm text-ink-muted">{share.name}</p>
-                      ) : null}
-                    </div>
-                    <span className="rounded-control bg-surface-muted px-2 py-1 text-xs font-semibold">
-                      {t(`files.shareStatuses.${share.status}`)}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-sm text-ink-muted">
-                    {t(`files.collaboration.presets.${sharePermissionPreset(share.permissions)}`)}
-                    {share.hasPassword ? ` · ${t('files.shareProtected')}` : ''}
-                  </p>
-                  <p className="mt-2 text-sm text-ink-muted">
-                    {t('files.shareExpires')}: {time.full(share.expiresAt)}
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Action variant="quiet" size="sm" onPress={() => setDetail(share)}>
-                      {t('files.collaboration.details')}
-                    </Action>
-                    {share.status !== 'revoked' ? (
-                      <Action
-                        variant="quiet"
-                        size="sm"
-                        disabled={opening}
-                        onPress={() => {
-                          if (opening) return;
-                          setOpening(true);
-                          setFailure('');
-                          void port
-                            .readShare(share.id)
-                            .then(setEditing)
-                            .catch((error: unknown) => setFailure(errorText(error)))
-                            .finally(() => setOpening(false));
-                        }}
-                      >
-                        {t('files.collaboration.settings')}
-                      </Action>
-                    ) : null}
-                    {share.status === 'active' ? (
-                      <>
-                        <Action
-                          variant="quiet"
-                          size="sm"
-                          onPress={() => {
-                            setNotice('');
-                            void port
-                              .copyShareLink(share.token)
-                              .then(() => setNotice(t('files.linkCopied')))
-                              .catch((error: unknown) => setFailure(errorText(error)));
-                          }}
-                        >
-                          {t('files.copyLink')}
-                        </Action>
-                        <a
-                          className="inline-flex items-center rounded-control px-3 py-2 text-sm font-semibold text-brand"
-                          href={port.shareLink(share.token)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {t('files.collaboration.visitorPreview')}
-                        </a>
-                      </>
-                    ) : null}
-                    {share.status !== 'revoked' && share.status !== 'expired' ? (
-                      <Action
-                        variant="quiet"
-                        size="sm"
-                        onPress={() => {
-                          setFailure('');
-                          setConfirmation({ kind: 'state', share, enabled: !share.enabled });
-                        }}
-                      >
-                        {t(
-                          share.enabled
-                            ? 'files.collaboration.pause'
-                            : 'files.collaboration.resume',
-                        )}
-                      </Action>
-                    ) : null}
-                    <Action
-                      variant="danger"
-                      size="sm"
-                      disabled={share.status === 'revoked'}
-                      onPress={() => {
-                        setFailure('');
-                        setConfirmation({ kind: 'revoke', share, enabled: false });
-                      }}
-                    >
-                      {t('files.revokeShare')}
-                    </Action>
-                  </div>
-                </li>
+                  share={share}
+                  opening={opening === share.id}
+                  copying={copying}
+                  feedback={feedback?.shareId === share.id ? feedback : undefined}
+                  visitorHref={port.shareLink(share.token)}
+                  onAction={act}
+                />
               ))}
             </ul>
-          )}
-          {listing ? (
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-              <Action
-                variant="quiet"
-                disabled={loading || query.page <= 1}
-                onPress={() => filter({ page: query.page - 1 })}
-              >
-                {t('files.collaboration.previous')}
-              </Action>
-              <p className="text-sm text-ink-muted">
-                {t('files.collaboration.pageCount', { page: listing.page, total: listing.total })}
-              </p>
-              <Action
-                variant="quiet"
-                disabled={loading || query.page * listing.pageSize >= listing.total}
-                onPress={() => filter({ page: query.page + 1 })}
-              >
-                {t('files.collaboration.next')}
-              </Action>
-            </div>
-          ) : null}
-        </Section>
+          </section>
+        )}
+        {listing && listing.total > listing.pageSize ? (
+          <nav
+            aria-label={t('files.collaboration.pagination')}
+            className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4"
+          >
+            <Action
+              variant="quiet"
+              disabled={query.page <= 1}
+              onPress={() => filter({ page: query.page - 1 })}
+            >
+              {t('files.collaboration.previous')}
+            </Action>
+            <p className="text-sm text-ink-muted">
+              {t('files.collaboration.pageCount', { page: listing.page, total: listing.total })}
+            </p>
+            <Action
+              variant="quiet"
+              disabled={query.page * listing.pageSize >= listing.total}
+              onPress={() => filter({ page: query.page + 1 })}
+            >
+              {t('files.collaboration.next')}
+            </Action>
+          </nav>
+        ) : null}
         {editing ? (
           <ShareSettingsDialog
             share={editing}
@@ -309,21 +363,9 @@ export function MySharesPage() {
         ) : null}
         {detail ? <ShareDetailDrawer share={detail} onClose={() => setDetail(undefined)} /> : null}
         {confirmation ? (
-          <DialogSurface
-            triggerLabel={t(
-              confirmation.kind === 'revoke'
-                ? 'files.revokeShare'
-                : confirmation.enabled
-                  ? 'files.collaboration.resume'
-                  : 'files.collaboration.pause',
-            )}
-            title={t(
-              confirmation.kind === 'revoke'
-                ? 'files.revokeShare'
-                : confirmation.enabled
-                  ? 'files.collaboration.resume'
-                  : 'files.collaboration.pause',
-            )}
+          <ConfirmDialog
+            triggerLabel={confirmationLabel}
+            title={confirmationLabel}
             description={t(
               confirmation.kind === 'revoke'
                 ? 'files.collaboration.revokeHint'
@@ -331,11 +373,15 @@ export function MySharesPage() {
                   ? 'files.collaboration.resumeHint'
                   : 'files.collaboration.pauseHint',
             )}
+            impact={confirmation.share.title || confirmation.share.name}
+            tone={confirmation.kind === 'revoke' ? 'danger' : 'primary'}
             cancelLabel={t('files.cancel')}
-            confirmLabel={t(
-              confirmation.kind === 'revoke' ? 'files.confirm' : 'files.collaboration.confirm',
-            )}
-            failureMessage={failure}
+            confirmLabel={
+              confirmation.kind === 'revoke'
+                ? t('files.revokeShare')
+                : t('files.collaboration.confirm')
+            }
+            failureMessage={confirmationFailure}
             isOpen
             onOpenChange={(open) => {
               if (!open) setConfirmation(undefined);
@@ -347,13 +393,11 @@ export function MySharesPage() {
                 setConfirmation(undefined);
                 refresh();
               } catch (error) {
-                setFailure(errorText(error));
+                setConfirmationFailure(errorText(error));
                 throw error;
               }
             }}
-          >
-            {confirmation.share.title || confirmation.share.name}
-          </DialogSurface>
+          />
         ) : null}
       </Page>
     </>

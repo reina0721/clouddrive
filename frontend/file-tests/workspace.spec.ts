@@ -84,9 +84,8 @@ test('F221–225：六页共用导航、分类、回收站和原生链接', asyn
     await expect(link).toHaveAttribute('aria-current', 'page');
   }
   await page.getByRole('link', { name: '回收站', exact: true }).click();
-  await page.getByRole('button', { name: '新建', exact: true }).click();
-  await expect(page.getByRole('menuitem', { name: '创建文件夹', exact: true })).toBeDisabled();
-  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: '新建', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '清空回收站', exact: true })).toBeVisible();
   await page.getByRole('link', { name: '我的文件', exact: true }).click();
   const popup = page.context().waitForEvent('page');
   await page.getByRole('link', { name: '我的分享', exact: true }).click({ button: 'middle' });
@@ -232,7 +231,7 @@ test('F231–232、239–240：跨页文件/目录上传与同一队列', async 
   if (!saved) throw new Error('Downloaded directory file missing');
   expect((await readFile(saved)).toString()).toBe('directory contents');
 });
-test('F233–234：跨页搜索、保留目录条件、表单与菜单不抢快捷键', async ({ page }) => {
+test('F233–234：搜索按页面区分，保留文件目录条件与表单键盘', async ({ page }) => {
   const suffix = randomUUID().slice(0, 8);
   const root = await api(page, '/folders', { parentId: '', name: '000131-search-' + suffix });
   await api(page, '/text', {
@@ -242,6 +241,18 @@ test('F233–234：跨页搜索、保留目录条件、表单与菜单不抢快�
     key: randomUUID(),
   });
   await page.getByRole('link', { name: '我的分享', exact: true }).click();
+  await expect(page).toHaveURL(/\/home\/shares$/);
+  await expect(
+    page.getByRole('searchbox', { name: '搜索标题或原文件名', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('main').focus();
+  await page.keyboard.press('/');
+  await expect(
+    page.getByRole('searchbox', { name: '搜索标题或原文件名', exact: true }),
+  ).toBeFocused();
+  await page.getByRole('link', { name: '选择文件分享', exact: true }).click();
+  await expect(page).toHaveURL(/\/home$/);
+  await expect(page.getByRole('searchbox', { name: '搜索文件', exact: true })).toBeVisible();
   await page.getByRole('main').focus();
   await page.keyboard.press('/');
   await expect(page.getByRole('searchbox', { name: '搜索文件', exact: true })).toBeFocused();

@@ -1,3 +1,5 @@
+import { shareMenuAction } from './share-actions';
+import { readPreviewAccess } from './reading-fixture';
 import { test, expect, type Page, type Locator } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { readFile } from 'node:fs/promises';
@@ -232,7 +234,7 @@ test('F368–372：真实版本、分享列表/详情和WebDAV连接采用同一
   await page.goto('/home/shares');
   const item = page.locator('[data-share-id="' + share.id + '"]');
   await expect(item).toContainText(full(share.expiresAt, 'Asia/Kathmandu'));
-  await item.getByRole('button', { name: '分享详情', exact: true }).click();
+  await item.getByRole('button', { name: /^查看 .* 的分享详情$/ }).click();
   await expect(page.getByRole('dialog')).toContainText(full(share.createdAt, 'Asia/Kathmandu'));
   await expect(page.getByRole('dialog')).toContainText(full(share.expiresAt, 'Asia/Kathmandu'));
   await page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true }).click();
@@ -337,7 +339,7 @@ test('F375/376：自定义分享真实保存转换后的时刻，编辑保持原
   });
   await page.goto('/home/shares');
   const item = page.locator('[data-share-id="' + precise.id + '"]');
-  await item.getByRole('button', { name: '修改分享设置', exact: true }).click();
+  await shareMenuAction(page, item, '修改分享设置');
   const edit = page.getByRole('dialog', { name: '修改分享设置', exact: true });
   await edit.getByRole('button', { name: '保存设置', exact: true }).click();
   await expect(edit).toHaveCount(0);
@@ -345,7 +347,7 @@ test('F375/376：自定义分享真实保存转换后的时刻，编辑保持原
   expect(listing.items.find((value) => value.id === precise.id)?.expiresAt).toBe(precise.expiresAt);
   await zone(page, 'America/New_York');
   await page.goto('/home/shares');
-  await item.getByRole('button', { name: '修改分享设置', exact: true }).click();
+  await shareMenuAction(page, item, '修改分享设置');
   await select(page, '有效期', '指定到期时间', edit);
   await calendarDate(edit, '2027-03-14');
   await edit.getByLabel('到期时间', { exact: true }).fill('02:30');
@@ -417,7 +419,7 @@ test('F379/380：系统跟随和固定时区跨浏览器环境，英文深色320
   await login(page);
   const { root, file } = await fixture(page);
   const secondContext = await browser.newContext({
-    baseURL: 'http://127.0.0.1:4194',
+    baseURL: readPreviewAccess().origin,
     timezoneId: 'Pacific/Honolulu',
     locale: 'zh-CN',
   });

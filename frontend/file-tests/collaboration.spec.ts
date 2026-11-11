@@ -1,3 +1,4 @@
+import { shareMenuAction } from './share-actions';
 import { test, expect, type Page, type Locator } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -99,7 +100,7 @@ test('拥有者创建预设、修改标题密码有效期、详情、暂停恢�
   await page.goto('/home/shares');
   const owned = page.locator('[data-share-id="' + String(f.share.id) + '"]');
   await expect(owned).toBeVisible();
-  await owned.getByRole('button', { name: '修改分享设置', exact: true }).click();
+  await shareMenuAction(page, owned, '修改分享设置');
   const settings = page.getByRole('dialog', { name: '修改分享设置', exact: true });
   await settings.getByLabel('分享标题（可选）', { exact: true }).fill('设置已保存-' + f.suffix);
   await settings.getByRole('button', { name: /有效期/ }).click();
@@ -110,14 +111,14 @@ test('拥有者创建预设、修改标题密码有效期、详情、暂停恢�
   await settings.getByLabel('访问密码（可选）', { exact: true }).fill(password);
   await confirm(settings, '保存设置');
   await expect(owned).toContainText('设置已保存-');
-  await owned.getByRole('button', { name: '分享详情', exact: true }).click();
+  await owned.getByRole('button', { name: /^查看 .* 的分享详情$/ }).click();
   await expect(page.getByRole('dialog')).toContainText('修改文字内容');
   await page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true }).click();
-  await owned.getByRole('button', { name: '暂停分享', exact: true }).click();
-  await confirm(page.getByRole('dialog', { name: '暂停分享', exact: true }));
+  await shareMenuAction(page, owned, '暂停分享');
+  await confirm(page.getByRole('alertdialog', { name: '暂停分享', exact: true }));
   await expect(owned).toContainText('已暂停');
   await owned.getByRole('button', { name: '恢复分享', exact: true }).click();
-  await confirm(page.getByRole('dialog', { name: '恢复分享', exact: true }));
+  await confirm(page.getByRole('alertdialog', { name: '恢复分享', exact: true }));
   await page.getByLabel('搜索标题或原文件名', { exact: true }).fill('设置已保存-' + f.suffix);
   await page.getByRole('button', { name: '搜索', exact: true }).click();
   await expect(page.locator('[data-share-id]')).toHaveCount(1);

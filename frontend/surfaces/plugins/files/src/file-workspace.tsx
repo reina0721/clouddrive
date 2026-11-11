@@ -530,12 +530,16 @@ export function FileWorkspace({
               <MenuButton
                 ariaLabel={t('files.new')}
                 triggerSize="md"
-                triggerVariant="primary"
+                triggerVariant={isFiles ? 'primary' : 'icon'}
                 label={
-                  <span className="flex items-center gap-2">
-                    <FolderPlus className="size-5" />
-                    {t('files.new')}
-                  </span>
+                  isFiles ? (
+                    <span className="flex items-center gap-2">
+                      <FolderPlus className="size-5" />
+                      {t('files.new')}
+                    </span>
+                  ) : (
+                    <FolderPlus className="size-5" aria-hidden="true" />
+                  )
                 }
                 items={[
                   { id: 'upload', label: t('files.upload') },
@@ -577,48 +581,50 @@ export function FileWorkspace({
                 }}
               />
             )}
-            <form
-              data-file-workspace-search
-              className="order-last flex w-full min-w-0 items-center gap-1 md:order-none md:w-auto max-w-md md:flex-1"
-              onKeyDownCapture={(event) => {
-                if (event.key === 'Escape') {
+            {isFiles ? (
+              <form
+                data-file-workspace-search
+                className="order-last flex w-full min-w-0 items-center gap-1 md:order-none md:w-auto max-w-md md:flex-1"
+                onKeyDownCapture={(event) => {
+                  if (event.key === 'Escape') {
+                    event.preventDefault();
+                    setSearch(isFiles ? (query.search ?? '') : '');
+                    port.focusFiles();
+                  }
+                }}
+                onSubmit={(event) => {
                   event.preventDefault();
-                  setSearch(isFiles ? (query.search ?? '') : '');
-                  port.focusFiles();
-                }
-              }}
-              onSubmit={(event) => {
-                event.preventDefault();
-                port.navigate('files', searchQuery(search));
-              }}
-            >
-              <SearchBox
-                label={t('files.search')}
-                placeholder={t('files.searchPlaceholder')}
-                value={search}
-                onValueChange={setSearch}
-              />
-              <Action
-                type="submit"
-                size="sm"
-                variant="quiet"
-                leadingIcon={<Search className="size-4" />}
+                  port.navigate('files', searchQuery(search));
+                }}
               >
-                <span className="sr-only">{t('files.search')}</span>
-              </Action>
-              {search ? (
+                <SearchBox
+                  label={t('files.search')}
+                  placeholder={t('files.searchPlaceholder')}
+                  value={search}
+                  onValueChange={setSearch}
+                />
                 <Action
+                  type="submit"
                   size="sm"
                   variant="quiet"
-                  onPress={() => {
-                    setSearch('');
-                    port.navigate('files', searchQuery(''));
-                  }}
+                  leadingIcon={<Search className="size-4" />}
                 >
-                  {t('files.explorer.clearSearch')}
+                  <span className="sr-only">{t('files.search')}</span>
                 </Action>
-              ) : null}
-            </form>
+                {search ? (
+                  <Action
+                    size="sm"
+                    variant="quiet"
+                    onPress={() => {
+                      setSearch('');
+                      port.navigate('files', searchQuery(''));
+                    }}
+                  >
+                    {t('files.explorer.clearSearch')}
+                  </Action>
+                ) : null}
+              </form>
+            ) : null}
             <div className="ml-auto flex shrink-0 items-center gap-1">
               <Action
                 size="sm"
@@ -640,14 +646,16 @@ export function FileWorkspace({
                   </span>
                 </span>
               </Action>
-              <Action
-                size="sm"
-                variant="quiet"
-                onPress={() => setHistorySettings(true)}
-                leadingIcon={<Settings className="size-5" />}
-              >
-                <span className="sr-only">{t('files.retention.title')}</span>
-              </Action>
+              {isFiles ? (
+                <Action
+                  size="sm"
+                  variant="quiet"
+                  onPress={() => setHistorySettings(true)}
+                  leadingIcon={<Settings className="size-5" />}
+                >
+                  <span className="sr-only">{t('files.retention.title')}</span>
+                </Action>
+              ) : null}
               <FileAccountTools />
             </div>
           </header>

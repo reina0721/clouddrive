@@ -1,3 +1,4 @@
+import { shareMenuAction } from './share-actions';
 import { test, expect, type Page } from '@playwright/test';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
@@ -229,8 +230,11 @@ test('密码分享、匿名目录浏览与字节下载、跨目录拒绝及已�
   await page.goto('/home/shares');
   const row = page.getByRole('listitem').filter({ hasText: folder });
   await expect(row).toContainText('密码保护');
-  await row.getByRole('button', { name: '撤销分享', exact: true }).click();
-  await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
+  await shareMenuAction(page, row, '撤销分享');
+  await page
+    .getByRole('alertdialog', { name: '撤销分享', exact: true })
+    .getByRole('button', { name: '撤销分享', exact: true })
+    .click();
   await expect(row).toContainText('已撤销');
   await visitor.getByRole('button', { name: '刷新', exact: true }).click();
   await expect(visitor.getByText(name, { exact: true })).toHaveCount(0);

@@ -234,6 +234,17 @@ export function FormElementsPage({
                     value={selected}
                     onValueChange={setSelected}
                   />
+                  <div className="w-60 max-w-full">
+                    <SelectField
+                      presentation="toolbar"
+                      label={t('uiElements.toolbarSelect')}
+                      defaultValue="long"
+                      options={[
+                        { value: 'long', label: t('uiElements.longSelectChoice') },
+                        { value: 'observe', label: t('uiElements.formDemo.observe') },
+                      ]}
+                    />
+                  </div>
                   <SelectField
                     disabled
                     label={t('uiElements.disabledField')}

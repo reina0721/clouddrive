@@ -456,6 +456,8 @@ export const pluginI18nResources = {
         tooltip: 'Tooltip',
         tooltipContent: '键盘聚焦与悬停均可访问',
         dialog: 'Dialog',
+        toolbarSelect: '工具栏选择',
+        longSelectChoice: '有效且未到期，允许访问的分享链接',
         footerForm: '带固定操作的表单',
         footerFormHint: '操作固定在底部；提交后保留窗口，直到外部操作完成。',
         footerFormPending: '操作进行中，关闭与重复提交已暂停。',
@@ -931,6 +933,8 @@ export const pluginI18nResources = {
         tooltip: 'Tooltip',
         tooltipContent: 'Available by keyboard focus and pointer hover',
         dialog: 'Dialog',
+        toolbarSelect: 'Toolbar selection',
+        longSelectChoice: 'Enabled share links that have not expired',
         footerForm: 'Form with fixed actions',
         footerFormHint:
           'Actions stay in the footer. The dialog remains open until the external operation completes.',

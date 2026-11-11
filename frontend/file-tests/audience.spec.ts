@@ -1,3 +1,4 @@
+import { shareMenuAction } from './share-actions';
 import AxeBuilder from '@axe-core/playwright';
 import { test, expect, type Page, type Locator } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
@@ -206,7 +207,7 @@ test('F285–290：角色精确规则、账号拒绝优先与设置冲突保留�
   });
   await page.goto('/home/shares');
   const row = page.locator('[data-share-id="' + String(share.id) + '"]');
-  await row.getByRole('button', { name: '修改分享设置', exact: true }).click();
+  await shareMenuAction(page, row, '修改分享设置');
   let dialog = page.getByRole('dialog', { name: '修改分享设置', exact: true });
   await addTarget(page, dialog, '角色', f.role.code);
   await files(page, '/shares/' + String(share.id), 'PUT', {
@@ -232,7 +233,7 @@ test('F285–290：角色精确规则、账号拒绝优先与设置冲突保留�
     await login(member, f.credentials);
     await member.goto(new URL('/share#token=' + String(share.token), page.url()).href);
     await expect(member.getByText('visible.txt', { exact: true })).toBeVisible();
-    await row.getByRole('button', { name: '修改分享设置', exact: true }).click();
+    await shareMenuAction(page, row, '修改分享设置');
     dialog = page.getByRole('dialog', { name: '修改分享设置', exact: true });
     await addTarget(page, dialog, '账号', f.credentials.username);
     const rules = dialog.getByRole('region', { name: '账号规则', exact: true });
@@ -241,7 +242,7 @@ test('F285–290：角色精确规则、账号拒绝优先与设置冲突保留�
     await save(dialog, '保存设置');
     await member.reload();
     await expect(member.getByText('当前访问者没有此分享的访问权限', { exact: true })).toBeVisible();
-    await row.getByRole('button', { name: '修改分享设置', exact: true }).click();
+    await shareMenuAction(page, row, '修改分享设置');
     dialog = page.getByRole('dialog', { name: '修改分享设置', exact: true });
     await dialog
       .getByRole('region', { name: '账号规则', exact: true })

@@ -620,9 +620,11 @@ export function createFilesRuntime(
     chooseFiles: () => choose('files'),
     chooseDirectory: () => choose('directory'),
     focusSearch: () =>
-      document
-        .querySelector<HTMLInputElement>('[data-file-workspace-search] input[type="search"]')
-        ?.focus(),
+      (
+        document.querySelector<HTMLInputElement>(
+          '[data-file-workspace-search] input[type="search"]',
+        ) ?? document.querySelector<HTMLInputElement>('#main-content input[type="search"]')
+      )?.focus(),
     focusFiles: () => document.getElementById('main-content')?.focus(),
     focusEntry: (id) => document.getElementById('file-entry-' + id)?.focus(),
     observeListEnd: observeFileListEnd,
@@ -632,7 +634,7 @@ export function createFilesRuntime(
           event.defaultPrevented ||
           event.isComposing ||
           disposed ||
-          document.querySelector('[role="dialog"],[role="menu"]')
+          document.querySelector('[role="dialog"],[role="alertdialog"],[role="menu"]')
         )
           return;
         const target = event.target;
