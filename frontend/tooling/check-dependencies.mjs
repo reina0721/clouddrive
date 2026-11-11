@@ -1,4 +1,5 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile, readdir, realpath } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 
 const frontendRoot = resolve(import.meta.dirname, '..');
@@ -38,6 +39,21 @@ for (const root of ['apps', 'packages']) {
   }
 }
 await checkWorkspace('surfaces');
+
+// Tooltip/Pressable 的上下文必须来自同一实例。满足 semver 的两份 react-aria
+// 仍会使 HeroUI Trigger 与 RAC Provider 失联，普通依赖白名单无法发现。
+const adapterRoot = join(frontendRoot, 'packages/ui-adapter');
+const adapterRequire = createRequire(join(adapterRoot, 'package.json'));
+const heroRoot = await realpath(join(adapterRoot, 'node_modules/@heroui/react'));
+const heroRequire = createRequire(join(heroRoot, 'package.json'));
+const racEntry = heroRequire.resolve('react-aria-components/Tooltip');
+const racRequire = createRequire(racEntry);
+if (
+  heroRequire.resolve('react-aria/useFocusable') !==
+    racRequire.resolve('react-aria/useFocusable') ||
+  adapterRequire.resolve('react-aria-components/Tooltip') !== racEntry
+)
+  violations.push('packages/ui-adapter: HeroUI 与 React Aria Components 必须共享交互上下文实例');
 
 if (violations.length > 0) {
   console.error(

@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./shell": "./src/shell.ts",
+    "./shell/runtime": "./src/shell-navigation-view.tsx",
     "./preferences-model": "./src/preferences-model.ts",
     "./identity": "./src/identity/index.ts",
     "./icon-presentation": "./src/navigation-icon-presentation.tsx",

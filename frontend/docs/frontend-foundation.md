@@ -38,6 +38,11 @@ Patch（内容哈希 etag 并发冲突）、确定性生成与 freshness：
 
 Vendor 类型不得穿透公共 Contract；具体 Surface 通过内容、状态、资源和 Port 组合这些能力。
 
+HeroUI 的 Trigger 与 React Aria Components 的 Provider 必须解析到同一个 `react-aria`
+交互实例。仅满足各自的版本范围不足以保证上下文相连；`dependency:check` 会检查实际安装图。
+UI Adapter 的 RAC 当前由锁文件解析为 `1.22.1`，与 HeroUI 的交互实例一致。紧凑侧栏的 hover、
+focus、Escape 和原生链接导航由同一浏览器用例验收，禁止以自制 Tooltip 绕过失联问题。
+
 ### 外观 Profile 的所有权
 
 Design System Schema 的 `source.tokens.appearanceProfiles` 管理既有 density、fontScale、
@@ -75,5 +80,6 @@ Form Foundation 在异步校验与提交期间只接受一次提交，校验失�
 注册能力深合并文案，保持单一运行时、原资源与当前语言，不向 Host/Feature 暴露
 i18next 实例。所有语言在写入前按 supportedLocales 校验，非法资源不部分写入。
 用于独立加载的产品界面和 Plugin 文案；目前 Web Authentication 在界面加载时注册，
-后台启动仅保留加载/退出文案。原启动静态 resources 与语言切换 API 不变。
+管理 Shell 也在自身运行时加载时注册。启动仅保留启动、文件入口和认证实际使用的 Host 文案；
+登录页不加载快捷偏好、导航操作和锁屏说明。语言切换 API 不变。
 验证见 i18n 单元及认证双语言/两模式浏览器；不引入第二套翻译 Provider。

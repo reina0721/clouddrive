@@ -1,4 +1,6 @@
 'use client';
+import './install-translations';
+import { ShellNavigationViewProvider } from '@clouddrive/surface/shell/runtime';
 
 import { flattenNavigationLeaves } from '@clouddrive/core';
 import { useFrontendTranslation } from '@clouddrive/i18n';
@@ -165,7 +167,8 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
     observer.observe(chrome);
     return () => observer.disconnect();
   }, []);
-  const navigationGroups = useProductNavigation();
+  const navigation = useProductNavigation();
+  const navigationGroups = navigation.groups;
   // 菜单管理的标题覆盖与导航同源（页签/命令面板/侧栏共享同一份解析）。
   const labelOverrides = useNavigationLabelOverrides();
   // 当前路由所属分组（顶部/混合布局的分组切换与高亮依据）。
@@ -462,7 +465,14 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
               }}
             >
               <HostNavigationPortProvider resolveHref={routeTargetResolver.resolveHref}>
-                {children}
+                <ShellNavigationViewProvider
+                  groups={navigationGroups}
+                  labels={labelOverrides}
+                  status={navigation.status}
+                  onReload={navigation.reload}
+                >
+                  {children}
+                </ShellNavigationViewProvider>
               </HostNavigationPortProvider>
             </PluginLocaleProvider>
           </RouteTransition>

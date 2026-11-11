@@ -3,7 +3,7 @@ import type { NavigationContribution } from '@clouddrive/plugin-framework/naviga
 /**
  * workspace —— Sidebar Navigation Contribution.
  *
- * Group `management`（身份与访问）：工作台是管理角色的日常入口。
+ * Group `overview`：真实后端的任务式管理概览，演示 Host 保留个人工作区示例。
  * `iconId: 'workspace'` 是 Product Surface icon vocabulary 语义 id（vocabulary 与 Shell
  * icon 映射由 Surface 治理；integrator 注册 `workspace` 后 codegen icon gate 通过）。
  */

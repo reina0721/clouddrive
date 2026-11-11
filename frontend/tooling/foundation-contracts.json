@@ -227,6 +227,7 @@
       "maturity": "experimental",
       "exports": [
         "./shell",
+        "./shell/runtime",
         "./preferences-model",
         "./identity",
         "./icon-presentation",
@@ -251,11 +252,15 @@
         "/roles/permissions",
         "/notifications",
         "/audit-logs",
+        "/workspace",
         "/home",
         "/share"
       ],
       "evidence": [
         "surfaces/src/shell.test.ts",
+        "apps/web/src/test/navigation-visibility.test.ts",
+        "surfaces/plugins/workspace/src/management-tasks.test.ts",
+        "file-tests/management-experience.spec.ts",
         "surfaces/src/preferences-model.test.ts",
         "surfaces/src/identity/model.test.ts",
         "apps/web/src/test/identity-contract.test.ts",

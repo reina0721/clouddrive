@@ -5,7 +5,7 @@ Plugin 业务、shell 模型、Group Alias / icon vocabulary 与 generated 产�
 dependency ownership、module resolution、typecheck 与 test 服务。
 
 - 具体 Plugin 不是 Package，也不是 Surface 公共 API。对 Host 只开放
-  `./shell`、`./preferences-model`、`./identity`、`./identity/runtime`、`./administration`、`./administration/runtime`、`./api-workbench`、`./icon-presentation`、`./icon-components`、`./generated/composition`、
+  `./shell`、`./shell/runtime`、`./preferences-model`、`./identity`、`./identity/runtime`、`./administration`、`./administration/runtime`、`./api-workbench`、`./icon-presentation`、`./icon-components`、`./generated/composition`、
   `./generated/catalog`、`./plugin-routes/*`、`./files`、`./files/runtime`；
   禁止把 `plugins/*` 加入 exports，禁止通过相对路径绕开 generated shim 导入 Plugin internals。
   `./identity` 只开放当前产品的身份、用户、角色授权、注册策略、账户安全、通知及只读审计模型、Schema 与具体语义 Port/Provider/hook；

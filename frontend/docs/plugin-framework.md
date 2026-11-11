@@ -475,6 +475,15 @@ expectedVersion)`、`resetPresentation`、`clear`、`clearAll`、`recover`（清
   `clouddrive.navigation-admin` v1，localStorage）+ `apps/web/src/host/navigation-admin-port.tsx`。
 - 应用：`useProductNavigation` 在权限过滤前后应用 hidden/order/permission；标题覆盖经
   `useNavigationLabelOverrides` 同时作用于侧栏、页签标题与命令面板。
+- Backend 从服务端 `/navigation` 加载呈现覆盖，mock 使用上述本地实现。Host 通过
+  `@clouddrive/surface/shell/runtime` 的 `ShellNavigationViewProvider` 提供最终只读呈现快照；
+  `useShellNavigationView()` 返回 `groups/labels/status/onReload`。管理概览按任务组合已可见的
+  navigation id，不另抄 URL、权限表或菜单覆盖。加载中、读取失败和没有入口分别呈现；
+  重试更新原有身份与菜单来源。Provider 不拥有路由、持久化或后端授权；独立运行时入口
+  随管理 Shell 按需装载，避免将 React 上下文传递到登录与文件工作区的初始依赖。
+- Backend 管理概览 `/workspace` 不依赖待办权限；待办区域分别要求 `todos:read/write`。
+  分享、任务、节点与存储管理入口分别使用对应原生读取权限。Backend 隐藏会重复回到文件的
+  静态根概览；mock 的概览保留。
 - 边界：覆盖只改变**入口呈现**，不放宽任何真实权限；路由与组件仍来自部署期 Registry；
   直接 URL 访问仍由数据服务授权。
 
