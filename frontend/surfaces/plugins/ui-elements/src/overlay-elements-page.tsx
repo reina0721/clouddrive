@@ -1,5 +1,6 @@
 'use client';
 
+import { Action } from '@clouddrive/ui-adapter/action';
 import { CommandMenu } from '@clouddrive/ui-adapter/command-menu';
 import { SwitchField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { SearchBox } from '@clouddrive/ui-adapter/search-box';
@@ -14,13 +15,15 @@ import {
   TooltipAction,
 } from '@clouddrive/ui-adapter/overlays';
 import { Archive, Copy, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Section } from '@clouddrive/surface-foundation/layout';
 import { ComponentPreview } from './component-preview';
 import { UiElementsFamilyPage } from './family-page';
 export function OverlayElementsPage() {
+  const footerFormId = useId();
+  const [formBusy, setFormBusy] = useState(false);
   const { t } = useFrontendTranslation();
   const searchParams = useSearchParams();
   const overlay = searchParams.get('overlay');
@@ -206,6 +209,47 @@ export function OverlayElementsPage() {
                   onConfirm={() => setLastAction(t('uiElements.confirm'))}
                 >
                   <TextField label={t('uiElements.dialogField')} defaultValue="Community" />
+                </DialogSurface>
+              </ComponentPreview>
+              <ComponentPreview
+                name="DialogSurface · Form footer"
+                description={t('uiElements.footerFormHint')}
+                states={['Native form submit', 'Fixed actions', 'External pending', 'Focus return']}
+              >
+                <DialogSurface
+                  triggerLabel={t('uiElements.footerForm')}
+                  title={t('uiElements.footerForm')}
+                  description={t('uiElements.footerFormHint')}
+                  cancelLabel={t('uiElements.close')}
+                  busy={formBusy}
+                  footerAction={
+                    <Action
+                      form={footerFormId}
+                      type="submit"
+                      loading={formBusy}
+                      disabled={formBusy}
+                    >
+                      {t('uiElements.confirm')}
+                    </Action>
+                  }
+                >
+                  <form
+                    id={footerFormId}
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      setFormBusy(true);
+                    }}
+                  >
+                    <TextField label={t('uiElements.dialogField')} defaultValue="Community" />
+                  </form>
+                  {formBusy ? (
+                    <div className="mt-4 space-y-3">
+                      <p role="status">{t('uiElements.footerFormPending')}</p>
+                      <Action variant="secondary" onPress={() => setFormBusy(false)}>
+                        {t('uiElements.footerFormFinish')}
+                      </Action>
+                    </div>
+                  ) : null}
                 </DialogSurface>
               </ComponentPreview>
               <ComponentPreview

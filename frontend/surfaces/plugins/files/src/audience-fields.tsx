@@ -14,6 +14,42 @@ import {
 } from '../../../src/files/sharing';
 import type { AudienceKind, AudienceTarget } from '../../../src/files/access';
 import { SharePermissionFields } from './share-settings-fields';
+import { shareAudienceChoice, simpleShareAudience } from './share-audience-choice';
+
+/** 常用访问范围先做选择，只有明确选择自定义时才展开完整规则。 */
+export function ShareAudienceChoiceFields({
+  value,
+  onChange,
+  rootKind = 'folder',
+}: {
+  value: ShareAudience;
+  onChange: (value: ShareAudience) => void;
+  rootKind?: 'file' | 'folder';
+}) {
+  const { t } = useFrontendTranslation();
+  const [custom, setCustom] = useState(false);
+  const choice = custom ? 'custom' : shareAudienceChoice(value);
+  return (
+    <div className="space-y-3">
+      <SelectField
+        label={t('files.collaboration.audienceChoice')}
+        value={choice}
+        options={(['anyone', 'signed-in', 'custom'] as const).map((mode) => ({
+          value: mode,
+          label: t(`files.collaboration.audiences.${mode}`),
+        }))}
+        onValueChange={(mode) => {
+          setCustom(mode === 'custom');
+          if (mode === 'anyone' || mode === 'signed-in') onChange(simpleShareAudience(mode));
+        }}
+      />
+      <p className="text-sm text-ink-muted">{t(`files.collaboration.audienceHints.${choice}`)}</p>
+      {choice === 'custom' ? (
+        <ShareAudienceFields value={value} onChange={onChange} rootKind={rootKind} />
+      ) : null}
+    </div>
+  );
+}
 
 export function AudienceTargetPicker({
   onSelect,

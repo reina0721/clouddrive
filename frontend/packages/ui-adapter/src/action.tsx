@@ -17,6 +17,7 @@ export type ActionProps = Readonly<{
   fullWidth?: boolean;
   expanded?: boolean;
   controls?: string;
+  form?: string;
 }> &
   ActionBehavior;
 
@@ -31,6 +32,7 @@ export function Action({
   fullWidth = false,
   expanded,
   controls,
+  form,
   type = 'button',
   onPress,
 }: ActionProps) {
@@ -43,6 +45,7 @@ export function Action({
       isDisabled={disabled}
       isPending={loading}
       type={type}
+      {...(form ? { form } : {})}
       variant="ghost"
       {...(onPress ? { onPress } : {})}
     >

@@ -155,7 +155,9 @@ test('F281–289：UI创建禁止匿名、精确账号能力和真实登录返�
   await page.getByRole('button', { name: String(f.root.name) + ' 的操作', exact: true }).click();
   await page.getByRole('menuitem', { name: '分享', exact: true }).click();
   const create = page.getByRole('dialog', { name: '分享', exact: true });
+  await create.getByRole('button', { name: '添加分享标题', exact: true }).click();
   await create.getByLabel('分享标题（可选）', { exact: true }).fill('账号受众-' + f.suffix);
+  await select(page, create, '谁可以访问', '自定义访问规则');
   await select(page, create, '匿名访客', '拒绝访问');
   await select(page, create, '已登录用户', '拒绝访问');
   await addTarget(page, create, '账号', f.credentials.username);
@@ -273,6 +275,14 @@ test('F291–298：目录独立权限、继承来源、实际预览、恢复与�
   await page.screenshot({ path: info.outputPath('permission-inheritance.png') });
   await select(page, child, '权限来源', '独立设置');
   const fileRights = child.getByRole('group', { name: '本项默认能力', exact: true });
+  await select(page, fileRights, '分享权限', '可编辑');
+  await expect(fileRights.getByRole('button', { name: /可编辑.*分享权限/ })).toBeVisible();
+  await expect(
+    fileRights.getByText('可查看、下载和编辑文字，也可重命名、移动、复制或移入回收站。', {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await select(page, fileRights, '分享权限', '自定义');
   await expect(fileRights.getByRole('checkbox', { name: '重命名子项', exact: true })).toBeVisible();
   await expect(fileRights.getByRole('checkbox', { name: '上传文件', exact: true })).toHaveCount(0);
   await expect(

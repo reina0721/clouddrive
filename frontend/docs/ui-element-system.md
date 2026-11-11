@@ -148,6 +148,8 @@ Listbox 的滚动属于列表内部责任：Overlay Surface 提供外壳，Listb
 
 Dialog 的外层不叠加 vendor padding 或相邻 slot margin，Header / Body / Footer 各自拥有项目边距。`DialogSurface layout="workspace"` 用于连续阅读与编辑：桌面保留轻量外边距，窄屏和短窗口贴合视口；关闭入口固定在标题栏，不再附加只含关闭按钮的 Footer。正文把高度交给内容的 flex 布局，滚动由阅读内容或独立侧栏拥有，不用页面级 ResizeObserver 反算弹窗尺寸。标准表单与确认 Dialog 保留 Footer 和短窗口滚动。两种构成均在 `/ui-elements/overlays` 验证。
 
+DialogSurface 的 `footerAction` 用于由业务拥有的提交或结果操作，保留统一取消入口与 Footer 布局。Action 的 `form` 指向正文中的原生 form，不能以额外的点击处理模拟提交。外部 `busy` 与确认中的 pending 共同阻止 Escape、背景和关闭按钮提前丢失结果；业务同时禁用提交以避免重复操作，完成后决定展示结果或关闭。权威示例为 `/ui-elements/overlays` 的固定操作表单，真实消费者为文件分享。
+
 `MenuButton` 使用互斥的平铺 `items` 或分组 `groups`。组可包含动作或单选偏好
 （当前值、selectedId、options）；身份摘要组合在首组Header，装饰头像隐藏重复名称。
 Section/Header/Separator、SubmenuTrigger、单选Menu和ItemIndicator使用HeroUI公开

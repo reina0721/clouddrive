@@ -456,6 +456,10 @@ export const pluginI18nResources = {
         tooltip: 'Tooltip',
         tooltipContent: '键盘聚焦与悬停均可访问',
         dialog: 'Dialog',
+        footerForm: '带固定操作的表单',
+        footerFormHint: '操作固定在底部；提交后保留窗口，直到外部操作完成。',
+        footerFormPending: '操作进行中，关闭与重复提交已暂停。',
+        footerFormFinish: '完成操作',
         workspaceDialog: '阅读工作区',
         workspaceDialogHint: '内容独立滚动，关闭入口固定在标题栏。',
         workspaceDialogContent: '阅读与编辑内容区域',
@@ -927,6 +931,12 @@ export const pluginI18nResources = {
         tooltip: 'Tooltip',
         tooltipContent: 'Available by keyboard focus and pointer hover',
         dialog: 'Dialog',
+        footerForm: 'Form with fixed actions',
+        footerFormHint:
+          'Actions stay in the footer. The dialog remains open until the external operation completes.',
+        footerFormPending:
+          'An operation is in progress. Closing and duplicate submission are paused.',
+        footerFormFinish: 'Complete operation',
         workspaceDialog: 'Reading workspace',
         workspaceDialogHint: 'Content scrolls independently, with Close in the header.',
         workspaceDialogContent: 'Reading and editing area',

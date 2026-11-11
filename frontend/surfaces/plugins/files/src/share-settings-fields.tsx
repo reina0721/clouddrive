@@ -28,7 +28,25 @@ export function SharePermissionFields({
 }>) {
   const { t } = useFrontendTranslation();
   const [custom, setCustom] = useState(false);
-  const preset = custom ? 'custom' : sharePermissionPreset(value);
+  let inferredPreset = sharePermissionPreset(value);
+  // 同为“可编辑”，分享根文件与目录子项的能力不同，不能用宽泛说明覆盖具体策略。
+  if (rootKind === 'folder' && inferredPreset === 'editor' && !Object.values(value).every(Boolean))
+    inferredPreset = 'custom';
+  if (rootKind === 'file' && policyScope === 'entry') {
+    const itemEditor = (Object.keys(editorSharePermissions) as (keyof SharePermissions)[]).every(
+      (key) =>
+        value[key] === (key === 'create' || key === 'upload' ? false : editorSharePermissions[key]),
+    );
+    if (itemEditor) inferredPreset = 'editor';
+    else if (inferredPreset === 'editor') inferredPreset = 'custom';
+  }
+  const preset = custom ? 'custom' : inferredPreset;
+  const permissionHint =
+    preset === 'editor' && rootKind === 'file'
+      ? policyScope === 'entry'
+        ? 'editorItem'
+        : 'editorFile'
+      : preset;
   const names: readonly (keyof SharePermissions)[] =
     rootKind === 'file' && policyScope === 'entry'
       ? ['browse', 'preview', 'download', 'modify', 'rename', 'move', 'copy', 'delete']
@@ -74,18 +92,25 @@ export function SharePermissionFields({
           else if (preset !== 'custom') onChange({ ...value });
         }}
       />
-      <p className="text-sm text-ink-muted">{t('files.collaboration.permissionHint')}</p>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {names.map((name) => (
-          <div key={name} className="w-fit">
-            <CheckboxField
-              label={t(`files.collaboration.rights.${name}`)}
-              checked={value[name]}
-              onCheckedChange={(checked) => onChange({ ...value, [name]: checked })}
-            />
-          </div>
-        ))}
-      </div>
+      <p className="text-sm text-ink-muted">
+        {t(`files.collaboration.permissionHints.${permissionHint}`)}
+      </p>
+      {preset === 'custom' ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {names.map((name) => (
+            <div key={name} className="w-fit">
+              <CheckboxField
+                label={t(`files.collaboration.rights.${name}`)}
+                checked={value[name]}
+                onCheckedChange={(checked) => onChange({ ...value, [name]: checked })}
+              />
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {value.preview && !value.download ? (
+        <p className="text-xs text-ink-muted">{t('files.collaboration.permissionHint')}</p>
+      ) : null}
       {!sharePermissionsValid(value) ? (
         <p role="alert" className="text-sm text-danger">
           {t('files.collaboration.invalidPermissions')}

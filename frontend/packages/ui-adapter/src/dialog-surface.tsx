@@ -22,6 +22,10 @@ export type DialogSurfaceProps = Readonly<{
   defaultOpen?: boolean;
   confirmDisabled?: boolean;
   failureMessage?: string;
+  /** 表单提交或结果操作置于固定 Footer，仍由宿主拥有其业务状态。 */
+  footerAction?: ReactNode;
+  /** 外部异步操作进行中时保留当前窗口，避免失去结果。 */
+  busy?: boolean;
   onConfirm?: () => void | Promise<void>;
   /**
    * 受控模式：提供 isOpen 时隐藏 trigger，由父级控制开关
@@ -43,6 +47,8 @@ export function DialogSurface({
   defaultOpen = false,
   confirmDisabled = false,
   failureMessage,
+  footerAction,
+  busy = false,
   onConfirm,
   isOpen,
   onOpenChange,
@@ -54,16 +60,17 @@ export function DialogSurface({
     if (controlled) onOpenChange?.(next);
     else setInternalOpen(next);
   };
-  const [pending, setPending] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const pending = busy || confirming;
   const pendingRef = useRef(false);
   const [failed, setFailed] = useState(false);
   const showConfirm = Boolean(onConfirm) && Boolean(confirmLabel);
-  const headerClose = layout === 'workspace' && !showConfirm;
+  const headerClose = layout === 'workspace' && !showConfirm && !footerAction;
 
   const confirm = async () => {
-    if (!onConfirm || pendingRef.current) return;
+    if (!onConfirm || busy || pendingRef.current) return;
     pendingRef.current = true;
-    setPending(true);
+    setConfirming(true);
     setFailed(false);
     try {
       await onConfirm();
@@ -72,7 +79,7 @@ export function DialogSurface({
       setFailed(true);
     } finally {
       pendingRef.current = false;
-      setPending(false);
+      setConfirming(false);
     }
   };
 
@@ -80,7 +87,7 @@ export function DialogSurface({
     <Modal
       isOpen={open}
       onOpenChange={(next) => {
-        if (!pendingRef.current) setOpen(next);
+        if (!busy && !pendingRef.current) setOpen(next);
       }}
     >
       {controlled ? null : (
@@ -168,6 +175,7 @@ export function DialogSurface({
                     {pending ? <span role="status">{confirmLabel}…</span> : confirmLabel}
                   </HeroButton>
                 ) : null}
+                {footerAction}
               </Modal.Footer>
             ) : null}
           </Modal.Dialog>

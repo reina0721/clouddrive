@@ -2,6 +2,8 @@
 import { lazy, Suspense, useState } from 'react';
 import { useFrontendTranslation } from '@clouddrive/i18n';
 import { useFileTime } from './use-file-time';
+import { DescriptionList } from '@clouddrive/ui-adapter/description-list';
+import { shareAudienceChoice } from './share-audience-choice';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { TextField, PasswordField, SelectField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface, DrawerSurface } from '@clouddrive/ui-adapter/overlays';
@@ -16,7 +18,7 @@ import { ShareExpiryFields, SharePermissionFields } from './share-settings-field
 import { initialShareExpiry, resolveShareExpiry } from './share-expiry';
 
 const ShareAudienceFields = lazy(() =>
-  import('./audience-fields').then((module) => ({ default: module.ShareAudienceFields })),
+  import('./audience-fields').then((module) => ({ default: module.ShareAudienceChoiceFields })),
 );
 export function ShareSettingsDialog({
   share,
@@ -159,6 +161,8 @@ export function ShareDetailDrawer({
   const port = useFiles(),
     { t } = useFrontendTranslation();
   const time = useFileTime();
+  const [copied, setCopied] = useState(false);
+  const [failure, setFailure] = useState('');
   return (
     <DrawerSurface
       triggerLabel={t('files.collaboration.details')}
@@ -170,49 +174,80 @@ export function ShareDetailDrawer({
         if (!open) onClose();
       }}
     >
-      <dl className="space-y-4 text-sm">
-        <div>
-          <dt className="text-ink-muted">{t('files.collaboration.originalName')}</dt>
-          <dd className="break-words">{share.name}</dd>
-        </div>
-        <div>
-          <dt className="text-ink-muted">{t('files.collaboration.state')}</dt>
-          <dd>{t(`files.shareStatuses.${share.status}`)}</dd>
-        </div>
-        <div>
-          <dt className="text-ink-muted">{t('files.collaboration.created')}</dt>
-          <dd>{time.full(share.createdAt)}</dd>
-        </div>
-        <div>
-          <dt className="text-ink-muted">{t('files.shareExpires')}</dt>
-          <dd>{time.full(share.expiresAt)}</dd>
-        </div>
-        <div>
-          <dt className="text-ink-muted">{t('files.collaboration.permissions')}</dt>
-          <dd className="mt-2 space-y-1">
-            {(Object.keys(share.permissions) as (keyof SharePermissions)[])
-              .filter((key) => share.permissions[key])
-              .map((key) => (
-                <p key={key}>{t(`files.collaboration.rights.${key}`)}</p>
-              ))}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-ink-muted">{t('files.sharePassword')}</dt>
-          <dd>
-            {t(share.hasPassword ? 'files.shareProtected' : 'files.collaboration.noPassword')}
-          </dd>
-        </div>
-      </dl>
+      <DescriptionList
+        label={t('files.collaboration.details')}
+        items={[
+          { id: 'name', term: t('files.collaboration.originalName'), description: share.name },
+          {
+            id: 'state',
+            term: t('files.collaboration.state'),
+            description: t(`files.shareStatuses.${share.status}`),
+          },
+          {
+            id: 'audience',
+            term: t('files.collaboration.audienceChoice'),
+            description: t(`files.collaboration.audiences.${shareAudienceChoice(share.audience)}`),
+          },
+          {
+            id: 'created',
+            term: t('files.collaboration.created'),
+            description: time.full(share.createdAt),
+          },
+          { id: 'expires', term: t('files.shareExpires'), description: time.full(share.expiresAt) },
+          {
+            id: 'permissions',
+            term: t('files.collaboration.permissions'),
+            description: (
+              <ul className="space-y-1">
+                {(Object.keys(share.permissions) as (keyof SharePermissions)[])
+                  .filter((key) => share.permissions[key])
+                  .map((key) => (
+                    <li key={key}>{t(`files.collaboration.rights.${key}`)}</li>
+                  ))}
+              </ul>
+            ),
+          },
+          {
+            id: 'password',
+            term: t('files.collaboration.passwordStatus'),
+            description: t(
+              share.hasPassword ? 'files.shareProtected' : 'files.collaboration.noPassword',
+            ),
+          },
+        ]}
+      />
+      {failure ? (
+        <p role="alert" className="mt-4 text-sm text-danger">
+          {failure}
+        </p>
+      ) : null}
       {share.status === 'active' ? (
-        <a
-          className="mt-5 inline-flex rounded-control border border-border px-4 py-2 text-sm font-semibold text-brand"
-          href={port.shareLink(share.token)}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {t('files.collaboration.visitorPreview')}
-        </a>
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Action
+            onPress={() => {
+              setFailure('');
+              setCopied(false);
+              void port
+                .copyShareLink(share.token)
+                .then(() => setCopied(true))
+                .catch((error: unknown) =>
+                  setFailure(
+                    t(`files.errors.${error instanceof FilesError ? error.code : 'unavailable'}`),
+                  ),
+                );
+            }}
+          >
+            {t(copied ? 'files.linkCopied' : 'files.copyLink')}
+          </Action>
+          <a
+            className="inline-flex min-h-control items-center rounded-action px-3 text-sm font-medium text-brand outline-none hover:bg-brand/8 focus-visible:ring-2 focus-visible:ring-focus-ring"
+            href={port.shareLink(share.token)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('files.collaboration.visitorPreview')}
+          </a>
+        </div>
       ) : null}
     </DrawerSurface>
   );

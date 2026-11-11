@@ -3,7 +3,30 @@ export const zhCollaboration = {
   title: '分享标题（可选）',
   titleHint: '留空显示原名称；不会修改原文件名。',
   permissions: '分享权限',
-  permissionHint: '链接中的访客共享这些能力。预览允许读取内容，不能保证阻止浏览器保存字节。',
+  permissionHint: '关闭下载按钮不会阻止保存已预览的内容。',
+  permissionHints: {
+    'read-only': '查看和下载文件，不能更改内容。',
+    'upload-only': '用于收集文件，访客不能查看或下载已有内容。',
+    editor: '可以上传、编辑和整理文件，也能移入回收站。',
+    editorFile: '查看、下载和修改文字内容，不改变原文件的位置和名称。',
+    editorItem: '可查看、下载和编辑文字，也可重命名、移动、复制或移入回收站。',
+    custom: '按下方选项逐项设置。',
+  },
+  audienceChoice: '谁可以访问',
+  audiences: {
+    anyone: '获得链接的任何人',
+    'signed-in': '已登录本站的用户',
+    custom: '自定义访问规则',
+  },
+  audienceHints: {
+    anyone: '持有链接的人可以访问；设置密码后，还需要输入访问密码。',
+    'signed-in': '访问者需要先登录本站。密码和有效期仍会生效。',
+    custom: '为匿名访客、已登录用户、具体账号或角色分别设置访问规则。',
+  },
+  optionalTitle: '添加分享标题',
+  linkReady: '链接已准备好',
+  passwordStatus: '访问密码',
+  passwordReminder: '复制链接后，记得把访问密码告知对方。密码不会包含在链接中。',
   invalidPermissions: '至少选择一项能力；修改文字需要预览，改名、移动、复制或回收需要浏览目录。',
   presets: { 'read-only': '只读', 'upload-only': '仅上传', editor: '可编辑', custom: '自定义' },
   rights: {
@@ -69,8 +92,31 @@ export const enCollaboration = {
   title: 'Share title (optional)',
   titleHint: 'Leave blank to use the original name. The original file is not renamed.',
   permissions: 'Share permissions',
-  permissionHint:
-    'Visitors using this link share these capabilities. Preview reads bytes and cannot prevent browser saving.',
+  permissionHint: 'Hiding download does not prevent someone from saving content they can preview.',
+  permissionHints: {
+    'read-only': 'View and download files without changing their contents.',
+    'upload-only': 'Collect files without letting visitors view or download existing content.',
+    editor: 'Upload, edit, organize, and move files to Trash.',
+    editorFile: 'View, download, and edit text without moving or renaming the original file.',
+    editorItem: 'View, download, edit text, rename, move, copy, or move the file to Trash.',
+    custom: 'Choose individual permissions below.',
+  },
+  audienceChoice: 'Who can access',
+  audiences: {
+    anyone: 'Anyone with the link',
+    'signed-in': 'Signed-in users of this site',
+    custom: 'Custom access rules',
+  },
+  audienceHints: {
+    anyone: 'Anyone with the link can access it. If you set a password, they will also need it.',
+    'signed-in': 'Visitors must sign in to this site. Password and expiration still apply.',
+    custom: 'Set separate rules for anonymous visitors, signed-in users, accounts, or roles.',
+  },
+  optionalTitle: 'Add a share title',
+  linkReady: 'Your link is ready',
+  passwordStatus: 'Access password',
+  passwordReminder:
+    'Send the access password along with the link. The password is not included in the link.',
   invalidPermissions:
     'Select a capability. Editing text requires preview; rename, move, copy, and trash require browsing.',
   presets: {

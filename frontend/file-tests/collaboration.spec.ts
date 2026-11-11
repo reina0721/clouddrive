@@ -85,10 +85,11 @@ async function confirm(dialog: Locator, label = '确定') {
 
 test('拥有者创建预设、修改标题密码有效期、详情、暂停恢复和检索', async ({ page }) => {
   const f = await fixture(page);
-  await page.goto('/home');
+  await page.goto('/home?search=' + encodeURIComponent(String(f.root.name)));
   await page.getByRole('button', { name: String(f.root.name) + ' 的操作', exact: true }).click();
   await page.getByRole('menuitem', { name: '分享', exact: true }).click();
   const create = page.getByRole('dialog', { name: '分享', exact: true });
+  await create.getByRole('button', { name: '添加分享标题', exact: true }).click();
   await create.getByLabel('分享标题（可选）', { exact: true }).fill('UI创建-' + f.suffix);
   await create.getByRole('button', { name: /分享权限/ }).click();
   await page.getByRole('option', { name: '仅上传', exact: true }).click();
