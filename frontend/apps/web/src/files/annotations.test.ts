@@ -170,14 +170,8 @@ describe('私有整理信息Host与契约', () => {
   });
   it('整理文案由文件运行域按需提供，包含两种语言', async () => {
     const resources = await loadFileAnnotationMessages();
-    expect(resources['zh-CN']?.translation).toHaveProperty(
-      'files.annotations.save',
-      '保存整理信息',
-    );
-    expect(resources.en?.translation).toHaveProperty(
-      'files.annotations.save',
-      'Save organization details',
-    );
+    expect(resources['zh-CN']?.translation).toHaveProperty('files.annotations.save', '保存');
+    expect(resources.en?.translation).toHaveProperty('files.annotations.save', 'Save');
     expect(resources['zh-CN']?.translation).toHaveProperty(
       'files.explorer.copyPending',
       '加入复制待处理',

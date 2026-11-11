@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -68,7 +69,7 @@ async function action(page: Page, name: string, label: string) {
 async function properties(page: Page, name: string) {
   await action(page, name, '属性');
   await expect(
-    page.getByRole('dialog').getByRole('button', { name: '添加标签', exact: true }),
+    page.getByRole('dialog').getByRole('button', { name: '编辑整理信息', exact: true }),
   ).toBeVisible();
   return page.getByRole('dialog');
 }
@@ -77,7 +78,7 @@ async function close(page: Page) {
   await expect(page.getByRole('dialog')).toHaveCount(0);
 }
 async function save(page: Page) {
-  await page.getByRole('dialog').getByRole('button', { name: '保存整理信息', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '保存', exact: true }).click();
   await expect(page.getByRole('dialog').getByText('整理信息已保存', { exact: true })).toBeVisible();
 }
 const row = (page: Page, id: unknown) => page.locator('[data-file-item="' + String(id) + '"]');
@@ -124,13 +125,14 @@ test('属性侧栏、标签编辑、颜色、空属性、个性化与真实复�
   await expect
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
     .toBe('/' + value.name);
+  await panel.getByRole('button', { name: '编辑整理信息', exact: true }).click();
   await panel.getByRole('button', { name: '添加标签', exact: true }).click();
   await panel.getByLabel('标签 1 名称', { exact: true }).fill('工作,甲-' + value.suffix);
   await panel.getByLabel('标签 1 颜色', { exact: true }).fill(color);
   await panel.getByRole('button', { name: '添加属性', exact: true }).click();
   await panel.getByLabel('属性 1 键', { exact: true }).fill('sys:shared_redirect');
   await panel.getByLabel('属性 1 值', { exact: true }).fill('保留草稿');
-  await panel.getByRole('button', { name: '保存整理信息', exact: true }).click();
+  await panel.getByRole('button', { name: '保存', exact: true }).click();
   await expect(panel.getByRole('alert')).toContainText('整理信息无效');
   await expect(panel.getByLabel('属性 1 值', { exact: true })).toHaveValue('保留草稿');
   await panel.getByLabel('属性 1 键', { exact: true }).fill('Project');
@@ -160,6 +162,7 @@ test('属性侧栏、标签编辑、颜色、空属性、个性化与真实复�
   ).toBeVisible();
   await page.reload();
   panel = await properties(page, value.name);
+  await panel.getByRole('button', { name: '编辑整理信息', exact: true }).click();
   await expect(panel.getByLabel('属性 2 值', { exact: true })).toHaveValue('');
   await expect(panel.getByLabel('属性 1 值', { exact: true })).toHaveValue(
     '<script>window.annotationExecuted=true</script>',
@@ -174,6 +177,7 @@ test('属性侧栏、标签编辑、颜色、空属性、个性化与真实复�
     'rgb(69, 137, 171)',
   );
   panel = await properties(page, value.name);
+  await panel.getByRole('button', { name: '编辑整理信息', exact: true }).click();
   await panel.getByRole('button', { name: '恢复默认图标和颜色', exact: true }).click();
   await panel.getByRole('button', { name: '移除标签 归档-' + value.suffix, exact: true }).click();
   await panel.getByRole('button', { name: '移除属性 Project', exact: true }).click();
@@ -343,6 +347,7 @@ test('副本与回收保留整理信息，画廊按本屏加载且可批量整�
   await expect(dialog).toHaveCount(0);
   await expect(page.getByRole('button', { name: copyName, exact: true })).toBeVisible();
   let panel = await properties(page, copyName);
+  await panel.getByRole('button', { name: '编辑整理信息', exact: true }).click();
   await expect(panel.getByLabel('属性 1 值', { exact: true })).toHaveValue('original');
   await panel.getByLabel('标签 1 名称', { exact: true }).fill('副本标签-' + value.suffix);
   await save(page);
@@ -457,6 +462,202 @@ test('副本与回收保留整理信息，画廊按本屏加载且可批量整�
   ).toBeVisible();
   await expect(page.getByText('服务暂时不可用，请重试。', { exact: true })).toHaveCount(0);
   panel = await properties(page, image.name);
+  await panel.getByRole('button', { name: '编辑整理信息', exact: true }).click();
   await expect(panel.getByLabel('Emoji 图标', { exact: true })).toHaveValue('📷');
   await close(page);
+});
+
+test('属性先查看后编辑，关闭与取消保护草稿，保存期间保持窗口', async ({ page }, info) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await login(page);
+  const value = await fixture(page);
+  await page.goto('/home?search=' + encodeURIComponent(value.name));
+  const panel = await properties(page, value.name);
+  await expect(panel.getByRole('textbox')).toHaveCount(0);
+  await expect(panel.getByRole('button', { name: '保存', exact: true })).toHaveCount(0);
+  await expect(panel.getByText('放弃草稿并读取最新', { exact: true })).toHaveCount(0);
+  await expect(panel.getByRole('button', { name: '编辑整理信息', exact: true })).toBeInViewport();
+  await page.screenshot({ path: info.outputPath('properties-overview-desktop.png') });
+  await panel.getByRole('button', { name: '编辑整理信息', exact: true }).click();
+  const submit = panel.getByRole('button', { name: '保存', exact: true });
+  await expect(submit).toBeDisabled();
+  await expect(submit).toBeInViewport();
+  await panel.getByLabel('Emoji 图标', { exact: true }).fill('📚');
+  await panel.getByRole('button', { name: '关闭', exact: true }).click();
+  const confirm = page.getByRole('alertdialog', { name: '放弃未保存的整理信息？', exact: true });
+  await expect(confirm).toBeVisible();
+  await confirm.getByRole('button', { name: '继续编辑', exact: true }).click();
+  await expect(panel.getByLabel('Emoji 图标', { exact: true })).toHaveValue('📚');
+  await panel.getByRole('button', { name: '取消', exact: true }).click();
+  await confirm.getByRole('button', { name: '放弃修改', exact: true }).click();
+  await expect(panel.getByRole('button', { name: '编辑整理信息', exact: true })).toBeVisible();
+  const unchanged = await api(page, '/' + String(value.root.id) + '/annotations');
+  expect(unchanged.annotation).toMatchObject({ emoji: '', revision: 0 });
+  await panel.getByRole('button', { name: '编辑整理信息', exact: true }).click();
+  await panel.getByLabel('Emoji 图标', { exact: true }).fill('📚');
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let writes = 0;
+  await page.route('**/native/files/' + String(value.root.id) + '/annotations', async (route) => {
+    if (route.request().method() !== 'PUT') return route.continue();
+    writes++;
+    const response = await route.fetch();
+    await held;
+    await route.fulfill({ response });
+  });
+  try {
+    await panel.getByLabel('Emoji 图标', { exact: true }).press('Enter');
+    await expect.poll(() => writes).toBe(1);
+    await expect(panel.getByRole('button', { name: '关闭', exact: true })).toBeDisabled();
+    await expect(submit).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeVisible();
+  } finally {
+    release();
+  }
+  await expect(panel.getByText('整理信息已保存', { exact: true })).toBeVisible();
+  await expect(panel.getByRole('textbox')).toHaveCount(0);
+  expect(writes).toBe(1);
+  const stored = await api(page, '/' + String(value.root.id) + '/annotations');
+  expect(stored.annotation).toMatchObject({ emoji: '📚', revision: 1 });
+  await panel.getByRole('button', { name: '编辑整理信息', exact: true }).click();
+  await panel.getByLabel('Emoji 图标', { exact: true }).fill('📃');
+  await panel.getByRole('button', { name: '关闭', exact: true }).click();
+  await confirm.getByRole('button', { name: '放弃修改', exact: true }).click();
+  await expect(panel).toHaveCount(0);
+  const preserved = await api(page, '/' + String(value.root.id) + '/annotations');
+  expect(preserved.annotation).toMatchObject({ emoji: '📚', revision: 1 });
+  await expect(row(page, value.root.id)).toContainText('📚');
+});
+
+test('属性冲突和写入失败保留输入，放弃后才重新读取，详情可进入版本历史', async ({ page }) => {
+  await login(page);
+  const value = await fixture(page);
+  await page.goto('/home?parent=' + String(value.root.id));
+  let panel = await properties(page, String(value.file.name));
+  await panel.getByRole('button', { name: '编辑整理信息', exact: true }).click();
+  await panel.getByLabel('Emoji 图标', { exact: true }).fill('📖');
+  await writeAnnotations(page, value.file.id, [], [{ key: 'Project', value: '其他窗口保存' }]);
+  await panel.getByRole('button', { name: '保存', exact: true }).click();
+  await expect(panel.getByRole('alert')).toContainText('草稿仍保留');
+  await expect(panel.getByRole('alert')).toBeFocused();
+  await expect(panel.getByLabel('Emoji 图标', { exact: true })).toHaveValue('📖');
+  await panel.getByRole('button', { name: '放弃草稿并读取最新', exact: true }).click();
+  const confirm = page.getByRole('alertdialog');
+  await confirm.getByRole('button', { name: '继续编辑', exact: true }).click();
+  await expect(panel.getByLabel('Emoji 图标', { exact: true })).toHaveValue('📖');
+  await panel.getByRole('button', { name: '放弃草稿并读取最新', exact: true }).click();
+  await confirm.getByRole('button', { name: '放弃修改', exact: true }).click();
+  panel = page.getByRole('dialog', { name: String(value.file.name), exact: true });
+  await expect(panel.getByText('其他窗口保存', { exact: true })).toBeVisible();
+  await panel.getByRole('button', { name: '编辑整理信息', exact: true }).click();
+  await expect(panel.getByLabel('Emoji 图标', { exact: true })).toHaveValue('');
+  await panel.getByLabel('Emoji 图标', { exact: true }).fill('✅');
+  await page.route(
+    '**/native/files/' + String(value.file.id) + '/annotations',
+    (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{}' }),
+    { times: 1 },
+  );
+  await panel.getByRole('button', { name: '保存', exact: true }).click();
+  await expect(panel.getByRole('alert')).toContainText('服务暂时不可用');
+  await expect(panel.getByRole('alert')).toBeFocused();
+  await expect(panel.getByLabel('Emoji 图标', { exact: true })).toHaveValue('✅');
+  await save(page);
+  await expect(panel.getByText('其他窗口保存', { exact: true })).toBeVisible();
+  await panel.getByRole('button', { name: '版本历史', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '版本历史', exact: true })).toBeVisible();
+  await expect(page.getByText('查看文件信息，整理自己的标签与属性。', { exact: true })).toHaveCount(
+    0,
+  );
+});
+
+test('属性窄屏英文深色长名称与空值可读，固定操作不遮住最后字段', async ({ page }, info) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await login(page);
+  const value = await fixture(page);
+  const name = 'handover-notes-with-a-long-file-name-' + value.suffix + '.txt';
+  await api(page, '/' + String(value.file.id), 'PATCH', { name });
+  await writeAnnotations(
+    page,
+    value.file.id,
+    [{ name: 'Project handover', color }],
+    [{ key: 'Empty', value: '' }],
+  );
+  await page.goto('/home?parent=' + String(value.root.id));
+  await page.getByRole('button', { name: '当前用户', exact: true }).click();
+  await page.getByRole('menuitem', { name: /^主题 / }).click();
+  const originalTheme = await page.getByRole('menuitemradio', { checked: true }).innerText();
+  await page.getByRole('menuitemradio', { name: '深色', exact: true }).click();
+  let english = false;
+  try {
+    await page.getByRole('button', { name: '当前用户', exact: true }).click();
+    await page.getByRole('menuitem', { name: '语言 简体中文', exact: true }).click();
+    await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+    english = true;
+    await page.setViewportSize({ width: 320, height: 760 });
+    await page.getByRole('button', { name: 'Actions for ' + name, exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Properties', exact: true }).click();
+    const panel = page.getByRole('dialog', { name, exact: true });
+    await expect(panel.getByText('Empty value', { exact: true })).toBeVisible();
+    expect(
+      await panel
+        .getByRole('heading', { name, exact: true })
+        .evaluate(
+          (heading) =>
+            heading.getBoundingClientRect().height <=
+            Number.parseFloat(getComputedStyle(heading).lineHeight) * 2 + 1,
+        ),
+    ).toBe(true);
+    await expect(
+      panel.getByRole('button', { name: 'Edit organization details', exact: true }),
+    ).toBeInViewport();
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+      .toBe(true);
+    await expect
+      .poll(
+        async () =>
+          (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()).violations,
+      )
+      .toEqual([]);
+    await page.screenshot({ path: info.outputPath('properties-overview-mobile-dark.png') });
+    await panel.getByRole('button', { name: 'Edit organization details', exact: true }).click();
+    await expect(panel.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
+    await panel.getByLabel('Property 1 value', { exact: true }).fill('Last visible field');
+    const saveBounds = await panel.getByRole('button', { name: 'Save', exact: true }).boundingBox();
+    const cancelBounds = await panel
+      .getByRole('button', { name: 'Cancel', exact: true })
+      .boundingBox();
+    expect(Math.abs(saveBounds!.y - cancelBounds!.y)).toBeLessThan(2);
+    await expect(panel.getByRole('button', { name: 'Save', exact: true })).toBeInViewport();
+    await expect
+      .poll(
+        async () =>
+          (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()).violations,
+      )
+      .toEqual([]);
+    await page.screenshot({ path: info.outputPath('properties-edit-mobile-dark.png') });
+    await panel.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(panel.getByText('Organization details saved', { exact: true })).toBeVisible();
+    await panel.getByRole('button', { name: 'Close', exact: true }).click();
+    await page.goto('/ui-elements/overlays?overlay=drawer');
+    const example = page.getByRole('dialog', { name: 'Supplementary configuration', exact: true });
+    await expect(example.getByRole('button', { name: 'Confirm', exact: true })).toBeInViewport();
+    await example.getByLabel('Configuration name', { exact: true }).press('Enter');
+    await example.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(page.getByRole('status').filter({ hasText: /^Confirm$/ })).toBeVisible();
+  } finally {
+    // 恢复偏好，避免跨用例污染同一个预览账号。
+    await page.goto('/home');
+    if (english) {
+      await page.getByRole('button', { name: 'Current user', exact: true }).click();
+      await page.getByRole('menuitem', { name: 'Language English', exact: true }).click();
+      await page.getByRole('menuitemradio', { name: '简体中文', exact: true }).click();
+    }
+    await page.getByRole('button', { name: '当前用户', exact: true }).click();
+    await page.getByRole('menuitem', { name: /^主题 / }).click();
+    await page.getByRole('menuitemradio', { name: originalTheme.trim(), exact: true }).click();
+  }
 });

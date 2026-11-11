@@ -23,6 +23,7 @@ import { ComponentPreview } from './component-preview';
 import { UiElementsFamilyPage } from './family-page';
 export function OverlayElementsPage() {
   const footerFormId = useId();
+  const drawerFormId = useId();
   const [formBusy, setFormBusy] = useState(false);
   const { t } = useFrontendTranslation();
   const searchParams = useSearchParams();
@@ -313,7 +314,14 @@ export function OverlayElementsPage() {
               <ComponentPreview
                 name="DrawerSurface"
                 description={t('uiElements.catalog.drawerDescription')}
-                states={['Right sheet', 'Header / body', 'Close', 'Scroll', 'Narrow viewport']}
+                states={[
+                  'Right sheet',
+                  'Fixed footer',
+                  'Form submission',
+                  'Close',
+                  'Scroll',
+                  'Narrow viewport',
+                ]}
               >
                 <DrawerSurface
                   triggerLabel={t('uiElements.drawer')}
@@ -321,8 +329,20 @@ export function OverlayElementsPage() {
                   description={t('uiElements.drawerDescription')}
                   closeLabel={t('uiElements.close')}
                   defaultOpen={overlay === 'drawer'}
+                  footer={
+                    <Action type="submit" form={drawerFormId}>
+                      {t('uiElements.confirm')}
+                    </Action>
+                  }
                 >
-                  <div className="space-y-4">
+                  <form
+                    id={drawerFormId}
+                    className="space-y-4"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      setLastAction(t('uiElements.confirm'));
+                    }}
+                  >
                     <TextField
                       label={t('uiElements.drawerField')}
                       defaultValue="Reference surface"
@@ -333,7 +353,7 @@ export function OverlayElementsPage() {
                       checked={checked}
                       onCheckedChange={setChecked}
                     />
-                  </div>
+                  </form>
                 </DrawerSurface>
               </ComponentPreview>
               <ComponentPreview

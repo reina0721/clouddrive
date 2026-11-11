@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
+import { readPreviewAccess } from './reading-fixture';
 
 type Definition = { key: string; name: string; kind: string };
 type Definitions = { revision: number; items: Definition[] };
@@ -17,7 +18,7 @@ test('管理员定义文件属性，窄屏编辑并保留移除定义后的值',
     password: string;
   };
   const origin = new URL(account.url).origin;
-  expect(origin).toBe('http://127.0.0.1:4194');
+  expect(origin).toBe(readPreviewAccess().origin);
   await page.goto(origin + '/login?returnTo=%2Fsystem-tools%2Ffilesystem');
   await page.getByLabel('邮箱', { exact: true }).fill(account.username);
   await page.getByLabel('密码', { exact: true }).fill(account.password);
@@ -86,17 +87,18 @@ test('管理员定义文件属性，窄屏编辑并保留移除定义后的值',
     await page.getByRole('button', { name: fileName + ' 的操作', exact: true }).click();
     await page.getByRole('menuitem', { name: '属性', exact: true }).click();
     const details = page.getByRole('dialog', { name: fileName, exact: true });
+    await details.getByRole('button', { name: '编辑整理信息', exact: true }).click();
     await details.getByRole('button', { name: /全局属性/ }).click();
     await page.getByRole('option', { name: display, exact: true }).click();
     await details.getByRole('button', { name: '添加已定义属性', exact: true }).click();
     await expect(details.getByLabel(display, { exact: true })).toHaveValue('默认');
     await details.getByLabel(display, { exact: true }).fill('测试值');
-    await details.getByRole('button', { name: '保存整理信息', exact: true }).click();
+    await details.getByRole('button', { name: '保存', exact: true }).click();
     await expect(details.getByText('整理信息已保存', { exact: true })).toBeVisible();
     await expect
       .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
       .toBe(true);
-    await details.getByLabel(display, { exact: true }).scrollIntoViewIfNeeded();
+    await expect(details.getByText('测试值', { exact: true })).toBeVisible();
     await page.screenshot({
       animations: 'disabled',
       path: info.outputPath('property-edit-mobile.png'),
