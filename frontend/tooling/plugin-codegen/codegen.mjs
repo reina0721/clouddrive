@@ -24,11 +24,11 @@
  *   Alias/icon validation，并在内存中渲染全部 ExpectedArtifact（kind/path/content），
  *   再做物理 ownership preflight（期望 Host artifact 已存在且不属于本 Generator →
  *   Host artifact ownership collision，deterministic fail）。
- *   只有全部通过后才执行 mutation：rm/rewrite generatedRoot → create/update Host
- *   artifacts → delete stale owned artifacts → prune 空目录。
+ *   只有全部通过后才执行 mutation：增量发布变化文件 → delete stale owned artifacts
+ *   → prune 空目录。不触碰内容未变的模块；单文件通过临时文件 + rename 发布。
  *   保证：deterministic failure before mutation / no partial output for preflight failures。
- *   本工具不提供 mutation 开始后的 OS/IO/process interruption staging/transaction
- *   commit/rollback，不声称 filesystem-level atomicity。
+ *   单文件完整发布不等于整批模块的一致快照；本工具不提供 mutation 开始后的
+ *   整批 transaction commit/rollback。
  *
  * Registry（Sidebar Group→Parent→Child resolution）由 @clouddrive/plugin-framework
  * registry 在运行时完成，Generator 不复制该逻辑，只序列化静态 aliases/contributions。
@@ -41,13 +41,14 @@
  * （missing / drift / stale / ownership collision）。
  */
 
-import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { readFile, readdir, rm, rmdir } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import prettier from 'prettier';
 
 import { loadConfig } from '@clouddrive/config/node';
+import { isPublicationTemporaryFile, publishArtifacts } from './publish-artifacts.mjs';
 
 const frontendRoot = resolve(import.meta.dirname, '..', '..');
 const surfaceRoot = join(frontendRoot, 'surfaces');
@@ -128,14 +129,21 @@ async function exists(path) {
 }
 
 async function walk(directory) {
-  if (!existsSync(directory)) return [];
   const files = [];
-  const entries = await readdir(directory, { withFileTypes: true });
+  let entries;
+  try {
+    entries = await readdir(directory, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return files;
+    throw error;
+  }
   for (const entry of entries) {
     if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
     const fullPath = join(directory, entry.name);
     if (entry.isDirectory()) files.push(...(await walk(fullPath)));
-    else files.push(fullPath);
+    // Another dev runtime may be publishing this module. Its temporary file is
+    // neither a stale artifact nor input to the ownership/freshness checks.
+    else if (!isPublicationTemporaryFile(fullPath)) files.push(fullPath);
   }
   return files;
 }
@@ -715,10 +723,6 @@ function buildHostAdapterText(
   ].join('\n');
 }
 
-async function ensureDir(path) {
-  await mkdir(dirname(path), { recursive: true });
-}
-
 /** Prettier 格式化生成的文本（与 repo 根配置一致），保证 deterministic emission 与 format:check 同时通过。 */
 async function formatCode(path, content) {
   const config = await prettier.resolveConfig(path);
@@ -787,65 +791,66 @@ async function buildExpectedArtifacts(plugins, allRoutes, aliases) {
 /* Mutation / reconciliation                                          */
 /* ------------------------------------------------------------------ */
 
-/** 删除空目录（自下而上，不越过 hostAppRoot）。 */
-async function pruneEmptyDirs(startDir) {
+/** 删除空目录（自下而上，不越过 ownership root；不递归删除并发发布的文件）。 */
+async function pruneEmptyDirs(startDir, root) {
   let current = startDir;
-  while (current !== hostAppRoot && current.startsWith(hostAppRoot + sep)) {
-    let entries;
+  while (current !== root && current.startsWith(root + sep)) {
     try {
-      entries = await readdir(current, { withFileTypes: true });
-    } catch {
-      break;
+      await rmdir(current);
+    } catch (error) {
+      if (error.code === 'ENOTEMPTY' || error.code === 'EEXIST') break;
+      if (error.code !== 'ENOENT') throw error;
     }
-    const meaningful = entries.filter(
-      (entry) => !entry.name.startsWith('.') && entry.name !== 'node_modules',
-    );
-    if (meaningful.length > 0) break;
-    const parent = dirname(current);
-    await rm(current, { recursive: true, force: true });
-    current = parent;
+    current = dirname(current);
   }
 }
 
 /**
  * 执行 reconciliation（仅在全部 validation + preflight 通过后调用）：
- * rm/rewrite generatedRoot → create/update Host artifacts → delete stale owned
- * artifacts → prune 空目录。
+ * 增量发布完整文件 → delete stale owned artifacts → prune 空目录。
  */
 async function reconcileArtifacts(artifacts) {
+  const expectedGeneratedPaths = new Set(
+    artifacts
+      .filter((artifact) => artifact.kind === 'generated-file')
+      .map((artifact) => artifact.path),
+  );
   const expectedHostPaths = new Set(
     artifacts
       .filter((artifact) => artifact.kind === 'host-adapter')
       .map((artifact) => artifact.path),
   );
 
-  // 1. generatedRoot：整树归本 Generator 所有（既有契约），rm + 重写。
-  await rm(generatedRoot, { recursive: true, force: true });
-  for (const artifact of artifacts) {
-    if (artifact.kind !== 'generated-file') continue;
-    await ensureDir(artifact.path);
-    await writeFile(artifact.path, artifact.content);
+  // Keep existing modules available throughout reconciliation. Host ownership
+  // has already been checked; generatedRoot remains wholly generator-owned.
+  await publishArtifacts(artifacts);
+  const removedGenerated = [];
+  for (const file of await walk(generatedRoot)) {
+    if (!expectedGeneratedPaths.has(file)) {
+      await rm(file, { force: true });
+      removedGenerated.push(file);
+    }
   }
-
-  // 2. Host adapter artifacts：create/update（ownership 已在 preflight 保证）。
-  for (const artifact of artifacts) {
-    if (artifact.kind !== 'host-adapter') continue;
-    await ensureDir(artifact.path);
-    await writeFile(artifact.path, artifact.content);
-  }
+  for (const file of removedGenerated) await pruneEmptyDirs(dirname(file), generatedRoot);
 
   // 3. delete stale generator-owned Host artifacts + prune 空目录。
   const removed = [];
   for (const file of await walk(hostAppRoot)) {
     if (!isHostAdapterCandidateFileName(basename(file))) continue;
     if (expectedHostPaths.has(file)) continue;
-    const content = await readFile(file, 'utf8');
+    let content;
+    try {
+      content = await readFile(file, 'utf8');
+    } catch (error) {
+      if (error.code === 'ENOENT') continue;
+      throw error;
+    }
     if (!isGeneratorOwned(content)) continue;
     await rm(file, { force: true });
     removed.push(file);
   }
   for (const file of removed) {
-    await pruneEmptyDirs(dirname(file));
+    await pruneEmptyDirs(dirname(file), hostAppRoot);
   }
 }
 

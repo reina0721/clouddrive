@@ -2,7 +2,7 @@
  * plugin-codegen watch —— Plugin 开发期自动 reconciliation。
  *
  * 监听 surfaces/plugins/**（plugin.ts / plugin.navigation.ts / i18n.ts /
- * routes/** 的 Next special file 与 route.meta.ts），在防抖窗口后调用 codegen CLI
+ * routes/** 及其引用的模块），在防抖窗口后调用 codegen CLI
  * （spawn 子进程，与 `pnpm codegen:plugins` 同一实现，保证 watch 与 CLI 行为一致）。
  *
  * - 防抖：连续变更在 quietMs 内合并为一次 reconcile（避免保存中间态重复生成）。
@@ -84,7 +84,8 @@ try {
   watcher = watch(pluginsRoot, { recursive: true }, (_event, filename) => {
     if (!filename) return;
     const name = String(filename);
-    // 只关注 Plugin 治理文件与 Next special file / route.meta.ts；忽略编辑器临时文件
+    // 监听引用模块以覆盖拆分的 i18n/navigation；相同生成内容不会重复写入。
+    // 忽略编辑器临时文件
     // （含 write-tool 的 `.name.<pid>.<uuid>.tmpdir` 临时目录）。
     if (
       /~(?:$|\.)|^\.#|\.swp$|\.tmp$|\.tmpdir$|\.tmpdir[\\/]/.test(name) ||

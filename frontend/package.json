@@ -10,7 +10,7 @@
     "dev": "node tooling/plugin-codegen/dev.mjs",
     "build": "pnpm codegen:plugins && pnpm codegen:backend && pnpm codegen:contracts && pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test",
+    "test": "node --test tooling/plugin-codegen/publish-artifacts.test.mjs && pnpm -r --if-present test",
     "test:browser": "playwright test",
     "test:visual:update": "playwright test --update-snapshots",
     "lint": "eslint . --max-warnings 0",
@@ -48,6 +48,7 @@
     "globals": "^17.11.0",
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.50.0"
+    "typescript-eslint": "^8.50.0",
+    "write-file-atomic": "7.0.1"
   }
 }
