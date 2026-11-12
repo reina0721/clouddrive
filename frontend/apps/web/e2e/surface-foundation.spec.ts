@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { waitForVisualReadiness } from './visual-readiness';
 
 const archetypes = [
   '/page-archetypes/overview',
@@ -65,29 +66,25 @@ test('七类 Page Archetype 在四级视口可直接验收', async ({ page }) =>
 test('Universal 与 Surface authority 视觉面保持分层', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   // 页面实现按需加载：截图前等入场/揭示动画结束，否则稳定产物也会出现混合帧差异。
-  const settle = async () => {
-    await page.waitForFunction(() =>
-      document.getAnimations().every((animation) => animation.playState !== 'running'),
-    );
-    await page.waitForFunction(
-      () => document.querySelectorAll('[data-reveal="pending"]').length === 0,
-    );
+  const settle = async (title: string) => {
+    await expect(page.getByRole('heading', { level: 1, name: title, exact: true })).toBeVisible();
+    await waitForVisualReadiness(page);
   };
   await page.goto('/motion');
-  await settle();
+  await settle('语义动效与中断安全');
   await expect
     .soft(page)
     .toHaveScreenshot('universal-motion-desktop.png', { fullPage: true, animations: 'disabled' });
 
   await page.goto('/page-patterns/collections-data');
-  await settle();
+  await settle('集合与数据');
   await expect.soft(page).toHaveScreenshot('page-patterns-collections-desktop.png', {
     fullPage: true,
     animations: 'disabled',
   });
 
   await page.goto('/page-archetypes/overview');
-  await settle();
+  await settle('总览原型');
   await expect.soft(page).toHaveScreenshot('page-archetypes-overview-desktop.png', {
     fullPage: true,
     animations: 'disabled',

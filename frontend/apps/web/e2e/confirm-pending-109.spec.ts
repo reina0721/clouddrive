@@ -11,14 +11,14 @@ test('Pending export confirmation blocks early close and duplicate submission', 
   });
   page.on('download', () => downloads++);
   // The actual export dependency is deferred to keep the real operation pending.
-  await page.route(
-    '**/surfaces_plugins_page-archetypes_src_browser-reference-export_ts_*.js',
-    async (route) => {
+  await page.route('**/_next/static/chunks/*.js', async (route) => {
+    const response = await route.fetch();
+    if ((await response.text()).includes('"browserReferenceExport"')) {
       held = true;
       await gate;
-      await route.continue();
-    },
-  );
+    }
+    await route.fulfill({ response });
+  });
   try {
     await page.goto('/page-archetypes/resource-list');
     const rows = page.getByRole('grid').getByRole('row');
