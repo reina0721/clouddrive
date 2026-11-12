@@ -12,6 +12,8 @@
 
 `/page-patterns/*` 是公共 Pattern authority；`/page-archetypes/*` 只证明七类完整 Page Archetype。Feature 仍拥有字段、Schema、数据、权限、i18n 和状态选择，Foundation 不创建万能 CRUD Page。
 
+`Toolbar` 主区以现有 `surface-filter-min` 保留基本控件空间，再按可用宽度伸展；容不下次要操作时由外层换行，不把搜索输入压成单字符。该规则依据容器的实际空间工作，不绑定视口断点，也不改变搜索提交、焦点或筛选状态的所有者。
+
 ## 与 Framework / Surface 的分工
 
 - `packages/surface-foundation`：**可复用视觉与交互**——Layout、Shell 表现、Pattern、State/Motion Recipe；组件只接收业务已决定的内容、状态与动作。

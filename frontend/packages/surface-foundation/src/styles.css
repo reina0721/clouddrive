@@ -74,6 +74,11 @@
     overflow-x: clip;
   }
 
+  /* 保留一项筛选控件的组合空间；空间不足时让次要操作换行，而不是压垮主输入。 */
+  .surface-toolbar-primary {
+    flex: 1 1 var(--surface-filter-min);
+  }
+
   .surface-filter-grid {
     display: grid;
     gap: var(--surface-control-gap);

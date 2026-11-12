@@ -858,109 +858,103 @@ export function ReferenceWorkspacePage() {
         ))}
       </div>
 
-      <Toolbar
-        label={t('layout.toolbar')}
-        primary={
-          <div className="min-w-0 flex-1">
-            {searchTrigger === 'enter' ? (
-              <form
-                className="flex min-w-0 gap-2"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  applyQueryValue(query);
-                }}
-              >
-                <SearchBox
-                  label={t('reference.searchLabel')}
-                  placeholder={t('reference.searchPlaceholder')}
-                  value={query}
-                  onValueChange={setQuery}
-                />
-                <Action type="submit" variant="secondary">
-                  {t('reference.submitSearch')}
-                </Action>
-              </form>
-            ) : (
+      <form
+        role="search"
+        aria-label={t('reference.searchLabel')}
+        onSubmit={(event) => {
+          event.preventDefault();
+          applyQueryValue(query);
+        }}
+      >
+        <Toolbar
+          label={t('layout.toolbar')}
+          primary={
+            <div className="min-w-0 flex-1">
               <SearchBox
                 label={t('reference.searchLabel')}
                 placeholder={t('reference.searchPlaceholder')}
                 value={query}
                 onValueChange={(value) => {
                   setQuery(value);
-                  applyQueryValue(value);
+                  if (searchTrigger === 'auto') applyQueryValue(value);
                 }}
               />
-            )}
-            {showSearchSuggestions && query.trim() !== '' ? (
-              <SearchSuggestions
-                onPick={(value) => {
-                  setQuery(value);
-                  applyQueryValue(value);
-                }}
-                query={query.trim()}
-              />
-            ) : null}
-            {showSearchHistory && searchHistoryEntries.length > 0 ? (
-              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                <span className="text-xs text-ink-muted">{t('reference.recentSearches')}</span>
-                {searchHistoryEntries.slice(0, 5).map((entry) => (
+              {showSearchSuggestions && query.trim() !== '' ? (
+                <SearchSuggestions
+                  onPick={(value) => {
+                    setQuery(value);
+                    applyQueryValue(value);
+                  }}
+                  query={query.trim()}
+                />
+              ) : null}
+              {showSearchHistory && searchHistoryEntries.length > 0 ? (
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <span className="text-xs text-ink-muted">{t('reference.recentSearches')}</span>
+                  {searchHistoryEntries.slice(0, 5).map((entry) => (
+                    <button
+                      className="rounded-control border border-border bg-surface px-2 py-0.5 text-xs text-ink hover:bg-surface-muted"
+                      key={entry.term}
+                      type="button"
+                      onClick={() => {
+                        setQuery(entry.term);
+                        applyQueryValue(entry.term);
+                      }}
+                    >
+                      {entry.term}
+                    </button>
+                  ))}
                   <button
-                    className="rounded-control border border-border bg-surface px-2 py-0.5 text-xs text-ink hover:bg-surface-muted"
-                    key={entry.term}
+                    className="text-xs text-ink-muted underline hover:text-ink"
                     type="button"
-                    onClick={() => {
-                      setQuery(entry.term);
-                      applyQueryValue(entry.term);
-                    }}
+                    onClick={() => useSearchHistoryStore.getState().clear()}
                   >
-                    {entry.term}
+                    {t('reference.clearSearchHistory')}
                   </button>
-                ))}
-                <button
-                  className="text-xs text-ink-muted underline hover:text-ink"
-                  type="button"
-                  onClick={() => useSearchHistoryStore.getState().clear()}
+                </div>
+              ) : null}
+            </div>
+          }
+          secondary={
+            <>
+              {searchTrigger === 'enter' ? (
+                <Action type="submit" variant="secondary">
+                  {t('reference.submitSearch')}
+                </Action>
+              ) : null}
+              {exported ? <StatusPill tone="success">{t('reference.exported')}</StatusPill> : null}
+              {query ||
+              appliedQuery ||
+              status !== 'all' ||
+              region !== 'all' ||
+              sceneMode !== 'ready' ? (
+                <Action
+                  size="sm"
+                  variant="quiet"
+                  onPress={() => {
+                    setQuery('');
+                    setAppliedQuery('');
+                    setStatus('all');
+                    setRegion('all');
+                    setSceneMode('ready');
+                    setPage(1);
+                  }}
                 >
-                  {t('reference.clearSearchHistory')}
-                </button>
-              </div>
-            ) : null}
-          </div>
-        }
-        secondary={
-          <>
-            {exported ? <StatusPill tone="success">{t('reference.exported')}</StatusPill> : null}
-            {query ||
-            appliedQuery ||
-            status !== 'all' ||
-            region !== 'all' ||
-            sceneMode !== 'ready' ? (
+                  {t('reference.clearFilters')}
+                </Action>
+              ) : null}
               <Action
                 size="sm"
-                variant="quiet"
-                onPress={() => {
-                  setQuery('');
-                  setAppliedQuery('');
-                  setStatus('all');
-                  setRegion('all');
-                  setSceneMode('ready');
-                  setPage(1);
-                }}
+                variant="secondary"
+                leadingIcon={<Download className="size-4" />}
+                onPress={() => void exportSnapshot()}
               >
-                {t('reference.clearFilters')}
+                {t('reference.export')}
               </Action>
-            ) : null}
-            <Action
-              size="sm"
-              variant="secondary"
-              leadingIcon={<Download className="size-4" />}
-              onPress={() => void exportSnapshot()}
-            >
-              {t('reference.export')}
-            </Action>
-          </>
-        }
-      />
+            </>
+          }
+        />
+      </form>
 
       <FilterBar>
         <SelectField
