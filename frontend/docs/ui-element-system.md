@@ -89,7 +89,7 @@ Feedback 解释刚发生的结果、风险或可恢复问题；Status 描述对�
 
 ## 6. Form Control Family
 
-`RangeSlider` 复用 HeroUI 单轴滑块，应用于媒体时间轴、音量以及有相邻数值标签的场景。`/ui-elements/forms` 展示指针、键盘和禁用状态，控件样式消费语义色。
+`RangeSlider` 复用 HeroUI 单轴滑块，应用于媒体时间轴、音量以及有相邻数值标签的场景。`/ui-elements/forms` 展示指针、键盘和禁用状态，控件样式消费语义色。Track 已填充的起止边缘与 Fill 使用同一 `brand`，明暗主题及最大值时均不残留组件库默认强调色。Adapter 将 vendor 的 Focus utility 接到 `focus-ring` 语义角色，避免滑块及其他控件的键盘焦点沿用默认蓝色。
 
 `PasswordField` 经既有 `form-field` Contract 导出，复用 HeroUI TextField + InputGroup。
 `purpose=current|new` 映射账号密码自动填充；`purpose=transient` 用于压缩包临时密码并设为 `autocomplete=off`，不声明账号密码语义；显示切换使用公开 Button suffix，保留输入值、

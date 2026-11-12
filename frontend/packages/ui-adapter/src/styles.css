@@ -72,6 +72,15 @@
 @import '@heroui/styles/utilities';
 @import '@heroui/styles/variants';
 
+@layer theme {
+  /* vendor 的 Focus utility 消费项目焦点角色，随主题与强调色变化。 */
+  :root,
+  [data-theme='light'],
+  [data-theme='dark'] {
+    --focus: var(--color-focus-ring);
+  }
+}
+
 @layer components {
   /* Material 3 的状态层由 Adapter 拥有；不继承 vendor 的按钮阴影或按压位移。 */
   .ui-action {

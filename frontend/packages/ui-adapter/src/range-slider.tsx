@@ -34,7 +34,7 @@ export function RangeSlider({
       }}
     >
       <Label className="sr-only">{label}</Label>
-      <Slider.Track className="bg-surface-muted">
+      <Slider.Track className="bg-surface-muted data-[fill-start=true]:border-s-brand data-[fill-end=true]:border-e-brand">
         <Slider.Fill className="bg-brand" />
         <Slider.Thumb className="border-border bg-surface" />
       </Slider.Track>
