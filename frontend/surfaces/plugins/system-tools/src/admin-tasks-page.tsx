@@ -29,6 +29,7 @@ import { workerNodeIdPattern } from '../../../src/files/worker-nodes';
 import { NavigationIcon } from '../../../src/navigation-icon-presentation';
 import type { Preferences } from '../../../src/preferences-model';
 import { adminTaskMessages } from './admin-task-messages';
+import { initialAdminTaskQuery as initial } from './admin-task-query';
 import { CatalogFailure } from './catalog-failure';
 import { useCatalogRequest } from './use-catalog-request';
 
@@ -38,13 +39,6 @@ const filters: AdminTaskFilters = {
   kind: 'all',
   origin: 'all',
   status: 'all',
-};
-const initial: AdminTaskQuery = {
-  ...filters,
-  taskId: '',
-  sort: 'created',
-  direction: 'desc',
-  page: 1,
 };
 const taskKey = ({ kind, id }: AdminTask) => `${kind}:${id}`;
 const sortOptions = ['newest', 'oldest', 'idAsc', 'idDesc'] as const;
@@ -376,11 +370,12 @@ function TaskSummaryView({
   );
 }
 
-function AdminTasksContent({ nodeId = '' }: { nodeId?: string }) {
+type AdminTasksProps = { query: AdminTaskQuery; navigate: (query: AdminTaskQuery) => void };
+
+function AdminTasksContent({ query, navigate }: AdminTasksProps) {
   const files = useFiles();
   const { t, label, time } = useTaskText();
   const labelState = useTaskStateLabel();
-  const [query, setQuery] = useState({ ...initial, nodeId });
   const [draft, setDraft] = useState<AdminTaskQuery>();
   const [criteria, setCriteria] = useState<AdminTaskFilters & { day: string; clock: string }>();
   const [cleanup, setCleanup] = useState<{
@@ -420,7 +415,7 @@ function AdminTasksContent({ nodeId = '' }: { nodeId?: string }) {
   const apply = (next: AdminTaskQuery) => {
     setSelection([]);
     setNotice(undefined);
-    setQuery(next);
+    navigate(next);
   };
   const refresh = () => {
     setSelection([]);
@@ -737,7 +732,7 @@ function AdminTasksContent({ nodeId = '' }: { nodeId?: string }) {
   );
 }
 
-export function AdminTasksPage(props: { nodeId?: string }) {
+export function AdminTasksPage(props: AdminTasksProps) {
   const { t } = useFrontendTranslation();
   return (
     <FrontendMessages

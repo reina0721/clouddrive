@@ -67,7 +67,10 @@ test('任务摘要不被状态筛选污染，移动端任务条目没有横向�
   await expect(snapshot.getByText(String(summary.failed), { exact: true }).first()).toBeVisible();
   test.skip(summary.failed === 0, '当前数据没有失败任务，无法验证快捷筛选。');
   await page.getByRole('button', { name: '查看失败', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText(`共 ${summary.failed} 项`);
+  await expect(
+    page.getByRole('status').filter({ hasText: `共 ${summary.failed} 项` }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(new URL(account.url).origin + '/system-tools/tasks?status=failed');
   await expect(snapshot.getByText(String(summary.total), { exact: true }).first()).toBeVisible();
   const list = page.getByRole('list', { name: '后台任务管理', exact: true });
   await expect(list.getByRole('listitem')).toHaveCount(Math.min(summary.failed, 20));

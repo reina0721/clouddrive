@@ -68,6 +68,7 @@ test('节点检查按需读取，关联任务范围可传入并清除', async ({
     return url.pathname.endsWith('/admin-tasks/summary') && url.searchParams.get('nodeId') === '';
   });
   await page.getByRole('button', { name: '清除节点范围', exact: true }).click();
+  await expect(page).toHaveURL(origin + '/system-tools/tasks');
   const response = await refreshed;
   expect(response.ok()).toBe(true);
   const summary = (await response.json()) as { total: number };
@@ -76,6 +77,14 @@ test('节点检查按需读取，关联任务范围可传入并清除', async ({
   await page.getByRole('button', { name: '筛选与排序', exact: true }).click();
   await expect(filter.getByLabel('节点 ID', { exact: true })).toHaveValue('');
   await filter.getByRole('button', { name: '取消', exact: true }).click();
+  await page.reload();
+  await expect(page.getByRole('button', { name: '清除节点范围', exact: true })).toHaveCount(0);
+  await page.goBack();
+  await expect(page).toHaveURL(origin + '/system-tools/tasks?nodeId=' + nodeId);
+  await expect(page.getByRole('button', { name: '清除节点范围', exact: true })).toBeVisible();
+  await expect(page.getByText('当前范围内没有符合条件的任务。', { exact: true })).toBeVisible();
+  await page.goForward();
+  await expect(page).toHaveURL(origin + '/system-tools/tasks');
   await expect(page.getByRole('list', { name: '后台任务管理', exact: true })).toBeVisible();
   await expect
     .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
