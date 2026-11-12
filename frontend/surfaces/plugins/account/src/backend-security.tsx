@@ -15,10 +15,12 @@ function MfaAction({
   action,
   onSaved,
   onCodes,
+  onEnrollment,
 }: Readonly<{
   action: 'begin' | 'confirm' | 'disable';
   onSaved: () => void;
   onCodes: (value: readonly string[]) => void;
+  onEnrollment: (value: { secret: string; uri: string } | undefined) => void;
 }>) {
   const port = useRequiredAdministration();
   const { t } = useFrontendTranslation();
@@ -38,17 +40,25 @@ function MfaAction({
       description={t('administration.description')}
       cancelLabel={t('administration.cancel')}
       confirmLabel={t('administration.confirm')}
+      confirmDisabled={action !== 'begin' && !code.trim()}
       {...(failure ? { failureMessage: failure } : {})}
       onConfirm={async () => {
         try {
           if (action === 'begin') {
             const result = await port.beginMfa();
-            onCodes([result.secret, result.uri]);
+            onCodes([]);
+            onEnrollment(result);
           } else if (action === 'confirm') {
-            onCodes(await port.confirmMfa(code));
-          } else await port.disableMfa(code);
+            onCodes(await port.confirmMfa(code.trim()));
+            onEnrollment(undefined);
+            onSaved();
+          } else {
+            await port.disableMfa(code.trim());
+            onCodes([]);
+            onEnrollment(undefined);
+            onSaved();
+          }
           setCode('');
-          onSaved();
         } catch (error) {
           setFailure(t('administration.failureDescription'));
           throw error;
@@ -59,7 +69,7 @@ function MfaAction({
         <p>{t('administration.mfaSecret')}</p>
       ) : (
         <TextField
-          label={t('administration.mfaCode')}
+          label={t(action === 'confirm' ? 'administration.mfaSetupCode' : 'administration.mfaCode')}
           value={code}
           onChange={(event) => setCode(event.target.value)}
           autoComplete="off"
@@ -73,6 +83,7 @@ export function BackendSecurityPage() {
   const { t } = useFrontendTranslation();
   const mfa = useRemote(useCallback(() => port.mfaStatus(), [port]));
   const [codes, setCodes] = useState<readonly string[]>([]);
+  const [enrollment, setEnrollment] = useState<{ secret: string; uri: string }>();
   const [archiveFailure, setArchiveFailure] = useState<string>();
   return (
     <Page>
@@ -89,15 +100,49 @@ export function BackendSecurityPage() {
               <div className="flex flex-wrap gap-2">
                 {!mfa.value ? (
                   <>
-                    <MfaAction action="begin" onSaved={mfa.reload} onCodes={setCodes} />
-                    <MfaAction action="confirm" onSaved={mfa.reload} onCodes={setCodes} />
+                    {!enrollment ? (
+                      <MfaAction
+                        action="begin"
+                        onSaved={mfa.reload}
+                        onCodes={setCodes}
+                        onEnrollment={setEnrollment}
+                      />
+                    ) : null}
+                    {enrollment ? (
+                      <MfaAction
+                        action="confirm"
+                        onSaved={mfa.reload}
+                        onCodes={setCodes}
+                        onEnrollment={setEnrollment}
+                      />
+                    ) : null}
                   </>
                 ) : (
-                  <MfaAction action="disable" onSaved={mfa.reload} onCodes={setCodes} />
+                  <MfaAction
+                    action="disable"
+                    onSaved={mfa.reload}
+                    onCodes={setCodes}
+                    onEnrollment={setEnrollment}
+                  />
                 )}
               </div>
             }
           />
+          {enrollment ? (
+            <div className="space-y-3">
+              <p>{t('administration.mfaSetupHint')}</p>
+              <dl className="space-y-3 text-sm">
+                <div>
+                  <dt className="font-medium">{t('administration.mfaSecret')}</dt>
+                  <dd className="break-all font-mono">{enrollment.secret}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">{t('administration.mfaUri')}</dt>
+                  <dd className="break-all font-mono">{enrollment.uri}</dd>
+                </div>
+              </dl>
+            </div>
+          ) : null}
           {codes.length ? (
             <div className="space-y-2">
               <p>{t('administration.recovery')}</p>
