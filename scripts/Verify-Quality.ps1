@@ -5,11 +5,10 @@ $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 Push-Location $repositoryRoot
 try {
-    $unformatted = @(gofmt -l . | Where-Object { $_ -notmatch '^(old-backend[\\/])' })
-    if ($LASTEXITCODE -ne 0) { throw 'gofmt failed' }
-    if ($unformatted.Count -gt 0) {
-        throw "gofmt failed:`n$($unformatted -join "`n")"
-    }
+    node --test scripts/verify-go-format.test.mjs
+    if ($LASTEXITCODE -ne 0) { throw 'Go formatting verifier tests failed' }
+    node scripts/verify-go-format.mjs
+    if ($LASTEXITCODE -ne 0) { throw 'Go source formatting failed' }
     & $GoExecutable mod tidy -diff
     if ($LASTEXITCODE -ne 0) { throw 'go mod tidy -diff failed' }
     & $GoExecutable run ./internal/tools/project-layout --check-identity

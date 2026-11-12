@@ -13,12 +13,8 @@ while [[ $# -gt 0 ]]; do
 done
 function go() { command "${go_executable}" "$@"; }
 
-unformatted="$(gofmt -l .)"
-unformatted="$(printf '%s\n' "$unformatted" | awk '$0 !~ /^old-backend\//')"
-if [[ -n "${unformatted}" ]]; then
-  while IFS= read -r source_file; do gofmt -d -- "$source_file"; done <<< "$unformatted"
-  exit 1
-fi
+node --test scripts/verify-go-format.test.mjs
+node scripts/verify-go-format.mjs
 go mod tidy -diff
 go run ./internal/tools/project-layout --check-identity
 go run ./internal/tools/project-layout --check-webui

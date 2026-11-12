@@ -48,6 +48,8 @@ node scripts/verify-changed.mjs --full  # 双端完整回归
 
 PowerShell 对应 `Verify-WebUI.ps1 -Prepare` 和 `Verify-Quality.ps1 -GoExecutable <path>`。依赖使用冻结锁文件，准备失败直接停止。完整入口和 release 保留真实覆盖，CI 显式准备；不把安装写成每次局部更新的固定步骤。
 
+两种后端入口共用 `scripts/verify-go-format.mjs`，按 Git 清单检查已跟踪和未忽略的新 Go 源码。忽略目录中的运行诊断、临时 checkout 不参与格式门禁；Git 或 gofmt 执行失败仍会终止验证。
+
 普通 Go 测试使用原生结果缓存；明确重现、外部数据库/文件服务和完整回归可用 `-count=1`。缓存不能证明外部环境的当前状态。前端依赖筛选使用 pnpm 原生反向依赖，不自建另一套缓存或前端依赖图。
 
 ## 停止条件、耗时与证据
