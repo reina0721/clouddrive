@@ -10,6 +10,8 @@ const primaryProbeUrl = getProbeUrl(primaryHost, primaryPort);
 const secondaryPort = primaryPort + 1;
 if (secondaryPort > 65535) throw new Error('Browser tests require WEB_PORT between 1 and 65534.');
 const secondaryProbeUrl = getProbeUrl(primaryHost, secondaryPort);
+const primaryDist = `.next/playwright-${primaryPort}/mock-production`;
+const secondaryDist = `.next/playwright-${secondaryPort}/backend-production`;
 
 export default defineConfig({
   testDir: './apps/web/e2e',
@@ -65,30 +67,37 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'pnpm --filter @clouddrive/web dev',
+      command: `pnpm --filter @clouddrive/web build && node apps/web/${primaryDist}/standalone/apps/web/server.js`,
       env: {
         CLOUDDRIVE_BROWSER_TEST: '1',
         WEB_PORT: String(primaryPort),
-        NEXT_DIST_DIR: `.next/playwright-${primaryPort}/mock`,
+        NEXT_DIST_DIR: primaryDist,
+        WEB_DEPLOYMENT_MODE: 'server',
+        HOSTNAME: primaryHost,
+        PORT: String(primaryPort),
         NEXT_PUBLIC_AUTH_MODE: 'mock',
       },
       url: primaryProbeUrl,
       // 就绪探针不能证明占用此端口的服务采用了要求的认证模式。
       reuseExistingServer: false,
-      timeout: 120_000,
+      // 包含完整生产构建；交互与断言仍使用原来的超时。
+      timeout: 300_000,
     },
     {
-      command: 'pnpm --filter @clouddrive/web dev',
+      command: `pnpm --filter @clouddrive/web build && node apps/web/${secondaryDist}/standalone/apps/web/server.js`,
       env: {
         CLOUDDRIVE_BROWSER_TEST: '1',
         WEB_PORT: String(secondaryPort),
-        NEXT_DIST_DIR: `.next/playwright-${secondaryPort}/backend`,
+        NEXT_DIST_DIR: secondaryDist,
+        WEB_DEPLOYMENT_MODE: 'server',
+        HOSTNAME: primaryHost,
+        PORT: String(secondaryPort),
         NEXT_PUBLIC_AUTH_MODE: 'backend',
         NEXT_PUBLIC_AUTH_API_BASE_URL: '/api',
       },
       url: secondaryProbeUrl,
       reuseExistingServer: false,
-      timeout: 120_000,
+      timeout: 300_000,
     },
   ],
   projects: [

@@ -18,7 +18,7 @@ export default function nextConfig(phase: string): NextConfig {
       // 多个隔离生产目录不保留编译数据库；避免缓存压缩额外占用构建磁盘。
       turbopackFileSystemCacheForBuild: false,
     },
-    // Playwright 的 dev server 使用独立目录，避免 production build 覆盖正在运行的开发缓存。
+    // 浏览器验收使用独立构建目录，避免与普通开发或生产构建相互覆盖。
     distDir: config.distDir ?? (phase === PHASE_DEVELOPMENT_SERVER ? '.next' : 'dist'),
     // Trace workspace dependencies into a relocatable runtime, not the whole repo.
     outputFileTracingRoot: resolve(import.meta.dirname, '../..'),

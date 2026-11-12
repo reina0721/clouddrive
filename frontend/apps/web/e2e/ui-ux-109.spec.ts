@@ -421,11 +421,14 @@ test('Leaving during validation prevents a stale save and redirect', async ({ pa
   const gate = new Promise<void>((resolve) => {
     release = resolve;
   });
-  // Hold the actual validation module in the configured Next development host.
-  await page.route('**/surfaces_plugins_reference-resources_src_schema_ts_*.js', async (route) => {
-    held = true;
-    await gate;
-    await route.continue();
+  // Identify the actual lazy schema export before form-state validation can request it.
+  await page.route('**/_next/static/chunks/*.js', async (route) => {
+    const response = await route.fetch();
+    if ((await response.text()).includes('"resourceFormSchema"')) {
+      held = true;
+      await gate;
+    }
+    await route.fulfill({ response });
   });
   try {
     await page.goto('/reference-resources/create');

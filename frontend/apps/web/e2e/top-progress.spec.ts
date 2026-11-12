@@ -45,6 +45,12 @@ async function readFillVisibility(page: Page) {
     if (!fill) return null;
     const rect = fill.getBoundingClientRect();
     const cs = getComputedStyle(fill);
+    const probe = document.createElement('span');
+    probe.style.color = 'var(--color-brand)';
+    probe.style.position = 'absolute';
+    document.body.append(probe);
+    const brandColor = getComputedStyle(probe).color;
+    probe.remove();
     return {
       left: Math.round(rect.left),
       top: Math.round(rect.top),
@@ -52,6 +58,7 @@ async function readFillVisibility(page: Page) {
       height: Math.round(rect.height),
       opacity: Number(cs.opacity),
       backgroundColor: cs.backgroundColor,
+      brandColor,
     };
   });
 }
@@ -175,7 +182,7 @@ test('慢速导航：进度条在 viewport 顶部、非零可见尺寸、foregro
   expect(during!.opacity).toBeGreaterThan(0.05);
   expect(during!.left).toBeGreaterThanOrEqual(0);
   expect(during!.left).toBeLessThan(1440);
-  expect(during!.backgroundColor).toBe('rgb(93, 73, 214)'); // --ds-brand light
+  expect(during!.backgroundColor).toBe(during!.brandColor);
 
   // 只前进不回缩：采样到的 fill 宽度序列必须单调不减（允许动画帧内的四舍五入抖动）。
   const widths = await page.evaluate<number[]>(
