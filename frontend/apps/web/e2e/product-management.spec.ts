@@ -33,7 +33,8 @@ test('M2–M5 user, role grants, inbox and audit form a durable management workf
   const userId = new URL(page.url()).searchParams.get('id');
   if (!userId) throw new Error('Created user URL has no ID');
   await page.getByRole('link', { name: '编辑用户', exact: true }).click();
-  await expect(page).toHaveURL(/\/users\/edit\?id=/);
+  // 编辑入口可能首次编译；与新建后的路由等待使用相同预算。
+  await expect(page).toHaveURL(/\/users\/edit\?id=/, { timeout: 15000 });
   await page.reload();
   await page.getByRole('textbox', { name: '姓名', exact: true }).fill('M25 Updated member');
   await page.getByRole('button', { name: '保存', exact: true }).click();

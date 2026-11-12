@@ -59,10 +59,13 @@ const previewStateLabels = {
   Escape: 'Escape 键',
   Expanded: '展开',
   External: '外部链接',
+  'External pending': '外部提交中',
   Failure: '失败',
   Fallback: '回退',
   Filter: '筛选',
   Filtered: '已筛选',
+  'Fixed actions': '固定操作区',
+  'Fixed footer': '固定底部操作区',
   Flat: '平面',
   Focus: '焦点',
   'Focus recovery': '焦点恢复',
@@ -71,7 +74,9 @@ const previewStateLabels = {
   'Focus trap': '焦点隔离',
   Footer: '操作区',
   'Form content': '表单内容',
+  'Form submission': '表单提交',
   Header: '标题区',
+  'Header close': '标题区关闭',
   'Header / body': '标题与正文',
   Heading: '标题',
   Hint: '提示',
@@ -102,6 +107,10 @@ const previewStateLabels = {
   'Multiple errors': '多个错误',
   'Narrow reflow': '窄空间重排',
   'Narrow viewport': '窄视口',
+  'Native form submit': '原生表单提交',
+  Pointer: '指针',
+  'Reading space': '阅读空间',
+  Toolbar: '工具条',
   Nested: '嵌套',
   Neutral: '中性',
   'No extra Surface/Toolbar': '不增加容器或工具条',
@@ -174,6 +183,8 @@ const previewStateLabels = {
   Theme: '主题',
   'Accessible summary': '可访问摘要',
 };
+
+export type PreviewStateLabel = keyof typeof previewStateLabels;
 
 export const pluginI18nResources = {
   'zh-CN': {

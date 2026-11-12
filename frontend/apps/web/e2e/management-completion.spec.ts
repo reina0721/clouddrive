@@ -174,6 +174,8 @@ for (const width of [320, 390])
   test(`Mobile management filters and bulk confirmation remain accessible at ${width}`, async ({
     page,
   }) => {
+    // 两个页面的冷启动与两次 Axe 扫描共用用例预算；单项断言超时保持原值。
+    test.setTimeout(60_000);
     await page.setViewportSize({ width, height: 844 });
     await page.goto(
       '/audit-logs?from=2026-10-01T00%3A00%3A00.000Z&to=2026-10-13T23%3A59%3A59.999Z',

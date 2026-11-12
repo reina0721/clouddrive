@@ -2,12 +2,13 @@ import { useFrontendTranslation } from '@clouddrive/i18n';
 import { Badge } from '@clouddrive/ui-adapter/feedback';
 import { Panel } from '@clouddrive/ui-adapter/panel';
 import type { ReactNode } from 'react';
+import type { PreviewStateLabel } from '../i18n';
 import { previewAnchor } from './preview-anchor';
 
 export type ComponentPreviewProps = Readonly<{
   name: string;
   description: string;
-  states: readonly string[];
+  states: readonly PreviewStateLabel[];
   children: ReactNode;
   fullWidth?: boolean;
   embedded?: boolean;

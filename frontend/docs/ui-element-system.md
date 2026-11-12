@@ -20,6 +20,8 @@ Semantic Design Token
 - Composite 只组合已有 Element 与 Layout，不重新定义控件、浮层或状态视觉。
 - Feature 拥有业务文案和状态选择，不创建第二套基础组件。
 
+内部示例的 `ComponentPreview` 状态名限定为本插件双语词典中已登记的键；新增状态先补齐词典，不能让原始翻译键进入界面。交互验收比较当前主题的 Surface、Muted 和 Brand 语义色，同时保留边界、指示器和键盘断言，不把旧主题的 RGB 数值当作组件契约。
+
 ## 2. 当前分类
 
 | Family                | 稳定语义                     | 当前 Element / Pattern                                                                                                                     | 不应混入                     |
@@ -260,6 +262,8 @@ Flyout 有标题和完整子树，键盘内部焦点不会因指针离开关闭�
 ## 受控日期值
 
 `DatePickerField` 的可选 `value` 使用 ISO Gregorian 日期字符串 `YYYY-MM-DD`，`null` 清空，省略保留原有非受控用法；`onValueChange` 返回同样语义字符串或 null。公开契约不暴露 HeroUI DateValue，Adapter 通过官方 `@internationalized/date` 解析并映射 HeroUI 的受控值，Selection、Keyboard、Focus 和 Popup 保持 vendor 管理。样式及未传 value 的消费者不改变。真实消费者为 UI Elements Forms 和审计日期筛选；URL 恢复与清空的证据见 [前端架构](frontend-foundation.md)。
+
+日历普通日期使用 `ink`、星期标题使用 `ink-muted`，今天使用 `brand-soft` / `brand`，选中日期使用 `brand` / `on-brand`；打开态在明暗主题验证 AA 对比度。示例与审计筛选共用同一日历实现，不沿用组件库与项目底色不匹配的默认灰色和强调色。
 
 ## 容器编排 Browser Adapter
 

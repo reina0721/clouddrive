@@ -10,6 +10,25 @@ async function assertOverlayAccessibility(page: Page) {
   expect(accessibility.violations).toEqual([]);
 }
 
+async function readThemeRoles(page: Page) {
+  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
+  await waitForVisualReadiness(page);
+  return page.evaluate(() => {
+    const probe = document.createElement('span');
+    probe.style.visibility = 'hidden';
+    document.body.append(probe);
+    try {
+      const color = (role: string) => {
+        probe.style.color = `var(--color-${role})`;
+        return getComputedStyle(probe).color;
+      };
+      return { surface: color('surface'), muted: color('surface-muted'), brand: color('brand') };
+    } finally {
+      probe.remove();
+    }
+  });
+}
+
 async function assertMatchesTriggerWidth(page: Page, slot: string) {
   await page.waitForTimeout(250);
   const metrics = await page.locator(`[data-slot="${slot}"]`).evaluate((element) => ({
@@ -300,6 +319,7 @@ test('Tabs 保持 HeroUI 键盘语义并由父 Surface 提供内边距', async (
 test('TabsView line、section、soft 与 vertical 视觉职责边界', async ({ page }) => {
   await page.goto('/ui-elements/navigation');
   await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
+  const colors = await readThemeRoles(page);
 
   // Showcase：soft / line / line+icon / line+badge / vertical / section
   const tablists = page.getByRole('tablist');
@@ -308,19 +328,19 @@ test('TabsView line、section、soft 与 vertical 视觉职责边界', async ({ 
   // soft：muted surface 容器 + selected elevated surface，无 line underline
   const soft = tablists.nth(0);
   const softListBg = await soft.evaluate((el) => getComputedStyle(el).backgroundColor);
-  expect(softListBg).toBe('rgb(240, 242, 247)'); // --ds-surface-muted light
+  expect(softListBg).toBe(colors.muted);
   await expect(soft.getByRole('tab', { name: '总览' })).toHaveAttribute('aria-selected', 'true');
   const softSelectedBg = await soft
     .getByRole('tab', { name: '总览' })
     .evaluate((el) => getComputedStyle(el).backgroundColor);
-  expect(softSelectedBg).toBe('rgb(255, 255, 255)'); // elevated surface
+  expect(softSelectedBg).toBe(colors.surface);
   // soft selected 无 brand underline indicator（表面可有轻 border，但不是 2px brand 下划线）
   const softSelectedBorderBottom = await soft.getByRole('tab', { name: '总览' }).evaluate((el) => ({
     width: getComputedStyle(el).borderBottomWidth,
     color: getComputedStyle(el).borderBottomColor,
   }));
   expect(softSelectedBorderBottom.width).not.toBe('2px');
-  expect(softSelectedBorderBottom.color).not.toBe('rgb(93, 73, 214)'); // 非 brand underline
+  expect(softSelectedBorderBottom.color).not.toBe(colors.brand);
 
   // line：透明 TabList、无圆角、底部 1px 基线；无胶囊残留
   const line = tablists.nth(1);
@@ -328,7 +348,7 @@ test('TabsView line、section、soft 与 vertical 视觉职责边界', async ({ 
   await expect(line).toHaveCSS('border-bottom-width', '1px');
   const lineSelected = line.getByRole('tab', { name: '正常' });
   await expect(lineSelected).toHaveAttribute('aria-selected', 'true');
-  await expect(lineSelected).toHaveCSS('color', 'rgb(93, 73, 214)'); // --ds-brand light
+  await expect(lineSelected).toHaveCSS('color', colors.brand);
   const lineRadius = await lineSelected.evaluate((el) => getComputedStyle(el).borderRadius);
   expect(lineRadius).toBe('0px'); // 无胶囊
   const lineUnderline = await lineSelected.evaluate((el) => getComputedStyle(el).borderBottomWidth);
@@ -347,7 +367,7 @@ test('TabsView line、section、soft 与 vertical 视觉职责边界', async ({ 
   await expect(vertical).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   const verticalSelected = vertical.getByRole('tab', { name: '总览' });
   await expect(verticalSelected).toHaveAttribute('aria-selected', 'true');
-  await expect(verticalSelected).toHaveCSS('color', 'rgb(93, 73, 214)');
+  await expect(verticalSelected).toHaveCSS('color', colors.brand);
   const vSide = await verticalSelected.evaluate((el) => getComputedStyle(el).borderLeftWidth);
   expect(vSide).toBe('2px');
   const vBottom = await verticalSelected.evaluate((el) => getComputedStyle(el).borderBottomWidth);
@@ -680,12 +700,16 @@ test('Dropdown、Popover 与 Tooltip 展开面进入视觉回归', async ({ page
   await expect(popoverTrigger).toBeFocused();
 
   const tooltipTrigger = page.getByRole('button', { name: 'Tooltip' });
+  await tooltipTrigger.scrollIntoViewIfNeeded();
+  await waitForVisualReadiness(page);
   await tooltipTrigger.focus();
+  await expect(page.getByRole('tooltip')).toBeVisible();
+  await waitForVisualReadiness(page);
   await expect(page.getByRole('tooltip')).toBeVisible();
   await expect.soft(page).toHaveScreenshot('ui-elements-tooltip-open.png');
 });
 
-test('DatePicker 与 Command 展开面支持键盘及无障碍扫描', async ({ page }) => {
+test('DatePicker 与 Command 展开面支持键盘及无障碍扫描', async ({ page }, info) => {
   // Keep the calendar's today marker stable while timers and interactions keep running.
   await page.clock.setFixedTime(new Date('2026-10-09T04:00:00Z'));
   await page.goto('/ui-elements/forms');
@@ -702,7 +726,15 @@ test('DatePicker 与 Command 展开面支持键盘及无障碍扫描', async ({ 
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByRole('dialog').getByRole('grid')).toBeVisible();
   await waitForVisualReadiness(page);
+  await assertOverlayAccessibility(page);
   await expect.soft(page).toHaveScreenshot('ui-elements-date-picker-open.png');
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await waitForVisualReadiness(page);
+  await assertOverlayAccessibility(page);
+  await page.screenshot({ path: info.outputPath('calendar-dark.png'), animations: 'disabled' });
+  await page.emulateMedia({ colorScheme: 'light' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await page.keyboard.press('Escape');
 
   await page.goto('/ui-elements/overlays');
@@ -745,6 +777,7 @@ test('Overlay Trigger 交互状态不切换成 Brand Primary（idle/hover/presse
   page,
 }) => {
   await page.goto('/ui-elements/overlays');
+  const colors = await readThemeRoles(page);
 
   // 五类 trigger 的语义断言：底层必须是 ghost variant，绝不带 button--primary
   const triggerNames = ['Dialog', '普通确认', '危险确认', 'Drawer', 'Command'] as const;
@@ -754,17 +787,20 @@ test('Overlay Trigger 交互状态不切换成 Brand Primary（idle/hover/presse
     const cls = (await trigger.getAttribute('class')) ?? '';
     expect(cls).toContain('button--ghost');
     expect(cls).not.toContain('button--primary');
-    // 语义色断言：danger trigger 用 danger 语义，其它用中性（不用 bg-brand）
+    // Material outlined 使用 primary 前景与透明容器；危险入口保持 danger 语义。
     if (name === '危险确认') {
       expect(cls).toContain('text-danger');
     } else {
-      expect(cls).toContain('bg-surface');
-      expect(cls).not.toContain('text-brand');
+      await expect(trigger).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+      await expect(trigger).toHaveCSS('color', colors.brand);
+      await expect(trigger).toHaveCSS('border-top-width', '1px');
     }
   }
 
-  // Dialog：pressed（mouse down）与 focus-restored 后背景保持中性（非 accent 蓝填充）
+  // Dialog 的容器在 pressed 与焦点恢复后只使用透明或 surface-muted 状态层。
   const dialogTrigger = page.getByRole('button', { name: 'Dialog', exact: true });
+  await dialogTrigger.scrollIntoViewIfNeeded();
+  await waitForVisualReadiness(page);
   const readBg = () =>
     dialogTrigger.evaluate((el) => {
       const cs = getComputedStyle(el);
@@ -775,36 +811,26 @@ test('Overlay Trigger 交互状态不切换成 Brand Primary（idle/hover/presse
     });
 
   const idle = await readBg();
-  expect(idle.bg).toBe('rgb(255, 255, 255)');
+  expect(idle.bg).toBe('rgba(0, 0, 0, 0)');
 
   // pressed：mouse down 不释放，背景不得变 accent 蓝（保持中性或 muted 反馈）
   const box = (await dialogTrigger.boundingBox())!;
   await page.mouse.move(box.x + 30, box.y + 15);
   await page.mouse.down();
-  await page.waitForTimeout(120);
+  await expect.poll(async () => (await readBg()).bg).toBe(colors.muted);
   const pressed = await readBg();
   // 允许中性按下反馈（surface-muted 灰），但绝不能是 HeroUI accent 蓝（oklch hue≈253 渲染值）
   expect(pressed.cls).not.toContain('button--primary');
   await page.mouse.up();
 
   // 打开 Dialog 再 Escape 关闭（focus restore 到 trigger）：背景仍中性，无蓝色残留
-  await dialogTrigger.click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(dialogTrigger).toBeFocused();
   await page.waitForTimeout(200);
   const restored = await readBg();
   expect(restored.cls).not.toContain('button--primary');
-  // 中性 hover 反馈（surface-muted）或回到 idle 白皆可；绝不出现 brand 蓝实色
-  const muted = await page.evaluate(() => {
-    const probe = document.createElement('span');
-    probe.style.backgroundColor = 'var(--color-surface-muted)';
-    document.body.append(probe);
-    const color = getComputedStyle(probe).backgroundColor;
-    probe.remove();
-    return color;
-  });
-  await expect.poll(async () => [idle.bg, muted].includes((await readBg()).bg)).toBe(true);
+  await expect.poll(async () => [idle.bg, colors.muted].includes((await readBg()).bg)).toBe(true);
 });
 
 test('危险确认 Trigger 在 pressed 状态保持 danger 语义（不切换 Brand）', async ({ page }) => {
