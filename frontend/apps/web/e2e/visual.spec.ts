@@ -99,6 +99,10 @@ test('移动窗口、Dark Mode 与英文扩张保持无溢出', async ({ page })
   await page.getByRole('menuitem', { name: '语言 简体中文', exact: true }).click();
   await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(
+    page.locator('.ui-field').filter({ has: page.getByText('DatePicker', { exact: true }) }),
+  ).toContainText('yyyy');
+  await waitForVisualReadiness(page);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - window.innerWidth,
   );
@@ -132,7 +136,9 @@ test('Overview、Reference Form 与 Settings 真实页面进入视觉矩阵', as
 
   await page.goto('/');
   await expectHydrated(page);
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await page
+    .getByRole('heading', { level: 1, name: '工作台', exact: true })
+    .waitFor({ state: 'visible' });
   await expect.soft(page).toHaveScreenshot('overview-desktop.png', { fullPage: true });
 
   await page.goto('/page-archetypes/create-edit');
