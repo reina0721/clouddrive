@@ -23,7 +23,7 @@ export const pluginI18nResources = {
         empty: '暂无符合条件的审计记录',
         id: '记录 ID',
         error: '失败原因',
-        readonly: '审计记录不可编辑。Mock 记录保存在当前浏览器；生产审计必须由后端可信写入并保留。',
+        readonly: '审计记录不可编辑。',
         toolbar: '审计表格工具栏',
         columnSettings: '列设置',
         columnSettingsTitle: '列设置',
@@ -83,8 +83,7 @@ export const pluginI18nResources = {
         empty: 'No matching audit records',
         id: 'Record ID',
         error: 'Failure reason',
-        readonly:
-          'Audit records cannot be edited. Mock records are local; production audit must be written and retained by a trusted backend.',
+        readonly: 'Audit records cannot be edited.',
         toolbar: 'Audit table toolbar',
         columnSettings: 'Columns',
         columnSettingsTitle: 'Column settings',

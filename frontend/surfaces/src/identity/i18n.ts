@@ -2,7 +2,6 @@ export const identityI18n = {
   'zh-CN': {
     identityProduct: {
       mock: '演示模式：数据保存在当前浏览器，可刷新恢复；不代表真实后端授权。',
-      backend: 'Backend 模式：数据来自配置的 REST 服务。',
       loading: '正在读取数据',
       loadingDescription: '正在确认身份并加载最新记录。',
       retry: '重试',
@@ -70,7 +69,6 @@ export const identityI18n = {
   en: {
     identityProduct: {
       mock: 'Demo mode: data persists in this browser across refreshes. It provides no real server authorization.',
-      backend: 'Backend mode: data comes from the configured REST service.',
       loading: 'Loading data',
       loadingDescription: 'Verifying identity and reading the latest records.',
       retry: 'Retry',

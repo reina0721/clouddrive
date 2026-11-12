@@ -54,10 +54,11 @@ export function IdentityQueryState({
 }
 export function IdentityModeNotice({ mode }: Readonly<{ mode: 'mock' | 'backend' }>) {
   const { t } = useFrontendTranslation();
+  if (mode !== 'mock') return null;
   return (
     <div className="flex items-center gap-2 rounded-control border border-border/60 bg-surface-muted/40 px-3 py-1.5 text-xs text-ink-muted">
       <span className="size-1.5 rounded-full bg-brand" />
-      <span>{t(`identityProduct.${mode}`)}</span>
+      <span>{t('identityProduct.mock')}</span>
     </div>
   );
 }
