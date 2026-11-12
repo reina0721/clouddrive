@@ -10,6 +10,9 @@ import { useRequiredAdministration } from '../../../src/administration/context';
 import { useRemote, RemoteRegion } from '../../../src/administration/resource-state';
 import type { AccessToken } from '../../../src/administration/model';
 import { IdentityError } from '../../../src/identity/errors';
+import { useProductAccess } from '../../../src/identity/use-access';
+import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
+import { NavigationIcon } from '../../../src/navigation-icon-presentation';
 
 function MfaAction({
   action,
@@ -79,9 +82,53 @@ function MfaAction({
   );
 }
 export function BackendSecurityPage() {
+  const { t } = useFrontendTranslation();
+  const access = useProductAccess();
+  if (access.loading || access.error || !access.data)
+    return (
+      <Page>
+        <PageHeader
+          title={t('administration.security')}
+          description={t('administration.description')}
+        />
+        {access.loading ? (
+          <p role="status">{t('administration.loading')}</p>
+        ) : (
+          <StateSurface
+            state="warning"
+            icon={<NavigationIcon iconId="identity" />}
+            title={t('administration.failure')}
+            description={t('identityProduct.errors.' + (access.error?.code ?? 'unavailable'))}
+            actionLabel={t('administration.retry')}
+            onAction={access.reload}
+          />
+        )}
+      </Page>
+    );
+  const permissions = access.data.nativePermissions ?? [];
+  return (
+    <SecurityContent
+      canRead={permissions.includes('iam:account:self:read')}
+      canManage={permissions.includes('iam:account:self:password:write')}
+      canArchive={permissions.includes('iam:account:self:archive')}
+    />
+  );
+}
+
+function SecurityContent({
+  canRead,
+  canManage,
+  canArchive,
+}: {
+  canRead: boolean;
+  canManage: boolean;
+  canArchive: boolean;
+}) {
   const port = useRequiredAdministration();
   const { t } = useFrontendTranslation();
-  const mfa = useRemote(useCallback(() => port.mfaStatus(), [port]));
+  const mfa = useRemote(
+    useCallback(() => (canRead ? port.mfaStatus() : Promise.resolve(false)), [port, canRead]),
+  );
   const [codes, setCodes] = useState<readonly string[]>([]);
   const [enrollment, setEnrollment] = useState<{ secret: string; uri: string }>();
   const [archiveFailure, setArchiveFailure] = useState<string>();
@@ -91,64 +138,76 @@ export function BackendSecurityPage() {
         title={t('administration.security')}
         description={t('administration.description')}
       />
-      <RemoteRegion
-        {...mfa}
-        errorTitle={t('administration.mfaStatusFailure')}
-        errorDescription={t('administration.mfaStatusFailureHint')}
-      >
-        <Section title={t('administration.mfa')} contentInset>
-          <p>{t(mfa.value ? 'administration.active' : 'administration.disabled')}</p>
-          <Toolbar
-            label={t('administration.actions')}
-            primary={
-              <div className="flex flex-wrap gap-2">
-                {!mfa.value ? (
-                  <>
-                    {!enrollment ? (
+      {canRead ? (
+        <RemoteRegion
+          {...mfa}
+          errorTitle={t('administration.mfaStatusFailure')}
+          errorDescription={t('administration.mfaStatusFailureHint')}
+        >
+          <Section title={t('administration.mfa')} contentInset>
+            <p>{t(mfa.value ? 'administration.active' : 'administration.disabled')}</p>
+            {canManage ? (
+              <Toolbar
+                label={t('administration.actions')}
+                primary={
+                  <div className="flex flex-wrap gap-2">
+                    {!mfa.value ? (
+                      <>
+                        {!enrollment ? (
+                          <MfaAction
+                            action="begin"
+                            onSaved={mfa.reload}
+                            onCodes={setCodes}
+                            onEnrollment={setEnrollment}
+                          />
+                        ) : null}
+                        {enrollment ? (
+                          <MfaAction
+                            action="confirm"
+                            onSaved={mfa.reload}
+                            onCodes={setCodes}
+                            onEnrollment={setEnrollment}
+                          />
+                        ) : null}
+                      </>
+                    ) : (
                       <MfaAction
-                        action="begin"
+                        action="disable"
                         onSaved={mfa.reload}
                         onCodes={setCodes}
                         onEnrollment={setEnrollment}
                       />
-                    ) : null}
-                    {enrollment ? (
-                      <MfaAction
-                        action="confirm"
-                        onSaved={mfa.reload}
-                        onCodes={setCodes}
-                        onEnrollment={setEnrollment}
-                      />
-                    ) : null}
-                  </>
-                ) : (
-                  <MfaAction
-                    action="disable"
-                    onSaved={mfa.reload}
-                    onCodes={setCodes}
-                    onEnrollment={setEnrollment}
-                  />
-                )}
+                    )}
+                  </div>
+                }
+              />
+            ) : null}
+            {enrollment ? (
+              <div className="space-y-3">
+                <p>{t('administration.mfaSetupHint')}</p>
+                <dl className="space-y-3 text-sm">
+                  <div>
+                    <dt className="font-medium">{t('administration.mfaSecret')}</dt>
+                    <dd className="break-all font-mono">{enrollment.secret}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium">{t('administration.mfaUri')}</dt>
+                    <dd className="break-all font-mono">{enrollment.uri}</dd>
+                  </div>
+                </dl>
               </div>
-            }
-          />
-          {enrollment ? (
-            <div className="space-y-3">
-              <p>{t('administration.mfaSetupHint')}</p>
-              <dl className="space-y-3 text-sm">
-                <div>
-                  <dt className="font-medium">{t('administration.mfaSecret')}</dt>
-                  <dd className="break-all font-mono">{enrollment.secret}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium">{t('administration.mfaUri')}</dt>
-                  <dd className="break-all font-mono">{enrollment.uri}</dd>
-                </div>
-              </dl>
-            </div>
-          ) : null}
-        </Section>
-      </RemoteRegion>
+            ) : null}
+          </Section>
+        </RemoteRegion>
+      ) : null}
+      {!canRead && !canArchive ? (
+        <StateSurface
+          state="warning"
+          icon={<NavigationIcon iconId="identity" />}
+          title={t('administration.security')}
+          description={t('identityProduct.errors.forbidden')}
+        />
+      ) : null}
       {codes.length ? (
         <Section
           title={t('administration.recoveryTitle')}
@@ -167,28 +226,30 @@ export function BackendSecurityPage() {
           </div>
         </Section>
       ) : null}
-      <Section title={t('administration.archiveSelf')} contentInset>
-        <DialogSurface
-          triggerLabel={t('administration.archiveSelf')}
-          title={t('administration.archiveSelf')}
-          description={t('administration.archiveWarning')}
-          cancelLabel={t('administration.cancel')}
-          confirmLabel={t('administration.confirm')}
-          {...(archiveFailure ? { failureMessage: archiveFailure } : {})}
-          onConfirm={async () => {
-            try {
-              const confirmation = await port.beginArchive();
-              await port.confirmArchive(confirmation);
-              port.endSession();
-            } catch (error) {
-              setArchiveFailure(t('administration.failureDescription'));
-              throw error;
-            }
-          }}
-        >
-          <p>{t('administration.archiveWarning')}</p>
-        </DialogSurface>
-      </Section>
+      {canArchive ? (
+        <Section title={t('administration.archiveSelf')} contentInset>
+          <DialogSurface
+            triggerLabel={t('administration.archiveSelf')}
+            title={t('administration.archiveSelf')}
+            description={t('administration.archiveWarning')}
+            cancelLabel={t('administration.cancel')}
+            confirmLabel={t('administration.confirm')}
+            {...(archiveFailure ? { failureMessage: archiveFailure } : {})}
+            onConfirm={async () => {
+              try {
+                const confirmation = await port.beginArchive();
+                await port.confirmArchive(confirmation);
+                port.endSession();
+              } catch (error) {
+                setArchiveFailure(t('administration.failureDescription'));
+                throw error;
+              }
+            }}
+          >
+            <p>{t('administration.archiveWarning')}</p>
+          </DialogSurface>
+        </Section>
+      ) : null}
     </Page>
   );
 }
