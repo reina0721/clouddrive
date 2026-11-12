@@ -37,6 +37,8 @@ Web 与 Go 是两个独立进程。Web Host 拥有路由、浏览器资源和交
 
 文件页面在 Surface 表达浏览、编辑或分享意图，Host Port 执行浏览器 I/O；Next 将同源请求交给 Go 的现有认证、CSRF 和 operation 授权链。files 用例复核主体、范围、内容版本与配额，再通过仓储和 Storage 完成操作。公开分享使用单独的公开 Port 和当前分享策略，不复用私有文件授权。
 
+管理页的共享读取状态由 Surface `useRemote` 拥有，读取函数身份和刷新代次共同决定结果归属。查询或 Port 改变后的首次渲染立即进入加载状态，不展示上一次的值或错误；过期请求完成后也不能覆盖当前查询。该机制只控制结果呈现，网络取消仍由支持取消的 Host Port 负责，不把忽略旧响应等同于终止网络工作。
+
 上传由 tus 处理有界的字节接续，files 负责会话、摘要、配额与最终发布；WebDAV 和外部编辑适配也进入同一业务边界。压缩解析由父任务拥有的受限子进程执行，解析器不装配第二个应用。PDF 等浏览器阅读器由 Host 隔离 SDK 与临时资源，Go 继续提供获准的内容。具体取舍见[技术选型](technology-selection.md)。
 
 界面采用 [Material Design 3](../../frontend/docs/ui-visual-calibration.md)。Design Schema 拥有主题，Adapter 拥有控件及交互状态，Surface Foundation 提供页面结构，业务 Surface 组合用户任务，Web Host 负责运行时。页面差异不能演变为第二套组件或状态语言。

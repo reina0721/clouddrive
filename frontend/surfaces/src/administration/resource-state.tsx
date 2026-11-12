@@ -32,31 +32,33 @@ export function BackendOnly({ children }: Readonly<{ children: ReactNode }>) {
 
 export function useRemote<T>(load: () => Promise<T>) {
   const [revision, setRevision] = useState(0);
-  const [state, setState] = useState<{ value: T | null; error: unknown; loading: boolean }>({
-    value: null,
-    error: null,
-    loading: true,
-  });
+  const [settled, setSettled] = useState<{
+    load: typeof load;
+    revision: number;
+    value: T | null;
+    error: unknown;
+  }>();
   useEffect(() => {
     let active = true;
-    void Promise.resolve()
-      .then(() => {
-        if (active) setState((prior) => ({ ...prior, loading: true, error: null }));
-        return load();
-      })
-      .then(
-        (value) => {
-          if (active) setState({ value, error: null, loading: false });
-        },
-        (error) => {
-          if (active) setState({ value: null, error, loading: false });
-        },
-      );
+    void (async () => {
+      try {
+        const value = await load();
+        if (active) setSettled({ load, revision, value, error: null });
+      } catch (error) {
+        if (active) setSettled({ load, revision, value: null, error });
+      }
+    })();
     return () => {
       active = false;
     };
   }, [load, revision]);
-  return { ...state, reload: () => setRevision((value) => value + 1) };
+  const current = settled?.load === load && settled.revision === revision;
+  return {
+    value: current ? settled.value : null,
+    error: current ? settled.error : null,
+    loading: !current,
+    reload: () => setRevision((value) => value + 1),
+  };
 }
 export function RemoteRegion({
   loading,

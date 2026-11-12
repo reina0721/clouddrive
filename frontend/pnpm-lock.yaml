@@ -429,9 +429,15 @@ importers:
         specifier: ^4.6.6
         version: 4.6.6
     devDependencies:
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@types/react':
         specifier: ^19.2.7
         version: 19.2.18
+      jsdom:
+        specifier: ^30.0.1
+        version: 30.0.1(@noble/hashes@2.4.0)
       next:
         specifier: ^16.4.5
         version: 16.4.5(@babel/core@7.29.7)(@playwright/test@1.62.1)(@types/node@24.13.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
