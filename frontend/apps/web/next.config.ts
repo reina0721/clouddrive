@@ -9,6 +9,8 @@ const deploymentMode = config.deploymentMode;
 
 export default function nextConfig(phase: string): NextConfig {
   return {
+    // 视觉验收只比较产品界面；普通开发仍保留 Next 开发指示器。
+    ...(process.env.CLOUDDRIVE_BROWSER_TEST === '1' ? { devIndicators: false as const } : {}),
     // 允许通过 127.0.0.1、localhost 访问 0.0.0.0 监听的开发服务器
     allowedDevOrigins: ['127.0.0.1', 'localhost'],
     experimental: {

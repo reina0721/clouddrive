@@ -71,6 +71,9 @@ for (const width of [320, 390, 768, 1440, 2048]) {
     for (const path of ['/login', '/register', '/session-expired', '/welcome']) {
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: 'Open Next.js Dev Tools', exact: true }),
+      ).toHaveCount(0);
       await expect(page.getByRole('button', { name: '当前用户', exact: true })).toHaveCount(0);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,

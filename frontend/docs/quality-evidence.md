@@ -13,6 +13,8 @@
 
 默认 Playwright 配置拥有两个独立开发服务：`WEB_PORT` 为演示模式，相邻端口为拦截式 backend-contract 模式。两者使用同一 Web Host 开发入口，分别显式传入认证模式与端口，编译目录位于 `.next/playwright-<端口>/mock` 或 `backend`。测试不复用已经运行的服务器：HTTP 就绪不证明认证模式正确；端口被占用时直接失败，保留原服务。
 
+测试服务显式设置 `CLOUDDRIVE_BROWSER_TEST=1`，由 Next 官方 `devIndicators: false` 关闭开发工具指示器；编译与运行错误仍正常暴露，普通开发不受此开关影响。新增平台视觉基线须逐张查看真实截图，检查布局、文案、焦点与主题后，再以不更新截图的普通运行确认可重复；不能整套自动接受或调高差异阈值。
+
 日常开发仍在使用默认端口时，可在另一组空闲端口运行，例如 `WEB_PORT=4273 pnpm test:browser`（PowerShell 先设置 `$env:WEB_PORT=4273`）。不要通过复用开发实例来绕过端口冲突。真实 Go 文件验收继续使用独立的 `playwright.files.config.ts` 与预览凭据，不能用本配置的演示或拦截结果替代。
 
 ## 输出和追溯

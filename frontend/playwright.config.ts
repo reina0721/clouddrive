@@ -67,6 +67,7 @@ export default defineConfig({
     {
       command: 'pnpm --filter @clouddrive/web dev',
       env: {
+        CLOUDDRIVE_BROWSER_TEST: '1',
         WEB_PORT: String(primaryPort),
         NEXT_DIST_DIR: `.next/playwright-${primaryPort}/mock`,
         NEXT_PUBLIC_AUTH_MODE: 'mock',
@@ -79,6 +80,7 @@ export default defineConfig({
     {
       command: 'pnpm --filter @clouddrive/web dev',
       env: {
+        CLOUDDRIVE_BROWSER_TEST: '1',
         WEB_PORT: String(secondaryPort),
         NEXT_DIST_DIR: `.next/playwright-${secondaryPort}/backend`,
         NEXT_PUBLIC_AUTH_MODE: 'backend',
