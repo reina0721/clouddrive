@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+export { ControlLocaleProvider, type ControlLocaleProviderProps } from './control-locale';
 
 export type SkipLinkProps = Readonly<{
   href: `#${string}`;

@@ -4,6 +4,7 @@ import { FeedbackProvider } from '@clouddrive/ui-adapter/feedback-provider';
 import { AlertBanner } from '@clouddrive/ui-adapter/feedback';
 import { AlertTriangle } from 'lucide-react';
 import { FrontendI18nProvider, useFrontendTranslation } from '@clouddrive/i18n';
+import { ControlLocaleProvider } from '@clouddrive/ui-adapter/accessibility';
 import { CommandsProvider } from '@clouddrive/plugin-framework/commands';
 import { LeaveConfirmProvider } from '@clouddrive/plugin-framework/leave-confirm';
 import { NotificationsProvider } from '@clouddrive/plugin-framework/notifications';
@@ -223,6 +224,16 @@ function RuntimeProviders({ children }: Readonly<{ children: ReactNode }>) {
   );
 }
 
+function LocalizedControls({ children }: Readonly<{ children: ReactNode }>) {
+  const { locale } = useFrontendTranslation();
+  const weekStart = useShellStore((state) => state.preferences.localeRegion.weekStart);
+  return (
+    <ControlLocaleProvider locale={locale} weekStart={weekStart}>
+      {children}
+    </ControlLocaleProvider>
+  );
+}
+
 export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
   // 用户动效偏好（外观 → motion）：订阅 shell store；hydration 完成后即时生效。
   // MotionPolicyProvider 收到 reduced/standard 时硬设 data-motion-mode（Inspector
@@ -230,13 +241,15 @@ export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
   const motionPreference = useShellStore((state) => state.preferences.appearance.motion);
   return (
     <FrontendI18nProvider runtime={appI18n}>
-      <MotionPolicyProvider preference={motionPreference}>
-        <ScrollRevealRuntime>
-          <GlobalProgressProvider>
-            <RuntimeProviders>{children}</RuntimeProviders>
-          </GlobalProgressProvider>
-        </ScrollRevealRuntime>
-      </MotionPolicyProvider>
+      <LocalizedControls>
+        <MotionPolicyProvider preference={motionPreference}>
+          <ScrollRevealRuntime>
+            <GlobalProgressProvider>
+              <RuntimeProviders>{children}</RuntimeProviders>
+            </GlobalProgressProvider>
+          </ScrollRevealRuntime>
+        </MotionPolicyProvider>
+      </LocalizedControls>
     </FrontendI18nProvider>
   );
 }

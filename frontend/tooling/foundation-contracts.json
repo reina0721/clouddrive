@@ -146,6 +146,8 @@
         "apps/web/e2e/ui-ux-109.spec.ts",
         "apps/web/e2e/management-completion.spec.ts",
         "apps/web/src/test/date-picker-contract.test.tsx",
+        "apps/web/e2e/control-locale.spec.ts",
+        "file-tests/control-locale.spec.ts",
         "apps/web/src/test/container-layout.test.tsx",
         "apps/web/e2e/api-workbench.spec.ts",
         "file-tests/storage-policy.spec.ts"

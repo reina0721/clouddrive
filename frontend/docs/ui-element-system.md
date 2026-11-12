@@ -22,6 +22,8 @@ Semantic Design Token
 
 内部示例的 `ComponentPreview` 状态名限定为本插件双语词典中已登记的键；新增状态先补齐词典，不能让原始翻译键进入界面。交互验收比较当前主题的 Surface、Muted 和 Brand 语义色，同时保留边界、指示器和键盘断言，不把旧主题的 RGB 数值当作组件契约。
 
+Host 在 `FrontendI18nProvider` 内把当前应用语言与周起始偏好传给 `accessibility` 的 `ControlLocaleProvider`。Adapter 映射 React Aria 的内置消息、日期分段和日历起始日；不读取业务 Store，不另建翻译运行时。语言切换即时作用于 Forms 示例、审计日期筛选及其他成熟控件，保留 ISO 日期值、URL 与键盘行为。未提供周起始日的独立 Adapter 消费者沿用控件的地区默认值。
+
 ## 2. 当前分类
 
 | Family                | 稳定语义                     | 当前 Element / Pattern                                                                                                                     | 不应混入                     |

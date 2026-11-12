@@ -1,8 +1,16 @@
 import { Calendar } from '@heroui/react/calendar';
+import { useControlWeekStart } from './control-locale-context';
 
 export default function DatePickerCalendar({ calendarLabel }: Readonly<{ calendarLabel: string }>) {
+  const weekStart = useControlWeekStart();
   return (
-    <Calendar aria-label={calendarLabel} className="text-ink">
+    <Calendar
+      aria-label={calendarLabel}
+      className="text-ink"
+      {...(weekStart
+        ? { firstDayOfWeek: weekStart === 'monday' ? ('mon' as const) : ('sun' as const) }
+        : {})}
+    >
       <Calendar.Header>
         <Calendar.YearPickerTrigger>
           <Calendar.YearPickerTriggerHeading />
