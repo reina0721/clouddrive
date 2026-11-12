@@ -1,7 +1,10 @@
+import { credentialMessages } from './credential-messages';
+
 export const authenticationResources = {
   'zh-CN': {
     translation: {
       auth: {
+        ...credentialMessages['zh-CN'],
         requiredPasswordTitle: '必须修改密码',
         requiredPasswordDescription: '管理员已重置密码。请设置新密码后重新登录。',
         currentPassword: '当前密码',
@@ -41,8 +44,6 @@ export const authenticationResources = {
         passwordRule: '使用 15–128 个字符，建议采用独特的长密码。',
         passwordRequired: '请输入密码（最多 128 个字符）。',
         confirmationError: '两次输入的密码不一致。',
-        showPassword: '显示密码',
-        hidePassword: '隐藏密码',
         showConfirmation: '显示确认密码',
         hideConfirmation: '隐藏确认密码',
         loginSubmit: '登录',
@@ -105,25 +106,13 @@ export const authenticationResources = {
         notFoundDescription: '当前地址没有对应页面，请返回工作台选择有效入口。',
         welcomeDescription: '保存、整理和分享文件，从这里开始。',
         enterWorkspace: '打开我的文件',
-        errors: {
-          'mfa-required': '请输入动态验证码或恢复码。',
-          locked: '尝试次数过多，账户暂时锁定，请稍后重试。',
-          configuration: '认证配置无效，请联系部署维护者。',
-          credentials: '邮箱或密码不正确，请重试。',
-          'account-exists': '此邮箱已有账户，请前往登录。',
-          expired: '会话已失效，请重新登录。',
-          forbidden: '访问被拒绝，请联系管理员。',
-          network: '无法连接认证服务，请检查网络后重试。',
-          timeout: '认证请求超时，请重试。',
-          protocol: '认证响应或本地记录无效，请联系维护者。',
-          unavailable: '认证服务或本地存储暂时不可用，请稍后重试。',
-        },
       },
     },
   },
   en: {
     translation: {
       auth: {
+        ...credentialMessages.en,
         requiredPasswordTitle: 'Change your password',
         requiredPasswordDescription:
           'Your password was reset. Set a new password and sign in again.',
@@ -167,8 +156,6 @@ export const authenticationResources = {
         passwordRule: 'Use 15–128 characters. A unique, long passphrase is recommended.',
         passwordRequired: 'Enter your password (up to 128 characters).',
         confirmationError: 'Your passwords do not match.',
-        showPassword: 'Show password',
-        hidePassword: 'Hide password',
         showConfirmation: 'Show confirmation',
         hideConfirmation: 'Hide confirmation',
         loginSubmit: 'Sign in',
@@ -238,21 +225,6 @@ export const authenticationResources = {
           'This address has no matching page. Return to the workspace to choose an available destination.',
         welcomeDescription: 'A place to save, organize, and share your files.',
         enterWorkspace: 'Open my files',
-        errors: {
-          'mfa-required': 'Enter your verification or recovery code.',
-          locked: 'Too many attempts. Your account is temporarily locked. Try again later.',
-          configuration: 'Authentication configuration is invalid. Contact the deployment owner.',
-          credentials: 'Your email or password is incorrect. Try again.',
-          'account-exists': 'An account already uses this email. Sign in instead.',
-          expired: 'Your session is no longer valid. Sign in again.',
-          forbidden: 'Access denied. Contact your administrator.',
-          network: 'Cannot reach the authentication service. Check your connection and retry.',
-          timeout: 'Authentication timed out. Try again.',
-          protocol:
-            'The authentication response or local record is invalid. Contact the maintainer.',
-          unavailable:
-            'Authentication or local storage is temporarily unavailable. Try again later.',
-        },
       },
     },
   },

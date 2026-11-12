@@ -10,6 +10,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../auth/context';
 import { verifyAccountPassword } from '../auth/unlock';
 import { useLockStore } from '../state/use-lock-store';
+import { appI18n } from '../i18n/i18n';
+import { lockScreenResources } from './lock-screen-translations';
+
+appI18n.addResources(lockScreenResources);
 
 /**
  * 锁屏覆盖层（Host）。
