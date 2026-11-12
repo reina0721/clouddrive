@@ -26,6 +26,9 @@ afterEach(() => {
 });
 it('changes a password atomically, revokes all sessions and rejects the old credential', async () => {
   const security = createMockAccountSecurity(() => 'mock-demo');
+  await expect(security.changePassword(MOCK_DEMO_PASSWORD, 'Short2026!')).rejects.toMatchObject({
+    code: 'validation',
+  });
   await expect(
     security.changePassword('wrong-password', 'ChangedPassword2026!'),
   ).rejects.toMatchObject({ code: 'validation' });
@@ -108,4 +111,6 @@ it('enforces cookie, CSRF and strict session responses without falling back to m
   expect(calls).toContain('/api/auth/sessions/current');
   await security.changePassword(MOCK_DEMO_PASSWORD, 'NewPassword2026!');
   expect(calls).toContain('/api/auth/password');
+  // A deployment may accept a shorter minimum than the default policy.
+  await security.changePassword(MOCK_DEMO_PASSWORD, 'Custom2026!');
 });

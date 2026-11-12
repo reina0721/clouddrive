@@ -133,7 +133,10 @@ export function createMockAccountSecurity(currentUserId: () => string | null): A
         }));
     },
     changePassword: async (currentPassword, newPassword) => {
-      if (!changePasswordSchema.safeParse({ currentPassword, newPassword }).success)
+      if (
+        !changePasswordSchema.safeParse({ currentPassword, newPassword }).success ||
+        newPassword.length < 15
+      )
         throw new IdentityError('validation');
       const database = await readMockDatabase();
       const access = owner(database);

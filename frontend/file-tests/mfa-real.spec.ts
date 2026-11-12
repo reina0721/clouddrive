@@ -131,6 +131,17 @@ test('独立账户完成真实 TOTP 绑定、恢复码登录和解除绑定', as
     await disable.getByLabel('动态验证码或恢复码', { exact: true }).fill(recoveryCodes[1]!);
     await disable.getByRole('button', { name: '确认', exact: true }).click();
     await expect(member.getByRole('button', { name: '绑定认证器', exact: true })).toBeVisible();
+    // The browser permits HTTP-valid input; the deployment owns password strength.
+    await member.goto('/account');
+    await member.getByLabel('当前密码', { exact: true }).fill(password);
+    await member.getByLabel('新密码', { exact: true }).fill('Policy12!abc');
+    const rejected = member.waitForResponse(
+      (response) =>
+        response.url().endsWith('/auth/password') && response.request().method() === 'POST',
+    );
+    await member.getByRole('button', { name: '修改密码', exact: true }).click();
+    expect((await rejected).status()).toBe(422);
+    await expect(member.getByLabel('新密码', { exact: true })).toHaveValue('Policy12!abc');
   } finally {
     await write(page, `/native/iam/accounts/${created.user.id}/status`, 'PATCH', {
       status: 'disabled',

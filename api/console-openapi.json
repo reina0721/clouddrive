@@ -15755,7 +15755,7 @@
                   },
                   "newPassword": {
                     "type": "string",
-                    "minLength": 15,
+                    "minLength": 1,
                     "maxLength": 128
                   }
                 },

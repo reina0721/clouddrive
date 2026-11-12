@@ -14,7 +14,8 @@ export const pluginI18nResources = {
         securitySaved: '账户安全设置已更新',
         currentPassword: '当前密码',
         newPassword: '新密码',
-        passwordHint: '12 至 128 个字符，且不同于当前密码。',
+        passwordHint:
+          '最多 128 个字符，须符合本站密码策略，且不同于当前密码。建议使用独特的长密码。',
         passwordInvalid: '请检查密码，当前密码须正确，新密码须符合要求。',
         changePassword: '修改密码',
         showPassword: '显示密码',
@@ -60,7 +61,8 @@ export const pluginI18nResources = {
         securitySaved: 'Account security updated',
         currentPassword: 'Current password',
         newPassword: 'New password',
-        passwordHint: '12 to 128 characters, different from your current password.',
+        passwordHint:
+          'Up to 128 characters, different from your current password, and compliant with this site’s password policy. Use a unique, long passphrase.',
         passwordInvalid: 'Check your current password and new password requirements.',
         changePassword: 'Change password',
         showPassword: 'Show password',

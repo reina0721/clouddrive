@@ -22,6 +22,6 @@ export const accountSessionsSchema = z
   })
   .strict();
 export const changePasswordSchema = z
-  .object({ currentPassword: z.string().min(1).max(128), newPassword: z.string().min(15).max(128) })
+  .object({ currentPassword: z.string().min(1).max(128), newPassword: z.string().min(1).max(128) })
   .strict()
   .refine((input) => input.currentPassword !== input.newPassword, { path: ['newPassword'] });
