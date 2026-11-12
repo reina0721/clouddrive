@@ -4,7 +4,7 @@ import { Card, CardContent } from '@clouddrive/ui-adapter/card';
 import { Panel } from '@clouddrive/ui-adapter/panel';
 import { StatusPill } from '@clouddrive/ui-adapter/status-pill';
 import { AppWindow, Braces, Component, ShieldCheck } from 'lucide-react';
-import { useFrontendTranslation } from '@clouddrive/i18n';
+import { FrontendMessages, useFrontendTranslation } from '@clouddrive/i18n';
 import { usePreferencesPort } from '@clouddrive/plugin-framework/preferences';
 import { useWorkbenchPort } from '@clouddrive/plugin-framework/workbench';
 import { useSyncExternalStore } from 'react';
@@ -12,6 +12,18 @@ import Link from 'next/link';
 import type { Preferences } from '@clouddrive/surface/preferences-model';
 
 import { Page, PageHeader } from '@clouddrive/surface-foundation/layout';
+
+import { foundationMessages } from '../src-messages';
+
+function PageMessagesExample() {
+  const { t } = useFrontendTranslation();
+  return (
+    <Panel className="p-5">
+      <h2 className="text-sm font-bold text-ink">{t('foundationMessages.title')}</h2>
+      <p className="mt-2 text-sm leading-6 text-ink-muted">{t('foundationMessages.description')}</p>
+    </Panel>
+  );
+}
 
 const layers = [
   { id: 'stable', icon: Braces, tone: 'bg-success-soft text-success' },
@@ -107,6 +119,9 @@ export default function FoundationsPage() {
           </Card>
         ))}
       </div>
+      <FrontendMessages resources={foundationMessages}>
+        <PageMessagesExample />
+      </FrontendMessages>
       <div data-reveal-items className="grid gap-6 xl:grid-cols-3">
         <Panel className="p-5 sm:p-6 xl:col-span-2" tone="brand">
           <div className="flex items-start gap-4">

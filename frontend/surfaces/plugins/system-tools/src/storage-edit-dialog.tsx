@@ -31,7 +31,7 @@ export function StorageEditDialog({
   children: ReactNode;
 }>) {
   const { t } = useFrontendTranslation();
-  const label = (key: string) => t('systemTools.storage.' + key);
+  const label = (key: string) => t('systemStorage.' + key);
   const [intent, setIntent] = useState<'close' | 'reload'>();
   const errorRef = useRef<HTMLParagraphElement>(null);
   useEffect(() => {

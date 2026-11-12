@@ -49,8 +49,15 @@ export function createLazyAdministrationPort(
     resetPassword: async (...args) => (await load()).resetPassword(...args),
     beginArchive: async () => (await load()).beginArchive(),
     confirmArchive: async (id) => (await load()).confirmArchive(id),
-    runtime: async () => (await load()).runtime(),
-    securityAudit: async (cursor) => (await load()).securityAudit(cursor),
+    runtime: {
+      probe: async (...args) => (await load()).runtime.probe(...args),
+      build: async (...args) => (await load()).runtime.build(...args),
+      metadata: async (...args) => (await load()).runtime.metadata(...args),
+      diagnostics: async (...args) => (await load()).runtime.diagnostics(...args),
+      metrics: async (...args) => (await load()).runtime.metrics(...args),
+      metricsText: async (...args) => (await load()).runtime.metricsText(...args),
+    },
+    securityAudit: async (...args) => (await load()).securityAudit(...args),
     endSession: () => {
       void load().then((port) => port.endSession());
     },

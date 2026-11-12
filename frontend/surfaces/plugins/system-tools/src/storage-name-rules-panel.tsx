@@ -46,7 +46,7 @@ type Check = { name: string; rules: StorageNameRules };
 
 function RuleSummary({ rules }: Readonly<{ rules: StorageNameRules }>) {
   const { t } = useFrontendTranslation();
-  const label = (key: string) => t('systemTools.storage.' + key);
+  const label = (key: string) => t('systemStorage.' + key);
   return (
     <DescriptionList
       label={label('rulesTitle')}
@@ -83,14 +83,14 @@ function RuleCheck({ input }: Readonly<{ input: Check }>) {
     if (state.result.error instanceof FilesError && state.result.error.code === 'invalid')
       return (
         <p role="alert" className="text-sm text-danger">
-          {t('systemTools.storage.invalidRules')}
+          {t('systemStorage.invalidRules')}
         </p>
       );
     return <CatalogFailure error={state.result.error} retry={state.refresh} />;
   }
   return (
     <p role="status" className="text-sm font-medium">
-      {t('systemTools.storage.result.' + state.result.value.decision)}
+      {t('systemStorage.result.' + state.result.value.decision)}
     </p>
   );
 }
@@ -106,7 +106,7 @@ function RulesEditor({
 }>) {
   const files = useFiles();
   const { t } = useFrontendTranslation();
-  const label = (key: string) => t('systemTools.storage.' + key);
+  const label = (key: string) => t('systemStorage.' + key);
   const [view, setView] = useState(initial);
   const form = useFoundationForm({
     schema: draftSchema,
@@ -296,7 +296,7 @@ function RulesOverview({
   refresh,
 }: Readonly<{ initial: StorageNameRulesView; refresh: () => void }>) {
   const { t } = useFrontendTranslation();
-  const label = (key: string) => t('systemTools.storage.' + key);
+  const label = (key: string) => t('systemStorage.' + key);
   const { notify } = useFeedback();
   const [view, setView] = useState(initial);
   const [editing, setEditing] = useState(false);
@@ -359,7 +359,7 @@ export function StorageNameRulesPanel() {
   if (state.result && 'value' in state.result)
     return <RulesOverview initial={state.result.value} refresh={state.refresh} />;
   return (
-    <Section title={t('systemTools.storage.rulesTitle')} contentInset>
+    <Section title={t('systemStorage.rulesTitle')} contentInset>
       {!state.result ? (
         <p role="status">{t('administration.loading')}</p>
       ) : (

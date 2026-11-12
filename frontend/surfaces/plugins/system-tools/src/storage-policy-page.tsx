@@ -6,7 +6,7 @@ import {
   FoundationForm,
   useFoundationForm,
 } from '@clouddrive/form-foundation';
-import { formatNumber, useFrontendTranslation } from '@clouddrive/i18n';
+import { formatNumber, FrontendMessages, useFrontendTranslation } from '@clouddrive/i18n';
 import { formatInstant } from '@clouddrive/i18n/format';
 import { usePreferencesPort } from '@clouddrive/plugin-framework/preferences';
 import { useRegisterDirtySource } from '@clouddrive/plugin-framework/leave-confirm';
@@ -22,6 +22,7 @@ import { FilesError } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
 import type { StoragePolicy } from '../../../src/files/storage-policy';
 import type { Preferences } from '../../../src/preferences-model';
+import { storageMessages } from './storage-messages';
 import { CatalogFailure } from './catalog-failure';
 import { useCatalogRequest } from './use-catalog-request';
 import { StorageNameRulesPanel } from './storage-name-rules-panel';
@@ -45,7 +46,7 @@ function limitText(value: number, locale: string) {
 function UsageSnapshot() {
   const files = useFiles();
   const { t, locale } = useFrontendTranslation();
-  const label = (key: string) => t('systemTools.storage.' + key);
+  const label = (key: string) => t('systemStorage.' + key);
   const preferences = usePreferencesPort<Preferences>();
   const region = useSyncExternalStore(
     preferences.subscribe,
@@ -118,7 +119,7 @@ function LimitsEditor({
 }>) {
   const files = useFiles();
   const { t, locale } = useFrontendTranslation();
-  const label = (key: string) => t('systemTools.storage.' + key);
+  const label = (key: string) => t('systemStorage.' + key);
   const [view, setView] = useState(initial);
   const [failure, setFailure] = useState<'conflict' | 'saveFailure' | 'reloadFailed'>();
   const [reloading, setReloading] = useState(false);
@@ -229,12 +230,12 @@ function LimitsEditor({
                         disabled={disabled || field.value.inherit}
                         ref={field.ref}
                         onBlur={field.onBlur}
-                        hint={t('systemTools.storage.range', {
+                        hint={t('systemStorage.range', {
                           max: limitText(view.defaults[key], locale),
                         })}
                         {...(form.hasError(`${key}.amount`)
                           ? {
-                              error: t('systemTools.storage.range', {
+                              error: t('systemStorage.range', {
                                 max: limitText(view.defaults[key], locale),
                               }),
                             }
@@ -244,7 +245,7 @@ function LimitsEditor({
                         }
                       />
                       <SelectField
-                        label={t('systemTools.storage.unit', { label: name })}
+                        label={t('systemStorage.unit', { label: name })}
                         value={field.value.unit}
                         options={byteUnits.map((unit) => ({ value: unit, label: unit }))}
                         disabled={disabled || field.value.inherit}
@@ -273,7 +274,7 @@ function LimitsOverview({
   refresh,
 }: Readonly<{ initial: StoragePolicy; refresh: () => void }>) {
   const { t, locale } = useFrontendTranslation();
-  const label = (key: string) => t('systemTools.storage.' + key);
+  const label = (key: string) => t('systemStorage.' + key);
   const { notify } = useFeedback();
   const [view, setView] = useState(initial);
   const [editing, setEditing] = useState(false);
@@ -351,10 +352,10 @@ function LimitsOverview({
   );
 }
 
-export function StoragePolicyPage() {
+function StoragePolicyContent() {
   const files = useFiles();
   const { t } = useFrontendTranslation();
-  const label = (key: string) => t('systemTools.storage.' + key);
+  const label = (key: string) => t('systemStorage.' + key);
   const policy = useCatalogRequest(
     useCallback((signal) => files.readStoragePolicy(signal), [files]),
   );
@@ -415,5 +416,17 @@ export function StoragePolicyPage() {
       )}
       <StorageNameRulesPanel key={revision} />
     </Page>
+  );
+}
+
+export function StoragePolicyPage() {
+  const { t } = useFrontendTranslation();
+  return (
+    <FrontendMessages
+      resources={storageMessages}
+      fallback={<p role="status">{t('administration.loading')}</p>}
+    >
+      <StoragePolicyContent />
+    </FrontendMessages>
   );
 }

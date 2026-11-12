@@ -490,3 +490,14 @@ expectedVersion)`、`resetPresentation`、`clear`、`clearAll`、`recover`（清
 ## 文件离线任务Port（129）
 
 `files/routes/downloads/page.tsx`声明`/home/downloads`插件页面，Host路由壳由plugin-codegen生成。`surfaces/src/files/downloads.ts`定义独立DownloadsPort与Zod契约，HostFilesRuntime显式提供账号绑定的实现。Host负责网络、私有链接复制和可见性轮询，页面只消费任务语义；卸载或账号失效清理订阅，不恢复旧账号的timer。布局复用Page/PageHeader/Section/StateSurface，已知总量复用ProgressMeter，未知总量保留真实字节而不绘制虚假百分比。
+
+## 服务运行状态 Port
+
+运行页消费 AdministrationPort 的窄 `runtime` 读取组，探针、诊断、构建、配置和结构化指标
+分别接收取消信号，单项失败不能覆盖其余事实。Host 复用当前 Cookie 传输和管理端点；
+只有探针 HTTP 503 且合法 `{status: "fail"}` 被解释为未就绪/未存活，矛盾或无效内容仍属协议错误。
+结构化指标来自 `/management/metrics-summary`，按后端实际 family key 本地化；
+原始 `/management/metrics` 只在主动展开时有界读取，关闭或离页取消。
+诊断保留真实阶段、组件、错误类型和运行单元，未提供的构建信息不合成默认值。
+配置沿用服务显式公开的 allowlist；安全事件保持独立的 `auth:audit:read` 授权，
+无此权限不读取审计端点，有权限也仅在主动请求时读取。服务器始终执行最终授权。

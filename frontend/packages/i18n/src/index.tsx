@@ -6,7 +6,7 @@ import {
   initReactI18next,
   useTranslation as useVendorTranslation,
 } from 'react-i18next';
-import type { ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 export type TranslationResources = Readonly<
   Record<string, Readonly<{ translation: Readonly<Record<string, unknown>> }>>
@@ -18,6 +18,8 @@ export type FrontendI18nRuntime = Readonly<{
   translate: (key: string, values?: Readonly<Record<string, unknown>>) => string;
   addResources: (resources: TranslationResources) => void;
 }>;
+
+const RuntimeContext = createContext<FrontendI18nRuntime | null>(null);
 
 const runtimeInstances = new WeakMap<FrontendI18nRuntime, I18nextInstance>();
 
@@ -65,7 +67,55 @@ export function FrontendI18nProvider({
 }: Readonly<{ runtime: FrontendI18nRuntime; children: ReactNode }>) {
   const instance = runtimeInstances.get(runtime);
   if (!instance) throw new Error('Frontend i18n runtime is not active.');
-  return <I18nextProvider i18n={instance}>{children}</I18nextProvider>;
+  return (
+    <RuntimeContext.Provider value={runtime}>
+      <I18nextProvider i18n={instance}>{children}</I18nextProvider>
+    </RuntimeContext.Provider>
+  );
+}
+
+/** 页面拥有资源，安装完成才挂载消费者；仍使用同一语言运行时。资源须为稳定模块常量。 */
+export function FrontendMessages({
+  resources,
+  fallback = null,
+  children,
+}: Readonly<{
+  resources: TranslationResources;
+  fallback?: ReactNode;
+  children: ReactNode;
+}>) {
+  const runtime = useContext(RuntimeContext);
+  if (!runtime) throw new Error('Frontend i18n runtime is not active.');
+  const [installed, setInstalled] = useState<{
+    runtime: FrontendI18nRuntime;
+    resources: TranslationResources;
+    error?: Error;
+  }>();
+  useEffect(() => {
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      try {
+        runtime.addResources(resources);
+        setInstalled({ runtime, resources });
+      } catch (error) {
+        setInstalled({
+          runtime,
+          resources,
+          error:
+            error instanceof Error
+              ? error
+              : new Error('Page messages could not be installed.', { cause: error }),
+        });
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [runtime, resources]);
+  if (installed?.runtime !== runtime || installed.resources !== resources) return fallback;
+  if (installed.error) throw installed.error;
+  return children;
 }
 
 export function useFrontendTranslation() {

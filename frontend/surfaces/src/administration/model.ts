@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { RuntimePort } from './runtime-model';
 
 const id = z.string().min(1).max(100);
 export const organizationItemSchema = z.object({
@@ -115,10 +116,6 @@ export const permissionSchema = z.object({
   risk: z.enum(['standard', 'elevated', 'critical']),
 });
 export type Permission = z.infer<typeof permissionSchema>;
-export const runtimeMetadataSchema = z.object({
-  configuration: z.array(z.object({ name: z.string(), value: z.string() })),
-  capabilities: z.array(z.string()),
-});
 export const securityAuditPageSchema = z.object({
   items: z.array(
     z.object({
@@ -133,15 +130,6 @@ export const securityAuditPageSchema = z.object({
   nextCursor: z.string().optional(),
 });
 export type SecurityAuditPage = z.infer<typeof securityAuditPageSchema>;
-export type RuntimeStatus = {
-  configuration: readonly { name: string; value: string }[];
-  capabilities: readonly string[];
-  readiness: string;
-  liveness: string;
-  build: string;
-  diagnostics: readonly { name: string; state: string }[];
-  metrics: string;
-};
 
 export const profileSchema = z.object({
   nickname: z.string().max(64),
@@ -217,8 +205,8 @@ export interface AdministrationPort {
   resetPassword(id: string, password: string, version: number): Promise<void>;
   beginArchive(): Promise<string>;
   confirmArchive(confirmationId: string): Promise<void>;
-  runtime(): Promise<RuntimeStatus>;
-  securityAudit(cursor: string): Promise<SecurityAuditPage>;
+  readonly runtime: RuntimePort;
+  securityAudit(cursor: string, signal?: AbortSignal): Promise<SecurityAuditPage>;
   endSession(): void;
   rolePermissions(
     id: string,

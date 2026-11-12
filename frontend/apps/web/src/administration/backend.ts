@@ -2,7 +2,6 @@ import { z } from 'zod';
 import {
   accountPreferencesSchema,
   profileSchema,
-  runtimeMetadataSchema,
   securityAuditPageSchema,
   organizationItemSchema,
   assignmentSchema,
@@ -17,6 +16,7 @@ import {
 import { refreshServerNavigation } from '../state/use-server-navigation';
 import { createJsonClient, ApiError } from '../api/json-client';
 import { applyAccountPreferences } from './preferences';
+import { createRuntimePort, readRuntimeInformation } from './runtime-backend';
 
 export function createAdministrationPort(
   base: string,
@@ -282,45 +282,26 @@ export function createAdministrationPort(
         'PUT',
       );
     },
-    securityAudit: async (cursor) =>
-      securityAuditPageSchema.parse(
-        await json(
-          native + '/auth/audit?limit=20' + (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''),
-        ),
+    securityAudit: (cursor, signal) =>
+      readRuntimeInformation(
+        async () => {
+          const result = securityAuditPageSchema.safeParse(
+            await json(
+              native +
+                '/auth/audit?limit=20' +
+                (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''),
+              signal ? { signal } : {},
+            ),
+          );
+          if (!result.success) throw new ApiError('protocol');
+          return result.data;
+        },
+        currentUserId,
+        signal,
       ),
-    runtime: async () => {
-      async function read(path: string): Promise<unknown> {
-        const response = await fetch('/management/' + path, {
-          credentials: 'include',
-          cache: 'no-store',
-        });
-        if (!response.ok) throw new ApiError('http', response.status);
-        return path === 'metrics' ? response.text() : response.json();
-      }
-      const [ready, live, build, diagnostics, metrics, metadata] = await Promise.all([
-        read('readyz'),
-        read('livez'),
-        read('build'),
-        read('diagnostics'),
-        read('metrics'),
-        json('/system/runtime'),
-      ]);
-      const record = z.record(z.string(), z.unknown());
-      const summary = (value: unknown): string =>
-        typeof value === 'object' && value !== null
-          ? JSON.stringify(value, null, 2)
-          : String(value);
-      return {
-        ...runtimeMetadataSchema.parse(metadata),
-        readiness: summary(ready),
-        liveness: summary(live),
-        build: summary(build),
-        diagnostics: Object.entries(record.parse(diagnostics)).map(([name, value]) => ({
-          name,
-          state: typeof value === 'object' && value !== null ? summary(value) : String(value),
-        })),
-        metrics: z.string().parse(metrics),
-      };
-    },
+    runtime: createRuntimePort(
+      (signal) => json('/system/runtime', signal ? { signal } : {}),
+      currentUserId,
+    ),
   };
 }
