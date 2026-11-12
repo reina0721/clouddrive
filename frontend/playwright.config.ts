@@ -8,6 +8,7 @@ const primaryPort = config.web.port;
 const primaryProbeUrl = getProbeUrl(primaryHost, primaryPort);
 
 const secondaryPort = primaryPort + 1;
+if (secondaryPort > 65535) throw new Error('Browser tests require WEB_PORT between 1 and 65534.');
 const secondaryProbeUrl = getProbeUrl(primaryHost, secondaryPort);
 
 export default defineConfig({
@@ -65,20 +66,26 @@ export default defineConfig({
   webServer: [
     {
       command: 'pnpm --filter @clouddrive/web dev',
-      env: { NEXT_DIST_DIR: '.next', NEXT_PUBLIC_AUTH_MODE: 'mock' },
+      env: {
+        WEB_PORT: String(primaryPort),
+        NEXT_DIST_DIR: `.next/playwright-${primaryPort}/mock`,
+        NEXT_PUBLIC_AUTH_MODE: 'mock',
+      },
       url: primaryProbeUrl,
-      reuseExistingServer: !process.env.CI,
+      // 就绪探针不能证明占用此端口的服务采用了要求的认证模式。
+      reuseExistingServer: false,
       timeout: 120_000,
     },
     {
-      command: `pnpm --filter @clouddrive/web exec next dev --hostname ${primaryHost} --port ${secondaryPort}`,
+      command: 'pnpm --filter @clouddrive/web dev',
       env: {
-        NEXT_DIST_DIR: '.next/backend-contract',
+        WEB_PORT: String(secondaryPort),
+        NEXT_DIST_DIR: `.next/playwright-${secondaryPort}/backend`,
         NEXT_PUBLIC_AUTH_MODE: 'backend',
         NEXT_PUBLIC_AUTH_API_BASE_URL: '/api',
       },
       url: secondaryProbeUrl,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 120_000,
     },
   ],
