@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { useFrontendTranslation, formatDate, formatTimeOfDay } from '@clouddrive/i18n';
 import {
   FoundationForm,
@@ -23,17 +23,18 @@ import { usePreferencesPort } from '@clouddrive/plugin-framework/preferences';
 import { useRegisterDirtySource } from '@clouddrive/plugin-framework/leave-confirm';
 import type { Preferences } from '@clouddrive/surface/preferences-model';
 import { IdentityQueryState, IdentityMutationError } from '../../../src/identity/query-state';
+import { useRemote } from '../../../src/administration/resource-state';
 
 export function AccountSecurity() {
   const port = useAccountSecurityPort();
   const { t, locale } = useFrontendTranslation();
   const { notify } = useFeedback();
   const region = usePreferencesPort<Preferences>().getSnapshot().localeRegion;
-  const [sessions, setSessions] = useState<readonly AccountSession[] | null>(null);
+  const sessionRead = useRemote(useCallback(() => port.sessions(), [port]));
+  const sessions = sessionRead.value;
   const [error, setError] = useState<IdentityError | null>(null);
   const [passwordError, setPasswordError] = useState<IdentityError | null>(null);
   const currentPasswordRef = useRef<HTMLInputElement | null>(null);
-  const [revision, setRevision] = useState(0);
   const [pending, setPending] = useState(false);
   const [confirmation, setConfirmation] = useState<'others' | AccountSession | null>(null);
   const lock = useRef(false);
@@ -73,24 +74,15 @@ export function AccountSecurity() {
     )
       currentPasswordRef.current?.focus();
   }, [passwordError, pending, form.isSubmitting]);
-  useEffect(() => {
-    let active = true;
-    port
-      .sessions()
-      .then((items) => {
-        if (active) {
-          setSessions(items);
-          setError(null);
-        }
-      })
-      .catch((error: unknown) => {
-        if (active)
-          setError(error instanceof IdentityError ? error : new IdentityError('unavailable'));
-      });
-    return () => {
-      active = false;
-    };
-  }, [port, revision]);
+  const refreshSessions = () => {
+    setError(null);
+    sessionRead.reload();
+  };
+  const readError = sessionRead.error
+    ? sessionRead.error instanceof IdentityError
+      ? sessionRead.error
+      : new IdentityError('unavailable')
+    : null;
   const timestamp = (value: string) =>
     formatDate(locale, value, region.timeZone === 'auto' ? {} : { timeZone: region.timeZone }) +
     ' · ' +
@@ -104,7 +96,7 @@ export function AccountSecurity() {
       if (confirmation === 'others') await port.revokeOtherSessions();
       else await port.revokeSession(confirmation.id);
       setConfirmation(null);
-      setRevision((value) => value + 1);
+      sessionRead.reload();
       notify({ title: t('account.securitySaved'), tone: 'success' });
     } catch (error) {
       setError(error instanceof IdentityError ? error : new IdentityError('unavailable'));
@@ -204,8 +196,8 @@ export function AccountSecurity() {
             <IconAction
               label={t('identityProduct.refresh')}
               tooltip
-              disabled={pending || form.isSubmitting}
-              onPress={() => setRevision((value) => value + 1)}
+              disabled={pending || form.isSubmitting || sessionRead.loading}
+              onPress={refreshSessions}
             >
               <RefreshCw className="size-4" />
             </IconAction>
@@ -229,7 +221,7 @@ export function AccountSecurity() {
             <p className="text-sm text-ink-muted">{t('account.noOtherSessions')}</p>
           ) : null}
           {!sessions ? (
-            <IdentityQueryState error={error} retry={() => setRevision((value) => value + 1)} />
+            <IdentityQueryState error={readError} retry={refreshSessions} />
           ) : (
             <ul data-reveal-items className="divide-y divide-border">
               {sessions.map((session) => (
