@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator } from '@playwright/test';
+import { waitForVisualReadiness } from './visual-readiness';
 
 async function hoverCompactTrigger(trigger: Locator) {
   // Scroll the navigation viewport first, as a user would. Playwright's automatic
@@ -77,6 +78,7 @@ test('收缩侧栏的 Hover Flyout 保持稳定并支持键盘进入', async ({ 
   await expect(flyout).toBeVisible();
   await expect(expandSidebar).toBeFocused();
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  await waitForVisualReadiness(page);
   await expect.soft(page).toHaveScreenshot('surface-shell-compact-flyout.png');
 
   await flyout.hover();
@@ -127,6 +129,7 @@ test('收缩侧栏切换兄弟菜单时同一时刻只有一个 Flyout 且旧菜
   await expect(dialogs).toHaveCount(1);
   await expect(dialogs.first()).toHaveAttribute('aria-label', 'Page Archetypes');
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  await waitForVisualReadiness(page);
   await expect.soft(page).toHaveScreenshot('surface-shell-compact-sibling-swap.png');
 
   // 快速来回切换：旧 Flyout 的延迟关闭计时器不能误关新菜单
@@ -252,6 +255,6 @@ test('UI Elements 根路径进入默认子级且旧 Showcase 不再匹配', asyn
   const response = await page.goto('/showcase');
   expect(response?.status()).toBe(404);
   await expect(page.getByRole('heading', { name: '页面不存在', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: '进入工作台', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '打开我的文件', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '当前用户', exact: true })).toHaveCount(0);
 });

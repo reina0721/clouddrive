@@ -46,6 +46,7 @@ import { NotificationCenter } from './notification-center';
 import { usePageTabsRecorder } from './use-page-tabs-recorder';
 import { useNavigationLabelOverrides, useProductNavigation } from './use-product-navigation';
 import { WatermarkOverlay } from './watermark';
+import { useActiveNavigation } from './use-active-navigation';
 
 const NavigationTree = lazy(() =>
   import('./navigation-tree').then((module) => ({ default: module.NavigationTree })),
@@ -90,6 +91,7 @@ function NavigationContent({
 }) {
   const { t } = useFrontendTranslation();
   const { profile } = useSiteProfile();
+  const navigationRef = useActiveNavigation(usePathname(), compact, navigationGroups);
 
   return (
     <>
@@ -107,6 +109,7 @@ function NavigationContent({
         )}
       </div>
       <nav
+        ref={navigationRef}
         className={`surface-shell-navigation-viewport min-h-0 flex-1 py-6 ${compact ? 'surface-shell-compact-rail flex flex-col items-center px-3' : 'space-y-7 px-3'}`}
         aria-label={t('shell.primaryNav')}
       >
@@ -187,10 +190,13 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
   );
   // 真实路由变化后自动回到"跟随当前页面分组"，不保留手工探索状态（派生比较，无需 effect）。
   const mixedGroupId = groupChoice?.pathname === pathname ? groupChoice.groupId : activeGroupId;
-  const sidebarGroups =
-    layoutMode === 'mixed'
-      ? navigationGroups.filter((group) => group.id === mixedGroupId)
-      : navigationGroups;
+  const sidebarGroups = useMemo(
+    () =>
+      layoutMode === 'mixed'
+        ? navigationGroups.filter((group) => group.id === mixedGroupId)
+        : navigationGroups,
+    [layoutMode, navigationGroups, mixedGroupId],
+  );
   const { t } = useFrontendTranslation();
   const router = useRouter();
   const desktopTools = useSyncExternalStore(subscribeDesktop, desktopSnapshot, () => false);
@@ -326,11 +332,13 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
         placement="left"
         composition="navigation"
       >
-        <NavigationContent
-          groups={navigationGroups}
-          labelOverrides={labelOverrides}
-          onNavigate={() => setMobileNavigationOpen(false)}
-        />
+        <div className="flex h-full min-h-0 flex-col">
+          <NavigationContent
+            groups={navigationGroups}
+            labelOverrides={labelOverrides}
+            onNavigate={() => setMobileNavigationOpen(false)}
+          />
+        </div>
       </DrawerSurface>
 
       <div className="min-w-0" ref={shellRef}>
