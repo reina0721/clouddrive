@@ -23,13 +23,28 @@ export function createAdministrationPort(
   base: string,
   currentUserId?: () => string | null,
 ): AdministrationPort {
-  const transport = createJsonClient(base);
-  const json: typeof transport = async (path, options) => {
+  function ownerGuard() {
     const owner = currentUserId?.();
-    if (currentUserId && !owner) throw new ApiError('http', 401);
-    const value = await transport(path, options);
-    if (currentUserId && owner !== currentUserId()) throw new ApiError('http', 401);
-    return value;
+    return () => {
+      if (currentUserId && (!owner || owner !== currentUserId())) throw new ApiError('http', 401);
+    };
+  }
+  const json: ReturnType<typeof createJsonClient> = async (path, options) => {
+    const assertOwner = ownerGuard();
+    assertOwner();
+    const transport = createJsonClient(base, async (input, init) => {
+      assertOwner();
+      try {
+        return await fetch(input, init);
+      } finally {
+        assertOwner();
+      }
+    });
+    try {
+      return await transport(path, options);
+    } finally {
+      assertOwner();
+    }
   };
   const native = '/native';
   const list = <T>(schema: z.ZodType<T>) =>
@@ -40,11 +55,14 @@ export function createAdministrationPort(
       limit: z.number().optional(),
     });
   async function all<T>(path: string, schema: z.ZodType<T>): Promise<T[]> {
+    const assertOwner = ownerGuard();
+    assertOwner();
     const items: T[] = [];
     for (let offset = 0; ; offset += 100) {
       const value = list(schema).parse(
         await json(`${path}${path.includes('?') ? '&' : '?'}offset=${offset}&limit=100`),
       );
+      assertOwner();
       items.push(...value.items);
       if (value.total === undefined || items.length >= value.total) break;
       if (value.items.length === 0) throw new ApiError('protocol');
