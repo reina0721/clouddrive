@@ -218,7 +218,7 @@ export function FormElementsPage({
                   'Keyboard',
                 ]}
               >
-                <div className="grid gap-3">
+                <div className="grid grid-cols-1 gap-3">
                   <SelectField
                     label={t('uiElements.select')}
                     hint={t('uiElements.selectionOverlayHint')}

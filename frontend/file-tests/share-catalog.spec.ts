@@ -317,6 +317,23 @@ test('窄屏英文深色保留筛选和菜单，公共工具栏选择不横向�
     english = true;
     await page.setViewportSize({ width: 320, height: 800 });
     await select(page, /Link status/, 'Enabled and not expired');
+    const filterBounds = await page
+      .getByRole('button', { name: /Link status/ })
+      .evaluate((button) => {
+        const toolbar = button.closest('[role="toolbar"]');
+        if (!toolbar) throw new Error('Missing share filter toolbar');
+        const container = toolbar.getBoundingClientRect();
+        const style = getComputedStyle(toolbar);
+        const control = button.getBoundingClientRect();
+        return {
+          left: control.left,
+          right: control.right,
+          start: container.left + Number.parseFloat(style.paddingLeft),
+          end: container.right - Number.parseFloat(style.paddingRight),
+        };
+      });
+    expect(filterBounds.left).toBeGreaterThanOrEqual(filterBounds.start - 1);
+    expect(filterBounds.right).toBeLessThanOrEqual(filterBounds.end + 1);
     await expect(row(page, f.shares[0].id)).toBeVisible();
     await expect(page.getByText('1 share', { exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(

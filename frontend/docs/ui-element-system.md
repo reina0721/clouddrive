@@ -100,6 +100,8 @@ Label/Hint/Error、禁用和键盘语义，不提交表单。`TextField` 的 `pu
 同一实现；密码内容不进入 Token、UI Store 或组件持久化。
 密码可见性切换支持图标呈现，按钮始终保留完整可访问名称；窄屏和大字号场景保留输入空间。
 
+`SelectField` 的值与展开指示器在同一布局流中各占空间，沿用控件的间距；工具栏标签和长值可以按各自约束收缩，不能延伸到箭头之下。普通、工具栏和禁用态在 `/ui-elements/forms` 同源展示，真实审计密度选择与中英文窄屏验证见[选择器布局回归](../apps/web/e2e/select-layout.spec.ts)。
+
 所有 Form Control 共享以下不变量：
 
 - Control Height、Typography、Background、Border、Radius、Placeholder、Focus、Disabled 和 Invalid 来自同一语义样式。

@@ -76,7 +76,7 @@ export function SelectField({
           {isToolbar ? <span className="shrink-0 text-ink-muted">{label}:</span> : null}
           <Select.Value className="truncate font-medium text-ink" />
         </span>
-        <Select.Indicator className="size-3.5 shrink-0 text-ink-muted" />
+        <Select.Indicator className="static size-3.5 shrink-0 text-ink-muted" />
       </Select.Trigger>
       {error && !isToolbar ? (
         <FieldError className="ui-field-error">{error}</FieldError>
@@ -95,8 +95,8 @@ export function SelectField({
               key={option.value}
               textValue={option.label}
             >
-              <span className="min-w-0">
-                <Label className="block truncate font-medium">{option.label}</Label>
+              <span className="block min-w-0">
+                <Label className="block max-w-full truncate font-medium">{option.label}</Label>
                 {option.description ? (
                   <Description className="mt-0.5 block text-xs text-ink-muted">
                     {option.description}

@@ -78,7 +78,9 @@ export function Toolbar({
       <div className="surface-toolbar-primary flex min-w-0 flex-wrap items-center gap-2">
         {primary}
       </div>
-      {secondary ? <div className="flex flex-wrap items-center gap-2">{secondary}</div> : null}
+      {secondary ? (
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{secondary}</div>
+      ) : null}
     </div>
   );
 }
