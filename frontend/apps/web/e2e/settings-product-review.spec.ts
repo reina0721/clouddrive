@@ -245,6 +245,15 @@ for (const accent of ['blue', 'green', 'orange'] as const) {
       await page.getByRole('button', { name: 'Dialog', exact: true }).press('Enter');
       await expect(page.getByRole('dialog')).toBeVisible();
       await expectAccessible(page);
+      const cancel = page.getByRole('dialog').getByRole('button', {
+        name: expanded ? 'Cancel' : '取消',
+        exact: true,
+      });
+      await cancel.hover();
+      await cancel.evaluate((element) =>
+        Promise.all(element.getAnimations().map((animation) => animation.finished.catch(() => {}))),
+      );
+      await expectAccessible(page);
       await saveEvidenceScreenshot(page, {
         path: `${evidence}/dialog-${accent}-${expanded ? 'dark' : 'light'}.png`,
         animations: 'disabled',

@@ -226,11 +226,11 @@ html[data-theme='dark'] [data-accent-preview='blue'] {
 html[data-accent='green'],
 [data-accent-preview='green'] {
   /* @ds-region:accent-green-light:start */
-  --ds-brand: #047857;
+  --ds-brand: #00664a;
   --ds-brand-strong: #065f46;
   --ds-brand-soft: #e4f5ee;
   --ds-on-brand: #ffffff;
-  --ds-focus-ring: #047857;
+  --ds-focus-ring: #00664a;
   /* @ds-region:accent-green-light:end */
 }
 html[data-theme='dark'][data-accent='green'],
@@ -246,11 +246,11 @@ html[data-theme='dark'] [data-accent-preview='green'] {
 html[data-accent='orange'],
 [data-accent-preview='orange'] {
   /* @ds-region:accent-orange-light:start */
-  --ds-brand: #c2410c;
+  --ds-brand: #a33309;
   --ds-brand-strong: #9a3412;
   --ds-brand-soft: #ffecdf;
   --ds-on-brand: #ffffff;
-  --ds-focus-ring: #c2410c;
+  --ds-focus-ring: #a33309;
   /* @ds-region:accent-orange-light:end */
 }
 html[data-theme='dark'][data-accent='orange'],

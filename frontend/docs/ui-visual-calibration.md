@@ -25,6 +25,8 @@ HeroUI / React Aria 继续提供键盘、Focus、ARIA、Overlay 与 Portal；不
 
 交互必须提供 hover、pressed、keyboard focus、selected、disabled、pending 和 error 状态。按压状态使用同一语义的状态层；焦点可见且不依赖颜色变化。动画继续遵守 reduced motion 与全局 Motion Policy。
 
+强调色作为文字时也必须在 raised surface 及悬停状态层上保持对比度，不能仅检查白色背景或 filled 按钮。浅色绿色、橙色与同色焦点令牌按这个约束收敛；现有强调色弹窗回归分别扫描静止与悬停状态，保留深色、英文和窄屏覆盖。
+
 ## 导航与内容
 
 文件工作区按文件、协作、传输与任务、管理组织；当前目的地同时有容器高亮与 `aria-current`。桌面导航可折叠为 rail，移动端使用具备焦点管理的 drawer。品牌与空间摘要固定，中间导航和固定项共用可滚动区域，短屏不挤掉入口。

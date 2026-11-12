@@ -806,11 +806,11 @@
             },
             "green": {
               "light": {
-                "brand": "#047857",
+                "brand": "#00664a",
                 "brand-strong": "#065f46",
                 "brand-soft": "#e4f5ee",
                 "on-brand": "#ffffff",
-                "focus-ring": "#047857"
+                "focus-ring": "#00664a"
               },
               "dark": {
                 "brand": "#5fd0a8",
@@ -822,11 +822,11 @@
             },
             "orange": {
               "light": {
-                "brand": "#c2410c",
+                "brand": "#a33309",
                 "brand-strong": "#9a3412",
                 "brand-soft": "#ffecdf",
                 "on-brand": "#ffffff",
-                "focus-ring": "#c2410c"
+                "focus-ring": "#a33309"
               },
               "dark": {
                 "brand": "#fdab6d",
