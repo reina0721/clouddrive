@@ -2,6 +2,9 @@ import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import AxeBuilder from '@axe-core/playwright';
+
+test.use({ actionTimeout: 15_000 });
 
 async function login(page: Page) {
   const access = JSON.parse(
@@ -147,6 +150,7 @@ test('分享快捷方式、三类固定、CAS排序、回收恢复与引用移�
   await popup.close();
   await page.getByRole('link', { name: '我的文件', exact: true }).first().click();
   await expect(page).toHaveURL(/\/home$/);
+  await page.goto('/home?' + new URLSearchParams({ search: fixtureValue.suffix }).toString());
   // 在确认面板打开后由另一请求改变版本，面板不得覆盖新顺序。
   await rowAction(page, '整理-' + fixtureValue.suffix, '固定到侧边栏');
   dialog = page.getByRole('dialog');
@@ -186,15 +190,22 @@ test('分享快捷方式、三类固定、CAS排序、回收恢复与引用移�
   await rowAction(page, renamed, '移入回收站');
   await confirm(page, '确认');
   await page.getByRole('link', { name: '回收站', exact: true }).click();
+  await page.goto(
+    '/home?' + new URLSearchParams({ trash: 'true', search: fixtureValue.suffix }).toString(),
+  );
   await rowAction(page, renamed, '恢复');
   await confirm(page, '确认');
   await page
     .getByRole('navigation', { name: '我的文件', exact: true })
     .getByRole('link', { name: '我的文件', exact: true })
     .click();
+  await page.goto('/home?' + new URLSearchParams({ search: fixtureValue.suffix }).toString());
   await rowAction(page, renamed, '移入回收站');
   await confirm(page, '确认');
   await page.getByRole('link', { name: '回收站', exact: true }).click();
+  await page.goto(
+    '/home?' + new URLSearchParams({ trash: 'true', search: fixtureValue.suffix }).toString(),
+  );
   await rowAction(page, renamed, '永久移除快捷方式');
   await expect(page.getByRole('dialog')).toContainText('不会删除原分享或原文件');
   await confirm(page, '永久移除快捷方式');
@@ -256,7 +267,7 @@ test('匿名分享保存经过登录返回，密码授权与原分享撤销仍�
   await expect(row.getByRole('link', { name: '打开原分享' })).toHaveCount(0);
 });
 
-test('保存引用搜索、当前状态筛选和稳定游标翻页', async ({ page }) => {
+test('保存引用检索地址恢复、游标翻页和失败重试', async ({ page }, info) => {
   test.setTimeout(120_000);
   await login(page);
   const value = await fixture(page),
@@ -277,15 +288,127 @@ test('保存引用搜索、当前状态筛选和稳定游标翻页', async ({ pa
     await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(20);
     await page.getByRole('button', { name: '下一页', exact: true }).click();
     await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(1);
+    const secondPage = page.url();
+    expect(new URL(secondPage).searchParams.get('cursor')).toBeTruthy();
+    await page.reload();
+    await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(1);
+    await expect(page.getByRole('searchbox', { name: '搜索快捷方式', exact: true })).toHaveValue(
+      prefix,
+    );
+    // 直接打开的游标没有可证明的前驱；不把“上一页”猜成任意历史页面。
+    await expect(page.getByRole('button', { name: '上一页', exact: true })).toBeDisabled();
+    await page.getByRole('button', { name: '第一页', exact: true }).click();
+    await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(20);
+    await page.getByRole('button', { name: '下一页', exact: true }).click();
+    await expect(page).toHaveURL(secondPage);
+    await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(1);
     await page.getByRole('button', { name: '上一页', exact: true }).click();
+    await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(20);
+    await page.goBack();
+    await expect(page).toHaveURL(secondPage);
+    await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(1);
+    await page.goForward();
     await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(20);
     await page.getByRole('button', { name: /分享状态/ }).click({ timeout: 10_000 });
     await page.getByRole('option', { name: '需要密码', exact: true }).click();
     await expect(
-      page.getByRole('heading', { name: '还没有保存的分享', exact: true }),
+      page.getByRole('heading', { name: '没有符合条件的快捷方式', exact: true }),
     ).toBeVisible();
+    await expect(page).toHaveURL(/state=protected/);
+    await page.reload();
+    await expect(
+      page.getByRole('heading', { name: '没有符合条件的快捷方式', exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole('searchbox', { name: '搜索快捷方式', exact: true })).toHaveValue(
+      prefix,
+    );
     await page.getByRole('button', { name: /分享状态/ }).click({ timeout: 10_000 });
     await page.getByRole('option', { name: '可访问', exact: true }).click();
+    await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(20);
+    await page.route('**/native/files/shortcuts?*', (route) =>
+      route.fulfill({ status: 503, json: {} }),
+    );
+    await page.getByRole('button', { name: '刷新', exact: true }).click();
+    await expect(page.getByRole('button', { name: '重试', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '下一页', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: '还没有保存的分享', exact: true })).toHaveCount(
+      0,
+    );
+    await page.unroute('**/native/files/shortcuts?*');
+    await page.getByRole('button', { name: '重试', exact: true }).click();
+    await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(20);
+
+    let started!: () => void, release!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    const resume = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/native/files/shortcuts?*', async (route) => {
+      if (new URL(route.request().url()).searchParams.get('search') !== prefix + '-late') {
+        await route.continue();
+        return;
+      }
+      started();
+      await resume;
+      await route.fulfill({ status: 503, json: {} });
+    });
+    try {
+      await page
+        .getByRole('searchbox', { name: '搜索快捷方式', exact: true })
+        .fill(prefix + '-late');
+      await page
+        .getByRole('main')
+        .getByRole('button', { name: '搜索快捷方式', exact: true })
+        .click();
+      await pending;
+      await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(0);
+      await page.getByRole('searchbox', { name: '搜索快捷方式', exact: true }).fill(prefix + '-00');
+      await page
+        .getByRole('main')
+        .getByRole('button', { name: '搜索快捷方式', exact: true })
+        .click();
+      await expect(page.getByRole('heading', { name: prefix + '-00', exact: true })).toBeVisible();
+    } finally {
+      release();
+      await page.unrouteAll({ behavior: 'wait' });
+    }
+    await expect(page.getByRole('button', { name: '重试', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: prefix + '-00', exact: true })).toBeVisible();
+    expect(
+      (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()).violations,
+    ).toEqual([]);
+    await page.screenshot({ path: info.outputPath('shared-catalog-desktop.png'), fullPage: true });
+    await page.setViewportSize({ width: 320, height: 760 });
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+      .toBe(true);
+    const searchBounds = await page
+      .getByRole('searchbox', { name: '搜索快捷方式', exact: true })
+      .boundingBox();
+    const filterBounds = await page.getByRole('button', { name: /分享状态/ }).boundingBox();
+    expect(searchBounds).not.toBeNull();
+    expect(filterBounds).not.toBeNull();
+    expect(filterBounds!.y).toBeGreaterThan(searchBounds!.y + searchBounds!.height);
+    expect(
+      (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()).violations,
+    ).toEqual([]);
+    await page.screenshot({ path: info.outputPath('shared-catalog-mobile.png'), fullPage: true });
+    await page.goto(
+      '/home/shared?' +
+        new URLSearchParams({
+          search: prefix,
+          cursor: 'ffffffff-ffff-4fff-bfff-ffffffffffff',
+        }).toString(),
+    );
+    await expect(
+      page.getByRole('heading', { name: '当前页已无快捷方式', exact: true }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: '第一页', exact: true }).click();
     await expect(page.getByRole('heading', { name: new RegExp('^' + prefix) })).toHaveCount(20);
   } finally {
     for (const id of saved) {
