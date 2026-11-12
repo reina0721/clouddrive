@@ -15,6 +15,8 @@ import { readAuthConfig } from '../auth/config';
 import { AuthError } from '../auth/contract';
 import type { createMockIdentityService } from './mock-service';
 import type { IdentityOperations } from './mock-service';
+import { createAccountRequest } from '../api/account-request';
+import type { createBackendIdentityService } from './backend-service';
 
 /** Concrete product composition; no service registry or cross-plugin private store access. */
 export function IdentityRuntime({ children }: Readonly<{ children: ReactNode }>) {
@@ -32,7 +34,9 @@ export function IdentityRuntime({ children }: Readonly<{ children: ReactNode }>)
         return null;
       }
     })();
-    let initialized: Promise<IdentityOperations> | null = null;
+    let initialized: Promise<{
+      createBackendIdentityService: typeof createBackendIdentityService;
+    }> | null = null;
     let mockModule: Promise<
       Readonly<{ createMockIdentityService: typeof createMockIdentityService }>
     > | null = null;
@@ -44,9 +48,11 @@ export function IdentityRuntime({ children }: Readonly<{ children: ReactNode }>)
         // Pending operations keep their original actor; switching accounts cannot rebind a write.
         return module.createMockIdentityService(() => owner);
       }
-      return (initialized ??= import('./backend-service').then((module) =>
-        module.createBackendIdentityService(config.apiBaseUrl),
-      ));
+      const module = await (initialized ??= import('./backend-service'));
+      return module.createBackendIdentityService(
+        config.apiBaseUrl,
+        createAccountRequest(currentUserId, owner),
+      );
     };
     async function call<T>(
       operation: (service: IdentityOperations) => Promise<T>,
@@ -67,6 +73,7 @@ export function IdentityRuntime({ children }: Readonly<{ children: ReactNode }>)
         }
         return value;
       } catch (error) {
+        if (owner !== currentUserId()) throw new IdentityError('unauthenticated');
         if (
           error instanceof IdentityError &&
           error.code === 'unauthenticated' &&
@@ -161,7 +168,10 @@ export function IdentityRuntime({ children }: Readonly<{ children: ReactNode }>)
       const service =
         config.mode === 'mock'
           ? module.createMockAccountSecurity(() => owner)
-          : module.createBackendAccountSecurity(config.apiBaseUrl);
+          : module.createBackendAccountSecurity(
+              config.apiBaseUrl,
+              createAccountRequest(currentUserId, owner),
+            );
       try {
         const value = await operation(service);
         if (owner !== currentUserId()) throw new IdentityError('unauthenticated');
@@ -170,6 +180,7 @@ export function IdentityRuntime({ children }: Readonly<{ children: ReactNode }>)
         else if (restore) await authController.getState().restore();
         return value;
       } catch (error) {
+        if (owner !== currentUserId()) throw new IdentityError('unauthenticated');
         if (
           error instanceof IdentityError &&
           error.code === 'unauthenticated' &&

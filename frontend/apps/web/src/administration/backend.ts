@@ -18,6 +18,7 @@ import { createJsonClient, ApiError } from '../api/json-client';
 import { applyAccountPreferences } from './preferences';
 import { createRuntimePort, readRuntimeInformation } from './runtime-backend';
 import { IdentityError } from '@clouddrive/surface/identity/runtime';
+import { createAccountRequest } from '../api/account-request';
 
 export function createAdministrationPort(
   base: string,
@@ -32,14 +33,10 @@ export function createAdministrationPort(
   const json: ReturnType<typeof createJsonClient> = async (path, options) => {
     const assertOwner = ownerGuard();
     assertOwner();
-    const transport = createJsonClient(base, async (input, init) => {
-      assertOwner();
-      try {
-        return await fetch(input, init);
-      } finally {
-        assertOwner();
-      }
-    });
+    const transport = createJsonClient(
+      base,
+      currentUserId ? createAccountRequest(currentUserId, currentUserId()) : fetch,
+    );
     try {
       return await transport(path, options);
     } finally {

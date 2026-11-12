@@ -55,6 +55,7 @@ import {
   type UploadCandidate,
 } from '@clouddrive/surface/files';
 import { ApiError, createJsonClient, csrfTokenOf } from '../api/json-client';
+import { createAccountRequest } from '../api/account-request';
 import { observeFileListEnd } from '../host/file-list-visibility';
 import { createAnnotationsPort } from './annotations';
 import { createFileClipboard } from './clipboard';
@@ -91,10 +92,13 @@ export function createFilesRuntime(
   openFolder: FilesPort['openFolder'],
 ) {
   const account = owner();
-  const transport = createJsonClient(base);
   const sources = new Map<string, File>();
   const openPickers = new Set<() => void>();
   let disposed = false;
+  const transport = createJsonClient(
+    base,
+    createAccountRequest(() => (disposed ? null : owner()), account),
+  );
   let lifecycle = new AbortController();
   let limits: FileListing | undefined;
   let mediaTail = Promise.resolve();
@@ -154,7 +158,8 @@ export function createFilesRuntime(
       return value;
     } catch (error) {
       let code: FilesErrorCode = 'unavailable';
-      if (options?.signal?.aborted) code = 'canceled';
+      if (disposed || options?.signal?.aborted) code = 'canceled';
+      else if (original !== owner()) code = 'unauthenticated';
       else if (error instanceof ApiError) {
         const payload = JSON.stringify(error.payload);
         if (error.code === 'limit') code = 'large';
