@@ -16,6 +16,11 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../auth/context';
 import { useShellStore } from '../state/use-shell-store';
+import { appI18n } from '../i18n/i18n';
+import { accountMenuResources } from './account-menu-translations';
+
+// 文件工作区直接复用此菜单，不依赖管理 Shell 已先挂载。
+appI18n.addResources(accountMenuResources);
 
 export function AccountMenu({
   compact,
@@ -125,7 +130,7 @@ export function AccountMenu({
             { id: 'settings', label: t('nav.settings'), icon: <Settings className="size-4" /> },
             {
               id: 'lock-screen',
-              label: t('shell.lock.action'),
+              label: t('shell.accountMenu.lock'),
               icon: <LockKeyhole className="size-4" />,
             },
             { id: 'logout', label: t('auth.logout'), icon: <LogOut className="size-4" /> },
