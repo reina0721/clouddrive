@@ -9,6 +9,7 @@ import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
 import { useRequiredAdministration } from '../../../src/administration/context';
 import { useRemote, RemoteRegion } from '../../../src/administration/resource-state';
 import type { AccessToken } from '../../../src/administration/model';
+import { IdentityError } from '../../../src/identity/errors';
 
 function MfaAction({
   action,
@@ -151,7 +152,7 @@ function TokenAction({
   const [name, setName] = useState(token?.name ?? '');
   const [description, setDescription] = useState(token?.description ?? '');
   const [expiresAt, setExpiresAt] = useState(token?.expiresAt ?? '');
-  const [scopes, setScopes] = useState('');
+  const [scopes, setScopes] = useState(token?.scopes.join(', ') ?? '');
   const [failure, setFailure] = useState<string>();
   return (
     <DialogSurface
@@ -160,13 +161,14 @@ function TokenAction({
       description={token?.name ?? t('administration.description')}
       cancelLabel={t('administration.cancel')}
       confirmLabel={t('administration.confirm')}
+      confirmDisabled={(action === 'create' || action === 'edit') && !name.trim()}
       {...(failure ? { failureMessage: failure } : {})}
       onConfirm={async () => {
         try {
           const result =
             action === 'create'
               ? await port.createToken(
-                  name,
+                  name.trim(),
                   scopes
                     .split(',')
                     .map((value) => value.trim())
@@ -178,7 +180,7 @@ function TokenAction({
                 ? action === 'edit'
                   ? (await port.updateToken({
                       ...token,
-                      name,
+                      name: name.trim(),
                       description,
                       ...(expiresAt ? { expiresAt } : { expiresAt: undefined }),
                     }),
@@ -190,7 +192,11 @@ function TokenAction({
           setScopes('');
           onSaved();
         } catch (error) {
-          setFailure(t('administration.failureDescription'));
+          setFailure(
+            error instanceof IdentityError
+              ? t('identityProduct.errors.' + error.code)
+              : t('administration.failureDescription'),
+          );
           throw error;
         }
       }}
@@ -199,11 +205,13 @@ function TokenAction({
         <>
           <TextField
             label={t('administration.name')}
+            maxLength={128}
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
           <TextField
             label={t('administration.remark')}
+            maxLength={1024}
             value={description}
             onChange={(event) => setDescription(event.target.value)}
           />

@@ -17,6 +17,7 @@ import { refreshServerNavigation } from '../state/use-server-navigation';
 import { createJsonClient, ApiError } from '../api/json-client';
 import { applyAccountPreferences } from './preferences';
 import { createRuntimePort, readRuntimeInformation } from './runtime-backend';
+import { IdentityError } from '@clouddrive/surface/identity/runtime';
 
 export function createAdministrationPort(
   base: string,
@@ -57,6 +58,33 @@ export function createAdministrationPort(
     headers?: Readonly<Record<string, string>>,
   ) {
     return json(path, { method, body, ...(headers ? { headers } : {}) });
+  }
+  async function tokenOperation<T>(operation: () => Promise<T>): Promise<T> {
+    const owner = currentUserId?.();
+    try {
+      return await operation();
+    } catch (error) {
+      if (currentUserId && (!owner || owner !== currentUserId()))
+        throw new IdentityError('unauthenticated');
+      if (error instanceof z.ZodError) throw new IdentityError('protocol');
+      if (!(error instanceof ApiError)) throw error;
+      if (error.code === 'network' || error.code === 'timeout' || error.code === 'protocol')
+        throw new IdentityError(error.code);
+      const status = error.status;
+      throw new IdentityError(
+        status === 401
+          ? 'unauthenticated'
+          : status === 403
+            ? 'forbidden'
+            : status === 404
+              ? 'not-found'
+              : status === 409 || status === 412
+                ? 'conflict'
+                : status === 400 || status === 422
+                  ? 'validation'
+                  : 'unavailable',
+      );
+    }
   }
   return {
     preferences: async () =>
@@ -215,37 +243,41 @@ export function createAdministrationPort(
     disableMfa: async (code) => {
       await write(`${native}/iam/self/mfa/disable`, { code });
     },
-    tokens: () => all(`${native}/iam/api-tokens?status=all`, tokenSchema),
+    tokens: () => tokenOperation(() => all(`${native}/iam/api-tokens?status=all`, tokenSchema)),
     createToken: async (name, scopes, description = '', expiresAt) =>
-      tokenSchema.parse(
-        await write(`${native}/iam/api-tokens`, {
-          name,
-          scopes,
-          description,
-          ...(expiresAt ? { expiresAt } : {}),
-        }),
+      tokenOperation(async () =>
+        tokenSchema.parse(
+          await write(`${native}/iam/api-tokens`, {
+            name,
+            scopes,
+            description,
+            ...(expiresAt ? { expiresAt } : {}),
+          }),
+        ),
       ),
-    updateToken: async (value) => {
-      await write(
-        `${native}/iam/api-tokens/${encodeURIComponent(value.id)}`,
-        {
-          name: value.name,
-          description: value.description ?? '',
-          ...(value.expiresAt ? { expiresAt: value.expiresAt } : { neverExpires: true }),
-        },
-        'PATCH',
-        { 'If-Match': '"' + String(value.version) + '"' },
-      );
-    },
-    tokenAction: async (id, action, version) => {
-      const result = await write(
-        `${native}/iam/api-tokens/${encodeURIComponent(id)}/${action}`,
-        {},
-        'POST',
-        { 'If-Match': '"' + String(version) + '"' },
-      );
-      return action === 'rotate' ? tokenSchema.parse(result) : null;
-    },
+    updateToken: async (value) =>
+      tokenOperation(async () => {
+        await write(
+          `${native}/iam/api-tokens/${encodeURIComponent(value.id)}`,
+          {
+            name: value.name,
+            description: value.description ?? '',
+            ...(value.expiresAt ? { expiresAt: value.expiresAt } : { neverExpires: true }),
+          },
+          'PATCH',
+          { 'If-Match': '"' + String(value.version) + '"' },
+        );
+      }),
+    tokenAction: async (id, action, version) =>
+      tokenOperation(async () => {
+        const result = await write(
+          `${native}/iam/api-tokens/${encodeURIComponent(id)}/${action}`,
+          {},
+          'POST',
+          { 'If-Match': '"' + String(version) + '"' },
+        );
+        return action === 'rotate' ? tokenSchema.parse(result) : null;
+      }),
     permissions: () => all(`${native}/iam/permissions`, permissionSchema),
     archiveAccount: async (id, version) => {
       await write(`${native}/iam/accounts/${encodeURIComponent(id)}/archive`, {}, 'POST', {
