@@ -1,16 +1,17 @@
 'use client';
 
-import { useCallback, useState, useSyncExternalStore } from 'react';
-import { useFrontendTranslation } from '@clouddrive/i18n';
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react';
+import { FrontendMessages, formatNumber, useFrontendTranslation } from '@clouddrive/i18n';
 import { formatInstant } from '@clouddrive/i18n/format';
 import { usePreferencesPort } from '@clouddrive/plugin-framework/preferences';
-import { Page, PageHeader, SectionBody } from '@clouddrive/surface-foundation/layout';
+import { Page, PageHeader, Section } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
-import { DataTable } from '@clouddrive/ui-adapter/data-display';
 import { DatePickerField } from '@clouddrive/ui-adapter/date-picker-field';
+import { DescriptionList } from '@clouddrive/ui-adapter/description-list';
 import { CheckboxField, SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
 import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
-import { Panel } from '@clouddrive/ui-adapter/panel';
+import { StateSurface } from '@clouddrive/ui-adapter/state-surface';
+import { StatusPill } from '@clouddrive/ui-adapter/status-pill';
 import {
   adminTaskKinds,
   adminTaskOrigins,
@@ -19,12 +20,15 @@ import {
   type AdminTaskFilters,
   type AdminTaskPreviewQuery,
   type AdminTaskQuery,
+  type AdminTaskSummary,
 } from '../../../src/files/admin-tasks';
 import { backgroundTaskStatuses } from '../../../src/files/background-tasks';
 import { maxInventoryPage } from '../../../src/files/inventory';
 import { useFiles } from '../../../src/files/runtime';
 import { workerNodeIdPattern } from '../../../src/files/worker-nodes';
+import { NavigationIcon } from '../../../src/navigation-icon-presentation';
 import type { Preferences } from '../../../src/preferences-model';
+import { adminTaskMessages } from './admin-task-messages';
 import { CatalogFailure } from './catalog-failure';
 import { useCatalogRequest } from './use-catalog-request';
 
@@ -43,168 +47,57 @@ const initial: AdminTaskQuery = {
   page: 1,
 };
 const taskKey = ({ kind, id }: AdminTask) => `${kind}:${id}`;
-type TaskRow = { id: string; task: AdminTask };
-const zh = {
-  description: '查看跨账号任务和系统维护记录，并清理已结束的任务记录。',
-  filter: '过滤',
-  apply: '应用',
-  reset: '重置',
-  owner: '创建者 ID',
-  origin: '来源',
-  origins: { all: '全部来源', user: '用户', system: '系统' },
-  maintenance: { 'trash-expiry': '回收站到期扫描', 'blob-reclaim': '定时扫描回收文件 Blob' },
-  taskId: '任务 ID',
-  name: '内容',
-  kind: '类型',
-  state: '状态',
-  node: '处理节点',
-  nodeId: '节点 ID',
-  invalidNodeId: '节点 ID 只能包含小写字母、数字、连字符和下划线。',
-  clearNode: '清除节点筛选',
-  created: '创建于',
-  updated: '更新于',
-  started: '开始时间',
-  finished: '结束时间',
-  duration: '运行耗时（毫秒）',
-  empty: '没有符合条件的任务',
-  detail: '任务详情',
-  detailHint: '查看任务状态和可披露的诊断。',
-  failure: '故障代码',
-  select: '选择任务',
-  selectPage: '选择本页可清理任务',
-  cleanup: '清理任务',
-  selected: '清理选中任务',
-  cleanupHint: '清理已结束的任务及临时资源，保留已发布文件。',
-  before: '截止日期（UTC）',
-  clock: '截止时间（UTC）',
-  calendar: '选择截止日期',
-  preview: '预览清理范围',
-  batch: (shown: number, total: number) => `本次可清理 ${shown} 条，共匹配 ${total} 条。`,
-  result: (removed: number, failed: number) => `已清理 ${removed} 条，未清理 ${failed} 条。`,
-  pagination: (page: number, pages: number, total: number) =>
-    `第 ${page} / ${pages} 页，共 ${total} 项`,
-};
-const en: typeof zh = {
-  description: 'Review user tasks and system maintenance, and clean up finished task records.',
-  filter: 'Filter',
-  apply: 'Apply',
-  reset: 'Reset',
-  owner: 'Creator ID',
-  origin: 'Source',
-  origins: { all: 'All sources', user: 'User', system: 'System' },
-  maintenance: {
-    'trash-expiry': 'Trash expiry scan',
-    'blob-reclaim': 'Scheduled Blob reclamation',
-  },
-  taskId: 'Task ID',
-  name: 'Content',
-  kind: 'Type',
-  state: 'State',
-  node: 'Worker node',
-  nodeId: 'Node ID',
-  invalidNodeId: 'Use lowercase letters, digits, hyphens and underscores in the node ID.',
-  clearNode: 'Clear node filter',
-  created: 'Created',
-  updated: 'Updated',
-  started: 'Started',
-  finished: 'Finished',
-  duration: 'Duration (ms)',
-  empty: 'No tasks match the filters',
-  detail: 'Task details',
-  detailHint: 'Review task state and available diagnostics.',
-  failure: 'Failure code',
-  select: 'Select task',
-  selectPage: 'Select cleanable tasks on this page',
-  cleanup: 'Clean up tasks',
-  selected: 'Clean up selected tasks',
-  cleanupHint: 'Remove finished task records and temporary resources. Published files are kept.',
-  before: 'Cutoff date (UTC)',
-  clock: 'Cutoff time (UTC)',
-  calendar: 'Choose cutoff date',
-  preview: 'Preview cleanup',
-  batch: (shown, total) => `${shown} tasks in this batch, ${total} match.`,
-  result: (removed, failed) => `${removed} tasks removed, ${failed} not removed.`,
-  pagination: (page, pages, total) => `Page ${page} of ${pages}, ${total} items`,
-};
+const sortOptions = ['newest', 'oldest', 'idAsc', 'idDesc'] as const;
+type SortOption = (typeof sortOptions)[number];
 
-function isMaintenanceKind(kind: AdminTaskFilters['kind']): kind is keyof typeof zh.maintenance {
+function isMaintenanceKind(
+  kind: AdminTaskFilters['kind'],
+): kind is 'trash-expiry' | 'blob-reclaim' {
   return kind === 'trash-expiry' || kind === 'blob-reclaim';
-}
-
-function taskName(task: AdminTask, labels: typeof zh) {
-  return isMaintenanceKind(task.kind) ? labels.maintenance[task.kind] : task.name;
 }
 
 function validNodeFilter(id: string) {
   return id === '' || workerNodeIdPattern.test(id);
 }
 
-function FilterFields({
-  value,
-  change,
-  labels,
-  terminal = false,
-}: {
-  value: AdminTaskFilters;
-  change: (value: AdminTaskFilters) => void;
-  labels: typeof zh;
-  terminal?: boolean;
-}) {
-  const { t } = useFrontendTranslation();
-  return (
-    <>
-      <TextField
-        label={labels.owner}
-        value={value.ownerId}
-        maxLength={128}
-        onChange={(event) => change({ ...value, ownerId: event.target.value })}
-      />
-      <TextField
-        label={labels.nodeId}
-        value={value.nodeId}
-        maxLength={64}
-        {...(validNodeFilter(value.nodeId) ? {} : { error: labels.invalidNodeId })}
-        onChange={(event) => change({ ...value, nodeId: event.target.value })}
-      />
-      <SelectField
-        label={labels.origin}
-        value={value.origin}
-        options={adminTaskOrigins.map((origin) => ({
-          value: origin,
-          label: labels.origins[origin],
-        }))}
-        onValueChange={(origin) =>
-          change({ ...value, origin: adminTaskOrigins.find((item) => item === origin) ?? 'all' })
-        }
-      />
-      <SelectField
-        label={labels.kind}
-        value={value.kind}
-        options={adminTaskKinds.map((kind) => ({
-          value: kind,
-          label: isMaintenanceKind(kind)
-            ? labels.maintenance[kind]
-            : t('files.archives.tasks.kind.' + kind),
-        }))}
-        onValueChange={(kind) =>
-          change({ ...value, kind: adminTaskKinds.find((item) => item === kind) ?? 'all' })
-        }
-      />
-      <SelectField
-        label={labels.state}
-        value={value.status}
-        options={backgroundTaskStatuses
-          .filter((status) => !terminal || status !== 'active')
-          .map((status) => ({ value: status, label: t('files.archives.tasks.status.' + status) }))}
-        onValueChange={(status) =>
-          change({
-            ...value,
-            status: backgroundTaskStatuses.find((item) => item === status) ?? 'all',
-          })
-        }
-      />
-    </>
-  );
+function sortOption(query: Pick<AdminTaskQuery, 'sort' | 'direction'>): SortOption {
+  if (query.sort === 'id') return query.direction === 'asc' ? 'idAsc' : 'idDesc';
+  return query.direction === 'asc' ? 'oldest' : 'newest';
+}
+
+function applySort(query: AdminTaskQuery, value: string): AdminTaskQuery {
+  switch (value) {
+    case 'oldest':
+      return { ...query, sort: 'created', direction: 'asc' };
+    case 'idAsc':
+      return { ...query, sort: 'id', direction: 'asc' };
+    case 'idDesc':
+      return { ...query, sort: 'id', direction: 'desc' };
+    default:
+      return { ...query, sort: 'created', direction: 'desc' };
+  }
+}
+
+function useTaskText() {
+  const { t, locale } = useFrontendTranslation();
+  const preferences = usePreferencesPort<Preferences>();
+  const region = useSyncExternalStore(
+    preferences.subscribe,
+    preferences.getSnapshot,
+    preferences.getSnapshot,
+  ).localeRegion;
+  return {
+    t,
+    locale,
+    label: (key: string, values?: Readonly<Record<string, unknown>>) =>
+      values ? t('adminTasks.' + key, values) : t('adminTasks.' + key),
+    time: (value: string) => formatInstant(locale, region, value),
+    number: (value: number) => formatNumber(locale, value),
+  };
+}
+
+function taskName(task: AdminTask, label: ReturnType<typeof useTaskText>['label']) {
+  return isMaintenanceKind(task.kind) ? label('maintenance.' + task.kind) : task.name;
 }
 
 function useTaskStateLabel() {
@@ -219,18 +112,90 @@ function useTaskStateLabel() {
   };
 }
 
-function TaskDetail({
-  task,
-  labels,
-  time,
-  close,
+function stateTone(state: string): 'success' | 'danger' | 'warning' | 'neutral' {
+  if (state === 'completed') return 'success';
+  if (state === 'failed') return 'danger';
+  if (state === 'canceled' || state === 'expired') return 'neutral';
+  return 'warning';
+}
+
+function FilterFields({
+  value,
+  change,
+  terminal = false,
 }: {
-  task: AdminTask;
-  labels: typeof zh;
-  time: (value: string) => string;
-  close: () => void;
+  value: AdminTaskFilters;
+  change: (value: AdminTaskFilters) => void;
+  terminal?: boolean;
 }) {
-  const { t } = useFrontendTranslation();
+  const { t, label } = useTaskText();
+  return (
+    <>
+      <TextField
+        label={label('owner')}
+        value={value.ownerId}
+        maxLength={128}
+        onChange={(event) => change({ ...value, ownerId: event.target.value })}
+      />
+      <TextField
+        label={label('nodeId')}
+        value={value.nodeId}
+        maxLength={64}
+        {...(validNodeFilter(value.nodeId) ? {} : { error: label('invalidNodeId') })}
+        onChange={(event) => change({ ...value, nodeId: event.target.value })}
+      />
+      <SelectField
+        label={label('origin')}
+        value={value.origin}
+        options={adminTaskOrigins.map((origin) => ({
+          value: origin,
+          label: label('origins.' + origin),
+        }))}
+        onValueChange={(origin) =>
+          change({
+            ...value,
+            origin: adminTaskOrigins.find((item) => item === origin) ?? 'all',
+          })
+        }
+      />
+      <SelectField
+        label={label('kind')}
+        value={value.kind}
+        options={adminTaskKinds.map((kind) => ({
+          value: kind,
+          label: isMaintenanceKind(kind)
+            ? label('maintenance.' + kind)
+            : t('files.archives.tasks.kind.' + kind),
+        }))}
+        onValueChange={(kind) =>
+          change({
+            ...value,
+            kind: adminTaskKinds.find((item) => item === kind) ?? 'all',
+          })
+        }
+      />
+      <SelectField
+        label={label('state')}
+        value={value.status}
+        options={backgroundTaskStatuses
+          .filter((status) => !terminal || status !== 'active')
+          .map((status) => ({
+            value: status,
+            label: t('files.archives.tasks.status.' + status),
+          }))}
+        onValueChange={(status) =>
+          change({
+            ...value,
+            status: backgroundTaskStatuses.find((item) => item === status) ?? 'all',
+          })
+        }
+      />
+    </>
+  );
+}
+
+function TaskDetail({ task, close }: { task: AdminTask; close: () => void }) {
+  const { t, label, time } = useTaskText();
   const files = useFiles();
   const labelState = useTaskStateLabel();
   const state = useCatalogRequest(
@@ -244,9 +209,9 @@ function TaskDetail({
   return (
     <DialogSurface
       isOpen
-      triggerLabel={labels.detail}
-      title={labels.detail}
-      description={labels.detailHint}
+      triggerLabel={label('detail')}
+      title={label('detail')}
+      description={label('detailHint')}
       cancelLabel={t('files.close')}
       onOpenChange={(open) => {
         if (!open) close();
@@ -257,24 +222,45 @@ function TaskDetail({
         <CatalogFailure error={state.result.error} retry={state.refresh} />
       ) : null}
       {item ? (
-        <dl className="space-y-2 text-sm">
-          {[
-            [labels.taskId, item.id],
-            [labels.name, taskName(item, labels)],
-            [labels.owner, item.ownerId || labels.origins.system],
-            [labels.state, labelState(item)],
-            [labels.node, item.nodeId || '—'],
-            [maintenance ? labels.started : labels.created, time(item.createdAt)],
-            [maintenance ? labels.finished : labels.updated, time(item.updatedAt)],
-            ...(item.durationMs === null ? [] : [[labels.duration, item.durationMs]]),
-            [labels.failure, item.failureCode || '—'],
-          ].map(([label, value]) => (
-            <div key={label}>
-              <dt className="font-medium">{label}</dt>
-              <dd className="break-all text-ink-muted">{value}</dd>
-            </div>
-          ))}
-        </dl>
+        <DescriptionList
+          label={label('detail')}
+          columns={2}
+          items={[
+            {
+              id: 'state',
+              term: label('state'),
+              description: <StatusPill tone={stateTone(item.state)}>{labelState(item)}</StatusPill>,
+            },
+            { id: 'name', term: label('name'), description: taskName(item, label) },
+            {
+              id: 'id',
+              term: label('taskId'),
+              description: <span className="break-all">{item.id}</span>,
+            },
+            {
+              id: 'owner',
+              term: label('owner'),
+              description: (
+                <span className="break-all">{item.ownerId || label('systemOwner')}</span>
+              ),
+            },
+            { id: 'node', term: label('node'), description: item.nodeId || label('noNode') },
+            {
+              id: 'created',
+              term: maintenance ? label('started') : label('created'),
+              description: time(item.createdAt),
+            },
+            {
+              id: 'updated',
+              term: maintenance ? label('finishedAt') : label('updated'),
+              description: time(item.updatedAt),
+            },
+            ...(item.durationMs === null
+              ? []
+              : [{ id: 'duration', term: label('duration'), description: item.durationMs }]),
+            { id: 'failure', term: label('failure'), description: item.failureCode || '—' },
+          ]}
+        />
       ) : null}
     </DialogSurface>
   );
@@ -283,17 +269,15 @@ function TaskDetail({
 function CleanupDialog({
   rows,
   preview,
-  labels,
   close,
   clean,
 }: {
   rows: readonly AdminTask[];
   preview?: AdminTaskPreviewQuery;
-  labels: typeof zh;
   close: () => void;
   clean: (rows: readonly AdminTask[]) => Promise<void>;
 }) {
-  const { t } = useFrontendTranslation();
+  const { t, label } = useTaskText();
   const files = useFiles();
   const state = useCatalogRequest(
     useCallback(
@@ -307,12 +291,13 @@ function CleanupDialog({
   return (
     <DialogSurface
       isOpen
-      triggerLabel={labels.cleanup}
-      title={labels.cleanup}
-      description={labels.cleanupHint}
+      triggerLabel={label('cleanup')}
+      title={label('cleanup')}
+      description={label('cleanupHint')}
       cancelLabel={t('files.cancel')}
-      confirmLabel={labels.cleanup}
+      confirmLabel={label('cleanup')}
       confirmDisabled={targets.length === 0}
+      failureMessage={label('cleanupFailure')}
       onConfirm={() => clean(targets)}
       onOpenChange={(open) => {
         if (!open) close();
@@ -322,11 +307,11 @@ function CleanupDialog({
       {state.result && 'error' in state.result ? (
         <CatalogFailure error={state.result.error} retry={state.refresh} />
       ) : null}
-      <p>{labels.batch(targets.length, page?.total ?? targets.length)}</p>
-      <ul className="space-y-2 text-sm">
+      <p>{label('batch', { shown: targets.length, total: page?.total ?? targets.length })}</p>
+      <ul className="mt-3 space-y-2 text-sm">
         {targets.map((row) => (
           <li className="break-all" key={taskKey(row)}>
-            {taskName(row, labels)} · {row.id}
+            {taskName(row, label)} · {row.id}
           </li>
         ))}
       </ul>
@@ -334,19 +319,67 @@ function CleanupDialog({
   );
 }
 
-export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
+function TaskSummaryView({
+  value,
+  show,
+}: {
+  value: AdminTaskSummary;
+  show: (status: AdminTaskQuery['status']) => void;
+}) {
+  const { label, number, time } = useTaskText();
+  const finished = value.completed + value.failed + value.canceled + value.expired;
+  return (
+    <div className="space-y-4">
+      <DescriptionList
+        label={label('snapshot')}
+        columns={2}
+        items={[
+          { id: 'total', term: label('total'), description: number(value.total) },
+          {
+            id: 'active',
+            term: label('active'),
+            description: (
+              <StatusPill tone={value.active ? 'warning' : 'neutral'}>
+                {number(value.active)}
+              </StatusPill>
+            ),
+          },
+          {
+            id: 'failed',
+            term: label('failed'),
+            description: (
+              <StatusPill tone={value.failed ? 'danger' : 'neutral'}>
+                {number(value.failed)}
+              </StatusPill>
+            ),
+          },
+          { id: 'finished', term: label('finished'), description: number(finished) },
+          { id: 'cleanable', term: label('cleanable'), description: number(value.cleanable) },
+        ]}
+      />
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="mr-auto text-xs text-ink-muted">
+          {label('asOf', { time: time(value.asOf) })}
+        </p>
+        {value.active ? (
+          <Action size="sm" variant="quiet" onPress={() => show('active')}>
+            {label('showActive')}
+          </Action>
+        ) : null}
+        {value.failed ? (
+          <Action size="sm" variant="quiet" onPress={() => show('failed')}>
+            {label('showFailed')}
+          </Action>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function AdminTasksContent({ nodeId = '' }: { nodeId?: string }) {
   const files = useFiles();
-  const { t, locale } = useFrontendTranslation();
+  const { t, label, time } = useTaskText();
   const labelState = useTaskStateLabel();
-  const labels = locale.startsWith('zh') ? zh : en;
-  const title = t('systemTools.nav.tasks');
-  const preferences = usePreferencesPort<Preferences>();
-  const region = useSyncExternalStore(
-    preferences.subscribe,
-    preferences.getSnapshot,
-    preferences.getSnapshot,
-  ).localeRegion;
-  const time = (value: string) => formatInstant(locale, region, value);
   const [query, setQuery] = useState({ ...initial, nodeId });
   const [draft, setDraft] = useState<AdminTaskQuery>();
   const [criteria, setCriteria] = useState<AdminTaskFilters & { day: string; clock: string }>();
@@ -360,20 +393,39 @@ export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
   const state = useCatalogRequest(
     useCallback((signal) => files.listAdminTasks(query, signal), [files, query]),
   );
+  const summaryQuery = useMemo(
+    () => ({
+      ownerId: query.ownerId,
+      nodeId: query.nodeId,
+      kind: query.kind,
+      origin: query.origin,
+      taskId: query.taskId,
+    }),
+    [query.ownerId, query.nodeId, query.kind, query.origin, query.taskId],
+  );
+  const summary = useCatalogRequest(
+    useCallback(
+      (signal) => files.readAdminTaskSummary(summaryQuery, signal),
+      [files, summaryQuery],
+    ),
+  );
   const page = state.result && 'value' in state.result ? state.result.value : undefined;
+  const summaryValue =
+    summary.result && 'value' in summary.result ? summary.result.value : undefined;
   const pages = page
     ? Math.max(1, Math.min(maxInventoryPage, Math.ceil(page.total / page.pageSize)))
     : 1;
   const eligible = page?.canCleanup ? page.items.filter((row) => row.cleanable) : [];
   const selected = eligible.filter((row) => selection.includes(taskKey(row)));
-  const refresh = () => {
-    setSelection([]);
-    state.refresh();
-  };
   const apply = (next: AdminTaskQuery) => {
     setSelection([]);
     setNotice(undefined);
     setQuery(next);
+  };
+  const refresh = () => {
+    setSelection([]);
+    state.refresh();
+    summary.refresh();
   };
   const clean = async (rows: readonly AdminTask[]) => {
     const result = await files.cleanAdminTasks(
@@ -386,15 +438,15 @@ export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
   return (
     <Page>
       <PageHeader
-        title={title}
-        description={labels.description}
+        title={label('title')}
+        description={label('description')}
         actions={
           <>
             <Action variant="secondary" onPress={refresh}>
               {t('files.refresh')}
             </Action>
             <Action variant="secondary" onPress={() => setDraft(query)}>
-              {labels.filter}
+              {label('filter')}
             </Action>
             {page?.canCleanup ? (
               <Action
@@ -403,36 +455,48 @@ export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
                   setCriteria({ ...filters, nodeId: query.nodeId, day: '', clock: '00:00' })
                 }
               >
-                {labels.cleanup}
-              </Action>
-            ) : null}
-            {selected.length > 0 ? (
-              <Action variant="danger" onPress={() => setCleanup({ rows: selected })}>
-                {labels.selected} ({selected.length})
+                {label('cleanup')}
               </Action>
             ) : null}
           </>
         }
       />
-      <Panel className="surface-route-region overflow-hidden">
-        <SectionBody>
+      <Section title={label('snapshot')} description={label('snapshotHint')} contentInset>
+        {!summary.result ? <p role="status">{t('administration.loading')}</p> : null}
+        {summary.result && 'error' in summary.result ? (
+          <CatalogFailure error={summary.result.error} retry={summary.refresh} />
+        ) : null}
+        {summaryValue ? (
+          <TaskSummaryView
+            value={summaryValue}
+            show={(status) => apply({ ...query, status, page: 1 })}
+          />
+        ) : null}
+      </Section>
+      <Section title={label('title')} description={label('listHint')} contentInset>
+        <div className="space-y-4">
           {query.nodeId ? (
             <div className="flex flex-wrap items-center gap-2">
               <p className="break-all text-sm">
-                {labels.nodeId} · {query.nodeId}
+                {label('nodeId')} · {query.nodeId}
               </p>
               <Action
                 variant="quiet"
                 size="sm"
                 onPress={() => apply({ ...query, nodeId: '', page: 1 })}
               >
-                {labels.clearNode}
+                {label('clearNode')}
               </Action>
             </div>
           ) : null}
           {notice ? (
             <div role="status">
-              <p>{labels.result(notice.items.length - failed.length, failed.length)}</p>
+              <p>
+                {label('result', {
+                  removed: notice.items.length - failed.length,
+                  failed: failed.length,
+                })}
+              </p>
               {failed.length ? (
                 <ul>
                   {failed.map((item) => (
@@ -446,114 +510,115 @@ export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
           ) : null}
           {!state.result ? <p role="status">{t('administration.loading')}</p> : null}
           {state.result && 'error' in state.result ? (
-            <CatalogFailure error={state.result.error} retry={refresh} />
+            <CatalogFailure error={state.result.error} retry={state.refresh} />
           ) : null}
           {page ? (
             <>
               {eligible.length ? (
-                <CheckboxField
-                  label={labels.selectPage}
-                  checked={selected.length === eligible.length}
-                  onCheckedChange={(checked) => setSelection(checked ? eligible.map(taskKey) : [])}
-                />
+                <div className="flex flex-wrap items-center gap-3">
+                  <CheckboxField
+                    label={label('selectPage')}
+                    checked={selected.length === eligible.length}
+                    onCheckedChange={(checked) =>
+                      setSelection(checked ? eligible.map(taskKey) : [])
+                    }
+                  />
+                  {selected.length ? (
+                    <>
+                      <span className="text-sm text-ink-muted">
+                        {label('selectedCount', { count: selected.length })}
+                      </span>
+                      <Action
+                        size="sm"
+                        variant="danger"
+                        onPress={() => setCleanup({ rows: selected })}
+                      >
+                        {label('cleanupSelected')}
+                      </Action>
+                    </>
+                  ) : null}
+                </div>
               ) : null}
-              <DataTable<TaskRow>
-                label={title}
-                density="compact"
-                rows={page.items.map((item) => ({ id: taskKey(item), task: item }))}
-                emptyContent={labels.empty}
-                sort={{
-                  columnId: query.sort,
-                  direction: query.direction === 'asc' ? 'ascending' : 'descending',
-                  onSortChange: (sort, direction) => {
-                    if (sort === 'id' || sort === 'created')
-                      apply({
-                        ...query,
-                        sort,
-                        direction: direction === 'ascending' ? 'asc' : 'desc',
-                        page: 1,
-                      });
-                  },
-                }}
-                columns={[
-                  ...(eligible.length
-                    ? [
-                        {
-                          id: 'select',
-                          label: labels.select,
-                          render: (row: TaskRow) =>
-                            row.task.cleanable ? (
-                              <CheckboxField
-                                label={`${labels.select} ${row.task.id}`}
-                                presentation="control-only"
-                                checked={selection.includes(row.id)}
-                                onCheckedChange={(checked) =>
-                                  setSelection((current) =>
-                                    checked
-                                      ? [...current, row.id]
-                                      : current.filter((id) => id !== row.id),
-                                  )
-                                }
-                              />
-                            ) : null,
-                        },
-                      ]
-                    : []),
-                  {
-                    id: 'id',
-                    label: 'ID',
-                    sortable: true,
-                    render: ({ task }) => <span title={task.id}>{task.id.slice(0, 8)}</span>,
-                  },
-                  {
-                    id: 'name',
-                    label: labels.name,
-                    rowHeader: true,
-                    render: ({ task }) => (
-                      <div className="flex flex-wrap gap-2">
-                        <Action size="sm" variant="quiet" onPress={() => setDetail(task)}>
-                          {taskName(task, labels)}
-                        </Action>
+              {page.items.length ? (
+                <ul
+                  aria-label={label('title')}
+                  className="divide-y divide-border rounded-panel border border-border"
+                >
+                  {page.items.map((task) => (
+                    <li key={taskKey(task)} className="flex min-w-0 gap-3 px-4 py-4">
+                      <div className="pt-1">
                         {page.canCleanup && task.cleanable ? (
-                          <Action
-                            size="sm"
-                            variant="quiet"
-                            onPress={() => setCleanup({ rows: [task] })}
-                          >
-                            {labels.cleanup}
-                          </Action>
+                          <CheckboxField
+                            label={`${label('select')} ${task.id}`}
+                            presentation="control-only"
+                            checked={selection.includes(taskKey(task))}
+                            onCheckedChange={(checked) =>
+                              setSelection((current) =>
+                                checked
+                                  ? [...current, taskKey(task)]
+                                  : current.filter((id) => id !== taskKey(task)),
+                              )
+                            }
+                          />
                         ) : null}
                       </div>
-                    ),
-                  },
-                  {
-                    id: 'kind',
-                    label: labels.kind,
-                    render: ({ task }) =>
-                      isMaintenanceKind(task.kind)
-                        ? labels.maintenance[task.kind]
-                        : t('files.archives.tasks.kind.' + task.kind),
-                  },
-                  { id: 'state', label: labels.state, render: ({ task }) => labelState(task) },
-                  {
-                    id: 'owner',
-                    label: labels.owner,
-                    render: ({ task }) => (
-                      <span title={task.ownerId}>
-                        {task.ownerId.slice(0, 8) || labels.origins.system}
-                      </span>
-                    ),
-                  },
-                  { id: 'node', label: labels.node, render: ({ task }) => task.nodeId || '—' },
-                  {
-                    id: 'created',
-                    label: labels.created,
-                    sortable: true,
-                    render: ({ task }) => time(task.createdAt),
-                  },
-                ]}
-              />
-              <div className="flex flex-wrap items-center gap-2 py-2">
+                      <div className="min-w-0 flex-1 space-y-3">
+                        <div className="flex min-w-0 flex-wrap items-center gap-2">
+                          <Action size="sm" variant="quiet" onPress={() => setDetail(task)}>
+                            <span className="block max-w-40 truncate sm:max-w-80 lg:max-w-none">
+                              {taskName(task, label)}
+                            </span>
+                          </Action>
+                          <StatusPill tone={stateTone(task.state)}>{labelState(task)}</StatusPill>
+                        </div>
+                        <dl className="grid min-w-0 gap-x-6 gap-y-2 text-sm sm:grid-cols-2 xl:grid-cols-4">
+                          <div className="min-w-0">
+                            <dt className="text-xs text-ink-muted">{label('kind')}</dt>
+                            <dd>
+                              {isMaintenanceKind(task.kind)
+                                ? label('maintenance.' + task.kind)
+                                : t('files.archives.tasks.kind.' + task.kind)}
+                            </dd>
+                          </div>
+                          <div className="min-w-0">
+                            <dt className="text-xs text-ink-muted">{label('created')}</dt>
+                            <dd>{time(task.createdAt)}</dd>
+                          </div>
+                          <div className="min-w-0">
+                            <dt className="text-xs text-ink-muted">{label('owner')}</dt>
+                            <dd className="truncate" title={task.ownerId}>
+                              {task.ownerId ? task.ownerId.slice(0, 12) : label('systemOwner')}
+                            </dd>
+                          </div>
+                          <div className="min-w-0">
+                            <dt className="text-xs text-ink-muted">{label('taskIdShort')}</dt>
+                            <dd className="font-mono" title={task.id}>
+                              {task.id.slice(0, 8)}
+                            </dd>
+                          </div>
+                          {task.nodeId ? (
+                            <div className="min-w-0">
+                              <dt className="text-xs text-ink-muted">{label('node')}</dt>
+                              <dd className="truncate" title={task.nodeId}>
+                                {task.nodeId}
+                              </dd>
+                            </div>
+                          ) : null}
+                        </dl>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <StateSurface
+                  compact
+                  state="empty"
+                  icon={<NavigationIcon iconId="list" />}
+                  title={label('empty')}
+                  description={label('listHint')}
+                />
+              )}
+              <div className="flex flex-wrap items-center gap-2">
                 <Action
                   size="sm"
                   variant="secondary"
@@ -562,7 +627,9 @@ export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
                 >
                   {t('administration.previous')}
                 </Action>
-                <p role="status">{labels.pagination(page.page, pages, page.total)}</p>
+                <p className="mr-auto text-sm" role="status">
+                  {label('pagination', { page: page.page, pages, total: page.total })}
+                </p>
                 <Action
                   size="sm"
                   variant="secondary"
@@ -574,16 +641,16 @@ export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
               </div>
             </>
           ) : null}
-        </SectionBody>
-      </Panel>
+        </div>
+      </Section>
       {draft ? (
         <DialogSurface
           isOpen
-          triggerLabel={labels.filter}
-          title={labels.filter}
-          description={labels.description}
+          triggerLabel={label('filter')}
+          title={label('filter')}
+          description={label('description')}
           cancelLabel={t('files.cancel')}
-          confirmLabel={labels.apply}
+          confirmLabel={label('apply')}
           confirmDisabled={!validNodeFilter(draft.nodeId)}
           onConfirm={() => apply({ ...draft, page: 1 })}
           onOpenChange={(open) => {
@@ -592,15 +659,20 @@ export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
         >
           <div className="min-w-0 space-y-4">
             <TextField
-              label={labels.taskId}
+              label={label('taskId')}
               value={draft.taskId}
               maxLength={36}
               onChange={(event) => setDraft({ ...draft, taskId: event.target.value })}
             />
-            <FilterFields
-              value={draft}
-              change={(value) => setDraft({ ...draft, ...value })}
-              labels={labels}
+            <FilterFields value={draft} change={(value) => setDraft({ ...draft, ...value })} />
+            <SelectField
+              label={label('sort')}
+              value={sortOption(draft)}
+              options={sortOptions.map((value) => ({
+                value,
+                label: label('sorts.' + value),
+              }))}
+              onValueChange={(value) => setDraft(applySort(draft, value))}
             />
             <Action
               variant="secondary"
@@ -609,7 +681,7 @@ export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
                 setDraft(undefined);
               }}
             >
-              {labels.reset}
+              {label('reset')}
             </Action>
           </div>
         </DialogSurface>
@@ -617,11 +689,11 @@ export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
       {criteria ? (
         <DialogSurface
           isOpen
-          triggerLabel={labels.cleanup}
-          title={labels.cleanup}
-          description={labels.cleanupHint}
+          triggerLabel={label('cleanup')}
+          title={label('cleanup')}
+          description={label('cleanupHint')}
           cancelLabel={t('files.cancel')}
-          confirmLabel={labels.preview}
+          confirmLabel={label('preview')}
           confirmDisabled={
             !validNodeFilter(criteria.nodeId) ||
             !criteria.day ||
@@ -638,13 +710,13 @@ export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
         >
           <div className="min-w-0 space-y-4">
             <DatePickerField
-              label={labels.before}
-              calendarLabel={labels.calendar}
+              label={label('before')}
+              calendarLabel={label('calendar')}
               value={criteria.day || null}
               onValueChange={(day) => setCriteria({ ...criteria, day: day ?? '' })}
             />
             <TextField
-              label={labels.clock}
+              label={label('clock')}
               value={criteria.clock}
               maxLength={5}
               onChange={(event) => setCriteria({ ...criteria, clock: event.target.value })}
@@ -652,23 +724,27 @@ export function AdminTasksPage({ nodeId = '' }: { nodeId?: string }) {
             <FilterFields
               value={criteria}
               change={(value) => setCriteria({ ...criteria, ...value })}
-              labels={labels}
               terminal
             />
           </div>
         </DialogSurface>
       ) : null}
-      {detail ? (
-        <TaskDetail task={detail} labels={labels} time={time} close={() => setDetail(undefined)} />
-      ) : null}
+      {detail ? <TaskDetail task={detail} close={() => setDetail(undefined)} /> : null}
       {cleanup ? (
-        <CleanupDialog
-          {...cleanup}
-          labels={labels}
-          clean={clean}
-          close={() => setCleanup(undefined)}
-        />
+        <CleanupDialog {...cleanup} clean={clean} close={() => setCleanup(undefined)} />
       ) : null}
     </Page>
+  );
+}
+
+export function AdminTasksPage(props: { nodeId?: string }) {
+  const { t } = useFrontendTranslation();
+  return (
+    <FrontendMessages
+      resources={adminTaskMessages}
+      fallback={<p role="status">{t('administration.loading')}</p>}
+    >
+      <AdminTasksContent {...props} />
+    </FrontendMessages>
   );
 }

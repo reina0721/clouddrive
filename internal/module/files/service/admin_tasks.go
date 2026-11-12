@@ -39,6 +39,14 @@ type AdminTaskQuery struct {
 	CleanupBefore time.Time
 }
 
+type AdminTaskSummaryQuery struct {
+	OwnerID string
+	TaskID  string
+	NodeID  string
+	Kind    BackgroundTaskKind
+	Origin  AdminTaskOrigin
+}
+
 type AdminTaskTarget struct {
 	Kind      BackgroundTaskKind `json:"kind" enum:"zip,extract,http,bittorrent,trash-expiry,blob-reclaim"`
 	ID        string             `json:"id" minLength:"36" maxLength:"36"`
@@ -66,11 +74,40 @@ type AdminTaskPage struct {
 	PageSize int         `json:"pageSize"`
 }
 
+// AdminTaskSummary is a point-in-time aggregate for the selected task scope.
+// It deliberately excludes pagination, sorting and status so a narrowed list
+// cannot be mistaken for the operational picture.
+type AdminTaskSummary struct {
+	Total     int64     `json:"total"`
+	Active    int64     `json:"active"`
+	Completed int64     `json:"completed"`
+	Failed    int64     `json:"failed"`
+	Canceled  int64     `json:"canceled"`
+	Expired   int64     `json:"expired"`
+	Cleanable int64     `json:"cleanable"`
+	AsOf      time.Time `json:"asOf"`
+}
+
 type AdminTaskRepository interface {
 	QueryAdminTasks(context.Context, AdminTaskQuery, time.Time) (AdminTaskPage, error)
+	SummarizeAdminTasks(context.Context, AdminTaskSummaryQuery, time.Time) (AdminTaskSummary, error)
 	ReadAdminTask(context.Context, BackgroundTaskKind, string, time.Time) (AdminTask, error)
 	RemoveArchiveTaskIfUnchanged(context.Context, string, string, time.Time) error
 	RemoveMaintenanceRunIfUnchanged(context.Context, MaintenanceKind, string, time.Time) error
+}
+
+func normalizeAdminTaskScope(ownerID, taskID, nodeID string, kind BackgroundTaskKind, origin AdminTaskOrigin) (AdminTaskSummaryQuery, error) {
+	query := AdminTaskSummaryQuery{OwnerID: strings.TrimSpace(ownerID), TaskID: strings.TrimSpace(taskID), NodeID: nodeID, Kind: kind, Origin: origin}
+	if !validInventoryText(query.OwnerID, 128) || (query.TaskID != "" && model.ValidateTransferID(query.TaskID) != nil) ||
+		(query.NodeID != "" && !validTorrentNodeID(query.NodeID)) || (query.Kind != BackgroundTaskAny && !validAdminTaskKind(query.Kind)) {
+		return AdminTaskSummaryQuery{}, model.ErrInvalid
+	}
+	switch query.Origin {
+	case AdminTaskOriginAll, AdminTaskOriginUser, AdminTaskOriginSystem:
+	default:
+		return AdminTaskSummaryQuery{}, model.ErrInvalid
+	}
+	return query, nil
 }
 
 type AdminTaskDownloadRemoval interface {
@@ -104,10 +141,12 @@ func isMaintenanceKind(kind BackgroundTaskKind) bool {
 }
 
 func (s *AdminTasks) List(ctx context.Context, query AdminTaskQuery) (AdminTaskPage, error) {
-	query.OwnerID, query.TaskID = strings.TrimSpace(query.OwnerID), strings.TrimSpace(query.TaskID)
-	if !validInventoryText(query.OwnerID, 128) || (query.TaskID != "" && model.ValidateTransferID(query.TaskID) != nil) ||
-		(query.NodeID != "" && !validTorrentNodeID(query.NodeID)) ||
-		query.Page < 1 || query.Page > MaxInventoryPage || (query.Kind != BackgroundTaskAny && !validAdminTaskKind(query.Kind)) ||
+	scope, err := normalizeAdminTaskScope(query.OwnerID, query.TaskID, query.NodeID, query.Kind, query.Origin)
+	if err != nil {
+		return AdminTaskPage{}, err
+	}
+	query.OwnerID, query.TaskID, query.NodeID, query.Kind, query.Origin = scope.OwnerID, scope.TaskID, scope.NodeID, scope.Kind, scope.Origin
+	if query.Page < 1 || query.Page > MaxInventoryPage ||
 		(query.Sort != AdminTaskByID && query.Sort != AdminTaskByCreated) || (query.Direction != InventoryAscending && query.Direction != InventoryDescending) {
 		return AdminTaskPage{}, model.ErrInvalid
 	}
@@ -116,16 +155,20 @@ func (s *AdminTasks) List(ctx context.Context, query AdminTaskQuery) (AdminTaskP
 	default:
 		return AdminTaskPage{}, model.ErrInvalid
 	}
-	switch query.Origin {
-	case AdminTaskOriginAll, AdminTaskOriginUser, AdminTaskOriginSystem:
-	default:
-		return AdminTaskPage{}, model.ErrInvalid
-	}
 	now := s.clock.Now().UTC()
 	if !query.CleanupBefore.IsZero() && (query.CleanupBefore.After(now) || query.Status == BackgroundStatusActive) {
 		return AdminTaskPage{}, model.ErrInvalid
 	}
 	return s.store.QueryAdminTasks(ctx, query, now)
+}
+
+func (s *AdminTasks) Summary(ctx context.Context, query AdminTaskSummaryQuery) (AdminTaskSummary, error) {
+	query, err := normalizeAdminTaskScope(query.OwnerID, query.TaskID, query.NodeID, query.Kind, query.Origin)
+	if err != nil {
+		return AdminTaskSummary{}, err
+	}
+	now := s.clock.Now().UTC()
+	return s.store.SummarizeAdminTasks(ctx, query, now)
 }
 
 func (s *AdminTasks) Read(ctx context.Context, kind BackgroundTaskKind, id string) (AdminTask, error) {

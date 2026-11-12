@@ -55,6 +55,28 @@ func adminTerminalTaskStates() []model.DownloadState {
 	return []model.DownloadState{model.DownloadCompleted, model.DownloadFailed, model.DownloadCanceled, model.DownloadExpired}
 }
 
+func filterAdminTaskScope(base *gorm.DB, query service.AdminTaskSummaryQuery) *gorm.DB {
+	switch query.Origin {
+	case service.AdminTaskOriginUser:
+		base = base.Where("task.owner_id <> ''")
+	case service.AdminTaskOriginSystem:
+		base = base.Where("task.owner_id = ''")
+	}
+	if query.OwnerID != "" {
+		base = base.Where("task.owner_id = ?", query.OwnerID)
+	}
+	if query.TaskID != "" {
+		base = base.Where("task.id = ?", query.TaskID)
+	}
+	if query.NodeID != "" {
+		base = base.Where("task.node_id = ?", query.NodeID)
+	}
+	if query.Kind != service.BackgroundTaskAny {
+		base = base.Where("task.kind = ?", query.Kind)
+	}
+	return base
+}
+
 func (r *Repository) QueryAdminTasks(ctx context.Context, query service.AdminTaskQuery, now time.Time) (service.AdminTaskPage, error) {
 	page := service.AdminTaskPage{Items: []service.AdminTask{}, Page: query.Page, PageSize: service.AdminTaskPageSize}
 	err := r.access.Use(ctx, func(client database.Client) error {
@@ -62,25 +84,9 @@ func (r *Repository) QueryAdminTasks(ctx context.Context, query service.AdminTas
 			if err := r.checkStorage(db); err != nil {
 				return err
 			}
-			base := adminTaskTable(db)
-			switch query.Origin {
-			case service.AdminTaskOriginUser:
-				base = base.Where("task.owner_id <> ''")
-			case service.AdminTaskOriginSystem:
-				base = base.Where("task.owner_id = ''")
-			}
-			if query.OwnerID != "" {
-				base = base.Where("task.owner_id = ?", query.OwnerID)
-			}
-			if query.TaskID != "" {
-				base = base.Where("task.id = ?", query.TaskID)
-			}
-			if query.NodeID != "" {
-				base = base.Where("task.node_id = ?", query.NodeID)
-			}
-			if query.Kind != service.BackgroundTaskAny {
-				base = base.Where("task.kind = ?", query.Kind)
-			}
+			base := filterAdminTaskScope(adminTaskTable(db), service.AdminTaskSummaryQuery{
+				OwnerID: query.OwnerID, TaskID: query.TaskID, NodeID: query.NodeID, Kind: query.Kind, Origin: query.Origin,
+			})
 			switch query.Status {
 			case service.BackgroundStatusAll:
 			case service.BackgroundStatusActive:
@@ -110,6 +116,29 @@ func (r *Repository) QueryAdminTasks(ctx context.Context, query service.AdminTas
 		})
 	})
 	return page, err
+}
+
+func (r *Repository) SummarizeAdminTasks(ctx context.Context, query service.AdminTaskSummaryQuery, now time.Time) (service.AdminTaskSummary, error) {
+	summary := service.AdminTaskSummary{}
+	err := r.access.Use(ctx, func(client database.Client) error {
+		return database.UseGORM(ctx, client, func(db *gorm.DB) error {
+			if err := r.checkStorage(db); err != nil {
+				return err
+			}
+			base := filterAdminTaskScope(adminTaskTable(db), query)
+			return base.Select(`COUNT(*) AS total,
+				COALESCE(SUM(CASE WHEN task.state NOT IN ? THEN 1 ELSE 0 END), 0) AS active,
+				COALESCE(SUM(CASE WHEN task.state = ? THEN 1 ELSE 0 END), 0) AS completed,
+				COALESCE(SUM(CASE WHEN task.state = ? THEN 1 ELSE 0 END), 0) AS failed,
+				COALESCE(SUM(CASE WHEN task.state = ? THEN 1 ELSE 0 END), 0) AS canceled,
+				COALESCE(SUM(CASE WHEN task.state = ? THEN 1 ELSE 0 END), 0) AS expired,
+				COALESCE(SUM(CASE WHEN task.state IN ? AND task.cleanup_pending = 0 AND (task.lease_until IS NULL OR task.lease_until <= ?) THEN 1 ELSE 0 END), 0) AS cleanable`,
+				adminTerminalTaskStates(), model.DownloadCompleted, model.DownloadFailed, model.DownloadCanceled, model.DownloadExpired,
+				adminTerminalTaskStates(), now).Scan(&summary).Error
+		})
+	})
+	summary.AsOf = now
+	return summary, err
 }
 
 func (r *Repository) ReadAdminTask(ctx context.Context, kind service.BackgroundTaskKind, id string, now time.Time) (service.AdminTask, error) {

@@ -24,6 +24,7 @@ const (
 	OperationFilesAdminTasksCleanupPreview  OperationID = "files.admin-tasks.cleanup-preview"
 	OperationFilesAdminTasksList            OperationID = "files.admin-tasks.list"
 	OperationFilesAdminTasksRead            OperationID = "files.admin-tasks.read"
+	OperationFilesAdminTasksSummary         OperationID = "files.admin-tasks.summary"
 	OperationFilesAnnotationsRead           OperationID = "files.annotations.read"
 	OperationFilesAnnotationsReplace        OperationID = "files.annotations.replace"
 	OperationFilesAnnotationsSummaries      OperationID = "files.annotations.summaries"
@@ -251,6 +252,7 @@ var operationInventory = [...]Operation{
 	{ID: OperationFilesAdminTasksCleanupPreview, Method: "GET", Path: "/api/v1/files/admin-tasks/cleanup-preview", Policy: "protected", Scope: "files:task-admin:cleanup", Action: "files.admin-tasks.cleanup-preview"},
 	{ID: OperationFilesAdminTasksList, Method: "GET", Path: "/api/v1/files/admin-tasks", Policy: "protected", Scope: "files:task-admin:read", Action: "files.admin-tasks.list"},
 	{ID: OperationFilesAdminTasksRead, Method: "GET", Path: "/api/v1/files/admin-tasks/{kind}/{id}", Policy: "protected", Scope: "files:task-admin:read", Action: "files.admin-tasks.read"},
+	{ID: OperationFilesAdminTasksSummary, Method: "GET", Path: "/api/v1/files/admin-tasks/summary", Policy: "protected", Scope: "files:task-admin:read", Action: "files.admin-tasks.summary"},
 	{ID: OperationFilesAnnotationsRead, Method: "GET", Path: "/api/v1/files/{id}/annotations", Policy: "protected", Scope: "files:read", Action: "files.annotations.read"},
 	{ID: OperationFilesAnnotationsReplace, Method: "PUT", Path: "/api/v1/files/{id}/annotations", Policy: "protected", Scope: "files:write", Action: "files.annotations.replace"},
 	{ID: OperationFilesAnnotationsSummaries, Method: "GET", Path: "/api/v1/files/annotations/summaries", Policy: "protected", Scope: "files:read", Action: "files.annotations.summaries"},

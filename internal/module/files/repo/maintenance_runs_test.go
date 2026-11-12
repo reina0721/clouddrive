@@ -104,6 +104,13 @@ func TestMaintenanceRunsRetainAndCleanTerminalRecords(t *testing.T) {
 	if !errors.Is(err, context.Canceled) {
 		t.Fatalf("维护取消语义丢失: %v", err)
 	}
+	summary, err := repository.SummarizeAdminTasks(ctx, service.AdminTaskSummaryQuery{Origin: service.AdminTaskOriginSystem, Kind: blob}, clock.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if summary.Total != 2 || summary.Failed != 1 || summary.Canceled != 1 || summary.Active != 0 || summary.Cleanable != 2 || !summary.AsOf.Equal(clock.Now()) {
+		t.Fatalf("任务摘要错误: %+v", summary)
+	}
 	query.Kind = blob
 	if page := list(); page.Total != 2 || page.Items[0].State != "canceled" {
 		t.Fatalf("取消记录或分类型保留错误: %+v", page)

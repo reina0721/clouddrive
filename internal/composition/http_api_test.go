@@ -13,7 +13,7 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 		t.Fatal(err)
 	}
 	definitions := blueprint.httpDefinitions
-	if len(definitions) != 224 {
+	if len(definitions) != 225 {
 		t.Fatalf("operation count = %d", len(definitions))
 	}
 	seen := make(map[string]struct{}, len(definitions))
@@ -32,7 +32,7 @@ func TestApplicationHTTPRegistrationsAreComplete(t *testing.T) {
 		"files.direct-links.list": "files:read", "files.direct-links.issue": "files:write", "files.direct-links.revoke": "files:write",
 		"files.inventory.list": "files:inventory:read", "files.inventory.detail": "files:inventory:read",
 		"files.admin-shares.list": "files:share-admin:read", "files.admin-shares.read": "files:share-admin:read", "files.admin-shares.revoke": "files:share-admin:revoke",
-		"files.admin-tasks.list": "files:task-admin:read", "files.admin-tasks.read": "files:task-admin:read", "files.admin-tasks.cleanup-preview": "files:task-admin:cleanup", "files.admin-tasks.cleanup": "files:task-admin:cleanup",
+		"files.admin-tasks.list": "files:task-admin:read", "files.admin-tasks.summary": "files:task-admin:read", "files.admin-tasks.read": "files:task-admin:read", "files.admin-tasks.cleanup-preview": "files:task-admin:cleanup", "files.admin-tasks.cleanup": "files:task-admin:cleanup",
 		"files.worker-nodes.list": "files:node:read", "files.worker-nodes.check": "files:node:read",
 		"files.storage-policy.read": "files:storage-policy:read", "files.storage-policy.usage": "files:storage-policy:read", "files.storage-policy.save": "files:storage-policy:write",
 		"files.storage-name-rules.read": "files:storage-policy:read", "files.storage-name-rules.save": "files:storage-policy:write", "files.storage-name-rules.check": "files:storage-policy:write",

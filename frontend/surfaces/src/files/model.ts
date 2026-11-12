@@ -29,6 +29,8 @@ import type {
   AdminTaskPage,
   AdminTaskPreviewQuery,
   AdminTaskQuery,
+  AdminTaskSummary,
+  AdminTaskSummaryQuery,
   AdminTaskTarget,
 } from './admin-tasks';
 import type { WorkerNodeCatalog, WorkerNodeCheck } from './worker-nodes';
@@ -226,6 +228,10 @@ export type FilesPort = Readonly<{
   readAdminShare(id: string, signal: AbortSignal): Promise<AdminShareItem>;
   revokeAdminShares(targets: readonly AdminShareTarget[]): Promise<number>;
   listAdminTasks(query: AdminTaskQuery, signal: AbortSignal): Promise<AdminTaskList>;
+  readAdminTaskSummary(
+    query: AdminTaskSummaryQuery,
+    signal: AbortSignal,
+  ): Promise<AdminTaskSummary>;
   readAdminTask(kind: AdminTaskTarget['kind'], id: string, signal: AbortSignal): Promise<AdminTask>;
   previewAdminTaskCleanup(
     query: AdminTaskPreviewQuery,

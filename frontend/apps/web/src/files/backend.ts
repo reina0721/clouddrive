@@ -28,6 +28,7 @@ import {
   adminTaskSchema,
   adminTaskPageSchema,
   adminTaskListSchema,
+  adminTaskSummarySchema,
   adminTaskCleanupSchema,
   workerNodeCatalogSchema,
   workerNodeCheckSchema,
@@ -393,6 +394,10 @@ export function createFilesRuntime(
       const params = new URLSearchParams({ ...query, page: String(query.page) });
       return adminTaskListSchema.parse(await call('/admin-tasks?' + params.toString(), { signal }));
     },
+    readAdminTaskSummary: async (query, signal) =>
+      adminTaskSummarySchema.parse(
+        await call('/admin-tasks/summary?' + new URLSearchParams(query).toString(), { signal }),
+      ),
     readAdminTask: async (kind, id, signal) =>
       adminTaskSchema.parse(
         await call(`/admin-tasks/${kind}/${encodeURIComponent(id)}`, { signal }),

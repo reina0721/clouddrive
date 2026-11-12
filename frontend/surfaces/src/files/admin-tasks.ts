@@ -15,6 +15,10 @@ export type AdminTaskQuery = AdminTaskFilters & {
   direction: 'asc' | 'desc';
   page: number;
 };
+export type AdminTaskSummaryQuery = Pick<
+  AdminTaskQuery,
+  'ownerId' | 'nodeId' | 'kind' | 'origin' | 'taskId'
+>;
 export type AdminTaskPreviewQuery = AdminTaskFilters & { before: string };
 
 const target = z.object({
@@ -40,6 +44,16 @@ export const adminTaskPageSchema = z.object({
   pageSize: z.number().int().positive(),
 });
 export const adminTaskListSchema = adminTaskPageSchema.extend({ canCleanup: z.boolean() });
+export const adminTaskSummarySchema = z.object({
+  total: z.number().int().nonnegative(),
+  active: z.number().int().nonnegative(),
+  completed: z.number().int().nonnegative(),
+  failed: z.number().int().nonnegative(),
+  canceled: z.number().int().nonnegative(),
+  expired: z.number().int().nonnegative(),
+  cleanable: z.number().int().nonnegative(),
+  asOf: z.string().datetime({ offset: true }),
+});
 export const adminTaskCleanupSchema = z.object({
   items: z.array(target.extend({ status: z.number().int(), code: z.string().optional() })).max(20),
 });
@@ -48,4 +62,5 @@ export type AdminTask = z.infer<typeof adminTaskSchema>;
 export type AdminTaskTarget = z.infer<typeof target>;
 export type AdminTaskPage = z.infer<typeof adminTaskPageSchema>;
 export type AdminTaskList = z.infer<typeof adminTaskListSchema>;
+export type AdminTaskSummary = z.infer<typeof adminTaskSummarySchema>;
 export type AdminTaskCleanup = z.infer<typeof adminTaskCleanupSchema>;

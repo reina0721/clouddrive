@@ -37,6 +37,16 @@ type adminTaskListOutput struct {
 	}
 }
 
+type adminTaskSummaryInput struct {
+	OwnerID string                     `query:"ownerId" maxLength:"128"`
+	NodeID  string                     `query:"nodeId" maxLength:"64" pattern:"^[a-z0-9_-]*$"`
+	Kind    service.BackgroundTaskKind `query:"kind" enum:"all,zip,extract,http,bittorrent,trash-expiry,blob-reclaim" default:"all"`
+	Origin  service.AdminTaskOrigin    `query:"origin" enum:"all,user,system" default:"all"`
+	TaskID  string                     `query:"taskId" maxLength:"36"`
+}
+
+type adminTaskSummaryOutput struct{ Body service.AdminTaskSummary }
+
 type adminTaskReadInput struct {
 	Kind service.BackgroundTaskKind `path:"kind" enum:"zip,extract,http,bittorrent,trash-expiry,blob-reclaim"`
 	ID   string                     `path:"id" minLength:"36" maxLength:"36"`
@@ -90,6 +100,15 @@ func registerAdminTasks(api huma.API, h *handler.Handler, operation func(string,
 		output := &adminTaskListOutput{}
 		output.Body.AdminTaskPage, output.Body.CanCleanup = page, allowed
 		return output, nil
+	})
+	summary := operation("files.admin-tasks.summary", http.MethodGet, prefix+"/summary", string(permission.AdminTaskRead), false)
+	summary.Middlewares = append(summary.Middlewares, sharingHeaders)
+	huma.Register(api, summary, func(ctx context.Context, input *adminTaskSummaryInput) (*adminTaskSummaryOutput, error) {
+		value, err := h.AdminTasks.Summary(ctx, service.AdminTaskSummaryQuery{OwnerID: input.OwnerID, TaskID: input.TaskID, NodeID: input.NodeID, Kind: input.Kind, Origin: input.Origin})
+		if err != nil {
+			return nil, h.Present(ctx, err)
+		}
+		return &adminTaskSummaryOutput{Body: value}, nil
 	})
 	read := operation("files.admin-tasks.read", http.MethodGet, prefix+"/{kind}/{id}", string(permission.AdminTaskRead), false)
 	read.Middlewares = append(read.Middlewares, sharingHeaders)
