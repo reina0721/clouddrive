@@ -40,33 +40,53 @@ test('桌面 UI Elements Family 保持基础组件权威面稳定', async ({ pag
   expect(consoleErrors).toEqual([]);
 });
 
-test('九个 UI Element Family 页面均有独立视觉基线', async ({ page }) => {
-  // Nine independent renders and snapshot comparisons retain their per-assertion limit.
-  test.setTimeout(120_000);
-  await page.setViewportSize({ width: 1440, height: 1000 });
-
-  const families = [
-    'actions-selection',
-    'feedback',
-    'status-async',
-    'identity-display',
-    'navigation',
-    'data',
-    'surfaces',
-    'forms',
-    'overlays',
-  ] as const;
-
-  for (const family of families) {
+for (const family of [
+  'actions-selection',
+  'feedback',
+  'status-async',
+  'identity-display',
+  'navigation',
+  'data',
+  'surfaces',
+  'forms',
+  'overlays',
+] as const)
+  test(`UI Element Family ${family} 保持独立视觉基线`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto(`/ui-elements/${family}`);
     await expectHydrated(page);
-    await expect(page.getByText('公开 Element 46 / 46')).toBeVisible();
     const sectionId = family === 'actions-selection' ? 'actions' : family;
-    await expect
-      .soft(page.locator(`#${sectionId}`))
-      .toHaveScreenshot(`ui-elements-family-${family}.png`);
-  }
-});
+    const section = page.locator(`#${sectionId}`);
+    // HTML 水合完成后，身份恢复与业务区域仍可能尚未就绪。
+    await section.waitFor({ state: 'visible' });
+    await expect(page.getByText('公开 Element 46 / 46')).toBeVisible();
+    // 按实际阅读顺序走过各示例，让屏外 Reveal 完成；不把半截入场帧当作基线。
+    for (const item of await section.locator('[data-reveal-item]').all()) {
+      await item.scrollIntoViewIfNeeded();
+      await waitForVisualReadiness(page);
+    }
+    if (family === 'identity-display') {
+      // 此场景验证真实图片；占位和 Avatar 回退不能代替 Image 的解码完成态。
+      const images = section.locator('img[src="/avatar-demo.svg"]');
+      await expect(images).toHaveCount(3);
+      await images.evaluateAll((images) =>
+        Promise.all(images.map((image) => (image as HTMLImageElement).decode())),
+      );
+      await expect(section.locator('.ui-ready-image')).toHaveAttribute('data-state', 'ready');
+    }
+    // 区域截图保持桌面宽度，采集高度容纳整个区域与滚动留白；固定视口另有布局回归。
+    const captureHeight = await section.evaluate((element) =>
+      Math.ceil(
+        element.getBoundingClientRect().height +
+          2 * parseFloat(getComputedStyle(element).scrollMarginTop),
+      ),
+    );
+    await page.setViewportSize({ width: 1440, height: Math.max(1000, captureHeight) });
+    // 返回顶部后再由截图器定位区域，避免把停在页面中段的 sticky Header 截入长区域。
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await waitForVisualReadiness(page);
+    await expect.soft(section).toHaveScreenshot(`ui-elements-family-${family}.png`);
+  });
 
 test('移动窗口、Dark Mode 与英文扩张保持无溢出', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });

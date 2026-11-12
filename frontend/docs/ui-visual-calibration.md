@@ -40,5 +40,6 @@ HeroUI / React Aria 继续提供键盘、Focus、ARIA、Overlay 与 Portal；不
 - 依赖与职责：`pnpm architecture:check`、`pnpm foundation:check`。
 - 真实后端导航、菜单焦点、移动抽屉和 Axe：`file-tests/material-workspace.spec.ts`。运行前使用根目录的 `node scripts/dev.mjs --preview`，并将 `CLOUDDRIVE_FILE_TEST_ACCESS` 设为输出的绝对路径。
 - 截图由 Playwright `outputPath` 保存到忽略目录，供人工审阅。旧主题的 golden 不自动更新；全量视觉迁移完成前，不能把这些局部证据宣称为所有页面验收通过。
+- 组件 Family 区域逐页验收：先按阅读顺序滚动并等待 Reveal，再返回顶部采集完整区域，避免中途的 sticky Header 或未完成的入场被误存为基线。区域截图保持桌面宽度，采集高度容纳内容与滚动留白；固定视口、窄屏和主题适配继续由各自的布局与交互用例验证。
 
 新增组件能力先复用 Element、Variant、Composition，再考虑 Pattern；不在业务页另建基础组件、硬编码颜色或覆盖 vendor 私有 DOM。所有新界面与后续迁移都以本页为当前视觉依据。
