@@ -58,7 +58,7 @@ test('Registration policy controls public signup and the resulting account role'
   await page.getByLabel('确认密码', { exact: true }).fill('PolicySignup2026!');
   await page.getByRole('button', { name: '创建账户', exact: true }).click();
   await expect(page.getByText('账户已创建', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '继续进入工作台', exact: true }).click();
+  await page.getByRole('button', { name: '开始使用', exact: true }).click();
   await expect(
     page
       .getByRole('navigation', { name: '主导航' })

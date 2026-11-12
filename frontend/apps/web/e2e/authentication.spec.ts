@@ -55,7 +55,7 @@ test('Registration validates confirmation, displays success and persists only sa
   const stored = await page.evaluate(() => localStorage.getItem('clouddrive.auth-mock'));
   expect(stored).not.toContain('UniqueDemoPass2026!');
   expect(stored).toMatch(/"digest":"[0-9a-f]{64}"/);
-  await page.getByRole('button', { name: '继续进入工作台', exact: true }).click();
+  await page.getByRole('button', { name: '开始使用', exact: true }).click();
   await page.getByRole('button', { name: '当前用户', exact: true }).click();
   await expect(page.getByRole('menu').getByText('Auth Review', { exact: true })).toBeVisible();
   await page.getByRole('menuitem', { name: '退出登录', exact: true }).click();

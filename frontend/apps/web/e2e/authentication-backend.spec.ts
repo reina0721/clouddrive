@@ -15,6 +15,8 @@ test('Backend mode uses CSRF/session API for login, restore and logout without M
     const path = new URL(request.url()).pathname;
     if (path === '/api/auth/csrf') {
       await route.fulfill({ json: { token: 'contract-csrf' } });
+    } else if (path === '/api/auth/registration-policy') {
+      await route.fulfill({ json: { enabled: false } });
     } else if (path === '/api/auth/session') {
       await route.fulfill(
         authenticated
@@ -172,7 +174,7 @@ test('Backend registration reports pending/success and failed logout keeps all p
   await expect(page.getByRole('textbox', { name: '姓名', exact: true })).toBeDisabled();
   completeRegistration?.();
   await expect(page.getByText('账户已创建', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '继续进入工作台', exact: true }).click();
+  await page.getByRole('button', { name: '开始使用', exact: true }).click();
   await page.getByRole('button', { name: '当前用户', exact: true }).click();
   await page.getByRole('menuitem', { name: '退出登录', exact: true }).click();
   await expect(
