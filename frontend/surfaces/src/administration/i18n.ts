@@ -76,6 +76,10 @@ export const administrationI18n = {
       mfaSetupHint:
         '将密钥或设置 URI 添加到认证器，再输入认证器生成的验证码确认绑定。此处的设置材料不是恢复码。',
       recovery: '恢复码仅显示一次，请妥善保存。',
+      recoveryTitle: '恢复码',
+      mfaStatusFailure: '认证状态未能读取',
+      mfaStatusFailureHint: '请重试查询。已返回的恢复码仍可保存。',
+      recoverySaved: '已保存，收起恢复码',
       tokens: 'API 令牌',
       permissions: '权限',
       scopes: '权限键（逗号分隔）',
@@ -189,6 +193,11 @@ export const administrationI18n = {
       mfaSetupHint:
         'Add the secret or setup URI to your authenticator, then enter its code to confirm enrollment. These setup details are not recovery codes.',
       recovery: 'Recovery codes are shown once. Store them securely.',
+      recoveryTitle: 'Recovery codes',
+      mfaStatusFailure: 'Could not read authentication status',
+      mfaStatusFailureHint:
+        'Retry the status check. You can still save any recovery codes already returned.',
+      recoverySaved: 'Saved, hide recovery codes',
       tokens: 'API tokens',
       permissions: 'Permissions',
       scopes: 'Permission keys (comma separated)',

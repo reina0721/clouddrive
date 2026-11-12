@@ -91,8 +91,12 @@ export function BackendSecurityPage() {
         title={t('administration.security')}
         description={t('administration.description')}
       />
-      <RemoteRegion {...mfa}>
-        <Section title={t('administration.mfa')}>
+      <RemoteRegion
+        {...mfa}
+        errorTitle={t('administration.mfaStatusFailure')}
+        errorDescription={t('administration.mfaStatusFailureHint')}
+      >
+        <Section title={t('administration.mfa')} contentInset>
           <p>{t(mfa.value ? 'administration.active' : 'administration.disabled')}</p>
           <Toolbar
             label={t('administration.actions')}
@@ -143,20 +147,27 @@ export function BackendSecurityPage() {
               </dl>
             </div>
           ) : null}
-          {codes.length ? (
-            <div className="space-y-2">
-              <p>{t('administration.recovery')}</p>
-              {codes.map((code, index) => (
-                <p key={index} className="break-all font-mono text-sm">
-                  {code}
-                </p>
-              ))}
-              <Action onPress={() => setCodes([])}>{t('administration.confirm')}</Action>
-            </div>
-          ) : null}
         </Section>
       </RemoteRegion>
-      <Section title={t('administration.archiveSelf')}>
+      {codes.length ? (
+        <Section
+          title={t('administration.recoveryTitle')}
+          description={t('administration.recovery')}
+          contentInset
+        >
+          <div className="space-y-3">
+            <ul className="space-y-2">
+              {codes.map((code, index) => (
+                <li key={index} className="break-all font-mono text-sm">
+                  {code}
+                </li>
+              ))}
+            </ul>
+            <Action onPress={() => setCodes([])}>{t('administration.recoverySaved')}</Action>
+          </div>
+        </Section>
+      ) : null}
+      <Section title={t('administration.archiveSelf')} contentInset>
         <DialogSurface
           triggerLabel={t('administration.archiveSelf')}
           title={t('administration.archiveSelf')}

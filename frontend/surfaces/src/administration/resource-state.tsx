@@ -63,7 +63,16 @@ export function RemoteRegion({
   error,
   reload,
   children,
-}: Readonly<{ loading: boolean; error: unknown; reload: () => void; children: ReactNode }>) {
+  errorTitle,
+  errorDescription,
+}: Readonly<{
+  loading: boolean;
+  error: unknown;
+  reload: () => void;
+  children: ReactNode;
+  errorTitle?: string;
+  errorDescription?: string;
+}>) {
   const { t } = useFrontendTranslation();
   const description =
     error instanceof IdentityError
@@ -80,8 +89,8 @@ export function RemoteRegion({
         <StateSurface
           state="warning"
           icon={<NavigationIcon iconId="identity" />}
-          title={t('administration.failure')}
-          description={description}
+          title={errorTitle ?? t('administration.failure')}
+          description={errorDescription ?? description}
           actionLabel={t('administration.retry')}
           onAction={reload}
         />

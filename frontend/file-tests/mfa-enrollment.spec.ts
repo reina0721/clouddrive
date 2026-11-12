@@ -5,9 +5,12 @@ test('双因素认证区分设置材料和恢复码，并保留失败确认中�
   const access = readPreviewAccess();
   let registered = false;
   let attempts = 0;
+  let failStatus = false;
   const secret = 'TEST-ENROLLMENT-SECRET';
   const uri = 'otpauth://totp/Fixture?secret=TESTONLY';
   await page.route('**/native/iam/self/mfa', async (route) => {
+    if (route.request().method() === 'GET' && failStatus)
+      return route.fulfill({ status: 503, json: {} });
     await route.fulfill({
       json: route.request().method() === 'GET' ? { registered } : { secret, uri },
     });
@@ -17,6 +20,7 @@ test('双因素认证区分设置材料和恢复码，并保留失败确认中�
     expect(route.request().postDataJSON()).toEqual({ code: '123456' });
     if (attempts === 1) return route.fulfill({ status: 422, json: {} });
     registered = true;
+    failStatus = true;
     await route.fulfill({ json: { recoveryCodes: ['TEST-RECOVERY-ONE', 'TEST-RECOVERY-TWO'] } });
   });
   await page.route('**/native/iam/self/mfa/disable', async (route) => {
@@ -50,6 +54,17 @@ test('双因素认证区分设置材料和恢复码，并保留失败确认中�
   await expect(page.getByText('TEST-RECOVERY-ONE', { exact: true })).toBeVisible();
   await expect(page.getByText(secret, { exact: true })).toHaveCount(0);
   await expect(page.getByText(uri, { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '重试', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '认证状态未能读取', exact: true })).toBeVisible();
+  await expect(page.getByText('TEST-RECOVERY-ONE', { exact: true })).toBeVisible();
+  await page.screenshot({
+    path: info.outputPath('mfa-recovery-status-failure.png'),
+    animations: 'disabled',
+  });
+  failStatus = false;
+  await page.getByRole('button', { name: '重试', exact: true }).click();
+  await expect(page.getByRole('button', { name: '解除绑定', exact: true })).toBeVisible();
+  await expect(page.getByText('TEST-RECOVERY-ONE', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '解除绑定', exact: true }).click();
   const disable = page.getByRole('dialog', { name: '解除绑定', exact: true });
   await disable.getByLabel('动态验证码或恢复码', { exact: true }).fill('TEST-RECOVERY-TWO');
