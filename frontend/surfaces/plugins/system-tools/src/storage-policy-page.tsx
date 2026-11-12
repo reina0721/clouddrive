@@ -1,95 +1,51 @@
 'use client';
 
-import { useCallback, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
+import {
+  FoundationControlledField,
+  FoundationForm,
+  useFoundationForm,
+} from '@clouddrive/form-foundation';
 import { formatNumber, useFrontendTranslation } from '@clouddrive/i18n';
 import { formatInstant } from '@clouddrive/i18n/format';
 import { usePreferencesPort } from '@clouddrive/plugin-framework/preferences';
-import { Page, PageHeader } from '@clouddrive/surface-foundation/layout';
+import { useRegisterDirtySource } from '@clouddrive/plugin-framework/leave-confirm';
+import { Page, PageHeader, Section } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
-import { TextField } from '@clouddrive/ui-adapter/form-field';
-import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
-import { Panel } from '@clouddrive/ui-adapter/panel';
+import { CheckboxField, SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
+import { DataTable } from '@clouddrive/ui-adapter/data-display';
+import { DescriptionList } from '@clouddrive/ui-adapter/description-list';
+import { StatusPill } from '@clouddrive/ui-adapter/status-pill';
+import { useFeedback } from '@clouddrive/ui-adapter/feedback-context';
 import { formatFileBytes } from '../../../src/files/format';
 import { FilesError } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
-import type { StoragePolicy, StoragePolicyInput } from '../../../src/files/storage-policy';
+import type { StoragePolicy } from '../../../src/files/storage-policy';
 import type { Preferences } from '../../../src/preferences-model';
 import { CatalogFailure } from './catalog-failure';
 import { useCatalogRequest } from './use-catalog-request';
 import { StorageNameRulesPanel } from './storage-name-rules-panel';
+import { StorageEditDialog } from './storage-edit-dialog';
+import {
+  byteAmount,
+  byteUnitFor,
+  byteUnits,
+  changeByteUnit,
+  limitFields,
+  storageLimitOverrides,
+  storageLimitsDraft,
+  storageLimitsSchema,
+} from './storage-limit-form';
 
-const fields = ['maxFileBytes', 'chunkBytes'] as const;
-const zh = {
-  description: '查看默认发布后端、文件 Blob 用量和上传限额。',
-  current: '默认存储策略',
-  backends: { local: '本机存储', s3: 'S3 兼容', minio: 'MinIO', disabled: '存储已禁用' },
-  metrics: 'Blob 用量',
-  load: '加载统计数据',
-  refreshStats: '刷新统计',
-  checked: '统计时间',
-  scope: '用量来自文件元数据。同一对象只计一次。',
-  blobCount: '已引用 Blob',
-  blobBytes: '已引用大小',
-  currentReferences: '当前文件引用',
-  historyReferences: '历史版本引用',
-  pendingCount: '登记待回收 Blob',
-  pendingBytes: '登记待回收大小',
-  upload: '存储与上传',
-  maxFileBytes: '单文件上限（字节）',
-  chunkBytes: '上传分片上限（字节）',
-  inherit: '使用部署默认值',
-  values: (active: string, configured: string, defaults: string) =>
-    `当前 ${active} · 下次生效 ${configured} · 部署 ${defaults}`,
-  range: (max: number) => `输入 1 至 ${max} 字节的整数，留空恢复部署默认值。`,
-  pending: '已保存的限额将在服务重启后生效。',
-  applied: '当前生效值与已保存的限额一致。',
-  readonly: '当前账号具有只读权限。',
-  save: '保存上传限额',
-  confirm: '确认上传限额',
-  confirmHint: '新的应用实例会使用保存的限额，现有文件仍保留。',
-  conflict: '另一处已保存新版本。刷新后再编辑。',
-  failure: '未能保存上传限额，请重试。',
-};
-const en: typeof zh = {
-  description: 'Review the default storage backend, Blob usage and upload limits.',
-  current: 'Default storage policy',
-  backends: {
-    local: 'Local storage',
-    s3: 'S3 compatible',
-    minio: 'MinIO',
-    disabled: 'Storage disabled',
-  },
-  metrics: 'Blob usage',
-  load: 'Load usage statistics',
-  refreshStats: 'Refresh statistics',
-  checked: 'Checked at',
-  scope: 'Usage comes from file metadata. Each object is counted once.',
-  blobCount: 'Referenced Blobs',
-  blobBytes: 'Referenced size',
-  currentReferences: 'Current file references',
-  historyReferences: 'Version references',
-  pendingCount: 'Blobs registered for reclamation',
-  pendingBytes: 'Size registered for reclamation',
-  upload: 'Storage and uploads',
-  maxFileBytes: 'Maximum file size (bytes)',
-  chunkBytes: 'Maximum upload chunk size (bytes)',
-  inherit: 'Use deployment default',
-  values: (active, configured, defaults) =>
-    `Active ${active} · Next startup ${configured} · Deployment ${defaults}`,
-  range: (max) => `Enter an integer from 1 to ${max} bytes, or leave blank to inherit.`,
-  pending: 'Saved limits take effect after the service restarts.',
-  applied: 'The saved limits are active.',
-  readonly: 'This account has read-only access.',
-  save: 'Save upload limits',
-  confirm: 'Confirm upload limits',
-  confirmHint: 'The next application instance applies the saved limits. Existing files are kept.',
-  conflict: 'New limits were saved elsewhere. Refresh before editing again.',
-  failure: 'Could not save the upload limits. Try again.',
-};
+function limitText(value: number, locale: string) {
+  const unit = byteUnitFor(value);
+  return formatNumber(locale, Number(byteAmount(value, unit))) + ' ' + unit;
+}
 
-function UsageSnapshot({ labels }: { labels: typeof zh }) {
+function UsageSnapshot() {
   const files = useFiles();
   const { t, locale } = useFrontendTranslation();
+  const label = (key: string) => t('systemTools.storage.' + key);
   const preferences = usePreferencesPort<Preferences>();
   const region = useSyncExternalStore(
     preferences.subscribe,
@@ -101,165 +57,295 @@ function UsageSnapshot({ labels }: { labels: typeof zh }) {
   if ('error' in usage.result)
     return <CatalogFailure error={usage.result.error} retry={usage.refresh} />;
   const value = usage.result.value;
-  const number = (value: number) => formatNumber(locale, value);
   return (
-    <>
-      <dl className="space-y-2 text-sm">
-        {(
-          [
-            [labels.blobCount, number(value.blobCount)],
-            [labels.blobBytes, formatFileBytes(value.blobBytes)],
-            [labels.currentReferences, number(value.currentReferences)],
-            [labels.historyReferences, number(value.historyReferences)],
-            [labels.pendingCount, number(value.pendingCount)],
-            [labels.pendingBytes, formatFileBytes(value.pendingBytes)],
-            [labels.checked, formatInstant(locale, region, value.checkedAt)],
-          ] as const
-        ).map(([label, item]) => (
-          <div key={label} className="flex flex-wrap justify-between gap-2">
-            <dt className="text-ink-muted">{label}</dt>
-            <dd className="font-medium">{item}</dd>
-          </div>
-        ))}
-      </dl>
-      <Action variant="secondary" onPress={usage.refresh}>
-        {labels.refreshStats}
+    <div className="space-y-4">
+      <DescriptionList
+        label={label('usageTitle')}
+        columns={2}
+        items={[
+          {
+            id: 'bytes',
+            term: label('referencedBytes'),
+            description: formatFileBytes(value.blobBytes),
+          },
+          {
+            id: 'objects',
+            term: label('referencedObjects'),
+            description: formatNumber(locale, value.blobCount),
+          },
+          {
+            id: 'current',
+            term: label('currentReferences'),
+            description: formatNumber(locale, value.currentReferences),
+          },
+          {
+            id: 'history',
+            term: label('historyReferences'),
+            description: formatNumber(locale, value.historyReferences),
+          },
+          {
+            id: 'pending',
+            term: label('pendingObjects'),
+            description: formatNumber(locale, value.pendingCount),
+          },
+          {
+            id: 'pendingBytes',
+            term: label('pendingBytes'),
+            description: formatFileBytes(value.pendingBytes),
+          },
+          {
+            id: 'time',
+            term: label('checkedAt'),
+            description: formatInstant(locale, region, value.checkedAt),
+          },
+        ]}
+      />
+      <Action variant="quiet" onPress={usage.refresh}>
+        {label('refreshUsage')}
       </Action>
-    </>
+    </div>
   );
 }
 
-const toDraft = ({ maxFileBytes, chunkBytes }: StoragePolicyInput['overrides']) => ({
-  maxFileBytes: String(maxFileBytes ?? ''),
-  chunkBytes: String(chunkBytes ?? ''),
-});
-
-function PolicyCards({
+function LimitsEditor({
   initial,
-  labels,
-  refresh,
-}: {
+  onSaved,
+  onClose,
+}: Readonly<{
   initial: StoragePolicy;
-  labels: typeof zh;
-  refresh: () => void;
-}) {
+  onSaved: (view: StoragePolicy) => void;
+  onClose: () => void;
+}>) {
   const files = useFiles();
-  const { t } = useFrontendTranslation();
+  const { t, locale } = useFrontendTranslation();
+  const label = (key: string) => t('systemTools.storage.' + key);
   const [view, setView] = useState(initial);
-  const [draft, setDraft] = useState(() => toDraft(initial.overrides));
-  const [usage, setUsage] = useState(false);
-  const [confirm, setConfirm] = useState(false);
+  const [failure, setFailure] = useState<'conflict' | 'saveFailure' | 'reloadFailed'>();
+  const [reloading, setReloading] = useState(false);
   const [conflict, setConflict] = useState(false);
-  const current = toDraft(view.overrides);
-  const invalid = fields.filter((key) => {
-    const raw = draft[key];
-    return (
-      raw !== '' && (!/^\d+$/.test(raw) || Number(raw) < 1 || Number(raw) > view.defaults[key])
-    );
+  const active = useRef(true);
+  const request = useRef<AbortController | null>(null);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+      request.current?.abort();
+    };
+  }, []);
+  const formId = useId();
+  const form = useFoundationForm({
+    schema: storageLimitsSchema(view.defaults),
+    defaultValues: storageLimitsDraft(initial),
   });
-  const canSave =
-    view.canSave &&
-    !conflict &&
-    invalid.length === 0 &&
-    fields.some((key) => draft[key] !== current[key]);
-  const save = async () => {
-    const overrides: StoragePolicyInput['overrides'] = {};
-    for (const key of fields) {
-      if (draft[key] !== '') overrides[key] = Number(draft[key]);
-    }
+  const busy = form.isSubmitting || reloading;
+  useRegisterDirtySource({
+    pageId: 'system-tools.storage.limits',
+    message: () => t('identityProduct.unsaved'),
+    isDirty: () => form.isDirty,
+    isSubmitting: () => busy,
+  });
+  async function reload() {
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    setFailure(undefined);
+    setReloading(true);
     try {
-      const saved = await files.saveStoragePolicy({ revision: view.revision, overrides });
-      setView(saved);
-      setDraft(toDraft(saved.overrides));
-    } catch (error) {
-      setConflict(error instanceof FilesError && error.code === 'conflict');
-      throw error;
+      const latest = await files.readStoragePolicy(controller.signal);
+      if (controller.signal.aborted || !active.current) return;
+      setView(latest);
+      form.reset(storageLimitsDraft(latest));
+      setFailure(undefined);
+      setConflict(false);
+    } catch {
+      if (!controller.signal.aborted && active.current) setFailure('reloadFailed');
+    } finally {
+      if (!controller.signal.aborted && active.current) setReloading(false);
     }
-  };
+  }
+  return (
+    <StorageEditDialog
+      title={label('editLimits')}
+      saveLabel={label('saveLimits')}
+      formId={formId}
+      dirty={form.isDirty}
+      busy={busy}
+      disabled={busy || !view.canSave || !form.isDirty || conflict}
+      conflict={conflict}
+      {...(failure ? { error: label(failure) } : {})}
+      onClose={onClose}
+      onReload={reload}
+    >
+      {!view.canSave ? <p className="mb-4 text-sm text-ink-muted">{label('readonly')}</p> : null}
+      <FoundationForm
+        id={formId}
+        form={form}
+        className="space-y-6"
+        onSubmit={async (draft) => {
+          if (busy || conflict || !view.canSave || !form.isDirty) return;
+          setFailure(undefined);
+          try {
+            const saved = await files.saveStoragePolicy({
+              revision: view.revision,
+              overrides: storageLimitOverrides(draft),
+            });
+            if (active.current) {
+              form.reset(storageLimitsDraft(saved));
+              onSaved(saved);
+            }
+          } catch (error) {
+            if (active.current) {
+              if (error instanceof FilesError && error.code === 'conflict') setConflict(true);
+              setFailure(
+                error instanceof FilesError && error.code === 'conflict'
+                  ? 'conflict'
+                  : 'saveFailure',
+              );
+            }
+          }
+        }}
+      >
+        {limitFields.map((key) => (
+          <FoundationControlledField key={key} form={form} name={key}>
+            {(field) => {
+              const name = label('limitNames.' + key);
+              const disabled = busy || conflict || !view.canSave;
+              return (
+                <fieldset className="min-w-0 space-y-3" disabled={disabled}>
+                  <legend className="mb-2 text-sm font-semibold">{name}</legend>
+                  <CheckboxField
+                    label={label('inherit') + ' · ' + limitText(view.defaults[key], locale)}
+                    checked={field.value.inherit}
+                    disabled={disabled}
+                    onCheckedChange={(inherit) => field.onChange({ ...field.value, inherit })}
+                  />
+                  {!field.value.inherit ? (
+                    <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+                      <TextField
+                        label={name}
+                        value={field.value.amount}
+                        inputMode="decimal"
+                        maxLength={64}
+                        disabled={disabled || field.value.inherit}
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        hint={t('systemTools.storage.range', {
+                          max: limitText(view.defaults[key], locale),
+                        })}
+                        {...(form.hasError(`${key}.amount`)
+                          ? {
+                              error: t('systemTools.storage.range', {
+                                max: limitText(view.defaults[key], locale),
+                              }),
+                            }
+                          : {})}
+                        onChange={(event) =>
+                          field.onChange({ ...field.value, amount: event.target.value })
+                        }
+                      />
+                      <SelectField
+                        label={t('systemTools.storage.unit', { label: name })}
+                        value={field.value.unit}
+                        options={byteUnits.map((unit) => ({ value: unit, label: unit }))}
+                        disabled={disabled || field.value.inherit}
+                        onValueChange={(unit) => {
+                          const next = byteUnits.find((item) => item === unit);
+                          if (next) field.onChange(changeByteUnit(field.value, next));
+                        }}
+                      />
+                    </div>
+                  ) : null}
+                  <p className="text-xs leading-5 text-ink-muted">
+                    {label('active')}: {limitText(view.active[key], locale)}
+                  </p>
+                </fieldset>
+              );
+            }}
+          </FoundationControlledField>
+        ))}
+      </FoundationForm>
+    </StorageEditDialog>
+  );
+}
+
+function LimitsOverview({
+  initial,
+  refresh,
+}: Readonly<{ initial: StoragePolicy; refresh: () => void }>) {
+  const { t, locale } = useFrontendTranslation();
+  const label = (key: string) => t('systemTools.storage.' + key);
+  const { notify } = useFeedback();
+  const [view, setView] = useState(initial);
+  const [editing, setEditing] = useState(false);
   return (
     <>
-      <div className="grid items-start gap-3 lg:grid-cols-2">
-        <Panel className="min-w-0 space-y-4 p-4" appearance="outlined" aria-label={labels.current}>
-          <h2 className="font-semibold">{labels.current}</h2>
-          <p>{labels.backends[view.backend]}</p>
-          <h3 className="font-semibold">{labels.metrics}</h3>
-          <p className="text-sm text-ink-muted">{labels.scope}</p>
-          {usage ? (
-            <UsageSnapshot labels={labels} />
-          ) : (
-            <Action variant="secondary" onPress={() => setUsage(true)}>
-              {labels.load}
+      <Section
+        title={label('limitsTitle')}
+        description={label('limitsHint')}
+        contentInset
+        action={
+          view.canSave ? (
+            <Action variant="secondary" onPress={() => setEditing(true)}>
+              {label('editLimits')}
             </Action>
-          )}
-        </Panel>
-        <Panel className="min-w-0 space-y-4 p-4" appearance="outlined" aria-label={labels.upload}>
-          <h2 className="font-semibold">{labels.upload}</h2>
-          <p role="status" className="text-sm text-ink-muted">
-            {view.pendingRestart ? labels.pending : labels.applied}
-          </p>
-          {!view.canSave ? <p>{labels.readonly}</p> : null}
-          {conflict ? <p role="alert">{labels.conflict}</p> : null}
-          <form
-            className="space-y-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (canSave) setConfirm(true);
-            }}
-          >
-            {fields.map((key) => (
-              <TextField
-                key={key}
-                label={labels[key]}
-                hint={labels.values(
-                  formatFileBytes(view.active[key]),
-                  formatFileBytes(view.configured[key]),
-                  formatFileBytes(view.defaults[key]),
-                )}
-                placeholder={labels.inherit}
-                value={draft[key]}
-                maxLength={12}
-                inputMode="numeric"
-                disabled={!view.canSave || conflict}
-                {...(invalid.includes(key) ? { error: labels.range(view.defaults[key]) } : {})}
-                onChange={(event) => setDraft({ ...draft, [key]: event.target.value })}
-              />
-            ))}
-            {view.canSave ? (
-              <Action type="submit" disabled={!canSave}>
-                {labels.save}
-              </Action>
-            ) : null}
-          </form>
-        </Panel>
-      </div>
-      {confirm ? (
-        <DialogSurface
-          isOpen
-          title={labels.confirm}
-          triggerLabel={labels.confirm}
-          description={labels.confirmHint}
-          confirmLabel={labels.save}
-          confirmDisabled={!canSave}
-          failureMessage={conflict ? labels.conflict : labels.failure}
-          cancelLabel={t('files.cancel')}
-          onConfirm={save}
-          onOpenChange={(open) => setConfirm(open)}
-        >
-          {conflict ? (
-            <Action variant="secondary" onPress={refresh}>
-              {t('files.refresh')}
-            </Action>
-          ) : (
-            <ul className="space-y-2 text-sm">
-              {fields.map((key) => (
-                <li key={key}>
-                  {labels[key]} ·{' '}
-                  {draft[key] === '' ? labels.inherit : formatFileBytes(Number(draft[key]))}
-                </li>
-              ))}
-            </ul>
-          )}
-        </DialogSurface>
+          ) : undefined
+        }
+      >
+        <div className="space-y-4">
+          <StatusPill tone={view.pendingRestart ? 'warning' : 'success'}>
+            {label(view.pendingRestart ? 'pending' : 'applied')}
+          </StatusPill>
+          {!view.canSave ? <p className="text-sm text-ink-muted">{label('readonly')}</p> : null}
+          <DataTable
+            label={label('limitsTitle')}
+            columns={[
+              {
+                id: 'name',
+                label: label('limitsTitle'),
+                rowHeader: true,
+                render: (row) => label('limitNames.' + row.id),
+              },
+              {
+                id: 'active',
+                label: label('active'),
+                render: (row) => limitText(view.active[row.id], locale),
+              },
+              {
+                id: 'saved',
+                label: label('saved'),
+                render: (row) => (
+                  <div>
+                    {limitText(view.configured[row.id], locale)}
+                    {view.overrides[row.id] === undefined ? (
+                      <span className="block text-xs text-ink-muted">{label('inherit')}</span>
+                    ) : null}
+                  </div>
+                ),
+              },
+              {
+                id: 'deployment',
+                label: label('deployment'),
+                render: (row) => limitText(view.defaults[row.id], locale),
+              },
+            ]}
+            rows={limitFields.map((id) => ({ id }))}
+            emptyContent="—"
+          />
+        </div>
+      </Section>
+      {editing ? (
+        <LimitsEditor
+          initial={view}
+          onClose={() => {
+            setEditing(false);
+            refresh();
+          }}
+          onSaved={(saved) => {
+            setView(saved);
+            setEditing(false);
+            notify({ title: label('savedFeedback'), tone: 'success' });
+          }}
+        />
       ) : null}
     </>
   );
@@ -267,32 +353,67 @@ function PolicyCards({
 
 export function StoragePolicyPage() {
   const files = useFiles();
-  const { t, locale } = useFrontendTranslation();
-  const labels = locale.startsWith('zh') ? zh : en;
+  const { t } = useFrontendTranslation();
+  const label = (key: string) => t('systemTools.storage.' + key);
   const policy = useCatalogRequest(
     useCallback((signal) => files.readStoragePolicy(signal), [files]),
   );
+  const [revision, setRevision] = useState(0);
+  const [usage, setUsage] = useState(false);
+  const backend =
+    policy.result && 'value' in policy.result ? policy.result.value.backend : undefined;
   return (
     <Page>
       <PageHeader
         title={t('systemTools.nav.storage')}
-        description={labels.description}
+        description={label('description')}
         actions={
-          <Action variant="secondary" onPress={policy.refresh}>
+          <Action
+            variant="quiet"
+            onPress={() => {
+              policy.refresh();
+              setRevision((value) => value + 1);
+            }}
+          >
             {t('files.refresh')}
           </Action>
         }
       />
-      {!policy.result ? <p role="status">{t('administration.loading')}</p> : null}
-      {policy.result && 'error' in policy.result ? (
-        <CatalogFailure error={policy.result.error} retry={policy.refresh} />
-      ) : null}
+      <Section title={label('usageTitle')} description={label('usageHint')} contentInset>
+        <div className="space-y-5">
+          {backend ? (
+            <DescriptionList
+              label={label('backend')}
+              items={[
+                {
+                  id: 'backend',
+                  term: label('backend'),
+                  description: label('backendNames.' + backend),
+                },
+              ]}
+            />
+          ) : null}
+          {usage ? (
+            <UsageSnapshot key={revision} />
+          ) : (
+            <Action variant="secondary" onPress={() => setUsage(true)}>
+              {label('loadUsage')}
+            </Action>
+          )}
+        </div>
+      </Section>
       {policy.result && 'value' in policy.result ? (
-        <>
-          <PolicyCards initial={policy.result.value} labels={labels} refresh={policy.refresh} />
-          <StorageNameRulesPanel />
-        </>
-      ) : null}
+        <LimitsOverview initial={policy.result.value} refresh={policy.refresh} />
+      ) : (
+        <Section title={label('limitsTitle')} contentInset>
+          {!policy.result ? (
+            <p role="status">{t('administration.loading')}</p>
+          ) : (
+            <CatalogFailure error={policy.result.error} retry={policy.refresh} />
+          )}
+        </Section>
+      )}
+      <StorageNameRulesPanel key={revision} />
     </Page>
   );
 }

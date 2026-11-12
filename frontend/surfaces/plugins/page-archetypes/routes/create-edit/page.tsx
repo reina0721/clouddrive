@@ -128,8 +128,7 @@ export default function ReferenceFormPage() {
                               onBlur={field.onBlur}
                               {...errorProps('name')}
                               ref={(instance) => {
-                                if (typeof field.ref === 'function') field.ref(instance);
-                                else if (field.ref) field.ref.current = instance;
+                                field.ref(instance);
                               }}
                               onChange={(event) => field.onChange(event.currentTarget.value)}
                             />
@@ -191,8 +190,7 @@ export default function ReferenceFormPage() {
                               onBlur={field.onBlur}
                               {...errorProps('description')}
                               ref={(instance) => {
-                                if (typeof field.ref === 'function') field.ref(instance);
-                                else if (field.ref) field.ref.current = instance;
+                                field.ref(instance);
                               }}
                               onChange={(event) => field.onChange(event.currentTarget.value)}
                             />

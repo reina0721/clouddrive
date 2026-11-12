@@ -16,7 +16,7 @@ export type TextFieldProps = FieldTextProps &
     maxLength?: number;
     disabled?: boolean;
     purpose?: 'text' | 'email';
-    inputMode?: 'numeric';
+    inputMode?: 'numeric' | 'decimal';
     autoComplete?: 'name' | 'email' | 'username' | 'off';
     onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
     onBlur?: (event: FocusEvent<HTMLInputElement>) => void;

@@ -140,8 +140,7 @@ export function AccountSecurity() {
                   onBlur={field.onBlur}
                   ref={(instance) => {
                     currentPasswordRef.current = instance;
-                    if (typeof field.ref === 'function') field.ref(instance);
-                    else if (field.ref) field.ref.current = instance;
+                    field.ref(instance);
                   }}
                   onChange={(event) => {
                     setPasswordError(null);
@@ -167,8 +166,7 @@ export function AccountSecurity() {
                   name={field.name}
                   onBlur={field.onBlur}
                   ref={(instance) => {
-                    if (typeof field.ref === 'function') field.ref(instance);
-                    else if (field.ref) field.ref.current = instance;
+                    field.ref(instance);
                   }}
                   onChange={(event) => field.onChange(event.target.value)}
                   disabled={pending || form.isSubmitting}

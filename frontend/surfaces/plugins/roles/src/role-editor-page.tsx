@@ -133,8 +133,7 @@ function RoleForm({
               value={field.value}
               onBlur={field.onBlur}
               ref={(instance) => {
-                if (typeof field.ref === 'function') field.ref(instance);
-                else if (field.ref) field.ref.current = instance;
+                field.ref(instance);
               }}
               disabled={!allowed || pending}
               onChange={(event) => field.onChange(event.target.value)}

@@ -135,8 +135,7 @@ export function ResourceForm({ resource }: Readonly<{ resource?: ReferenceResour
                   name={field.name}
                   onBlur={field.onBlur}
                   ref={(instance) => {
-                    if (typeof field.ref === 'function') field.ref(instance);
-                    else if (field.ref) field.ref.current = instance;
+                    field.ref(instance);
                     nameInput.current = instance;
                   }}
                   {...(form.hasError('name')

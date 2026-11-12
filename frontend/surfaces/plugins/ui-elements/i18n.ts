@@ -399,6 +399,7 @@ export const pluginI18nResources = {
         rangeDescription: '单轴数值调整，支持拖动、方向键及禁用状态。',
         fieldsDescription: '同时覆盖默认、错误、禁用、Popup、选中和长文本状态。',
         textField: '文本输入',
+        decimalField: '小数输入',
         password: '密码输入',
         showPassword: '显示密码',
         hidePassword: '隐藏密码',
@@ -873,6 +874,7 @@ export const pluginI18nResources = {
         fieldsDescription:
           'Covers default, error, disabled, popup, selected, and long-text states together.',
         textField: 'Text field',
+        decimalField: 'Decimal input',
         password: 'Password input',
         showPassword: 'Show password',
         hidePassword: 'Hide password',

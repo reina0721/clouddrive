@@ -117,6 +117,11 @@ export function FormElementsPage({
                     defaultValue="x"
                   />
                   <TextField
+                    label={t('uiElements.decimalField')}
+                    inputMode="decimal"
+                    defaultValue="1.5"
+                  />
+                  <TextField
                     label={t('uiElements.disabledField')}
                     disabled
                     defaultValue="readonly"

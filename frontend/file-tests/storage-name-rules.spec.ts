@@ -1,60 +1,49 @@
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
+import type { StorageNameRulesView } from '../surfaces/src/files/storage-policy';
+import { loginStorage, storageRequest, storageSection } from './storage-fixture';
 
-test('存储策略可在窄屏试测、保存和恢复上传名称规则', async ({ page }, info) => {
-  const accessPath = process.env.CLOUDDRIVE_FILE_TEST_ACCESS;
-  test.skip(!accessPath, '名称规则写入只在隔离 QA 验收。');
-  const account = JSON.parse(
-    (await readFile(resolve(__dirname, accessPath!), 'utf8')).replace(/^\uFEFF/, ''),
-  ) as { url: string; username: string; password: string };
-  const origin = new URL(account.url).origin;
-  expect(origin).toBe('http://127.0.0.1:4194');
-  await page.goto(origin + '/login?returnTo=%2Fsystem-tools%2Fstorage');
-  await page.getByLabel('邮箱', { exact: true }).fill(account.username);
-  await page.getByLabel('密码', { exact: true }).fill(account.password);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
-  const panel = page.getByRole('region', { name: '上传名称规则', exact: true });
-  const extensions = panel.getByLabel('文件扩展名', { exact: true });
-  const original = await extensions.inputValue();
-  const candidate = panel.getByLabel('试测文件名', { exact: true });
-  const submit = panel.getByRole('button', { name: '保存名称规则', exact: true });
-  const save = async (screenshot = false) => {
-    await submit.click();
-    const dialog = page.getByRole('dialog', { name: '确认名称规则', exact: true });
-    await expect(dialog.getByText('文件扩展名', { exact: true })).toBeVisible();
-    if (screenshot) {
-      await page.screenshot({
-        path: info.outputPath('name-rules-mobile.png'),
-        animations: 'disabled',
-      });
-    }
-    await dialog.getByRole('button', { name: '保存名称规则', exact: true }).click();
-    await expect(dialog).toHaveCount(0);
-  };
-  const proposed = original === 'txt' ? 'md' : 'txt';
-  await extensions.fill(proposed);
-  await candidate.fill('blocked.bin');
-  await panel.getByRole('button', { name: '测试名称', exact: true }).click();
-  await expect(panel.getByText('被扩展名规则拒绝', { exact: true })).toBeVisible();
-  await candidate.fill('accepted.' + proposed.toUpperCase());
-  await panel.getByRole('button', { name: '测试名称', exact: true }).click();
-  await expect(panel.getByText('通过规则', { exact: true })).toBeVisible();
-  await page.screenshot({
-    path: info.outputPath('name-rules-desktop.png'),
-    animations: 'disabled',
-  });
-  await page.setViewportSize({ width: 320, height: 760 });
-  await expect
-    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
-    .toBe(true);
+test('名称规则在独立窗口试测，输入变化取消旧结果并保存待生效摘要', async ({ page }, info) => {
+  test.skip(!process.env.CLOUDDRIVE_FILE_TEST_ACCESS, '写入只使用显式指定的隔离预览。');
+  await loginStorage(page);
+  const initial = await storageRequest<StorageNameRulesView>(page, '/name-rules');
+  const section = storageSection(page, '上传名称规则');
   try {
-    await save(true);
-    await expect(
-      panel.getByText('保存的名称规则将在服务重启后生效。', { exact: true }),
-    ).toBeVisible();
+    await section.getByRole('button', { name: '编辑名称规则', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: '编辑名称规则', exact: true });
+    const mode = dialog.getByRole('button', { name: /扩展名规则$/ });
+    await mode.click();
+    await page.getByRole('option', { name: '允许匹配', exact: true }).click();
+    await dialog.getByRole('textbox', { name: '文件扩展名', exact: true }).fill('txt, MD');
+    await dialog.getByRole('textbox', { name: '文件名正则', exact: true }).fill('');
+    const sample = dialog.getByRole('textbox', { name: '试测文件名', exact: true });
+    const trial = dialog.getByRole('button', { name: '测试名称', exact: true });
+    await sample.fill('blocked.bin');
+    await trial.click();
+    await expect(dialog.getByText('被扩展名规则拒绝', { exact: true })).toBeVisible();
+    await sample.fill('accepted.TXT');
+    await expect(dialog.getByText('被扩展名规则拒绝', { exact: true })).toHaveCount(0);
+    await trial.click();
+    await expect(dialog.getByText('通过当前输入的规则', { exact: true })).toBeVisible();
+    await page.setViewportSize({ width: 320, height: 800 });
+    await expect
+      .poll(() => dialog.evaluate((element) => element.scrollWidth <= element.clientWidth))
+      .toBe(true);
+    await page.screenshot({ path: info.outputPath('storage-name-rules-mobile.png') });
+    await dialog.getByRole('button', { name: '保存规则', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    const saved = await storageRequest<StorageNameRulesView>(page, '/name-rules');
+    expect(saved.rules.extensions).toEqual(['md', 'txt']);
+    expect(saved.active).toEqual(initial.active);
+    await expect(section).toContainText('已保存，等待服务重启');
+    await expect(section.getByRole('heading', { name: '下次启动', exact: true })).toBeVisible();
+    await expect(section).toContainText('md, txt');
+    await page.reload();
+    await expect(section).toContainText('md, txt');
   } finally {
-    await extensions.fill(original);
-    if (await submit.isEnabled()) await save();
+    const latest = await storageRequest<StorageNameRulesView>(page, '/name-rules');
+    await storageRequest(page, '/name-rules', 'PUT', {
+      revision: latest.revision,
+      rules: initial.rules,
+    });
   }
 });

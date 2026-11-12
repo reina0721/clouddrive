@@ -185,8 +185,7 @@ export function UserForm({
               value={field.value}
               onBlur={field.onBlur}
               ref={(instance) => {
-                if (typeof field.ref === 'function') field.ref(instance);
-                else if (field.ref) field.ref.current = instance;
+                field.ref(instance);
               }}
               disabled={busy || !allowed}
               {...(form.hasError('name') ? { error: t('identityProduct.invalidName') } : {})}
@@ -206,8 +205,7 @@ export function UserForm({
               value={field.value}
               onBlur={field.onBlur}
               ref={(instance) => {
-                if (typeof field.ref === 'function') field.ref(instance);
-                else if (field.ref) field.ref.current = instance;
+                field.ref(instance);
               }}
               disabled={busy || !allowed}
               {...(emailError ? { error: emailError } : {})}
@@ -233,8 +231,7 @@ export function UserForm({
                 value={field.value}
                 onBlur={field.onBlur}
                 ref={(instance) => {
-                  if (typeof field.ref === 'function') field.ref(instance);
-                  else if (field.ref) field.ref.current = instance;
+                  field.ref(instance);
                 }}
                 disabled={busy || !allowed}
                 {...(form.hasError('password')

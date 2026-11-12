@@ -10,7 +10,7 @@ import {
   type Resolver,
   type UseFormReturn,
 } from 'react-hook-form';
-import { useEffect, useRef, type FormEventHandler, type ReactNode, type Ref } from 'react';
+import { useEffect, useRef, type FormEventHandler, type ReactNode } from 'react';
 
 import type { FoundationSchema } from '@clouddrive/schemas';
 
@@ -30,7 +30,7 @@ export type ControlledField<Value> = Readonly<{
   disabled?: boolean;
   onBlur: () => void;
   onChange: (value: Value) => void;
-  ref: Ref<unknown>;
+  ref: (instance: unknown) => void;
 }>;
 
 export type FoundationFormController<Values extends FieldValues> = Readonly<{
@@ -157,11 +157,13 @@ export async function requestFoundationFormLeave<Values extends FieldValues>({
 
 /** FoundationForm 统一 submit 与原生 form 语义，Feature 只提供业务处理函数。 */
 export function FoundationForm<Values extends FieldValues>({
+  id,
   form,
   onSubmit,
   children,
   className,
 }: Readonly<{
+  id?: string;
   form: FoundationFormController<Values>;
   onSubmit: (values: Values) => void | Promise<void>;
   children: ReactNode;
@@ -169,6 +171,7 @@ export function FoundationForm<Values extends FieldValues>({
 }>) {
   return (
     <form
+      id={id}
       className={className}
       noValidate
       onSubmit={form.submit(onSubmit)}

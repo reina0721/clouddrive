@@ -1,94 +1,75 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { z } from 'zod';
+import {
+  FoundationControlledField,
+  FoundationForm,
+  useFoundationForm,
+} from '@clouddrive/form-foundation';
 import { useFrontendTranslation } from '@clouddrive/i18n';
+import { useRegisterDirtySource } from '@clouddrive/plugin-framework/leave-confirm';
+import { Section } from '@clouddrive/surface-foundation/layout';
 import { Action } from '@clouddrive/ui-adapter/action';
 import { SelectField, TextField } from '@clouddrive/ui-adapter/form-field';
-import { DialogSurface } from '@clouddrive/ui-adapter/overlays';
-import { Panel } from '@clouddrive/ui-adapter/panel';
+import { DescriptionList } from '@clouddrive/ui-adapter/description-list';
+import { StatusPill } from '@clouddrive/ui-adapter/status-pill';
+import { useFeedback } from '@clouddrive/ui-adapter/feedback-context';
 import { FilesError } from '../../../src/files/model';
 import { useFiles } from '../../../src/files/runtime';
 import type { StorageNameRules, StorageNameRulesView } from '../../../src/files/storage-policy';
 import { CatalogFailure } from './catalog-failure';
 import { useCatalogRequest } from './use-catalog-request';
+import { StorageEditDialog } from './storage-edit-dialog';
 
-const zh = {
-  title: '上传名称规则',
-  extensionMode: '扩展名规则模式',
-  extensions: '文件扩展名',
-  extensionHint: '使用逗号分隔，忽略大小写。留空表示不限。',
-  patternMode: '文件名规则模式',
-  pattern: '文件名正则',
-  patternHint: '使用 Go RE2 语法。留空表示不限。',
-  allow: '允许匹配',
-  deny: '拒绝匹配',
-  active: '当前规则',
-  unrestricted: '不限',
-  pending: '保存的名称规则将在服务重启后生效。',
-  applied: '已保存的名称规则已生效。',
-  save: '保存名称规则',
-  confirm: '确认名称规则',
-  confirmHint: '服务重启后，新文件内容按保存的规则校验。',
-  failure: '未能保存名称规则。请检查扩展名和 RE2 表达式。',
-  conflict: '规则已被其他操作更新。请刷新后再保存。',
-  testName: '试测文件名',
-  testAction: '测试名称',
-  testFailure: '无法测试，请检查名称、扩展名列表和 RE2 表达式。',
-  result: { allowed: '通过规则', extension: '被扩展名规则拒绝', pattern: '被文件名正则拒绝' },
-};
-const en: typeof zh = {
-  title: 'Upload name rules',
-  extensionMode: 'Extension rule mode',
-  extensions: 'File extensions',
-  extensionHint: 'Comma separated and case insensitive. Leave blank to allow any extension.',
-  patternMode: 'File name rule mode',
-  pattern: 'File name expression',
-  patternHint: 'Use Go RE2 syntax. Leave blank to allow any name.',
-  allow: 'Allow matches',
-  deny: 'Deny matches',
-  active: 'Active rules',
-  unrestricted: 'Unrestricted',
-  pending: 'Saved name rules take effect after the service restarts.',
-  applied: 'The saved name rules are active.',
-  save: 'Save name rules',
-  confirm: 'Confirm name rules',
-  confirmHint: 'After restart, the service checks new file content against the saved rules.',
-  failure: 'Could not save the rules. Check the extensions and RE2 expression.',
-  conflict: 'The rules were updated elsewhere. Refresh before saving.',
-  testName: 'Sample file name',
-  testAction: 'Test name',
-  testFailure: 'Check the sample name, extensions and RE2 expression.',
-  result: {
-    allowed: 'Allowed',
-    extension: 'Blocked by extension rule',
-    pattern: 'Blocked by file name expression',
-  },
-};
-
+const extensionsOf = (value: string) =>
+  value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+const draftOf = (rules: StorageNameRules) => ({
+  ...rules,
+  extensions: rules.extensions.join(', '),
+});
+const draftSchema = z.object({
+  rules: z.object({
+    extensionMode: z.enum(['allow', 'deny']),
+    extensions: z.string().refine((value) => extensionsOf(value).length <= 32),
+    patternMode: z.enum(['allow', 'deny']),
+    pattern: z.string().max(256),
+  }),
+});
+function rulesOf(draft: z.infer<typeof draftSchema>['rules']): StorageNameRules {
+  return { ...draft, extensions: extensionsOf(draft.extensions) };
+}
 type Check = { name: string; rules: StorageNameRules };
 
-function RuleSummary({ rules, labels }: { rules: StorageNameRules; labels: typeof zh }) {
+function RuleSummary({ rules }: Readonly<{ rules: StorageNameRules }>) {
+  const { t } = useFrontendTranslation();
+  const label = (key: string) => t('systemTools.storage.' + key);
   return (
-    <dl className="space-y-2 text-sm">
-      <div>
-        <dt className="font-medium">{labels.extensions}</dt>
-        <dd className="break-all">
-          {rules.extensions.length
-            ? labels[rules.extensionMode] + ' ' + rules.extensions.join(', ')
-            : labels.unrestricted}
-        </dd>
-      </div>
-      <div>
-        <dt className="font-medium">{labels.pattern}</dt>
-        <dd className="break-all">
-          {rules.pattern ? labels[rules.patternMode] + ' ' + rules.pattern : labels.unrestricted}
-        </dd>
-      </div>
-    </dl>
+    <DescriptionList
+      label={label('rulesTitle')}
+      items={[
+        {
+          id: 'extensions',
+          term: label('extensions'),
+          description: rules.extensions.length
+            ? label(rules.extensionMode) + ' · ' + rules.extensions.join(', ')
+            : label('unrestricted'),
+        },
+        {
+          id: 'pattern',
+          term: label('pattern'),
+          description: rules.pattern
+            ? label(rules.patternMode) + ' · ' + rules.pattern
+            : label('unrestricted'),
+        },
+      ]}
+    />
   );
 }
-
-function RuleCheck({ input, labels }: { input: Check; labels: typeof zh }) {
+function RuleCheck({ input }: Readonly<{ input: Check }>) {
   const files = useFiles();
   const { t } = useFrontendTranslation();
   const state = useCatalogRequest(
@@ -99,198 +80,291 @@ function RuleCheck({ input, labels }: { input: Check; labels: typeof zh }) {
   );
   if (!state.result) return <p role="status">{t('administration.loading')}</p>;
   if ('error' in state.result) {
-    const error = state.result.error;
-    if (error instanceof FilesError && error.code === 'invalid')
-      return <p role="alert">{labels.testFailure}</p>;
-    return <CatalogFailure error={error} retry={state.refresh} />;
+    if (state.result.error instanceof FilesError && state.result.error.code === 'invalid')
+      return (
+        <p role="alert" className="text-sm text-danger">
+          {t('systemTools.storage.invalidRules')}
+        </p>
+      );
+    return <CatalogFailure error={state.result.error} retry={state.refresh} />;
   }
-  return <p role="status">{labels.result[state.result.value.decision]}</p>;
+  return (
+    <p role="status" className="text-sm font-medium">
+      {t('systemTools.storage.result.' + state.result.value.decision)}
+    </p>
+  );
 }
 
-function RuleEditor({
+function RulesEditor({
   initial,
-  labels,
-  refresh,
-}: {
+  onSaved,
+  onClose,
+}: Readonly<{
   initial: StorageNameRulesView;
-  labels: typeof zh;
-  refresh: () => void;
-}) {
+  onSaved: (view: StorageNameRulesView) => void;
+  onClose: () => void;
+}>) {
   const files = useFiles();
   const { t } = useFrontendTranslation();
+  const label = (key: string) => t('systemTools.storage.' + key);
   const [view, setView] = useState(initial);
-  const [rules, setRules] = useState(initial.rules);
-  const [extensions, setExtensions] = useState(initial.rules.extensions.join(', '));
-  const [name, setName] = useState('');
-  const [check, setCheck] = useState<Check>();
-  const [confirm, setConfirm] = useState(false);
+  const form = useFoundationForm({
+    schema: draftSchema,
+    defaultValues: { rules: draftOf(initial.rules) },
+  });
+  const formId = useId();
+  const [failure, setFailure] = useState<
+    'conflict' | 'saveFailure' | 'reloadFailed' | 'invalidRules'
+  >();
+  const [reloading, setReloading] = useState(false);
   const [conflict, setConflict] = useState(false);
-  const modes = [
-    { value: 'allow', label: labels.allow },
-    { value: 'deny', label: labels.deny },
-  ];
-  const values = {
-    ...rules,
-    extensions: extensions
-      .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean),
-  };
-  const dirty = JSON.stringify(values) !== JSON.stringify(view.rules);
-  const enabled = view.canSave && !conflict;
-  const save = async () => {
+  const [sample, setSample] = useState('');
+  const [check, setCheck] = useState<Check>();
+  const active = useRef(true);
+  const request = useRef<AbortController | null>(null);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+      request.current?.abort();
+    };
+  }, []);
+  const busy = form.isSubmitting || reloading;
+  const disabled = busy || conflict || !view.canSave;
+  useRegisterDirtySource({
+    pageId: 'system-tools.storage.names',
+    message: () => t('identityProduct.unsaved'),
+    isDirty: () => form.isDirty,
+    isSubmitting: () => busy,
+  });
+  async function reload() {
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    setFailure(undefined);
+    setReloading(true);
     try {
-      const result = await files.saveStorageNameRules({ revision: view.revision, rules: values });
-      setView(result);
-      setRules(result.rules);
-      setExtensions(result.rules.extensions.join(', '));
+      const latest = await files.readStorageNameRules(controller.signal);
+      if (controller.signal.aborted || !active.current) return;
+      setView(latest);
+      form.reset({ rules: draftOf(latest.rules) });
+      setFailure(undefined);
+      setConflict(false);
       setCheck(undefined);
-    } catch (error) {
-      setConflict(error instanceof FilesError && error.code === 'conflict');
-      throw error;
+    } catch {
+      if (!controller.signal.aborted && active.current) setFailure('reloadFailed');
+    } finally {
+      if (!controller.signal.aborted && active.current) setReloading(false);
     }
-  };
-  const update = (next: StorageNameRules) => {
-    setRules(next);
-    setCheck(undefined);
-  };
+  }
   return (
-    <>
-      <p role="status" className="text-sm text-ink-muted">
-        {view.pendingRestart ? labels.pending : labels.applied}
-      </p>
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold">{labels.active}</h3>
-        <RuleSummary rules={view.active} labels={labels} />
-      </div>
-      <form
-        className="space-y-4"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (enabled && dirty) setConfirm(true);
+    <StorageEditDialog
+      title={label('editRules')}
+      saveLabel={label('saveRules')}
+      formId={formId}
+      dirty={form.isDirty}
+      busy={busy}
+      disabled={disabled || !form.isDirty}
+      conflict={conflict}
+      {...(failure ? { error: label(failure) } : {})}
+      onClose={onClose}
+      onReload={reload}
+    >
+      {!view.canSave ? <p className="mb-4 text-sm text-ink-muted">{label('readonly')}</p> : null}
+      <FoundationForm
+        id={formId}
+        form={form}
+        onSubmit={async (draft) => {
+          if (disabled || !form.isDirty) return;
+          setFailure(undefined);
+          setCheck(undefined);
+          try {
+            const saved = await files.saveStorageNameRules({
+              revision: view.revision,
+              rules: rulesOf(draft.rules),
+            });
+            if (active.current) {
+              form.reset({ rules: draftOf(saved.rules) });
+              onSaved(saved);
+            }
+          } catch (error) {
+            if (active.current) {
+              if (error instanceof FilesError && error.code === 'conflict') setConflict(true);
+              setFailure(
+                error instanceof FilesError
+                  ? error.code === 'conflict'
+                    ? 'conflict'
+                    : error.code === 'invalid'
+                      ? 'invalidRules'
+                      : 'saveFailure'
+                  : 'saveFailure',
+              );
+            }
+          }
         }}
       >
-        <div className="grid gap-3 lg:grid-cols-2">
-          <div className="min-w-0 space-y-4">
-            <SelectField
-              label={labels.extensionMode}
-              options={modes}
-              value={rules.extensionMode}
-              disabled={!enabled}
-              onValueChange={(value) =>
-                update({ ...rules, extensionMode: value === 'deny' ? 'deny' : 'allow' })
-              }
-            />
-            <TextField
-              label={labels.extensions}
-              hint={labels.extensionHint}
-              value={extensions}
-              maxLength={1100}
-              disabled={!enabled}
-              onChange={(event) => {
-                setExtensions(event.target.value);
-                setCheck(undefined);
-              }}
-            />
-          </div>
-          <div className="min-w-0 space-y-4">
-            <SelectField
-              label={labels.patternMode}
-              options={modes}
-              value={rules.patternMode}
-              disabled={!enabled}
-              onValueChange={(value) =>
-                update({ ...rules, patternMode: value === 'deny' ? 'deny' : 'allow' })
-              }
-            />
-            <TextField
-              label={labels.pattern}
-              hint={labels.patternHint}
-              value={rules.pattern}
-              maxLength={256}
-              disabled={!enabled}
-              onChange={(event) => update({ ...rules, pattern: event.target.value })}
-            />
-          </div>
-        </div>
-        {view.canSave ? (
-          <Action type="submit" disabled={!enabled || !dirty}>
-            {labels.save}
-          </Action>
-        ) : null}
-      </form>
-      {view.canSave ? (
-        <div className="space-y-2">
-          <TextField
-            label={labels.testName}
-            value={name}
-            maxLength={255}
-            onChange={(event) => {
-              setName(event.target.value);
+        <FoundationControlledField form={form} name="rules">
+          {(field) => {
+            const value = field.value;
+            function update(next: typeof value) {
+              field.onChange(next);
               setCheck(undefined);
-            }}
-          />
-          <Action
-            variant="secondary"
-            disabled={!name}
-            onPress={() => setCheck({ name, rules: values })}
-          >
-            {labels.testAction}
-          </Action>
-          {check ? <RuleCheck input={check} labels={labels} /> : null}
-        </div>
-      ) : null}
-      {confirm ? (
-        <DialogSurface
-          isOpen
-          triggerLabel={labels.confirm}
-          title={labels.confirm}
-          description={labels.confirmHint}
-          confirmLabel={labels.save}
-          confirmDisabled={conflict}
-          failureMessage={conflict ? labels.conflict : labels.failure}
-          cancelLabel={t('files.cancel')}
-          onConfirm={save}
-          onOpenChange={setConfirm}
-        >
-          {conflict ? (
-            <Action variant="secondary" onPress={refresh}>
-              {t('files.refresh')}
+            }
+            const modes = [
+              { value: 'allow', label: label('allow') },
+              { value: 'deny', label: label('deny') },
+            ];
+            return (
+              <div className="space-y-6">
+                <div className="grid min-w-0 gap-5 sm:grid-cols-2">
+                  <div className="min-w-0 space-y-3">
+                    <SelectField
+                      label={label('extensionMode')}
+                      options={modes}
+                      value={value.extensionMode}
+                      disabled={disabled}
+                      onValueChange={(mode) =>
+                        update({ ...value, extensionMode: mode === 'deny' ? 'deny' : 'allow' })
+                      }
+                    />
+                    <TextField
+                      label={label('extensions')}
+                      value={value.extensions}
+                      disabled={disabled}
+                      maxLength={1100}
+                      hint={label('extensionsHint')}
+                      ref={field.ref}
+                      onBlur={field.onBlur}
+                      {...(form.hasError('rules.extensions')
+                        ? { error: label('invalidRules') }
+                        : {})}
+                      onChange={(event) => update({ ...value, extensions: event.target.value })}
+                    />
+                  </div>
+                  <div className="min-w-0 space-y-3">
+                    <SelectField
+                      label={label('patternMode')}
+                      options={modes}
+                      value={value.patternMode}
+                      disabled={disabled}
+                      onValueChange={(mode) =>
+                        update({ ...value, patternMode: mode === 'deny' ? 'deny' : 'allow' })
+                      }
+                    />
+                    <TextField
+                      label={label('pattern')}
+                      value={value.pattern}
+                      disabled={disabled}
+                      maxLength={256}
+                      hint={label('patternHint')}
+                      onChange={(event) => update({ ...value, pattern: event.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-3 border-t border-border pt-4">
+                  <TextField
+                    label={label('sampleName')}
+                    value={sample}
+                    maxLength={255}
+                    disabled={busy}
+                    hint={label('testHint')}
+                    onChange={(event) => {
+                      setSample(event.target.value);
+                      setCheck(undefined);
+                    }}
+                  />
+                  <Action
+                    variant="secondary"
+                    disabled={busy || !sample}
+                    onPress={() => setCheck({ name: sample, rules: rulesOf(value) })}
+                  >
+                    {label('testName')}
+                  </Action>
+                  {check ? <RuleCheck input={check} /> : null}
+                </div>
+              </div>
+            );
+          }}
+        </FoundationControlledField>
+      </FoundationForm>
+    </StorageEditDialog>
+  );
+}
+
+function RulesOverview({
+  initial,
+  refresh,
+}: Readonly<{ initial: StorageNameRulesView; refresh: () => void }>) {
+  const { t } = useFrontendTranslation();
+  const label = (key: string) => t('systemTools.storage.' + key);
+  const { notify } = useFeedback();
+  const [view, setView] = useState(initial);
+  const [editing, setEditing] = useState(false);
+  return (
+    <>
+      <Section
+        title={label('rulesTitle')}
+        description={label('rulesHint')}
+        contentInset
+        action={
+          view.canSave ? (
+            <Action variant="secondary" onPress={() => setEditing(true)}>
+              {label('editRules')}
             </Action>
-          ) : (
-            <RuleSummary rules={values} labels={labels} />
-          )}
-        </DialogSurface>
-      ) : null}
-      {conflict && !confirm ? (
-        <div className="space-y-2">
-          <p role="alert">{labels.conflict}</p>
-          <Action variant="secondary" onPress={refresh}>
-            {t('files.refresh')}
-          </Action>
+          ) : undefined
+        }
+      >
+        <div className="space-y-4">
+          <StatusPill tone={view.pendingRestart ? 'warning' : 'success'}>
+            {label(view.pendingRestart ? 'pending' : 'applied')}
+          </StatusPill>
+          {!view.canSave ? <p className="text-sm text-ink-muted">{label('readonly')}</p> : null}
+          <div className="grid min-w-0 gap-5 sm:grid-cols-2">
+            <div className="min-w-0 space-y-3">
+              <h3 className="text-sm font-semibold">{label('active')}</h3>
+              <RuleSummary rules={view.active} />
+            </div>
+            {view.pendingRestart ? (
+              <div className="min-w-0 space-y-3">
+                <h3 className="text-sm font-semibold">{label('saved')}</h3>
+                <RuleSummary rules={view.rules} />
+              </div>
+            ) : null}
+          </div>
         </div>
+      </Section>
+      {editing ? (
+        <RulesEditor
+          initial={view}
+          onClose={() => {
+            setEditing(false);
+            refresh();
+          }}
+          onSaved={(saved) => {
+            setView(saved);
+            setEditing(false);
+            notify({ title: label('savedFeedback'), tone: 'success' });
+          }}
+        />
       ) : null}
     </>
   );
 }
-
 export function StorageNameRulesPanel() {
   const files = useFiles();
-  const { t, locale } = useFrontendTranslation();
-  const labels = locale.startsWith('zh') ? zh : en;
+  const { t } = useFrontendTranslation();
   const state = useCatalogRequest(
     useCallback((signal) => files.readStorageNameRules(signal), [files]),
   );
+  if (state.result && 'value' in state.result)
+    return <RulesOverview initial={state.result.value} refresh={state.refresh} />;
   return (
-    <Panel aria-label={labels.title} appearance="outlined" className="min-w-0 space-y-4 p-4">
-      <h2 className="font-semibold">{labels.title}</h2>
-      {!state.result ? <p role="status">{t('administration.loading')}</p> : null}
-      {state.result && 'error' in state.result ? (
+    <Section title={t('systemTools.storage.rulesTitle')} contentInset>
+      {!state.result ? (
+        <p role="status">{t('administration.loading')}</p>
+      ) : (
         <CatalogFailure error={state.result.error} retry={state.refresh} />
-      ) : null}
-      {state.result && 'value' in state.result ? (
-        <RuleEditor initial={state.result.value} labels={labels} refresh={state.refresh} />
-      ) : null}
-    </Panel>
+      )}
+    </Section>
   );
 }
