@@ -320,7 +320,7 @@ export function ReferenceWorkspacePage() {
         rowHeader: true,
         sortable: true,
         render: (record) => (
-          <div className="min-w-48">
+          <div className="min-w-0">
             <p
               className={`font-semibold text-ink ${longText === 'wrap' ? 'whitespace-normal break-words' : 'truncate'}`}
               title={record.name}
@@ -364,7 +364,7 @@ export function ReferenceWorkspacePage() {
         label: t('reference.columns.progress'),
         sortable: true,
         render: (record) => (
-          <div className="min-w-32">
+          <div className="min-w-0">
             <ProgressMeter
               label={formatNumber(locale, record.completionPercent / 100, { style: 'percent' })}
               value={record.completionPercent}

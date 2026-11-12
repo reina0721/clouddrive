@@ -128,6 +128,32 @@ test('Short dialogs keep actions reachable at 256 and 400 pixels', async ({ page
   }
 });
 
+test('Workbench cell content stays within column boundaries at each layout size', async ({
+  page,
+}) => {
+  for (const width of [1440, 1920, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/page-archetypes/resource-list');
+    const rows = page.getByRole('grid').getByRole('row');
+    await expect(rows).toHaveCount(21);
+    const cells = rows.nth(1).locator('[data-slot="table-cell"]');
+    await expect(cells).toHaveCount(width === 390 ? 2 : 6);
+    const spills = await cells.evaluateAll((cells) =>
+      cells.flatMap((cell, column) => {
+        const content = cell.firstElementChild;
+        if (!content) return [];
+        const bounds = cell.getBoundingClientRect();
+        const inner = content.getBoundingClientRect();
+        const style = getComputedStyle(cell);
+        const available =
+          bounds.width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+        return inner.width > available + 1 ? [{ column, content: inner.width, available }] : [];
+      }),
+    );
+    expect(spills, `column content at ${width}px`).toEqual([]);
+  }
+});
+
 test('Column resizing preserves pointer and keyboard widths through reload', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/page-archetypes/resource-list');

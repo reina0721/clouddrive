@@ -137,6 +137,7 @@ Listbox 的滚动属于列表内部责任：Overlay Surface 提供外壳，Listb
 - 至少一个能够唯一识别行的列应声明为 `rowHeader`；状态和确定进度分别组合 `StatusPill` 与 `ProgressMeter`，不在 Cell 中创造第二套视觉。
 - Comfortable 与 Compact 只改变稳定的 Cell Padding，不改变触控、选择和键盘语义。
 - `Table.ScrollContainer` 是横向溢出的唯一所有者；父 Section 不再增加第二层横向滚动。
+- 可调整列宽中的内容服从 Cell 可用宽度：长文本按偏好截断或换行，身份组合不超过父容器，进度条随列宽伸缩。Feature 不给内容设置大于列宽的最小宽度，避免名称、负责人和进度跨入相邻列；完整名称仍保留在行语义与详情中。
 - 搜索、筛选、分页和 Footer 只有接入真实集合、总量和请求状态后才能进入 Pattern；禁止为展示完整度添加静态假分页或空操作列。
 
 ## 9. Overlay Surface 与 Option State
