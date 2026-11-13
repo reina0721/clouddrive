@@ -45,9 +45,7 @@ test('七类 Page Archetype 在四级视口可直接验收', async ({ page }) =>
       await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true');
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       // 页面实现按需加载：等内容入场/揭示动画结束后再扫描，避免把过渡中的混合色判为对比度问题。
-      await page.waitForFunction(() =>
-        document.getAnimations().every((animation) => animation.playState !== 'running'),
-      );
+      await waitForVisualReadiness(page);
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth,
       );
